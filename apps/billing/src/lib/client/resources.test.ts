@@ -24,7 +24,9 @@ import { prices } from './prices'
 import { priceLists } from './price-lists'
 import { products } from './products'
 import { quotes } from './quotes'
+import { recurringInvoices } from './recurring-invoices'
 import { refunds } from './refunds'
+import { reportPreferences } from './report-preferences'
 import { roles } from './roles'
 import { salesReceipts } from './sales-receipts'
 import { salespeople } from './salespeople'
@@ -560,10 +562,20 @@ const cases: RequestCase[] = [
     init: { method: 'POST', body: '{}' },
   },
   {
-    name: 'updates a tax rate',
-    act: () => taxRates.update('taxr /1', EMPTY),
-    url: '/api/v1/tax-rates/taxr%20%2F1',
-    init: { method: 'PATCH', body: '{}' },
+    name: 'lists recurring invoices with the exact status filter',
+    act: () => recurringInvoices.list({ status: 'paused' }),
+    url: '/api/v1/recurring-invoices?status=paused',
+  },
+  {
+    name: 'lists recurring invoices without a query string when unfiltered',
+    act: () => recurringInvoices.list({}),
+    url: '/api/v1/recurring-invoices',
+  },
+  {
+    name: 'deletes a recurring invoice',
+    act: () => recurringInvoices.remove('rinv /1'),
+    url: '/api/v1/recurring-invoices/rinv%20%2F1',
+    init: { method: 'DELETE' },
   },
 ]
 
@@ -606,7 +618,9 @@ describe('Billing browser resource clients', () => {
       prices,
       products,
       quotes,
+      recurringInvoices,
       refunds,
+      reportPreferences,
       subscriptions,
       support,
       roles,

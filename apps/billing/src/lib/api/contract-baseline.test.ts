@@ -143,6 +143,37 @@ describe('Billing API v1 contract baseline', () => {
     '/integrations/organizations/{organizationId}/sales-receipts/{salesReceiptId}/refund',
     '/integrations/organizations/{organizationId}/sales-receipts/{salesReceiptId}/void',
     '/integrations/organizations/{organizationId}/quotes/{quoteId}/convert-to-sales-receipt',
+
+    // Recurring invoice profiles and derived reporting are Express-only
+    // commercial capabilities, each mirrored to Invoice at integration scope.
+    '/recurring-invoices',
+    '/recurring-invoices/{recurringInvoiceId}',
+    '/recurring-invoices/{recurringInvoiceId}/pause',
+    '/recurring-invoices/{recurringInvoiceId}/resume',
+    '/recurring-invoices/{recurringInvoiceId}/stop',
+    '/recurring-invoices/{recurringInvoiceId}/invoices',
+    '/integrations/organizations/{organizationId}/recurring-invoices',
+    '/integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}',
+    '/integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}/pause',
+    '/integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}/resume',
+    '/integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}/stop',
+    '/integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}/invoices',
+    '/reports/sales-summary',
+    '/reports/cash-summary',
+    '/reports/receivables-aging',
+    '/reports/item-sales',
+    '/reports/customer-sales',
+    '/reports/subscription-summary',
+    '/items/{itemId}/sales-summary',
+    '/report-preferences',
+    '/integrations/organizations/{organizationId}/reports/sales-summary',
+    '/integrations/organizations/{organizationId}/reports/cash-summary',
+    '/integrations/organizations/{organizationId}/reports/receivables-aging',
+    '/integrations/organizations/{organizationId}/reports/item-sales',
+    '/integrations/organizations/{organizationId}/reports/customer-sales',
+    '/integrations/organizations/{organizationId}/reports/subscription-summary',
+    '/integrations/organizations/{organizationId}/items/{itemId}/sales-summary',
+    '/integrations/organizations/{organizationId}/report-preferences',
   ]
 
   it('does not document paths absent from the implementation inventory', () => {

@@ -397,6 +397,7 @@ export interface InvoiceListParams {
     | 'PAID'
     | 'UNCOLLECTIBLE'
     | 'VOID'
+  recurringInvoiceId?: string
 }
 
 /**
@@ -406,6 +407,7 @@ export interface InvoiceListParams {
 export type Invoice = {
   object: 'invoice'
   id: string
+  recurringInvoiceId?: string | null
 } & Record<string, unknown>
 
 /**

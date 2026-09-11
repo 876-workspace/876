@@ -12,6 +12,7 @@ model Invoice {
   priceListName           String?              @map("price_list_name")
   quoteId                 String?              @unique @map("quote_id")
   subscriptionId          String?              @map("subscription_id")
+  recurringInvoiceId      String?              @map("recurring_invoice_id")
   paymentTermId           String?              @map("payment_term_id")
   salespersonId           String?              @map("salesperson_id")
   number                  String
@@ -57,9 +58,11 @@ model Invoice {
   priceList                 PriceList?                       @relation(fields: [tenantId, priceListId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_invoices_price_list_fkey")
   quote                     Quote?                           @relation("QuoteConvertedInvoice", fields: [quoteId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoices_quote_id_fkey")
   subscription              Subscription?                    @relation(fields: [subscriptionId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoices_subscription_id_fkey")
+  recurringInvoice          RecurringInvoice?                @relation(fields: [recurringInvoiceId], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "billing_invoices_recurring_invoice_id_fkey")
   lateFeeAssessments        LateFeeAssessment[]              @relation("LateFeeSourceInvoice")
   lateFeeAssessment         LateFeeAssessment?               @relation("LateFeeInvoice")
   billingRuns               SubscriptionBillingRun[]
+  recurringInvoiceRuns      RecurringInvoiceRun[]
   subscriptionLinks         InvoiceSubscription[]
   subscriptionNotifications SubscriptionNotificationOutbox[]
   subscriptionCharges       SubscriptionCharge[]
@@ -83,8 +86,10 @@ model Invoice {
   @@index([customerId], map: "billing_invoices_customer_id_idx")
   @@index([priceListId], map: "billing_invoices_price_list_id_idx")
   @@index([subscriptionId], map: "billing_invoices_subscription_id_idx")
+  @@index([recurringInvoiceId], map: "billing_invoices_recurring_invoice_id_idx")
   @@index([tenantId, dueAt], map: "billing_invoices_tenant_due_at_idx")
   @@index([tenantId, billingReason], map: "billing_invoices_tenant_billing_reason_idx")
+  @@index([tenantId, issueAt], map: "billing_invoices_tenant_id_issue_at_idx")
   @@index([tenantId, orderNumber], map: "billing_invoices_order_number_idx")
   @@index([tenantId, referenceNumber], map: "billing_invoices_reference_number_idx")
   @@index([paymentTermId], map: "billing_invoices_payment_term_id_idx")

@@ -5,7 +5,10 @@ import { Page, PageBreadcrumb } from '@876/ui/page'
 import { Switch } from '@876/ui/switch'
 
 import { requireAppPermission } from '@/lib/auth/guards'
+import { getInvoiceContext } from '@/lib/auth/context'
 import { INVOICE_MODULE_CATALOG, isInvoiceModuleKey } from '@/lib/modules'
+import { getBilling } from '@/lib/services/billing'
+import { ReportPreferencesForm } from '@/features/settings/components/report-preferences-form'
 
 type Props = { params: Promise<{ moduleKey: string }> }
 
@@ -13,7 +16,7 @@ export default async function ModuleSettingsPage({ params }: Props) {
   const { moduleKey } = await params
   if (!isInvoiceModuleKey(moduleKey)) notFound()
 
-  await requireAppPermission('settings.view')
+  const context = await requireAppPermission('settings.view')
 
   const moduleDefinition = INVOICE_MODULE_CATALOG.find(
     (module) => module.key === moduleKey
@@ -38,7 +41,9 @@ export default async function ModuleSettingsPage({ params }: Props) {
 
           <div className="flex items-center gap-3">
             <Badge
-              variant={moduleDefinition.enabledByDefault ? 'secondary' : 'outline'}
+              variant={
+                moduleDefinition.enabledByDefault ? 'secondary' : 'outline'
+              }
             >
               {moduleDefinition.enabledByDefault ? 'Enabled' : 'Disabled'}
             </Badge>
@@ -51,6 +56,42 @@ export default async function ModuleSettingsPage({ params }: Props) {
           </div>
         </div>
       </div>
+      {moduleKey === 'reports' ? (
+        <ReportPreferencesSection
+          canManage={context.permissions.includes('sales:write')}
+        />
+      ) : null}
     </Page>
+  )
+}
+
+async function ReportPreferencesSection({ canManage }: { canManage: boolean }) {
+  const invoiceContext = await getInvoiceContext()
+  if (!invoiceContext) return null
+
+  const billing = await getBilling(invoiceContext.orgId)
+  const result = await billing.reportPreferences.retrieve()
+  if (result.error)
+    return (
+      <p role="alert" className="text-destructive mt-4 text-sm">
+        {result.error.message}
+      </p>
+    )
+
+  const supported =
+    typeof Intl.supportedValuesOf === 'function'
+      ? Intl.supportedValuesOf('timeZone')
+      : ['America/Jamaica', 'UTC']
+  return (
+    <div className="mt-6 max-w-2xl">
+      <ReportPreferencesForm
+        initial={{
+          timezone: result.data.timezone,
+          fiscalYearStartMonth: result.data.fiscalYearStartMonth,
+        }}
+        timeZones={supported}
+        canManage={canManage}
+      />
+    </div>
   )
 }

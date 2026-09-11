@@ -64,6 +64,7 @@ model Customer {
   addresses           Address[]
   quotes              Quote[]
   invoices            Invoice[]
+  recurringInvoices   RecurringInvoice[]
   salesReceipts       SalesReceipt[]
   payments            Payment[]
   creditNotes         CreditNote[]

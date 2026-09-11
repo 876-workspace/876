@@ -26,9 +26,11 @@ import {
 import { resolveInvoice } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
+import { getBilling } from '@/lib/services/billing'
 import type { InvoiceStatus } from '@/types/invoice'
 
 import { InvoiceActions } from './_components/invoice-actions'
+import { InvoiceOriginLink } from './_components/invoice-origin-link'
 
 interface Props {
   params: Promise<{ invoiceId: string }>
@@ -49,6 +51,20 @@ export default async function InvoiceDetailPage({ params }: Props) {
 
   const canWrite = context.permissions.includes('sales:write')
   const canRecordPayment = context.permissions.includes('payments:write')
+  const recurringInvoiceId =
+    typeof invoice.recurringInvoiceId === 'string'
+      ? invoice.recurringInvoiceId
+      : null
+  let originProfileName: string | null = null
+  if (recurringInvoiceId) {
+    const billing = await getBilling()
+    const origin = await billing.recurringInvoices.retrieve(recurringInvoiceId)
+    if (!origin.error)
+      originProfileName = String(
+        (origin.data as unknown as Record<string, unknown>).profileName ??
+          recurringInvoiceId
+      )
+  }
   const address =
     invoiceAddressSnapshot(invoice.billingAddressSnapshot) ??
     invoice.customer.addresses[0]
@@ -309,6 +325,12 @@ export default async function InvoiceDetailPage({ params }: Props) {
                 {invoice.lateFeeAssessment.sourceInvoice.number}
               </Link>
             </p>
+          ) : null}
+          {recurringInvoiceId && originProfileName ? (
+            <InvoiceOriginLink
+              profileId={recurringInvoiceId}
+              profileName={originProfileName}
+            />
           ) : null}
         </DocumentFooter>
       </DocumentView>

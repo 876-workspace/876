@@ -48,6 +48,67 @@ export interface DocumentStatusOption {
   headingLabel: string
 }
 
+/** Badge variant for a recurring invoice profile status. Green is active only. */
+export function recurringInvoiceStatusVariant(
+  status: string
+): DocumentStatusVariant {
+  switch (status.toLowerCase()) {
+    case 'active':
+      return 'success'
+    case 'stopped':
+      return 'destructive'
+    case 'expired':
+      return 'warning'
+    case 'paused':
+    default:
+      return 'secondary'
+  }
+}
+
+export const RECURRING_INVOICE_STATUSES = [
+  'active',
+  'paused',
+  'stopped',
+  'expired',
+] as const
+
+export type RecurringInvoiceStatus =
+  (typeof RECURRING_INVOICE_STATUSES)[number]
+
+export const RECURRING_INVOICE_STATUS_OPTIONS: DocumentStatusOption[] = [
+  { value: 'all', label: 'All', headingLabel: 'All Recurring Invoices' },
+  { value: 'active', label: 'Active', headingLabel: 'Active Recurring Invoices' },
+  { value: 'paused', label: 'Paused', headingLabel: 'Paused Recurring Invoices' },
+  {
+    value: 'stopped',
+    label: 'Stopped',
+    headingLabel: 'Stopped Recurring Invoices',
+  },
+  {
+    value: 'expired',
+    label: 'Expired',
+    headingLabel: 'Expired Recurring Invoices',
+  },
+]
+
+export function isRecurringInvoiceStatus(
+  value: string | null | undefined
+): value is RecurringInvoiceStatus {
+  return (
+    value === 'active' ||
+    value === 'paused' ||
+    value === 'stopped' ||
+    value === 'expired'
+  )
+}
+
+/** Narrows an unknown query value to a supported recurring-invoice filter value. */
+export function resolveRecurringInvoiceStatus(
+  value: string | null | undefined
+): string {
+  return isRecurringInvoiceStatus(value) ? value : 'all'
+}
+
 export const SALES_RECEIPT_STATUS_OPTIONS: DocumentStatusOption[] = [
   { value: 'all', label: 'All', headingLabel: 'All Sales Receipts' },
   { value: 'paid', label: 'Paid', headingLabel: 'Paid Sales Receipts' },

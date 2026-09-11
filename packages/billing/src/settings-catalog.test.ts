@@ -17,6 +17,7 @@ const SHARED_KEYS = [
   'sales-receipts',
   'time-tracking',
   'customers',
+  'reports',
   'crm',
 ] as const
 
@@ -152,11 +153,30 @@ describe('finance module catalogs', () => {
           ],
         },
       ],
+      reports: [
+        {
+          key: 'timezone',
+          label: 'Reporting timezone',
+          type: 'string',
+          default: 'America/Jamaica',
+          hint: 'IANA timezone used to bucket sales, cash, and receivables reports.',
+        },
+        {
+          key: 'fiscal-year-start-month',
+          label: 'Fiscal year start month',
+          type: 'integer',
+          default: 1,
+          min: 1,
+          max: 12,
+          hint: 'Calendar month (1–12) the fiscal year starts in.',
+        },
+      ],
     }
 
     for (const catalogModule of BILLING_MODULE_CATALOG) {
       expect(catalogModule.description.length).toBeGreaterThan(0)
-      expect(catalogModule.optional).toBe(true)
+      // `reports` is a mandatory platform module; every other module is optional.
+      expect(catalogModule.optional).toBe(catalogModule.key !== 'reports')
       expect(catalogModule.preferences).toEqual(
         expected[catalogModule.key] ?? []
       )

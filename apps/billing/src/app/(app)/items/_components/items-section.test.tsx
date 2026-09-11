@@ -34,31 +34,31 @@ import { ItemsSection } from './items-section'
 describe('ItemsSection — status resolution', () => {
   it('defaults to "active" when no status query parameter is present', () => {
     mocks.searchParams = new URLSearchParams()
-    render(<ItemsSection list={null} children={null} />)
+    render(<ItemsSection list={null}>{null}</ItemsSection>)
     expect(mocks.capturedStatus).toBe('active')
   })
 
   it('resolves to "all" when ?status=all is present', () => {
     mocks.searchParams = new URLSearchParams('status=all')
-    render(<ItemsSection list={null} children={null} />)
+    render(<ItemsSection list={null}>{null}</ItemsSection>)
     expect(mocks.capturedStatus).toBe('all')
   })
 
   it('resolves to "archived" when ?status=archived is present', () => {
     mocks.searchParams = new URLSearchParams('status=archived')
-    render(<ItemsSection list={null} children={null} />)
+    render(<ItemsSection list={null}>{null}</ItemsSection>)
     expect(mocks.capturedStatus).toBe('archived')
   })
 
   it('resolves to "active" when ?status=active is present', () => {
     mocks.searchParams = new URLSearchParams('status=active')
-    render(<ItemsSection list={null} children={null} />)
+    render(<ItemsSection list={null}>{null}</ItemsSection>)
     expect(mocks.capturedStatus).toBe('active')
   })
 
   it('passes an unrecognised value through (section does not validate — toolbar does)', () => {
     mocks.searchParams = new URLSearchParams('status=bogus')
-    render(<ItemsSection list={null} children={null} />)
+    render(<ItemsSection list={null}>{null}</ItemsSection>)
     // The section passes the raw param; the toolbar heading handles unknown values.
     // Crucially, 'bogus' must not be replaced with 'all' — the null-param case alone
     // triggers the fallback.

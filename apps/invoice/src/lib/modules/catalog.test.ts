@@ -43,6 +43,7 @@ describe('INVOICE_MODULE_KEYS', () => {
       'sales-receipts',
       'time-tracking',
       'customers',
+      'reports',
       'crm',
     ])
   })

@@ -28,4 +28,19 @@ export interface CustomerAccountProjection extends Omit<
 
   /** Latest account activity in chronological order with running balances. */
   statement: CustomerAccountStatementEntry[]
+
+  /** Lifetime sales (finalized invoices plus paid sales receipts) as a decimal string. */
+  lifetimeSales: string
+
+  /** Lifetime issued credit-note totals as a decimal string. */
+  lifetimeCredits: string
+
+  /** Latest finalized-invoice or paid-receipt instant, if any. */
+  lastSaleAt: number | null
+
+  /** Count of currently active or trialing subscriptions. */
+  activeSubscriptionCount: number
+
+  /** Current recurring revenue per currency. */
+  subscriptionMrr: Array<{ currency: string; mrr: string; arr: string }>
 }

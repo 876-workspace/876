@@ -7,6 +7,7 @@ import {
   BillingItemSchema,
   BillingItemVariantListSchema,
   BillingItemVariantSchema,
+  BillingItemSalesSummarySchema,
   DeletedBillingItemMediaSchema,
   DeletedBillingItemSchema,
 } from '../schemas'
@@ -22,6 +23,8 @@ import type {
   BillingItemMediaReorderParams,
   BillingItemPreferences,
   BillingItemPreferencesUpdateParams,
+  BillingItemSalesSummary,
+  BillingItemSalesSummaryParams,
   BillingItemStockAdjustmentParams,
   BillingItemUpdateParams,
   BillingItemVariant,
@@ -371,6 +374,22 @@ export function createIntegrationItemsResource(runtime: IntegrationRuntime) {
         runtime,
         { method: 'DELETE', path: itemPath(organizationId, itemId) },
         DeletedBillingItemSchema
+      )
+    },
+
+    salesSummary(
+      organizationId: string,
+      itemId: string,
+      params: BillingItemSalesSummaryParams = {}
+    ) {
+      return IntegrationRequest<BillingItemSalesSummary>(
+        runtime,
+        {
+          method: 'GET',
+          path: `${itemPath(organizationId, itemId)}/sales-summary`,
+          query: { from: params.from, to: params.to },
+        },
+        BillingItemSalesSummarySchema
       )
     },
   }

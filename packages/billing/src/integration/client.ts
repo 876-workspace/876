@@ -3,7 +3,10 @@ import { createIntegrationCustomersResource } from './resources/customers'
 import { createIntegrationInvoicesResource } from './resources/invoices'
 import { createIntegrationItemsResource } from './resources/items'
 import { createIntegrationQuotesResource } from './resources/quotes'
+import { createIntegrationReportsResource } from './resources/reports'
+import { createIntegrationReportPreferencesResource } from './resources/report-preferences'
 import { createIntegrationSalesReceiptsResource } from './resources/sales-receipts'
+import { createIntegrationRecurringInvoicesResource } from './resources/recurring-invoices'
 import { createIntegrationOrganizationsResource } from './resources/organizations'
 import { createIntegrationPaymentModesResource } from './resources/payment-modes'
 import { createIntegrationPaymentMethodsResource } from './resources/payment-methods'
@@ -28,7 +31,10 @@ export function create876BillingIntegrationClient(
     items: createIntegrationItemsResource(runtime),
     invoices: createIntegrationInvoicesResource(runtime),
     quotes: createIntegrationQuotesResource(runtime),
+    reports: createIntegrationReportsResource(runtime),
+    reportPreferences: createIntegrationReportPreferencesResource(runtime),
     salesReceipts: createIntegrationSalesReceiptsResource(runtime),
+    recurringInvoices: createIntegrationRecurringInvoicesResource(runtime),
     paymentModes: createIntegrationPaymentModesResource(runtime),
     paymentMethods: createIntegrationPaymentMethodsResource(runtime),
     paymentIntents: createIntegrationPaymentIntentsResource(runtime),

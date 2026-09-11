@@ -219,7 +219,12 @@ export function createDocumentsRouter(resolveGuards: GuardResolver) {
     summary: 'List invoices',
     operationId: 'billing-billing_get_invoices',
     security: read,
-    request: { query: z.strictObject({ status: invoiceStatus.optional() }) },
+    request: {
+      query: z.strictObject({
+        status: invoiceStatus.optional(),
+        recurringInvoiceId: z.string().min(1).optional(),
+      }),
+    },
     responses: {
       200: {
         description: 'Successful Response',
@@ -479,7 +484,10 @@ export function createDocumentsRouter(resolveGuards: GuardResolver) {
     security: integrationRead,
     request: {
       params: org,
-      query: z.strictObject({ status: invoiceStatus.optional() }),
+      query: z.strictObject({
+        status: invoiceStatus.optional(),
+        recurringInvoiceId: z.string().min(1).optional(),
+      }),
     },
     responses: {
       200: {

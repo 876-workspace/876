@@ -1,4 +1,5 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
+import { Prisma } from '@/db/generated/prisma/client'
 
 import { prisma, type PrismaTransaction } from './db'
 import { generateId } from '@/platform/ids'
@@ -805,88 +806,152 @@ async function applyCancel(
   })
 }
 
-export async function processDueLifecycleSchedules(
-  tenantId: string,
+export async function applyDueLifecycleSchedule(
+  tx: PrismaTransaction,
+  schedule: {
+    id: string
+    subscriptionId: string
+    action: 'PAUSE' | 'RESUME' | 'CANCEL'
+    effectiveAt: number
+    pauseUnbilledBehavior: 'RETAIN' | 'INVOICE_IMMEDIATELY' | null
+    pauseCreditBehavior: 'NONE' | 'PRORATE_CREDIT' | null
+    resumeAt: number | null
+    resumeBillingBehavior:
+      'START_NEW_PERIOD' | 'CONTINUE_EXISTING_PERIOD' | null
+    reason: string | null
+    requestedByUserId: string | null
+  },
+  asOf: number,
+  options: { allowFinalArrearsCancellation?: boolean } = {}
+): Promise<boolean> {
+  const subscription = await tx.subscription.findUnique({
+    where: { id: schedule.subscriptionId },
+    select: {
+      status: true,
+      deletedAt: true,
+      billingTiming: true,
+      nextBillingAt: true,
+    },
+  })
+  const awaitFinalArrearsBilling =
+    schedule.action === 'CANCEL' &&
+    subscription?.billingTiming === 'IN_ARREARS' &&
+    (subscription.status === 'ACTIVE' || subscription.status === 'TRIALING') &&
+    subscription.nextBillingAt !== null &&
+    subscription.nextBillingAt <= schedule.effectiveAt
+  if (awaitFinalArrearsBilling && !options.allowFinalArrearsCancellation)
+    return false
+
+  const claimed = await tx.subscriptionLifecycleSchedule.updateMany({
+    where: { id: schedule.id, status: 'SCHEDULED' },
+    data: { status: 'APPLIED', appliedAt: asOf, updatedAt: asOf },
+  })
+  if (claimed.count === 0) return false
+
+  const canApply =
+    subscription?.deletedAt === null &&
+    ((schedule.action === 'PAUSE' && subscription.status === 'ACTIVE') ||
+      (schedule.action === 'RESUME' && subscription.status === 'PAUSED') ||
+      (schedule.action === 'CANCEL' &&
+        !['CANCELED', 'ENDED'].includes(subscription.status)))
+  if (!canApply) {
+    await tx.subscriptionLifecycleSchedule.update({
+      where: { id: schedule.id },
+      data: {
+        status: 'SKIPPED',
+        appliedAt: null,
+        failureMessage: 'The subscription state no longer allows this action.',
+        updatedAt: asOf,
+      },
+    })
+    return false
+  }
+  if (schedule.action === 'PAUSE')
+    await applyPause(
+      tx,
+      schedule.subscriptionId,
+      schedule.effectiveAt,
+      {
+        unbilledBehavior: schedule.pauseUnbilledBehavior ?? 'RETAIN',
+        creditBehavior: schedule.pauseCreditBehavior ?? 'NONE',
+        resumeAt: schedule.resumeAt,
+        resumeBillingBehavior:
+          schedule.resumeBillingBehavior ?? 'START_NEW_PERIOD',
+        reason: schedule.reason,
+        actorUserId: schedule.requestedByUserId,
+      },
+      asOf
+    )
+  if (schedule.action === 'RESUME')
+    await applyResume(
+      tx,
+      schedule.subscriptionId,
+      schedule.effectiveAt,
+      schedule.resumeBillingBehavior ?? 'START_NEW_PERIOD',
+      schedule.reason,
+      schedule.requestedByUserId,
+      asOf
+    )
+  if (schedule.action === 'CANCEL')
+    await applyCancel(
+      tx,
+      schedule.subscriptionId,
+      schedule.effectiveAt,
+      schedule.reason,
+      schedule.requestedByUserId,
+      asOf
+    )
+  return true
+}
+
+/**
+ * Applies due scheduled pause/resume/cancel changes across every active
+ * workspace. Called by the Billing sweep; each schedule is claimed with
+ * `SKIP LOCKED` so concurrent sweeps never apply one twice.
+ */
+export async function processDueLifecycleSchedulesAcrossTenants(
   asOf = nowUnixSeconds()
 ) {
-  const schedules = await prisma.subscriptionLifecycleSchedule.findMany({
-    where: { tenantId, status: 'SCHEDULED', effectiveAt: { lte: asOf } },
-    orderBy: [{ effectiveAt: 'asc' }, { id: 'asc' }],
-    take: 100,
-  })
   let applied = 0
-  for (const schedule of schedules) {
+  for (let processed = 0; processed < 1_000; processed += 1) {
+    let scheduleId: string | null = null
     try {
-      await prisma.$transaction(async (tx) => {
-        const claimed = await tx.subscriptionLifecycleSchedule.updateMany({
-          where: { id: schedule.id, status: 'SCHEDULED' },
-          data: { status: 'APPLIED', appliedAt: asOf, updatedAt: asOf },
-        })
-        if (claimed.count === 0) return
-        const subscription = await tx.subscription.findUnique({
-          where: { id: schedule.subscriptionId },
-          select: { status: true, deletedAt: true },
-        })
-        const canApply =
-          subscription?.deletedAt === null &&
-          ((schedule.action === 'PAUSE' && subscription.status === 'ACTIVE') ||
-            (schedule.action === 'RESUME' &&
-              subscription.status === 'PAUSED') ||
-            (schedule.action === 'CANCEL' &&
-              !['CANCELED', 'ENDED'].includes(subscription.status)))
-        if (!canApply) {
-          await tx.subscriptionLifecycleSchedule.update({
-            where: { id: schedule.id },
-            data: {
-              status: 'SKIPPED',
-              appliedAt: null,
-              failureMessage:
-                'The subscription state no longer allows this action.',
-              updatedAt: asOf,
-            },
+      const result = await prisma.$transaction(async (tx) => {
+        const rows = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+          SELECT s.id
+          FROM billing_subscription_lifecycle_schedules AS s
+          INNER JOIN billing_tenants AS t ON t.id = s.tenant_id
+          INNER JOIN billing_subscriptions AS b ON b.id = s.subscription_id
+          WHERE s.status = 'SCHEDULED'
+            AND s.effective_at <= ${asOf}
+            AND t.status = 'ACTIVE'
+            AND t.deleted_at IS NULL
+            AND NOT (
+              s.action = 'CANCEL'
+              AND b.billing_timing = 'IN_ARREARS'
+              AND b.status IN ('ACTIVE', 'TRIALING')
+              AND b.next_billing_at IS NOT NULL
+              AND b.next_billing_at <= s.effective_at
+            )
+          ORDER BY s.effective_at, s.id
+          LIMIT 1
+          FOR UPDATE OF s SKIP LOCKED
+        `)
+        const row = rows[0]
+        if (!row) return null
+        scheduleId = row.id
+        const schedule =
+          await tx.subscriptionLifecycleSchedule.findUniqueOrThrow({
+            where: { id: row.id },
           })
-          return
-        }
-        if (schedule.action === 'PAUSE')
-          await applyPause(
-            tx,
-            schedule.subscriptionId,
-            schedule.effectiveAt,
-            {
-              unbilledBehavior: schedule.pauseUnbilledBehavior ?? 'RETAIN',
-              creditBehavior: schedule.pauseCreditBehavior ?? 'NONE',
-              resumeAt: schedule.resumeAt,
-              resumeBillingBehavior:
-                schedule.resumeBillingBehavior ?? 'START_NEW_PERIOD',
-              reason: schedule.reason,
-              actorUserId: schedule.requestedByUserId,
-            },
-            asOf
-          )
-        if (schedule.action === 'RESUME')
-          await applyResume(
-            tx,
-            schedule.subscriptionId,
-            schedule.effectiveAt,
-            schedule.resumeBillingBehavior ?? 'START_NEW_PERIOD',
-            schedule.reason,
-            schedule.requestedByUserId,
-            asOf
-          )
-        if (schedule.action === 'CANCEL')
-          await applyCancel(
-            tx,
-            schedule.subscriptionId,
-            schedule.effectiveAt,
-            schedule.reason,
-            schedule.requestedByUserId,
-            asOf
-          )
-        applied += 1
+        return applyDueLifecycleSchedule(tx, schedule, asOf)
       })
+      if (scheduleId === null) break
+      if (result) applied += 1
     } catch (error) {
+      if (scheduleId === null) throw error
       await prisma.subscriptionLifecycleSchedule.updateMany({
-        where: { id: schedule.id, status: 'SCHEDULED' },
+        where: { id: scheduleId, status: 'SCHEDULED' },
         data: {
           status: 'FAILED',
           failureMessage:

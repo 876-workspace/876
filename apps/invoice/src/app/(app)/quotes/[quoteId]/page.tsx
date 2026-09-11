@@ -23,6 +23,10 @@ import { QuoteActions } from './_components/quote-actions'
 
 type Props = { params: Promise<{ quoteId: string }> }
 
+function currentTimeSeconds(): number {
+  return Math.floor(Date.now() / 1000)
+}
+
 export const metadata = {
   title: 'Quote',
   description: 'Quote details.',
@@ -90,7 +94,7 @@ export default async function QuoteDetailPage({ params }: Props) {
   const isExpired =
     (status === 'DRAFT' || status === 'SENT') &&
     expiresAt !== null &&
-    expiresAt <= Math.floor(Date.now() / 1000)
+    expiresAt <= currentTimeSeconds()
   const sentAt = typeof quote.sentAt === 'number' ? quote.sentAt : null
   const acceptedAt =
     typeof quote.acceptedAt === 'number' ? quote.acceptedAt : null

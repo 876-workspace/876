@@ -15,13 +15,14 @@ model PriceList {
   createdAt         Int                 @map("created_at")
   updatedAt         Int                 @map("updated_at")
 
-  tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_price_lists_tenant_fkey")
-  entries       PriceListEntry[]
-  customers     Customer[]
-  quotes        Quote[]
-  invoices      Invoice[]
-  salesReceipts SalesReceipt[]
-  subscriptions Subscription[]
+  tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_price_lists_tenant_fkey")
+  entries           PriceListEntry[]
+  customers         Customer[]
+  quotes            Quote[]
+  invoices          Invoice[]
+  recurringInvoices RecurringInvoice[]
+  salesReceipts     SalesReceipt[]
+  subscriptions     Subscription[]
 
   @@unique([tenantId, id], map: "billing_price_lists_tenant_id_id_key")
   @@unique([tenantId, name], name: "billing_price_lists_tenant_name_key", map: "billing_price_lists_tenant_name_key")

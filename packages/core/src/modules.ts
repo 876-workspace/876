@@ -104,6 +104,11 @@ export const FINANCE_MODULES = {
     label: 'Payroll',
     description: 'Manage payroll-related financial activity.',
   },
+  reports: {
+    key: 'reports',
+    label: 'Reports',
+    description: 'Review sales, cash, receivables, and subscription reports.',
+  },
 } as const satisfies Record<string, AppModuleDefinition>
 
 export const INVOICE_MODULE_REGISTRY = defineAppModuleRegistry({

@@ -1,16 +1,21 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
+import type { Prisma } from '@/db/generated/prisma/client'
 
 import { prisma, type PrismaTransaction } from './db'
 import { generateId } from '@/platform/ids'
 
 import { calculateDiscount, calculateInvoiceChargeLines } from './calculations'
-import { recomputeCustomerAr } from '@/modules/customers'
-import { nextDocumentNumber } from '@/modules/documents'
+import {
+  applyInvoiceFinalizeEffects,
+  nextDocumentNumber,
+  projectCollectibleInvoiceStatus,
+  resolveDueAt,
+} from '@/modules/documents'
 import { recordLedgerEntry } from '@/modules/ledger'
-import { resolveDueAt } from '@/modules/documents'
+import { recomputeCustomerAr } from '@/modules/customers'
 import { calculateCatalogAmount } from '@/commerce/calculations'
-import { settleWithAvailableCredits } from '@/modules/documents'
 import { addInterval } from './period'
+import { applyDueLifecycleSchedule } from './lifecycle'
 import { adjustRenewalAmount } from './renewal-pricing'
 import { enqueueSubscriptionNotification } from './notifications'
 import { prorateInitialStubAmount } from './amounts'
@@ -44,46 +49,86 @@ export async function billSubscription(
       FOR UPDATE
     `
 
-    const subscription = await tx.subscription.findFirst({
-      where: { id: subscriptionId, tenantId },
-      include: {
-        customer: true,
-        paymentTerm: true,
-        items: {
-          where: { isActive: true },
-          include: {
-            price: {
-              include: {
-                tiers: true,
-                item: true,
-                plan: { include: { product: true } },
-                addon: { include: { product: true } },
-              },
+    const subscriptionInclude = {
+      customer: true,
+      paymentTerm: true,
+      items: {
+        where: { isActive: true },
+        include: {
+          price: {
+            include: {
+              tiers: true,
+              item: true,
+              plan: { include: { product: true } },
+              addon: { include: { product: true } },
             },
           },
         },
-        discounts: {
-          where: {
-            status: 'ACTIVE',
-            startsAt: { lte: asOf },
-            OR: [{ endsAt: null }, { endsAt: { gt: asOf } }],
-          },
-          orderBy: { createdAt: 'asc' },
-        },
-        charges: {
-          where: { status: 'UNBILLED', invoiceBehavior: 'NEXT_INVOICE' },
-          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-        },
-        amendments: {
-          where: { status: 'PENDING' },
-          select: { id: true },
-          take: 1,
-        },
       },
+      discounts: {
+        where: {
+          status: 'ACTIVE',
+          startsAt: { lte: asOf },
+          OR: [{ endsAt: null }, { endsAt: { gt: asOf } }],
+        },
+        orderBy: { createdAt: 'asc' },
+      },
+      charges: {
+        where: { status: 'UNBILLED', invoiceBehavior: 'NEXT_INVOICE' },
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      },
+      amendments: {
+        where: { status: 'PENDING' },
+        select: { id: true },
+        take: 1,
+      },
+      lifecycleSchedules: {
+        where: {
+          status: 'SCHEDULED',
+          OR: [{ effectiveAt: { lte: asOf } }, { action: 'CANCEL' }],
+        },
+        orderBy: [{ effectiveAt: 'asc' }, { id: 'asc' }],
+      },
+    } satisfies Prisma.SubscriptionInclude
+
+    let subscription = await tx.subscription.findFirst({
+      where: { id: subscriptionId, tenantId },
+      include: subscriptionInclude,
     })
     if (!subscription) throw new Error('Subscription not found.')
+    const initialSubscription = subscription
+
+    const schedulesBeforeBilling =
+      initialSubscription.lifecycleSchedules.filter(
+        (schedule) =>
+          schedule.effectiveAt <= asOf &&
+          (schedule.action !== 'CANCEL' ||
+            initialSubscription.billingTiming === 'IN_ADVANCE' ||
+            (initialSubscription.nextBillingAt !== null &&
+              schedule.effectiveAt < initialSubscription.nextBillingAt))
+      )
+    if (schedulesBeforeBilling.length > 0) {
+      for (const schedule of schedulesBeforeBilling)
+        await applyDueLifecycleSchedule(tx, schedule, asOf)
+
+      subscription = await tx.subscription.findFirst({
+        where: { id: subscriptionId, tenantId },
+        include: subscriptionInclude,
+      })
+      if (!subscription) throw new Error('Subscription not found.')
+    }
 
     const advance = options.advance === true
+    if (
+      subscription.billingTiming === 'IN_ADVANCE' &&
+      subscription.nextBillingAt !== null &&
+      subscription.lifecycleSchedules.some(
+        (schedule) =>
+          schedule.action === 'CANCEL' &&
+          schedule.effectiveAt <= subscription.nextBillingAt!
+      )
+    )
+      return { status: 'skipped', invoiceId: null }
     if (advance && subscription.status !== 'ACTIVE')
       return { status: 'skipped', invoiceId: null }
     if (advance && subscription.amendments.length > 0)
@@ -440,7 +485,17 @@ export async function billSubscription(
             taxAmount: { increment: taxAmount },
             totalAmount: { increment: totalAmount },
             amountDue: { increment: totalAmount },
-            status: consolidatedInvoice.status === 'DRAFT' ? 'DRAFT' : 'OPEN',
+            status:
+              consolidatedInvoice.status === 'DRAFT'
+                ? 'DRAFT'
+                : projectCollectibleInvoiceStatus({
+                    amountDue: consolidatedInvoice.amountDue + totalAmount,
+                    amountPaid: consolidatedInvoice.amountPaid,
+                    amountCredited: consolidatedInvoice.amountCredited,
+                    dueAt: consolidatedInvoice.dueAt,
+                    sentAt: consolidatedInvoice.sentAt,
+                    asOf,
+                  }),
             paidAt: null,
             updatedAt: asOf,
             lines: { create: invoiceLines },
@@ -457,12 +512,7 @@ export async function billSubscription(
             salespersonName: null,
             paymentTermName: paymentTerm?.name ?? null,
             number,
-            status:
-              totalAmount === 0n
-                ? 'PAID'
-                : invoiceMode === 'DRAFT'
-                  ? 'DRAFT'
-                  : 'OPEN',
+            status: 'DRAFT',
             billingReason:
               subscription.billedCycleCount === 0
                 ? 'SUBSCRIPTION_CREATE'
@@ -471,8 +521,8 @@ export async function billSubscription(
             taxBehavior: subscription.taxBehavior,
             issueAt,
             dueAt,
-            finalizedAt: invoiceMode === 'DRAFT' ? null : asOf,
-            paidAt: totalAmount === 0n ? asOf : null,
+            finalizedAt: null,
+            paidAt: null,
             servicePeriodStart: subscription.currentPeriodStart,
             servicePeriodEnd: subscription.currentPeriodEnd,
             subtotalAmount,
@@ -534,7 +584,7 @@ export async function billSubscription(
         createdAt: asOf,
       })
 
-    if (invoiceMode !== 'DRAFT')
+    if (consolidatedInvoice && consolidatedInvoice.status !== 'DRAFT')
       await recordLedgerEntry(tx, {
         tenantId,
         customerId: subscription.customerId,
@@ -545,31 +595,42 @@ export async function billSubscription(
         amount: totalAmount,
         currency,
         description: `Subscription invoice ${number} finalized`,
-        idempotencyKey: `invoice:${invoiceId}:finalized`,
+        idempotencyKey: `invoice:${invoiceId}:subscription-run:${runId}`,
         effectiveAt: issueAt,
         createdAt: asOf,
       })
+    if (consolidatedInvoice && consolidatedInvoice.status !== 'DRAFT')
+      await recomputeCustomerAr(tx, tenantId, subscription.customerId, asOf)
 
-    if (
-      invoiceMode !== 'DRAFT' &&
-      subscription.autoApplyCredits &&
-      totalAmount > 0n
-    )
-      await settleWithAvailableCredits(
-        tx,
-        {
+    if (!consolidatedInvoice && invoiceMode !== 'DRAFT') {
+      const effects = await applyInvoiceFinalizeEffects(tx, tenantId, {
+        invoice: {
           id: invoice.id,
-          tenantId,
           customerId: subscription.customerId,
           subscriptionId,
           number,
           currency,
-          status: 'OPEN',
-          amountDue: invoice.amountDue,
-          paidAt: null,
+          totalAmount,
+          issueAt,
+          dueAt,
+          billingReason:
+            subscription.billedCycleCount === 0
+              ? 'SUBSCRIPTION_CREATE'
+              : 'SUBSCRIPTION_CYCLE',
+          lines: invoiceLines.map((line) => ({
+            itemId: 'itemId' in line ? line.itemId : null,
+            variantId: null,
+            quantity: line.quantity,
+          })),
         },
-        asOf
-      )
+        paymentTerm,
+        salesperson: null,
+        autoApplyCredits: subscription.autoApplyCredits,
+        now: asOf,
+        ledgerDescription: `Subscription invoice ${number} finalized`,
+      })
+      if (effects.error !== null) throw new Error(effects.error)
+    }
 
     for (const discount of subscription.discounts) {
       if (discount.duration === 'ONCE')
@@ -597,6 +658,13 @@ export async function billSubscription(
       }
     }
 
+    const finalArrearsCancellation = subscription.lifecycleSchedules.find(
+      (schedule) =>
+        schedule.action === 'CANCEL' &&
+        subscription.billingTiming === 'IN_ARREARS' &&
+        subscription.nextBillingAt !== null &&
+        schedule.effectiveAt <= subscription.nextBillingAt
+    )
     if (advance)
       await tx.subscription.update({
         where: { id: subscriptionId },
@@ -605,6 +673,10 @@ export async function billSubscription(
           lastBilledAt: asOf,
           updatedAt: asOf,
         },
+      })
+    else if (finalArrearsCancellation)
+      await applyDueLifecycleSchedule(tx, finalArrearsCancellation, asOf, {
+        allowFinalArrearsCancellation: true,
       })
     else await advanceSubscriptionPeriod(tx, subscription, firstItem, asOf)
     await tx.subscriptionEvent.create({
@@ -635,8 +707,6 @@ export async function billSubscription(
         updatedAt: asOf,
       },
     })
-    await recomputeCustomerAr(tx, tenantId, subscription.customerId, asOf)
-
     return { status: 'succeeded', invoiceId }
   }
 

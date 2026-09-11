@@ -11,6 +11,7 @@ import CreditNotesLayout from '../app/(app)/(sales)/credit-notes/layout'
 import ExpensesLayout from '../app/(app)/purchases/expenses/layout'
 import PurchasesLayout from '../app/(app)/purchases/layout'
 import VendorsLayout from '../app/(app)/purchases/vendors/layout'
+import RecurringInvoicesLayout from '../app/(app)/(sales)/recurring-invoices/layout'
 
 describe('Billing feature route layouts', () => {
   beforeEach(() => {
@@ -38,6 +39,7 @@ describe('Billing feature route layouts', () => {
     // record opens beside it. The capability guard still has to run first.
     it.each([
       ['Credit notes', CreditNotesLayout, 'invoices'],
+      ['Recurring invoices', RecurringInvoicesLayout, 'invoices'],
       ['Vendors', VendorsLayout, 'vendors'],
     ] as const)(
       '%s requires its matching capability and hands children to the section',

@@ -24,6 +24,8 @@ type InvoiceFinancePermission =
   | 'payments:write'
   | 'taxes:read'
   | 'taxes:write'
+  | 'sales:read'
+  | 'sales:write'
 
 /**
  * Resolves a member's finance role once per request. All arguments are
@@ -50,8 +52,7 @@ export const resolveInvoiceFinanceAccess = cache(
       userId,
       organizationRole,
     })
-    if (result.error)
-      return { status: 'unavailable', code: result.error.code }
+    if (result.error) return { status: 'unavailable', code: result.error.code }
 
     return {
       status: 'ok',
@@ -89,15 +90,36 @@ export async function requireInvoiceFinancePermission(
 async function requireFinanceManager(
   organizationId: string,
   permission: 'roles:write' | 'members:write' | InvoiceFinancePermission,
-  subject: 'roles' | 'members' | 'settings'
+  subject: 'roles' | 'members' | 'settings' | 'sales'
 ) {
   const context = await getInvoiceContextResult()
   if (context.status === 'signed-out')
-    return { viewer: null, response: response(401, 'invoice/unauthorized', 'Authentication is required.') }
+    return {
+      viewer: null,
+      response: response(
+        401,
+        'invoice/unauthorized',
+        'Authentication is required.'
+      ),
+    }
   if (context.status === 'unavailable')
-    return { viewer: null, response: response(503, 'invoice/access-unavailable', 'Access could not be verified. Try again.') }
+    return {
+      viewer: null,
+      response: response(
+        503,
+        'invoice/access-unavailable',
+        'Access could not be verified. Try again.'
+      ),
+    }
   if (context.status !== 'ok' || context.context.orgId !== organizationId)
-    return { viewer: null, response: response(403, 'invoice/forbidden', 'You do not have permission to manage finance access.') }
+    return {
+      viewer: null,
+      response: response(
+        403,
+        'invoice/forbidden',
+        'You do not have permission to manage finance access.'
+      ),
+    }
 
   const outcome = await resolveInvoiceFinanceAccess(
     organizationId,
@@ -105,9 +127,23 @@ async function requireFinanceManager(
     context.context.role
   )
   if (outcome.status === 'unavailable')
-    return { viewer: null, response: response(503, 'invoice/access-unavailable', 'Access could not be verified. Try again.') }
+    return {
+      viewer: null,
+      response: response(
+        503,
+        'invoice/access-unavailable',
+        'Access could not be verified. Try again.'
+      ),
+    }
   if (!outcome.viewer.permissions.includes(permission))
-    return { viewer: null, response: response(403, 'invoice/forbidden', `You do not have permission to manage finance ${subject}.`) }
+    return {
+      viewer: null,
+      response: response(
+        403,
+        'invoice/forbidden',
+        `You do not have permission to manage finance ${subject}.`
+      ),
+    }
 
   return { viewer: outcome.viewer, response: null }
 }

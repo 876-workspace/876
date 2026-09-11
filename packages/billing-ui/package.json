@@ -214,6 +214,54 @@
     "./sales-receipts-list": {
       "types": "./src/sales-receipts-list.tsx",
       "default": "./src/sales-receipts-list.tsx"
+    },
+    "./recurring-invoice-form": {
+      "types": "./src/recurring-invoice-form.tsx",
+      "default": "./src/recurring-invoice-form.tsx"
+    },
+    "./recurring-invoice-lifecycle-actions": {
+      "types": "./src/recurring-invoice-lifecycle-actions.tsx",
+      "default": "./src/recurring-invoice-lifecycle-actions.tsx"
+    },
+    "./recurring-invoices-list": {
+      "types": "./src/recurring-invoices-list.tsx",
+      "default": "./src/recurring-invoices-list.tsx"
+    },
+    "./report-range": {
+      "types": "./src/report-range.ts",
+      "default": "./src/report-range.ts"
+    },
+    "./panels/report-bars": {
+      "types": "./src/panels/report-bars.tsx",
+      "default": "./src/panels/report-bars.tsx"
+    },
+    "./panels/sales-summary-panel": {
+      "types": "./src/panels/sales-summary-panel.tsx",
+      "default": "./src/panels/sales-summary-panel.tsx"
+    },
+    "./panels/cash-summary-panel": {
+      "types": "./src/panels/cash-summary-panel.tsx",
+      "default": "./src/panels/cash-summary-panel.tsx"
+    },
+    "./panels/receivables-aging-panel": {
+      "types": "./src/panels/receivables-aging-panel.tsx",
+      "default": "./src/panels/receivables-aging-panel.tsx"
+    },
+    "./panels/subscription-summary-panel": {
+      "types": "./src/panels/subscription-summary-panel.tsx",
+      "default": "./src/panels/subscription-summary-panel.tsx"
+    },
+    "./panels/item-sales-panel": {
+      "types": "./src/panels/item-sales-panel.tsx",
+      "default": "./src/panels/item-sales-panel.tsx"
+    },
+    "./panels/customer-sales-summary-panel": {
+      "types": "./src/panels/customer-sales-summary-panel.tsx",
+      "default": "./src/panels/customer-sales-summary-panel.tsx"
+    },
+    "./panels/item-sales-summary-panel": {
+      "types": "./src/panels/item-sales-summary-panel.tsx",
+      "default": "./src/panels/item-sales-summary-panel.tsx"
     }
   },
   "scripts": {

@@ -43,6 +43,7 @@ describe('BILLING_MODULE_KEYS', () => {
       'sales-receipts',
       'time-tracking',
       'customers',
+      'reports',
       'crm',
       'subscriptions',
       'banking',
@@ -52,6 +53,15 @@ describe('BILLING_MODULE_KEYS', () => {
       'price-lists',
       'discounts',
     ])
+  })
+
+  it('keeps reports mandatory and enabled by default', () => {
+    expect(
+      BILLING_MODULE_CATALOG.find((module) => module.key === 'reports')
+    ).toMatchObject({
+      optional: false,
+      enabledByDefault: true,
+    })
   })
 
   it('keeps the embedded CRM seam optional and disabled by default', () => {

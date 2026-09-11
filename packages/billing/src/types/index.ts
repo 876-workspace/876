@@ -111,6 +111,23 @@ export {
   DeletedQuoteSchema,
 } from './invoice.schema'
 
+export type {
+  RecurringInvoice,
+  RecurringInvoiceStatus,
+  RecurringInvoiceGenerationMode,
+  RecurringInvoiceFrequency,
+  RecurringInvoiceCreateParams,
+  RecurringInvoiceUpdateParams,
+  RecurringInvoiceList,
+  RecurringInvoiceListParams,
+  DeletedRecurringInvoice,
+} from './recurring-invoice'
+export {
+  RecurringInvoiceSchema,
+  RecurringInvoiceListSchema,
+  DeletedRecurringInvoiceSchema,
+} from './recurring-invoice.schema'
+
 // Credit notes
 export type {
   CreditNote,
@@ -370,6 +387,40 @@ export {
   CurrencyMutationSchema,
   CurrencySchema,
 } from './currency'
+
+// Reporting
+export type {
+  ReportGroupBy,
+  ReportRangeParams,
+  CashSummaryParams,
+  ReceivablesAgingParams,
+  ItemSalesParams,
+  ItemSalesSummaryParams,
+  CustomerSalesParams,
+  SubscriptionSummaryParams,
+  ReportPreferences,
+  ReportPreferencesUpdateParams,
+  MoneyBreakdown,
+  InvoiceSourceSplit,
+  SalesSummary,
+  CashSummary,
+  ReceivablesAging,
+  ItemSalesRow,
+  ItemSales,
+  ItemSalesSummary,
+  CustomerSales,
+  SubscriptionSummary,
+} from './reporting'
+export {
+  SalesSummarySchema,
+  CashSummarySchema,
+  ReceivablesAgingSchema,
+  ItemSalesSchema,
+  ItemSalesSummarySchema,
+  CustomerSalesSchema,
+  SubscriptionSummarySchema,
+  ReportPreferencesSchema,
+} from './reporting.schema'
 
 // Finance workspace roles
 export type {

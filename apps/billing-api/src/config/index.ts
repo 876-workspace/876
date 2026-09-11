@@ -46,6 +46,7 @@ const envSchema = z.object({
   BILLING_INTERNAL_KEY: optionalString(),
   API_INTERNAL_KEY: optionalString(),
   BILLING_SCHEDULER_KEY: optionalString(),
+  CRON_SECRET: optionalString(),
   CORS_ALLOWED_ORIGINS: optionalString('http://localhost:3004'),
   SENTRY_DSN: optionalString(),
   IDENTITY_API_TIMEOUT_SECONDS: optionalNumber(5),
@@ -132,6 +133,7 @@ function build(env: NodeJS.ProcessEnv) {
       value.BILLING_API_876_KEY || value.BILLING_API_KEY || value.API_876_KEY,
     internalKey: value.BILLING_INTERNAL_KEY || value.API_INTERNAL_KEY,
     schedulerKey: value.BILLING_SCHEDULER_KEY,
+    cronSecret: value.CRON_SECRET,
     corsOrigins: value.CORS_ALLOWED_ORIGINS.split(',')
       .map((origin) => origin.trim())
       .filter(Boolean),

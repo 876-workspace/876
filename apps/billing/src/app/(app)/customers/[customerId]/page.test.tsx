@@ -10,3 +10,35 @@ describe('Billing customer contacts overview', () => {
   it('does not turn a client error into an empty list', () =>
     expect(source).not.toContain("result.error ? { status: 'empty'"))
 })
+
+describe('Billing customer sales overview', () => {
+  it('renders the sales summary in its own Suspense boundary', () => {
+    expect(source).toContain('fallback={<CustomerSalesSummaryFallback />}')
+    expect(source).toContain('<CustomerSalesSummaryRouteData params={params} />')
+  })
+
+  it('feeds the panel from the account projection with the customer id', () => {
+    const component = readFileSync(
+      new URL(
+        './_components/customer-sales-summary.tsx',
+        import.meta.url
+      ),
+      'utf8'
+    )
+    expect(component).toContain('billing.customers.account(customerId)')
+    expect(component).toContain('lifetimeSales')
+    expect(component).toContain('activeSubscriptionCount')
+  })
+
+  it('threads the customer id into the range sales summary', () => {
+    const component = readFileSync(
+      new URL(
+        './_components/customer-sales-summary.tsx',
+        import.meta.url
+      ),
+      'utf8'
+    )
+    expect(component).toContain('customerId')
+    expect(component).toContain("groupBy: 'month'")
+  })
+})

@@ -63,20 +63,32 @@ async function convertQuote(
 
 export const documentsController = {
   async invoicesList(req: Request, res: Response) {
+    const query = validQuery<{
+      status?: InvoiceStatus
+      recurringInvoiceId?: string
+    }>(req)
     res.json(
       await service.listInvoices(
         tenant(req),
-        validQuery<{ status?: InvoiceStatus }>(req).status
+        query.status,
+        undefined,
+        undefined,
+        query.recurringInvoiceId
       )
     )
   },
   async invoicesIntegrationList(req: Request, res: Response) {
+    const query = validQuery<{
+      status?: InvoiceStatus
+      recurringInvoiceId?: string
+    }>(req)
     res.json(
       await service.listInvoices(
         tenant(req),
-        validQuery<{ status?: InvoiceStatus }>(req).status,
+        query.status,
         sourceApp(req),
-        `/api/v1/integrations/organizations/${param(req, 'organizationId')}/invoices`
+        `/api/v1/integrations/organizations/${param(req, 'organizationId')}/invoices`,
+        query.recurringInvoiceId
       )
     )
   },

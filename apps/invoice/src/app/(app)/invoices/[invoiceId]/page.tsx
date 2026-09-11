@@ -23,6 +23,7 @@ import { formatDate, formatMoney } from '@/lib/format'
 import { documentStatusVariant } from '@/lib/status'
 
 import { InvoiceActions } from './_components/invoice-actions'
+import { InvoiceOriginLink } from './_components/invoice-origin-link'
 import type { InvoiceStatus } from './_lib/invoice-editability'
 
 type Props = { params: Promise<{ invoiceId: string }> }
@@ -75,6 +76,20 @@ export default async function InvoiceDetailPage({ params }: Props) {
       : typeof invoice.createdAt === 'number'
         ? invoice.createdAt
         : null
+  const record = invoice as unknown as Record<string, unknown>
+  const recurringInvoiceId =
+    typeof record.recurringInvoiceId === 'string'
+      ? record.recurringInvoiceId
+      : null
+  let originProfileName: string | null = null
+  if (recurringInvoiceId) {
+    const origin = await billing.recurringInvoices.retrieve(recurringInvoiceId)
+    if (!origin.error)
+      originProfileName = String(
+        (origin.data as unknown as Record<string, unknown>).profileName ??
+          recurringInvoiceId
+      )
+  }
 
   return (
     <>
@@ -124,6 +139,14 @@ export default async function InvoiceDetailPage({ params }: Props) {
               />
               <DetailCardFact label="Currency" value={currency} mono />
             </DetailCardFacts>
+            {recurringInvoiceId && originProfileName ? (
+              <div className="mt-4">
+                <InvoiceOriginLink
+                  profileId={recurringInvoiceId}
+                  profileName={originProfileName}
+                />
+              </div>
+            ) : null}
           </DetailCardSection>
         </DetailCardBody>
         <DetailCardIdBar>

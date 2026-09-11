@@ -58,6 +58,7 @@ describe('Invoice navigation access binding', () => {
       '/items',
       '/quotes',
       '/invoices',
+      '/recurring-invoices',
       '/sales-receipts',
       '/payments',
       '/expenses',

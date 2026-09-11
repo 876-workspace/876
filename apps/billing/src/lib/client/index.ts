@@ -22,7 +22,9 @@ import { prices } from './prices'
 import { priceLists } from './price-lists'
 import { products } from './products'
 import { quotes } from './quotes'
+import { recurringInvoices } from './recurring-invoices'
 import { refunds } from './refunds'
+import { reportPreferences } from './report-preferences'
 import { roles } from './roles'
 import { salesReceipts } from './sales-receipts'
 import { subscriptions } from './subscriptions'
@@ -56,7 +58,9 @@ export const client = {
   priceLists,
   products,
   quotes,
+  recurringInvoices,
   refunds,
+  reportPreferences,
   roles,
   salesReceipts,
   salespeople,

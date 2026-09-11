@@ -989,6 +989,114 @@ export const v1OperationMetadata = {
       summary: 'Convert an organization quote to a Sales Receipt',
       tags: ['Sales Receipts'],
     },
+  'GET /recurring-invoices': {
+    operationId: 'billing-billing_get_recurring_invoices',
+    summary: 'List Recurring Invoices',
+    tags: ['Recurring Invoices'],
+  },
+  'POST /recurring-invoices': {
+    operationId: 'billing-billing_post_recurring_invoices',
+    summary: 'Create a Recurring Invoice',
+    tags: ['Recurring Invoices'],
+  },
+  'GET /recurring-invoices/{recurringInvoiceId}': {
+    operationId: 'billing-billing_get_recurring_invoices_recurringInvoiceId',
+    summary: 'Retrieve a Recurring Invoice',
+    tags: ['Recurring Invoices'],
+  },
+  'PATCH /recurring-invoices/{recurringInvoiceId}': {
+    operationId: 'billing-billing_patch_recurring_invoices_recurringInvoiceId',
+    summary: 'Update a Recurring Invoice',
+    tags: ['Recurring Invoices'],
+  },
+  'DELETE /recurring-invoices/{recurringInvoiceId}': {
+    operationId: 'billing-billing_delete_recurring_invoices_recurringInvoiceId',
+    summary: 'Delete a Recurring Invoice',
+    tags: ['Recurring Invoices'],
+  },
+  'POST /recurring-invoices/{recurringInvoiceId}/pause': {
+    operationId:
+      'billing-billing_post_recurring_invoices_recurringInvoiceId_pause',
+    summary: 'pause a Recurring Invoice',
+    tags: ['Recurring Invoices'],
+  },
+  'POST /recurring-invoices/{recurringInvoiceId}/resume': {
+    operationId:
+      'billing-billing_post_recurring_invoices_recurringInvoiceId_resume',
+    summary: 'resume a Recurring Invoice',
+    tags: ['Recurring Invoices'],
+  },
+  'POST /recurring-invoices/{recurringInvoiceId}/stop': {
+    operationId:
+      'billing-billing_post_recurring_invoices_recurringInvoiceId_stop',
+    summary: 'stop a Recurring Invoice',
+    tags: ['Recurring Invoices'],
+  },
+  'GET /recurring-invoices/{recurringInvoiceId}/invoices': {
+    operationId:
+      'billing-billing_get_recurring_invoices_recurringInvoiceId_invoices',
+    summary: 'List generated invoices',
+    tags: ['Recurring Invoices'],
+  },
+  'GET /integrations/organizations/{organizationId}/recurring-invoices': {
+    operationId: 'billing-integration_get_recurring_invoices',
+    summary: 'List organization Recurring Invoices',
+    tags: ['Recurring Invoices'],
+  },
+  'POST /integrations/organizations/{organizationId}/recurring-invoices': {
+    operationId: 'billing-integration_post_recurring_invoices',
+    summary: 'Create an organization Recurring Invoice',
+    tags: ['Recurring Invoices'],
+  },
+  'GET /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}':
+    {
+      operationId:
+        'billing-integration_get_recurring_invoices_recurringInvoiceId',
+      summary: 'Retrieve an organization Recurring Invoice',
+      tags: ['Recurring Invoices'],
+    },
+  'PATCH /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}':
+    {
+      operationId:
+        'billing-integration_patch_recurring_invoices_recurringInvoiceId',
+      summary: 'Update an organization Recurring Invoice',
+      tags: ['Recurring Invoices'],
+    },
+  'DELETE /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}':
+    {
+      operationId:
+        'billing-integration_delete_recurring_invoices_recurringInvoiceId',
+      summary: 'Delete an organization Recurring Invoice',
+      tags: ['Recurring Invoices'],
+    },
+  'POST /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}/pause':
+    {
+      operationId:
+        'billing-integration_post_recurring_invoices_recurringInvoiceId_pause',
+      summary: 'pause an organization Recurring Invoice',
+      tags: ['Recurring Invoices'],
+    },
+  'POST /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}/resume':
+    {
+      operationId:
+        'billing-integration_post_recurring_invoices_recurringInvoiceId_resume',
+      summary: 'resume an organization Recurring Invoice',
+      tags: ['Recurring Invoices'],
+    },
+  'POST /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}/stop':
+    {
+      operationId:
+        'billing-integration_post_recurring_invoices_recurringInvoiceId_stop',
+      summary: 'stop an organization Recurring Invoice',
+      tags: ['Recurring Invoices'],
+    },
+  'GET /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}/invoices':
+    {
+      operationId:
+        'billing-integration_get_recurring_invoices_recurringInvoiceId_invoices',
+      summary: 'List organization generated invoices',
+      tags: ['Recurring Invoices'],
+    },
   'GET /tax-authorities': {
     summary: 'List tax authorities',
     tags: ['Taxes'],
@@ -1221,6 +1329,81 @@ export const v1OperationMetadata = {
       summary: 'Delete an organization Billing payment mode',
       tags: ['Payments'],
     },
+  'GET /reports/sales-summary': {
+    summary: 'Retrieve the sales summary report',
+    tags: ['Reporting'],
+  },
+  'GET /reports/cash-summary': {
+    summary: 'Retrieve the cash summary report',
+    tags: ['Reporting'],
+  },
+  'GET /reports/receivables-aging': {
+    summary: 'Retrieve the receivables aging report',
+    tags: ['Reporting'],
+  },
+  'GET /reports/item-sales': {
+    summary: 'Retrieve the item sales report',
+    tags: ['Reporting'],
+  },
+  'GET /reports/customer-sales': {
+    summary: 'Retrieve the customer sales report',
+    tags: ['Reporting'],
+  },
+  'GET /reports/subscription-summary': {
+    summary: 'Retrieve the subscription summary report',
+    tags: ['Reporting'],
+  },
+  'GET /items/{itemId}/sales-summary': {
+    summary: 'Retrieve the sales summary for one item',
+    tags: ['Reporting'],
+  },
+  'GET /report-preferences': {
+    summary: 'Retrieve report preferences',
+    tags: ['Reporting'],
+  },
+  'PATCH /report-preferences': {
+    summary: 'Update report preferences',
+    tags: ['Reporting'],
+  },
+  'GET /integrations/organizations/{organizationId}/reports/sales-summary': {
+    summary: 'Retrieve the organization sales summary report',
+    tags: ['Reporting'],
+  },
+  'GET /integrations/organizations/{organizationId}/reports/cash-summary': {
+    summary: 'Retrieve the organization cash summary report',
+    tags: ['Reporting'],
+  },
+  'GET /integrations/organizations/{organizationId}/reports/receivables-aging':
+    {
+      summary: 'Retrieve the organization receivables aging report',
+      tags: ['Reporting'],
+    },
+  'GET /integrations/organizations/{organizationId}/reports/item-sales': {
+    summary: 'Retrieve the organization item sales report',
+    tags: ['Reporting'],
+  },
+  'GET /integrations/organizations/{organizationId}/reports/customer-sales': {
+    summary: 'Retrieve the organization customer sales report',
+    tags: ['Reporting'],
+  },
+  'GET /integrations/organizations/{organizationId}/reports/subscription-summary':
+    {
+      summary: 'Retrieve the organization subscription summary report',
+      tags: ['Reporting'],
+    },
+  'GET /integrations/organizations/{organizationId}/items/{itemId}/sales-summary':
+    {
+      summary: 'Retrieve the sales summary for one organization item',
+      tags: ['Reporting'],
+    },
+  'GET /integrations/organizations/{organizationId}/report-preferences': {
+    summary: 'Retrieve organization report preferences',
+    tags: ['Reporting'],
+  },
+  'PATCH /integrations/organizations/{organizationId}/report-preferences': {
+    summary: 'Update organization report preferences',
+    tags: ['Reporting'],
+  },
   'GET /vendors': {
     operationId: 'billing-billing_get_vendors',
     summary: 'Billing GET /vendors',
@@ -22204,6 +22387,1833 @@ export const v1OperationContracts = {
         },
       },
     },
+  'GET /recurring-invoices': {
+    tags: ['Recurring Invoices'],
+    summary: 'List Recurring Invoices',
+    operationId: 'billing-billing_get_recurring_invoices',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'status',
+        schema: {
+          type: 'string',
+          enum: ['active', 'paused', 'stopped', 'expired'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 191,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Recurring Invoice list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /recurring-invoices': {
+    tags: ['Recurring Invoices'],
+    summary: 'Create a Recurring Invoice',
+    operationId: 'billing-billing_post_recurring_invoices',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    responses: {
+      '201': {
+        description: 'Recurring Invoice',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'recurring-invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /recurring-invoices/{recurringInvoiceId}': {
+    tags: ['Recurring Invoices'],
+    summary: 'Retrieve a Recurring Invoice',
+    operationId: 'billing-billing_get_recurring_invoices_recurringInvoiceId',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'recurringInvoiceId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Recurring Invoice',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'recurring-invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /recurring-invoices/{recurringInvoiceId}': {
+    tags: ['Recurring Invoices'],
+    summary: 'Update a Recurring Invoice',
+    operationId: 'billing-billing_patch_recurring_invoices_recurringInvoiceId',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'recurringInvoiceId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Recurring Invoice',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'recurring-invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'DELETE /recurring-invoices/{recurringInvoiceId}': {
+    tags: ['Recurring Invoices'],
+    summary: 'Delete a Recurring Invoice',
+    operationId: 'billing-billing_delete_recurring_invoices_recurringInvoiceId',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'recurringInvoiceId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Recurring Invoice',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'recurring-invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /recurring-invoices/{recurringInvoiceId}/pause': {
+    tags: ['Recurring Invoices'],
+    summary: 'pause a Recurring Invoice',
+    operationId:
+      'billing-billing_post_recurring_invoices_recurringInvoiceId_pause',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'recurringInvoiceId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Recurring Invoice',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'recurring-invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /recurring-invoices/{recurringInvoiceId}/resume': {
+    tags: ['Recurring Invoices'],
+    summary: 'resume a Recurring Invoice',
+    operationId:
+      'billing-billing_post_recurring_invoices_recurringInvoiceId_resume',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'recurringInvoiceId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Recurring Invoice',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'recurring-invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /recurring-invoices/{recurringInvoiceId}/stop': {
+    tags: ['Recurring Invoices'],
+    summary: 'stop a Recurring Invoice',
+    operationId:
+      'billing-billing_post_recurring_invoices_recurringInvoiceId_stop',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'recurringInvoiceId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Recurring Invoice',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'recurring-invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /recurring-invoices/{recurringInvoiceId}/invoices': {
+    tags: ['Recurring Invoices'],
+    summary: 'List generated invoices',
+    operationId:
+      'billing-billing_get_recurring_invoices_recurringInvoiceId_invoices',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'recurringInvoiceId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Invoice list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/recurring-invoices': {
+    tags: ['Recurring Invoices'],
+    summary: 'List organization Recurring Invoices',
+    operationId: 'billing-integration_get_recurring_invoices',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.invoices.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'status',
+        schema: {
+          type: 'string',
+          enum: ['active', 'paused', 'stopped', 'expired'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 191,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Recurring Invoice list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['object', 'id'],
+                        additionalProperties: {},
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/recurring-invoices': {
+    tags: ['Recurring Invoices'],
+    summary: 'Create an organization Recurring Invoice',
+    operationId: 'billing-integration_post_recurring_invoices',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.invoices.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '201': {
+        description: 'Recurring Invoice',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'recurring-invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}':
+    {
+      tags: ['Recurring Invoices'],
+      summary: 'Retrieve an organization Recurring Invoice',
+      operationId:
+        'billing-integration_get_recurring_invoices_recurringInvoiceId',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.read'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'recurringInvoiceId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Recurring Invoice',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'recurring-invoice',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'PATCH /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}':
+    {
+      tags: ['Recurring Invoices'],
+      summary: 'Update an organization Recurring Invoice',
+      operationId:
+        'billing-integration_patch_recurring_invoices_recurringInvoiceId',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'recurringInvoiceId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Recurring Invoice',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'recurring-invoice',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'DELETE /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}':
+    {
+      tags: ['Recurring Invoices'],
+      summary: 'Delete an organization Recurring Invoice',
+      operationId:
+        'billing-integration_delete_recurring_invoices_recurringInvoiceId',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'recurringInvoiceId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Recurring Invoice',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'recurring-invoice',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}/pause':
+    {
+      tags: ['Recurring Invoices'],
+      summary: 'pause an organization Recurring Invoice',
+      operationId:
+        'billing-integration_post_recurring_invoices_recurringInvoiceId_pause',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'recurringInvoiceId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Recurring Invoice',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'recurring-invoice',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}/resume':
+    {
+      tags: ['Recurring Invoices'],
+      summary: 'resume an organization Recurring Invoice',
+      operationId:
+        'billing-integration_post_recurring_invoices_recurringInvoiceId_resume',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'recurringInvoiceId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Recurring Invoice',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'recurring-invoice',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}/stop':
+    {
+      tags: ['Recurring Invoices'],
+      summary: 'stop an organization Recurring Invoice',
+      operationId:
+        'billing-integration_post_recurring_invoices_recurringInvoiceId_stop',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'recurringInvoiceId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Recurring Invoice',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'recurring-invoice',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /integrations/organizations/{organizationId}/recurring-invoices/{recurringInvoiceId}/invoices':
+    {
+      tags: ['Recurring Invoices'],
+      summary: 'List organization generated invoices',
+      operationId:
+        'billing-integration_get_recurring_invoices_recurringInvoiceId_invoices',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.read'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'recurringInvoiceId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Invoice list',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'list',
+                      },
+                      data: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            object: {
+                              type: 'string',
+                            },
+                            id: {
+                              type: 'string',
+                            },
+                          },
+                          required: ['object', 'id'],
+                          additionalProperties: {},
+                        },
+                      },
+                      has_more: {
+                        type: 'boolean',
+                      },
+                      total_count: {
+                        anyOf: [
+                          {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      url: {
+                        type: 'string',
+                      },
+                    },
+                    required: [
+                      'object',
+                      'data',
+                      'has_more',
+                      'total_count',
+                      'url',
+                    ],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
   'GET /tax-authorities': {
     security: [
       {
@@ -28626,6 +30636,4096 @@ export const v1OperationContracts = {
         },
       },
     },
+  'GET /reports/sales-summary': {
+    tags: ['Reporting'],
+    summary: 'Retrieve the sales summary report',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'from',
+        schema: {
+          type: 'integer',
+          minimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'to',
+        schema: {
+          type: 'integer',
+          exclusiveMinimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'groupBy',
+        schema: {
+          default: 'day',
+          type: 'string',
+          enum: ['day', 'week', 'month', 'none'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+      {
+        in: 'query',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Sales summary',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'sales-summary',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    fiscalYearStartMonth: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    from: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    to: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    groupBy: {
+                      type: 'string',
+                      enum: ['day', 'week', 'month', 'none'],
+                    },
+                    currencies: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          currency: {
+                            type: 'string',
+                          },
+                          totals: {
+                            type: 'object',
+                            properties: {
+                              invoices: {
+                                type: 'object',
+                                properties: {
+                                  count: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  netAmount: {
+                                    type: 'string',
+                                  },
+                                  taxAmount: {
+                                    type: 'string',
+                                  },
+                                  totalAmount: {
+                                    type: 'string',
+                                  },
+                                  bySource: {
+                                    type: 'object',
+                                    properties: {
+                                      subscription: {
+                                        type: 'object',
+                                        properties: {
+                                          count: {
+                                            type: 'integer',
+                                            minimum: -9007199254740991,
+                                            maximum: 9007199254740991,
+                                          },
+                                          netAmount: {
+                                            type: 'string',
+                                          },
+                                          taxAmount: {
+                                            type: 'string',
+                                          },
+                                          totalAmount: {
+                                            type: 'string',
+                                          },
+                                        },
+                                        required: [
+                                          'count',
+                                          'netAmount',
+                                          'taxAmount',
+                                          'totalAmount',
+                                        ],
+                                        additionalProperties: false,
+                                      },
+                                      recurringInvoice: {
+                                        type: 'object',
+                                        properties: {
+                                          count: {
+                                            type: 'integer',
+                                            minimum: -9007199254740991,
+                                            maximum: 9007199254740991,
+                                          },
+                                          netAmount: {
+                                            type: 'string',
+                                          },
+                                          taxAmount: {
+                                            type: 'string',
+                                          },
+                                          totalAmount: {
+                                            type: 'string',
+                                          },
+                                        },
+                                        required: [
+                                          'count',
+                                          'netAmount',
+                                          'taxAmount',
+                                          'totalAmount',
+                                        ],
+                                        additionalProperties: false,
+                                      },
+                                      oneOff: {
+                                        type: 'object',
+                                        properties: {
+                                          count: {
+                                            type: 'integer',
+                                            minimum: -9007199254740991,
+                                            maximum: 9007199254740991,
+                                          },
+                                          netAmount: {
+                                            type: 'string',
+                                          },
+                                          taxAmount: {
+                                            type: 'string',
+                                          },
+                                          totalAmount: {
+                                            type: 'string',
+                                          },
+                                        },
+                                        required: [
+                                          'count',
+                                          'netAmount',
+                                          'taxAmount',
+                                          'totalAmount',
+                                        ],
+                                        additionalProperties: false,
+                                      },
+                                    },
+                                    required: [
+                                      'subscription',
+                                      'recurringInvoice',
+                                      'oneOff',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                required: [
+                                  'count',
+                                  'netAmount',
+                                  'taxAmount',
+                                  'totalAmount',
+                                  'bySource',
+                                ],
+                                additionalProperties: false,
+                              },
+                              salesReceipts: {
+                                type: 'object',
+                                properties: {
+                                  count: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  netAmount: {
+                                    type: 'string',
+                                  },
+                                  taxAmount: {
+                                    type: 'string',
+                                  },
+                                  totalAmount: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: [
+                                  'count',
+                                  'netAmount',
+                                  'taxAmount',
+                                  'totalAmount',
+                                ],
+                                additionalProperties: false,
+                              },
+                              creditNotes: {
+                                type: 'object',
+                                properties: {
+                                  count: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  netAmount: {
+                                    type: 'string',
+                                  },
+                                  taxAmount: {
+                                    type: 'string',
+                                  },
+                                  totalAmount: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: [
+                                  'count',
+                                  'netAmount',
+                                  'taxAmount',
+                                  'totalAmount',
+                                ],
+                                additionalProperties: false,
+                              },
+                              netSales: {
+                                type: 'object',
+                                properties: {
+                                  netAmount: {
+                                    type: 'string',
+                                  },
+                                  taxAmount: {
+                                    type: 'string',
+                                  },
+                                  totalAmount: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: [
+                                  'netAmount',
+                                  'taxAmount',
+                                  'totalAmount',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'invoices',
+                              'salesReceipts',
+                              'creditNotes',
+                              'netSales',
+                            ],
+                            additionalProperties: false,
+                          },
+                          buckets: {
+                            type: 'array',
+                            items: {
+                              type: 'object',
+                              properties: {
+                                start: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                end: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                invoices: {
+                                  type: 'object',
+                                  properties: {
+                                    count: {
+                                      type: 'integer',
+                                      minimum: -9007199254740991,
+                                      maximum: 9007199254740991,
+                                    },
+                                    netAmount: {
+                                      type: 'string',
+                                    },
+                                    taxAmount: {
+                                      type: 'string',
+                                    },
+                                    totalAmount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: [
+                                    'count',
+                                    'netAmount',
+                                    'taxAmount',
+                                    'totalAmount',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                                salesReceipts: {
+                                  type: 'object',
+                                  properties: {
+                                    count: {
+                                      type: 'integer',
+                                      minimum: -9007199254740991,
+                                      maximum: 9007199254740991,
+                                    },
+                                    netAmount: {
+                                      type: 'string',
+                                    },
+                                    taxAmount: {
+                                      type: 'string',
+                                    },
+                                    totalAmount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: [
+                                    'count',
+                                    'netAmount',
+                                    'taxAmount',
+                                    'totalAmount',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                                creditNotes: {
+                                  type: 'object',
+                                  properties: {
+                                    count: {
+                                      type: 'integer',
+                                      minimum: -9007199254740991,
+                                      maximum: 9007199254740991,
+                                    },
+                                    netAmount: {
+                                      type: 'string',
+                                    },
+                                    taxAmount: {
+                                      type: 'string',
+                                    },
+                                    totalAmount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: [
+                                    'count',
+                                    'netAmount',
+                                    'taxAmount',
+                                    'totalAmount',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                                netSales: {
+                                  type: 'object',
+                                  properties: {
+                                    netAmount: {
+                                      type: 'string',
+                                    },
+                                    taxAmount: {
+                                      type: 'string',
+                                    },
+                                    totalAmount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: [
+                                    'netAmount',
+                                    'taxAmount',
+                                    'totalAmount',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                              },
+                              required: [
+                                'start',
+                                'end',
+                                'invoices',
+                                'salesReceipts',
+                                'creditNotes',
+                                'netSales',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                        },
+                        required: ['currency', 'totals', 'buckets'],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'timezone',
+                    'fiscalYearStartMonth',
+                    'from',
+                    'to',
+                    'groupBy',
+                    'currencies',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /reports/cash-summary': {
+    tags: ['Reporting'],
+    summary: 'Retrieve the cash summary report',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'from',
+        schema: {
+          type: 'integer',
+          minimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'to',
+        schema: {
+          type: 'integer',
+          exclusiveMinimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'groupBy',
+        schema: {
+          default: 'day',
+          type: 'string',
+          enum: ['day', 'week', 'month', 'none'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Cash summary',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'cash-summary',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    fiscalYearStartMonth: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    from: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    to: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    groupBy: {
+                      type: 'string',
+                      enum: ['day', 'week', 'month', 'none'],
+                    },
+                    currencies: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          currency: {
+                            type: 'string',
+                          },
+                          totals: {
+                            type: 'object',
+                            properties: {
+                              payments: {
+                                type: 'object',
+                                properties: {
+                                  count: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  amount: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: ['count', 'amount'],
+                                additionalProperties: false,
+                              },
+                              salesReceipts: {
+                                type: 'object',
+                                properties: {
+                                  count: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  amount: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: ['count', 'amount'],
+                                additionalProperties: false,
+                              },
+                              refunds: {
+                                type: 'object',
+                                properties: {
+                                  count: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  amount: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: ['count', 'amount'],
+                                additionalProperties: false,
+                              },
+                              netCash: {
+                                type: 'string',
+                              },
+                            },
+                            required: [
+                              'payments',
+                              'salesReceipts',
+                              'refunds',
+                              'netCash',
+                            ],
+                            additionalProperties: false,
+                          },
+                          buckets: {
+                            type: 'array',
+                            items: {
+                              type: 'object',
+                              properties: {
+                                start: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                end: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                payments: {
+                                  type: 'object',
+                                  properties: {
+                                    count: {
+                                      type: 'integer',
+                                      minimum: -9007199254740991,
+                                      maximum: 9007199254740991,
+                                    },
+                                    amount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: ['count', 'amount'],
+                                  additionalProperties: false,
+                                },
+                                salesReceipts: {
+                                  type: 'object',
+                                  properties: {
+                                    count: {
+                                      type: 'integer',
+                                      minimum: -9007199254740991,
+                                      maximum: 9007199254740991,
+                                    },
+                                    amount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: ['count', 'amount'],
+                                  additionalProperties: false,
+                                },
+                                refunds: {
+                                  type: 'object',
+                                  properties: {
+                                    count: {
+                                      type: 'integer',
+                                      minimum: -9007199254740991,
+                                      maximum: 9007199254740991,
+                                    },
+                                    amount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: ['count', 'amount'],
+                                  additionalProperties: false,
+                                },
+                                netCash: {
+                                  type: 'string',
+                                },
+                              },
+                              required: [
+                                'start',
+                                'end',
+                                'payments',
+                                'salesReceipts',
+                                'refunds',
+                                'netCash',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                        },
+                        required: ['currency', 'totals', 'buckets'],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'timezone',
+                    'fiscalYearStartMonth',
+                    'from',
+                    'to',
+                    'groupBy',
+                    'currencies',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /reports/receivables-aging': {
+    tags: ['Reporting'],
+    summary: 'Retrieve the receivables aging report',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'asOf',
+        schema: {
+          type: 'integer',
+          exclusiveMinimum: 0,
+          maximum: 9007199254740991,
+        },
+      },
+      {
+        in: 'query',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+      {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          default: 10,
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Receivables aging',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'receivables-aging',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    asOf: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    currencies: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          currency: {
+                            type: 'string',
+                          },
+                          buckets: {
+                            type: 'object',
+                            properties: {
+                              current: {
+                                type: 'string',
+                              },
+                              days1To30: {
+                                type: 'string',
+                              },
+                              days31To60: {
+                                type: 'string',
+                              },
+                              days61To90: {
+                                type: 'string',
+                              },
+                              over90: {
+                                type: 'string',
+                              },
+                            },
+                            required: [
+                              'current',
+                              'days1To30',
+                              'days31To60',
+                              'days61To90',
+                              'over90',
+                            ],
+                            additionalProperties: false,
+                          },
+                          totalOutstanding: {
+                            type: 'string',
+                          },
+                          totalOverdue: {
+                            type: 'string',
+                          },
+                          topCustomers: {
+                            type: 'array',
+                            items: {
+                              type: 'object',
+                              properties: {
+                                customerId: {
+                                  type: 'string',
+                                },
+                                customerName: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                                outstanding: {
+                                  type: 'string',
+                                },
+                              },
+                              required: [
+                                'customerId',
+                                'customerName',
+                                'outstanding',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                        },
+                        required: [
+                          'currency',
+                          'buckets',
+                          'totalOutstanding',
+                          'totalOverdue',
+                          'topCustomers',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: ['object', 'timezone', 'asOf', 'currencies'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /reports/item-sales': {
+    tags: ['Reporting'],
+    summary: 'Retrieve the item sales report',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'from',
+        schema: {
+          type: 'integer',
+          minimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'to',
+        schema: {
+          type: 'integer',
+          exclusiveMinimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+      {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          default: 25,
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Item sales',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item-sales',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    from: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    to: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    limit: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    items: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          itemId: {
+                            type: 'string',
+                          },
+                          variantId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          currency: {
+                            type: 'string',
+                          },
+                          quantitySold: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          quantityReturned: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          netAmount: {
+                            type: 'string',
+                          },
+                          documentCount: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'itemId',
+                          'variantId',
+                          'currency',
+                          'quantitySold',
+                          'quantityReturned',
+                          'netAmount',
+                          'documentCount',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'timezone',
+                    'from',
+                    'to',
+                    'limit',
+                    'items',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /reports/customer-sales': {
+    tags: ['Reporting'],
+    summary: 'Retrieve the customer sales report',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'from',
+        schema: {
+          type: 'integer',
+          minimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'to',
+        schema: {
+          type: 'integer',
+          exclusiveMinimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          default: 25,
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Customer sales',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'customer-sales',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    from: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    to: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    limit: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    customers: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          customerId: {
+                            type: 'string',
+                          },
+                          customerName: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          currency: {
+                            type: 'string',
+                          },
+                          netSales: {
+                            type: 'string',
+                          },
+                          documentCount: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'customerId',
+                          'customerName',
+                          'currency',
+                          'netSales',
+                          'documentCount',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'timezone',
+                    'from',
+                    'to',
+                    'limit',
+                    'customers',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /reports/subscription-summary': {
+    tags: ['Reporting'],
+    summary: 'Retrieve the subscription summary report',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'from',
+        schema: {
+          type: 'integer',
+          minimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'to',
+        schema: {
+          type: 'integer',
+          exclusiveMinimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'groupBy',
+        schema: {
+          default: 'month',
+          type: 'string',
+          enum: ['day', 'week', 'month', 'none'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Subscription summary',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'subscription-summary',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    from: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    to: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    groupBy: {
+                      type: 'string',
+                      enum: ['day', 'week', 'month', 'none'],
+                    },
+                    currencies: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          currency: {
+                            type: 'string',
+                          },
+                          current: {
+                            type: 'object',
+                            properties: {
+                              active: {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              trialing: {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              paused: {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              mrr: {
+                                type: 'string',
+                              },
+                              arr: {
+                                type: 'string',
+                              },
+                            },
+                            required: [
+                              'active',
+                              'trialing',
+                              'paused',
+                              'mrr',
+                              'arr',
+                            ],
+                            additionalProperties: false,
+                          },
+                          buckets: {
+                            type: 'array',
+                            items: {
+                              type: 'object',
+                              properties: {
+                                start: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                end: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                new: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                canceled: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                ended: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                paused: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                subscriptionRevenue: {
+                                  type: 'string',
+                                },
+                              },
+                              required: [
+                                'start',
+                                'end',
+                                'new',
+                                'canceled',
+                                'ended',
+                                'paused',
+                                'subscriptionRevenue',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                          churnRate: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: [
+                          'currency',
+                          'current',
+                          'buckets',
+                          'churnRate',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'timezone',
+                    'from',
+                    'to',
+                    'groupBy',
+                    'currencies',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /items/{itemId}/sales-summary': {
+    tags: ['Reporting'],
+    summary: 'Retrieve the sales summary for one item',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'from',
+        schema: {
+          type: 'integer',
+          minimum: 0,
+          maximum: 9007199254740991,
+        },
+      },
+      {
+        in: 'query',
+        name: 'to',
+        schema: {
+          type: 'integer',
+          exclusiveMinimum: 0,
+          maximum: 9007199254740991,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Item sales summary',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item-sales-summary',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    from: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    to: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    itemId: {
+                      type: 'string',
+                    },
+                    rows: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          itemId: {
+                            type: 'string',
+                          },
+                          variantId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          currency: {
+                            type: 'string',
+                          },
+                          quantitySold: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          quantityReturned: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          netAmount: {
+                            type: 'string',
+                          },
+                          documentCount: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'itemId',
+                          'variantId',
+                          'currency',
+                          'quantitySold',
+                          'quantityReturned',
+                          'netAmount',
+                          'documentCount',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    monthlyBuckets: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          currency: {
+                            type: 'string',
+                          },
+                          buckets: {
+                            type: 'array',
+                            items: {
+                              type: 'object',
+                              properties: {
+                                start: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                end: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                quantitySold: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                quantityReturned: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                netAmount: {
+                                  type: 'string',
+                                },
+                                documentCount: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                              },
+                              required: [
+                                'start',
+                                'end',
+                                'quantitySold',
+                                'quantityReturned',
+                                'netAmount',
+                                'documentCount',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                        },
+                        required: ['currency', 'buckets'],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'timezone',
+                    'from',
+                    'to',
+                    'itemId',
+                    'rows',
+                    'monthlyBuckets',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /report-preferences': {
+    tags: ['Reporting'],
+    summary: 'Retrieve report preferences',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Report preferences returned',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'report_preferences',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    fiscalYearStartMonth: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: ['object', 'timezone', 'fiscalYearStartMonth'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /report-preferences': {
+    tags: ['Reporting'],
+    summary: 'Update report preferences',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              timezone: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 64,
+              },
+              fiscalYearStartMonth: {
+                type: 'integer',
+                minimum: 1,
+                maximum: 12,
+              },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Report preferences updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'report_preferences',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    fiscalYearStartMonth: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: ['object', 'timezone', 'fiscalYearStartMonth'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/reports/sales-summary': {
+    tags: ['Reporting'],
+    summary: 'Retrieve the organization sales summary report',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.invoices.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'from',
+        schema: {
+          type: 'integer',
+          minimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'to',
+        schema: {
+          type: 'integer',
+          exclusiveMinimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'groupBy',
+        schema: {
+          default: 'day',
+          type: 'string',
+          enum: ['day', 'week', 'month', 'none'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+      {
+        in: 'query',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Sales summary',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'sales-summary',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    fiscalYearStartMonth: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    from: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    to: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    groupBy: {
+                      type: 'string',
+                      enum: ['day', 'week', 'month', 'none'],
+                    },
+                    currencies: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          currency: {
+                            type: 'string',
+                          },
+                          totals: {
+                            type: 'object',
+                            properties: {
+                              invoices: {
+                                type: 'object',
+                                properties: {
+                                  count: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  netAmount: {
+                                    type: 'string',
+                                  },
+                                  taxAmount: {
+                                    type: 'string',
+                                  },
+                                  totalAmount: {
+                                    type: 'string',
+                                  },
+                                  bySource: {
+                                    type: 'object',
+                                    properties: {
+                                      subscription: {
+                                        type: 'object',
+                                        properties: {
+                                          count: {
+                                            type: 'integer',
+                                            minimum: -9007199254740991,
+                                            maximum: 9007199254740991,
+                                          },
+                                          netAmount: {
+                                            type: 'string',
+                                          },
+                                          taxAmount: {
+                                            type: 'string',
+                                          },
+                                          totalAmount: {
+                                            type: 'string',
+                                          },
+                                        },
+                                        required: [
+                                          'count',
+                                          'netAmount',
+                                          'taxAmount',
+                                          'totalAmount',
+                                        ],
+                                        additionalProperties: false,
+                                      },
+                                      recurringInvoice: {
+                                        type: 'object',
+                                        properties: {
+                                          count: {
+                                            type: 'integer',
+                                            minimum: -9007199254740991,
+                                            maximum: 9007199254740991,
+                                          },
+                                          netAmount: {
+                                            type: 'string',
+                                          },
+                                          taxAmount: {
+                                            type: 'string',
+                                          },
+                                          totalAmount: {
+                                            type: 'string',
+                                          },
+                                        },
+                                        required: [
+                                          'count',
+                                          'netAmount',
+                                          'taxAmount',
+                                          'totalAmount',
+                                        ],
+                                        additionalProperties: false,
+                                      },
+                                      oneOff: {
+                                        type: 'object',
+                                        properties: {
+                                          count: {
+                                            type: 'integer',
+                                            minimum: -9007199254740991,
+                                            maximum: 9007199254740991,
+                                          },
+                                          netAmount: {
+                                            type: 'string',
+                                          },
+                                          taxAmount: {
+                                            type: 'string',
+                                          },
+                                          totalAmount: {
+                                            type: 'string',
+                                          },
+                                        },
+                                        required: [
+                                          'count',
+                                          'netAmount',
+                                          'taxAmount',
+                                          'totalAmount',
+                                        ],
+                                        additionalProperties: false,
+                                      },
+                                    },
+                                    required: [
+                                      'subscription',
+                                      'recurringInvoice',
+                                      'oneOff',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                required: [
+                                  'count',
+                                  'netAmount',
+                                  'taxAmount',
+                                  'totalAmount',
+                                  'bySource',
+                                ],
+                                additionalProperties: false,
+                              },
+                              salesReceipts: {
+                                type: 'object',
+                                properties: {
+                                  count: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  netAmount: {
+                                    type: 'string',
+                                  },
+                                  taxAmount: {
+                                    type: 'string',
+                                  },
+                                  totalAmount: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: [
+                                  'count',
+                                  'netAmount',
+                                  'taxAmount',
+                                  'totalAmount',
+                                ],
+                                additionalProperties: false,
+                              },
+                              creditNotes: {
+                                type: 'object',
+                                properties: {
+                                  count: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  netAmount: {
+                                    type: 'string',
+                                  },
+                                  taxAmount: {
+                                    type: 'string',
+                                  },
+                                  totalAmount: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: [
+                                  'count',
+                                  'netAmount',
+                                  'taxAmount',
+                                  'totalAmount',
+                                ],
+                                additionalProperties: false,
+                              },
+                              netSales: {
+                                type: 'object',
+                                properties: {
+                                  netAmount: {
+                                    type: 'string',
+                                  },
+                                  taxAmount: {
+                                    type: 'string',
+                                  },
+                                  totalAmount: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: [
+                                  'netAmount',
+                                  'taxAmount',
+                                  'totalAmount',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'invoices',
+                              'salesReceipts',
+                              'creditNotes',
+                              'netSales',
+                            ],
+                            additionalProperties: false,
+                          },
+                          buckets: {
+                            type: 'array',
+                            items: {
+                              type: 'object',
+                              properties: {
+                                start: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                end: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                invoices: {
+                                  type: 'object',
+                                  properties: {
+                                    count: {
+                                      type: 'integer',
+                                      minimum: -9007199254740991,
+                                      maximum: 9007199254740991,
+                                    },
+                                    netAmount: {
+                                      type: 'string',
+                                    },
+                                    taxAmount: {
+                                      type: 'string',
+                                    },
+                                    totalAmount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: [
+                                    'count',
+                                    'netAmount',
+                                    'taxAmount',
+                                    'totalAmount',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                                salesReceipts: {
+                                  type: 'object',
+                                  properties: {
+                                    count: {
+                                      type: 'integer',
+                                      minimum: -9007199254740991,
+                                      maximum: 9007199254740991,
+                                    },
+                                    netAmount: {
+                                      type: 'string',
+                                    },
+                                    taxAmount: {
+                                      type: 'string',
+                                    },
+                                    totalAmount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: [
+                                    'count',
+                                    'netAmount',
+                                    'taxAmount',
+                                    'totalAmount',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                                creditNotes: {
+                                  type: 'object',
+                                  properties: {
+                                    count: {
+                                      type: 'integer',
+                                      minimum: -9007199254740991,
+                                      maximum: 9007199254740991,
+                                    },
+                                    netAmount: {
+                                      type: 'string',
+                                    },
+                                    taxAmount: {
+                                      type: 'string',
+                                    },
+                                    totalAmount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: [
+                                    'count',
+                                    'netAmount',
+                                    'taxAmount',
+                                    'totalAmount',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                                netSales: {
+                                  type: 'object',
+                                  properties: {
+                                    netAmount: {
+                                      type: 'string',
+                                    },
+                                    taxAmount: {
+                                      type: 'string',
+                                    },
+                                    totalAmount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: [
+                                    'netAmount',
+                                    'taxAmount',
+                                    'totalAmount',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                              },
+                              required: [
+                                'start',
+                                'end',
+                                'invoices',
+                                'salesReceipts',
+                                'creditNotes',
+                                'netSales',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                        },
+                        required: ['currency', 'totals', 'buckets'],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'timezone',
+                    'fiscalYearStartMonth',
+                    'from',
+                    'to',
+                    'groupBy',
+                    'currencies',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/reports/cash-summary': {
+    tags: ['Reporting'],
+    summary: 'Retrieve the organization cash summary report',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.invoices.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'from',
+        schema: {
+          type: 'integer',
+          minimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'to',
+        schema: {
+          type: 'integer',
+          exclusiveMinimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'groupBy',
+        schema: {
+          default: 'day',
+          type: 'string',
+          enum: ['day', 'week', 'month', 'none'],
+        },
+      },
+      {
+        in: 'query',
+        name: 'customerId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Cash summary',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'cash-summary',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    fiscalYearStartMonth: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    from: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    to: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    groupBy: {
+                      type: 'string',
+                      enum: ['day', 'week', 'month', 'none'],
+                    },
+                    currencies: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          currency: {
+                            type: 'string',
+                          },
+                          totals: {
+                            type: 'object',
+                            properties: {
+                              payments: {
+                                type: 'object',
+                                properties: {
+                                  count: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  amount: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: ['count', 'amount'],
+                                additionalProperties: false,
+                              },
+                              salesReceipts: {
+                                type: 'object',
+                                properties: {
+                                  count: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  amount: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: ['count', 'amount'],
+                                additionalProperties: false,
+                              },
+                              refunds: {
+                                type: 'object',
+                                properties: {
+                                  count: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  amount: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: ['count', 'amount'],
+                                additionalProperties: false,
+                              },
+                              netCash: {
+                                type: 'string',
+                              },
+                            },
+                            required: [
+                              'payments',
+                              'salesReceipts',
+                              'refunds',
+                              'netCash',
+                            ],
+                            additionalProperties: false,
+                          },
+                          buckets: {
+                            type: 'array',
+                            items: {
+                              type: 'object',
+                              properties: {
+                                start: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                end: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                payments: {
+                                  type: 'object',
+                                  properties: {
+                                    count: {
+                                      type: 'integer',
+                                      minimum: -9007199254740991,
+                                      maximum: 9007199254740991,
+                                    },
+                                    amount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: ['count', 'amount'],
+                                  additionalProperties: false,
+                                },
+                                salesReceipts: {
+                                  type: 'object',
+                                  properties: {
+                                    count: {
+                                      type: 'integer',
+                                      minimum: -9007199254740991,
+                                      maximum: 9007199254740991,
+                                    },
+                                    amount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: ['count', 'amount'],
+                                  additionalProperties: false,
+                                },
+                                refunds: {
+                                  type: 'object',
+                                  properties: {
+                                    count: {
+                                      type: 'integer',
+                                      minimum: -9007199254740991,
+                                      maximum: 9007199254740991,
+                                    },
+                                    amount: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  required: ['count', 'amount'],
+                                  additionalProperties: false,
+                                },
+                                netCash: {
+                                  type: 'string',
+                                },
+                              },
+                              required: [
+                                'start',
+                                'end',
+                                'payments',
+                                'salesReceipts',
+                                'refunds',
+                                'netCash',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                        },
+                        required: ['currency', 'totals', 'buckets'],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'timezone',
+                    'fiscalYearStartMonth',
+                    'from',
+                    'to',
+                    'groupBy',
+                    'currencies',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/reports/receivables-aging':
+    {
+      tags: ['Reporting'],
+      summary: 'Retrieve the organization receivables aging report',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.read'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'query',
+          name: 'asOf',
+          schema: {
+            type: 'integer',
+            exclusiveMinimum: 0,
+            maximum: 9007199254740991,
+          },
+        },
+        {
+          in: 'query',
+          name: 'customerId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+        },
+        {
+          in: 'query',
+          name: 'limit',
+          schema: {
+            default: 10,
+            type: 'integer',
+            minimum: 1,
+            maximum: 100,
+          },
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Receivables aging',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'receivables-aging',
+                      },
+                      timezone: {
+                        type: 'string',
+                      },
+                      asOf: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                      currencies: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            currency: {
+                              type: 'string',
+                            },
+                            buckets: {
+                              type: 'object',
+                              properties: {
+                                current: {
+                                  type: 'string',
+                                },
+                                days1To30: {
+                                  type: 'string',
+                                },
+                                days31To60: {
+                                  type: 'string',
+                                },
+                                days61To90: {
+                                  type: 'string',
+                                },
+                                over90: {
+                                  type: 'string',
+                                },
+                              },
+                              required: [
+                                'current',
+                                'days1To30',
+                                'days31To60',
+                                'days61To90',
+                                'over90',
+                              ],
+                              additionalProperties: false,
+                            },
+                            totalOutstanding: {
+                              type: 'string',
+                            },
+                            totalOverdue: {
+                              type: 'string',
+                            },
+                            topCustomers: {
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  customerId: {
+                                    type: 'string',
+                                  },
+                                  customerName: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  outstanding: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: [
+                                  'customerId',
+                                  'customerName',
+                                  'outstanding',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          required: [
+                            'currency',
+                            'buckets',
+                            'totalOutstanding',
+                            'totalOverdue',
+                            'topCustomers',
+                          ],
+                          additionalProperties: false,
+                        },
+                      },
+                    },
+                    required: ['object', 'timezone', 'asOf', 'currencies'],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /integrations/organizations/{organizationId}/reports/item-sales': {
+    tags: ['Reporting'],
+    summary: 'Retrieve the organization item sales report',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.invoices.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'from',
+        schema: {
+          type: 'integer',
+          minimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'to',
+        schema: {
+          type: 'integer',
+          exclusiveMinimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'itemId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+      {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          default: 25,
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Item sales',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'item-sales',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    from: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    to: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    limit: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    items: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          itemId: {
+                            type: 'string',
+                          },
+                          variantId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          currency: {
+                            type: 'string',
+                          },
+                          quantitySold: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          quantityReturned: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          netAmount: {
+                            type: 'string',
+                          },
+                          documentCount: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'itemId',
+                          'variantId',
+                          'currency',
+                          'quantitySold',
+                          'quantityReturned',
+                          'netAmount',
+                          'documentCount',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'timezone',
+                    'from',
+                    'to',
+                    'limit',
+                    'items',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/reports/customer-sales': {
+    tags: ['Reporting'],
+    summary: 'Retrieve the organization customer sales report',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.invoices.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'from',
+        schema: {
+          type: 'integer',
+          minimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'to',
+        schema: {
+          type: 'integer',
+          exclusiveMinimum: 0,
+          maximum: 9007199254740991,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'limit',
+        schema: {
+          default: 25,
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Customer sales',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'customer-sales',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    from: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    to: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    limit: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    customers: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          customerId: {
+                            type: 'string',
+                          },
+                          customerName: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          currency: {
+                            type: 'string',
+                          },
+                          netSales: {
+                            type: 'string',
+                          },
+                          documentCount: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'customerId',
+                          'customerName',
+                          'currency',
+                          'netSales',
+                          'documentCount',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'timezone',
+                    'from',
+                    'to',
+                    'limit',
+                    'customers',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/reports/subscription-summary':
+    {
+      tags: ['Reporting'],
+      summary: 'Retrieve the organization subscription summary report',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.read'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'query',
+          name: 'from',
+          schema: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 9007199254740991,
+          },
+          required: true,
+        },
+        {
+          in: 'query',
+          name: 'to',
+          schema: {
+            type: 'integer',
+            exclusiveMinimum: 0,
+            maximum: 9007199254740991,
+          },
+          required: true,
+        },
+        {
+          in: 'query',
+          name: 'groupBy',
+          schema: {
+            default: 'month',
+            type: 'string',
+            enum: ['day', 'week', 'month', 'none'],
+          },
+        },
+        {
+          in: 'query',
+          name: 'customerId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Subscription summary',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'subscription-summary',
+                      },
+                      timezone: {
+                        type: 'string',
+                      },
+                      from: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                      to: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                      groupBy: {
+                        type: 'string',
+                        enum: ['day', 'week', 'month', 'none'],
+                      },
+                      currencies: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            currency: {
+                              type: 'string',
+                            },
+                            current: {
+                              type: 'object',
+                              properties: {
+                                active: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                trialing: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                paused: {
+                                  type: 'integer',
+                                  minimum: -9007199254740991,
+                                  maximum: 9007199254740991,
+                                },
+                                mrr: {
+                                  type: 'string',
+                                },
+                                arr: {
+                                  type: 'string',
+                                },
+                              },
+                              required: [
+                                'active',
+                                'trialing',
+                                'paused',
+                                'mrr',
+                                'arr',
+                              ],
+                              additionalProperties: false,
+                            },
+                            buckets: {
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  start: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  end: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  new: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  canceled: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  ended: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  paused: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  subscriptionRevenue: {
+                                    type: 'string',
+                                  },
+                                },
+                                required: [
+                                  'start',
+                                  'end',
+                                  'new',
+                                  'canceled',
+                                  'ended',
+                                  'paused',
+                                  'subscriptionRevenue',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            churnRate: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                          },
+                          required: [
+                            'currency',
+                            'current',
+                            'buckets',
+                            'churnRate',
+                          ],
+                          additionalProperties: false,
+                        },
+                      },
+                    },
+                    required: [
+                      'object',
+                      'timezone',
+                      'from',
+                      'to',
+                      'groupBy',
+                      'currencies',
+                    ],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /integrations/organizations/{organizationId}/items/{itemId}/sales-summary':
+    {
+      tags: ['Reporting'],
+      summary: 'Retrieve the sales summary for one organization item',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.read'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'itemId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'query',
+          name: 'from',
+          schema: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 9007199254740991,
+          },
+        },
+        {
+          in: 'query',
+          name: 'to',
+          schema: {
+            type: 'integer',
+            exclusiveMinimum: 0,
+            maximum: 9007199254740991,
+          },
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Item sales summary',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'item-sales-summary',
+                      },
+                      timezone: {
+                        type: 'string',
+                      },
+                      from: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                      to: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                      itemId: {
+                        type: 'string',
+                      },
+                      rows: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            itemId: {
+                              type: 'string',
+                            },
+                            variantId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            currency: {
+                              type: 'string',
+                            },
+                            quantitySold: {
+                              type: 'integer',
+                              minimum: -9007199254740991,
+                              maximum: 9007199254740991,
+                            },
+                            quantityReturned: {
+                              type: 'integer',
+                              minimum: -9007199254740991,
+                              maximum: 9007199254740991,
+                            },
+                            netAmount: {
+                              type: 'string',
+                            },
+                            documentCount: {
+                              type: 'integer',
+                              minimum: -9007199254740991,
+                              maximum: 9007199254740991,
+                            },
+                          },
+                          required: [
+                            'itemId',
+                            'variantId',
+                            'currency',
+                            'quantitySold',
+                            'quantityReturned',
+                            'netAmount',
+                            'documentCount',
+                          ],
+                          additionalProperties: false,
+                        },
+                      },
+                      monthlyBuckets: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            currency: {
+                              type: 'string',
+                            },
+                            buckets: {
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  start: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  end: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  quantitySold: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  quantityReturned: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                  netAmount: {
+                                    type: 'string',
+                                  },
+                                  documentCount: {
+                                    type: 'integer',
+                                    minimum: -9007199254740991,
+                                    maximum: 9007199254740991,
+                                  },
+                                },
+                                required: [
+                                  'start',
+                                  'end',
+                                  'quantitySold',
+                                  'quantityReturned',
+                                  'netAmount',
+                                  'documentCount',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          required: ['currency', 'buckets'],
+                          additionalProperties: false,
+                        },
+                      },
+                    },
+                    required: [
+                      'object',
+                      'timezone',
+                      'from',
+                      'to',
+                      'itemId',
+                      'rows',
+                      'monthlyBuckets',
+                    ],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /integrations/organizations/{organizationId}/report-preferences': {
+    tags: ['Reporting'],
+    summary: 'Retrieve organization report preferences',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.invoices.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Report preferences returned',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'report_preferences',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    fiscalYearStartMonth: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: ['object', 'timezone', 'fiscalYearStartMonth'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /integrations/organizations/{organizationId}/report-preferences': {
+    tags: ['Reporting'],
+    summary: 'Update organization report preferences',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.invoices.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              timezone: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 64,
+              },
+              fiscalYearStartMonth: {
+                type: 'integer',
+                minimum: 1,
+                maximum: 12,
+              },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Report preferences updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'report_preferences',
+                    },
+                    timezone: {
+                      type: 'string',
+                    },
+                    fiscalYearStartMonth: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: ['object', 'timezone', 'fiscalYearStartMonth'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
   'GET /vendors': {
     description: 'Ported from `src/app/api/billing/vendors/route.ts`.',
     operationId: 'billing-billing_get_vendors',

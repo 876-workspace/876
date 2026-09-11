@@ -9,6 +9,7 @@ import {
   Clock,
   CreditCard,
   ReceiptPercent,
+  RefreshCw,
   Settings,
   UsersIcon,
   type IconComponent,
@@ -24,6 +25,7 @@ export const INVOICE_NAV_ICONS: Record<string, IconComponent> = {
   // `ClipboardDocumentListIcon` in `@876/ui`, so reusing either made two rail
   // entries render the same glyph.
   invoices: DocumentTextIcon,
+  'recurring-invoices': RefreshCw,
   'sales-receipts': ReceiptPercent,
   payments: CreditCard,
   expenses: Building2,
