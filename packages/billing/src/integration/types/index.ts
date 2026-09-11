@@ -150,3 +150,32 @@ export {
   BillingRefundCreatedSchema,
   BillingRefundListSchema,
 } from './refund.schema'
+export type {
+  BillingReportGroupBy,
+  BillingReportRangeParams,
+  BillingCashSummaryParams,
+  BillingReceivablesAgingParams,
+  BillingItemSalesParams,
+  BillingItemSalesSummaryParams,
+  BillingCustomerSalesParams,
+  BillingSubscriptionSummaryParams,
+  BillingSalesSummary,
+  BillingCashSummary,
+  BillingReceivablesAging,
+  BillingItemSales,
+  BillingItemSalesSummary,
+  BillingCustomerSales,
+  BillingSubscriptionSummary,
+  BillingReportPreferences,
+  BillingReportPreferencesUpdateParams,
+} from './reporting'
+export {
+  BillingSalesSummarySchema,
+  BillingCashSummarySchema,
+  BillingReceivablesAgingSchema,
+  BillingItemSalesSchema,
+  BillingItemSalesSummarySchema,
+  BillingCustomerSalesSchema,
+  BillingSubscriptionSummarySchema,
+  BillingReportPreferencesSchema,
+} from './reporting.schema'

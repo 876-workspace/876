@@ -17,6 +17,11 @@ describe('customers.account', () => {
           currency: 'JMD',
           lifetimeBilled: '1500',
           lifetimePaid: '1000',
+          lifetimeSales: '1500',
+          lifetimeCredits: '0',
+          lastSaleAt: 1_788_000_000,
+          activeSubscriptionCount: 1,
+          subscriptionMrr: [{ currency: 'JMD', mrr: '10000', arr: '120000' }],
           outstandingReceivable: '500',
           overdueReceivable: '200',
           availableCredit: '0',
@@ -59,6 +64,8 @@ describe('customers.account', () => {
     expect(result.data?.overdueReceivable).toBe('200')
     expect(result.data?.openingBalance).toBe('1500')
     expect(result.data?.statement[0]?.balance).toBe('500')
+    expect(result.data?.lifetimeSales).toBe('1500')
+    expect(result.data?.activeSubscriptionCount).toBe(1)
     expect(fetch).toHaveBeenCalledWith(
       'https://billing.example.test/api/v1/customers/cust_123/account',
       expect.objectContaining({ method: 'GET' })

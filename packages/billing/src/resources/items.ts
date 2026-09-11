@@ -12,6 +12,7 @@ import {
   DeletedBillingItemMediaSchema,
   DeletedBillingItemSchema,
 } from '../integration/types'
+import { ItemSalesSummarySchema } from '../schemas'
 import type {
   BillingItem,
   BillingItemCreateParams,
@@ -32,7 +33,11 @@ import type {
   DeletedBillingItem,
   DeletedBillingItemMedia,
 } from '../integration/types'
-import type { RequestOptions } from '../types'
+import type {
+  ItemSalesSummary,
+  ItemSalesSummaryParams,
+  RequestOptions,
+} from '../types'
 
 interface ItemMutationResult {
   object: 'item'
@@ -393,6 +398,23 @@ export function createItemsResource(runtime: Runtime) {
           signal: options?.signal,
         },
         DeletedBillingItemSchema
+      )
+    },
+
+    salesSummary(
+      itemId: string,
+      params: ItemSalesSummaryParams = {},
+      options?: RequestOptions
+    ) {
+      return Request<ItemSalesSummary>(
+        runtime,
+        {
+          method: 'GET',
+          path: `${itemPath(itemId)}/sales-summary`,
+          query: { from: params.from, to: params.to },
+          signal: options?.signal,
+        },
+        ItemSalesSummarySchema
       )
     },
   }

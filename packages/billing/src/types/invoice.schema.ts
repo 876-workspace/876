@@ -63,7 +63,11 @@ export const LateFeeRunSchema = z.strictObject({
   hasMore: z.boolean(),
 }) satisfies z.ZodType<LateFeeRun>
 export const InvoiceSchema = z
-  .strictObject({ object: z.literal('invoice'), id: z.string().min(1) })
+  .strictObject({
+    object: z.literal('invoice'),
+    id: z.string().min(1),
+    recurringInvoiceId: z.string().min(1).nullable().optional(),
+  })
   .passthrough() satisfies z.ZodType<Invoice>
 
 /** The schema for a deleted invoice tombstone. */
