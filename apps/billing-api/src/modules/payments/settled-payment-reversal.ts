@@ -1,6 +1,14 @@
 import type { Prisma } from '@/db'
 
-import { PaymentMutationError } from './repositories/payments/shared'
+export class SettledPaymentReversalError extends Error {
+  constructor(
+    message: string,
+    readonly status: number
+  ) {
+    super(message)
+    this.name = 'SettledPaymentReversalError'
+  }
+}
 
 /**
  * Cancels payment/bank evidence that was fully consumed by a non-A/R commercial
@@ -20,19 +28,20 @@ export async function reverseSettledPayment(
       refunds: { select: { id: true } },
     },
   })
-  if (!payment) throw new PaymentMutationError('Payment not found.', 404)
+  if (!payment)
+    throw new SettledPaymentReversalError('Payment not found.', 404)
   if (payment.status !== 'SUCCEEDED')
-    throw new PaymentMutationError(
+    throw new SettledPaymentReversalError(
       'Only a successful settled payment can be reversed.',
       409
     )
   if (payment.invoiceAllocations.length > 0 || payment.unappliedAmount !== 0n)
-    throw new PaymentMutationError(
+    throw new SettledPaymentReversalError(
       'This payment is not exclusively settled by its commercial source.',
       409
     )
   if (payment.refunds.length > 0)
-    throw new PaymentMutationError(
+    throw new SettledPaymentReversalError(
       'A refunded payment cannot be reversed as an original-entry correction.',
       409
     )
