@@ -18,6 +18,15 @@ import {
   voidSalesReceiptWorkflow,
 } from './workflows'
 
+type SalesReceiptProjectionRow = {
+  totalAmount: bigint
+  creditNotes: Array<{
+    status: string
+    totalAmount: bigint
+    refunds: Array<{ amount: bigint }>
+  }>
+}
+
 async function unwrapSalesReceipt<T>(result: Awaited<ServiceResult<T>>): Promise<T> {
   if (result.error === null) return result.data
   const status = result.status ?? 500
@@ -33,6 +42,47 @@ async function unwrapSalesReceipt<T>(result: Awaited<ServiceResult<T>>): Promise
     message: result.error,
     httpStatus: status,
   })
+}
+
+function salesReceiptCorrectionProjection(row: SalesReceiptProjectionRow) {
+  const activeCreditNotes = row.creditNotes.filter(
+    (creditNote) => creditNote.status !== 'VOID'
+  )
+  const creditedAmount = activeCreditNotes.reduce(
+    (total, creditNote) => total + creditNote.totalAmount,
+    0n
+  )
+  const refundedAmount = activeCreditNotes.reduce(
+    (total, creditNote) =>
+      total +
+      creditNote.refunds.reduce(
+        (refundTotal, refund) => refundTotal + refund.amount,
+        0n
+      ),
+    0n
+  )
+  const refundableAmount =
+    row.totalAmount > creditedAmount ? row.totalAmount - creditedAmount : 0n
+  const refundStatus =
+    refundedAmount <= 0n
+      ? ('NONE' as const)
+      : refundedAmount >= row.totalAmount
+        ? ('REFUNDED' as const)
+        : ('PARTIALLY_REFUNDED' as const)
+
+  return {
+    creditedAmount: creditedAmount.toString(),
+    refundedAmount: refundedAmount.toString(),
+    refundableAmount: refundableAmount.toString(),
+    refundStatus,
+  }
+}
+
+function serializeSalesReceipt<T extends SalesReceiptProjectionRow>(row: T) {
+  return {
+    ...serializeDocument('sales_receipt', row),
+    ...salesReceiptCorrectionProjection(row),
+  }
 }
 
 async function ownedSalesReceipt(
@@ -54,8 +104,7 @@ async function serializedSalesReceipt(
   id: string,
   sourceAppId?: string
 ) {
-  return serializeDocument(
-    'sales_receipt',
+  return serializeSalesReceipt(
     await ownedSalesReceipt(tenantId, id, sourceAppId)
   )
 }
@@ -86,11 +135,16 @@ export const salesReceiptsService = {
     url = '/api/v1/sales-receipts',
     customerId?: string
   ) {
-    return documentList(
-      'sales_receipt',
-      await salesReceipts.list(tenantId, status, sourceAppId, customerId),
-      url
+    const rows = await salesReceipts.list(
+      tenantId,
+      status,
+      sourceAppId,
+      customerId
     )
+    return {
+      ...documentList('sales_receipt', rows, url),
+      data: rows.map(serializeSalesReceipt),
+    }
   },
 
   get: serializedSalesReceipt,
