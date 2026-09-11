@@ -130,6 +130,19 @@ describe('Billing API v1 contract baseline', () => {
     // Payment corrections and refunds exposed to first-party finance apps.
     '/integrations/organizations/{organizationId}/payments/{paymentId}/apply',
     '/integrations/organizations/{organizationId}/refunds',
+
+    // Sales receipts and quote-to-sales-receipt conversion are Express-only
+    // commercial workflows, exposed at tenant and integration tiers.
+    '/sales-receipts',
+    '/sales-receipts/{salesReceiptId}',
+    '/sales-receipts/{salesReceiptId}/refund',
+    '/sales-receipts/{salesReceiptId}/void',
+    '/quotes/{quoteId}/convert-to-sales-receipt',
+    '/integrations/organizations/{organizationId}/sales-receipts',
+    '/integrations/organizations/{organizationId}/sales-receipts/{salesReceiptId}',
+    '/integrations/organizations/{organizationId}/sales-receipts/{salesReceiptId}/refund',
+    '/integrations/organizations/{organizationId}/sales-receipts/{salesReceiptId}/void',
+    '/integrations/organizations/{organizationId}/quotes/{quoteId}/convert-to-sales-receipt',
   ]
 
   it('does not document paths absent from the implementation inventory', () => {
