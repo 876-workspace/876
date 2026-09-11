@@ -23,6 +23,10 @@
       "types": "./src/customer-contact-form.tsx",
       "default": "./src/customer-contact-form.tsx"
     },
+    "./customer-sales-receipts-accordion": {
+      "types": "./src/customer-sales-receipts-accordion.tsx",
+      "default": "./src/customer-sales-receipts-accordion.tsx"
+    },
     "./customer-transactions-accordions": {
       "types": "./src/customer-transactions-accordions.tsx",
       "default": "./src/customer-transactions-accordions.tsx"
@@ -194,6 +198,10 @@
     "./payments-table": {
       "types": "./src/payments-table.tsx",
       "default": "./src/payments-table.tsx"
+    },
+    "./sales-receipts-list": {
+      "types": "./src/sales-receipts-list.tsx",
+      "default": "./src/sales-receipts-list.tsx"
     }
   },
   "scripts": {
