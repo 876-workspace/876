@@ -1,5 +1,10 @@
 import { workspace } from '@/lib/services/workspace'
 import type { Metadata } from 'next'
+import {
+  DetailCard,
+  DetailCardBody,
+  DetailCardHeader,
+} from '@876/ui/detail-card'
 
 import {
   CreateFeatureForm,
@@ -27,17 +32,20 @@ export default async function NewAppFeaturePage({
   const setup = loadAppFeatureSetup(slug, parent)
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="876-page-title">New Feature</h1>
-      </div>
-
-      <CreateFeatureForm
-        setup={setup}
-        lockAppHint
-        returnHref={`/apps/${slug}/features`}
+    <DetailCard aria-label="New feature">
+      <DetailCardHeader
+        title="New Feature"
+        closeHref={`/apps/${slug}/features`}
+        closeLabel="Close new feature"
       />
-    </div>
+      <DetailCardBody>
+        <CreateFeatureForm
+          setup={setup}
+          lockAppHint
+          returnHref={`/apps/${slug}/features`}
+        />
+      </DetailCardBody>
+    </DetailCard>
   )
 }
 
