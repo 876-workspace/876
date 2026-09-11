@@ -17,7 +17,7 @@ import {
 } from './shared'
 import { isRetryableTransactionError } from '@/platform/prisma-errors'
 
-/** Replaces a payment and its allocations as one serializable transaction. */
+/** Replaces an ordinary received payment and its allocations as one transaction. */
 export async function update(
   tenantId: string,
   paymentId: string,
@@ -43,6 +43,7 @@ export async function update(
           where: {
             id: paymentId,
             tenantId,
+            salesReceipt: { is: null },
             ...(sourceAppId ? { sourceAppId } : {}),
           },
           include: {
@@ -130,7 +131,6 @@ export async function update(
           now
         )
 
-        // Reconcile AR for both the previous and new customer (may differ).
         const affectedCustomers = new Set([
           payment.customerId,
           params.customerId,
