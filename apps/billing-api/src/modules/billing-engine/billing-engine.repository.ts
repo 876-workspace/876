@@ -1,8 +1,10 @@
+import { markOverdueAcrossActiveTenants } from '@/modules/documents'
 import { prisma } from '@/db/client'
 import { Prisma } from '@/db/generated/prisma/client'
 import { generateId } from '@/platform/ids'
 
 import { billSubscription, recordBillingFailure } from '@/modules/subscriptions'
+import { processDueLifecycleSchedulesAcrossTenants } from '@/modules/subscriptions'
 import type {
   BillingSweepParams,
   BillingSweepResult,
@@ -25,9 +27,11 @@ export type BillingEngineRun = Omit<BillingSweepResult, 'object'> & {
  * subscription instead of waiting and producing a second invoice.
  */
 export async function runBillingSweep(
-  params: BillingSweepParams
+  params: BillingSweepParams & { timeBudgetMs?: number }
 ): Promise<BillingEngineRun> {
   const asOf = params.asOf ?? Math.floor(Date.now() / 1_000)
+  const limit = params.limit ?? 25
+  const timeBudgetMs = params.timeBudgetMs ?? 240_000
   const handled: string[] = []
   const summary: BillingEngineRun = {
     object: 'billing_engine_run',
@@ -37,10 +41,12 @@ export async function runBillingSweep(
     succeeded: 0,
     failed: 0,
     skipped: 0,
+    hasMore: false,
     invoiceIds: [],
   }
 
-  while (summary.processed < params.limit) {
+  const startedAt = Date.now()
+  while (summary.processed < limit && Date.now() - startedAt < timeBudgetMs) {
     let claimed: DueSubscription | null = null
     try {
       const result = await prisma.$transaction(
@@ -114,14 +120,10 @@ export async function runBillingSweep(
     }
   }
 
-  await prisma.invoice.updateMany({
-    where: {
-      dueAt: { lt: asOf },
-      amountDue: { gt: 0n },
-      status: { in: ['OPEN', 'SENT', 'PARTIALLY_PAID'] },
-    },
-    data: { status: 'OVERDUE', updatedAt: asOf },
-  })
+  await processDueLifecycleSchedulesAcrossTenants(asOf)
+  await markOverdueAcrossActiveTenants(asOf)
+  summary.hasMore =
+    summary.processed === limit || Date.now() - startedAt >= timeBudgetMs
 
   return summary
 }

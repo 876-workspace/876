@@ -15,6 +15,7 @@ const result = z
     succeeded: z.number().int(),
     failed: z.number().int(),
     skipped: z.number().int(),
+    hasMore: z.boolean(),
     invoiceIds: z.array(z.string()),
   })
   .strict()
@@ -35,7 +36,6 @@ export function createBillingEngineRouter(resolveGuards: GuardResolver) {
     },
     handler: controller.run,
   })
-
   return api.router
 }
 
@@ -60,6 +60,22 @@ export function createInternalBillingEngineRouter(
       503: { description: 'Writer inactive', schema: errorEnvelopeSchema },
     },
     handler: controller.run,
+  })
+  api.get({
+    path: '/billing-sweep/cron',
+    summary: 'Run the daily Vercel Billing sweep',
+    security: { kind: 'scheduler', bearer: 'cron' },
+    responses: {
+      200: {
+        description: 'Billing sweep completed',
+        schema: successEnvelopeSchema(result),
+      },
+      503: {
+        description: 'Scheduler access is disabled',
+        schema: errorEnvelopeSchema,
+      },
+    },
+    handler: controller.runCron,
   })
 
   return api.router

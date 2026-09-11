@@ -1,4 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "node ../../scripts/vercel-ignore-build.mjs @876/billing-api"
+  "ignoreCommand": "node ../../scripts/vercel-ignore-build.mjs @876/billing-api",
+  "crons": [{ "path": "/internal/billing-sweep/cron", "schedule": "0 6 * * *" }]
 }

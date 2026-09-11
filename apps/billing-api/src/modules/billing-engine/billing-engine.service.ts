@@ -5,7 +5,7 @@ import type { BillingSweepParams } from '@/modules/subscriptions'
 import { runBillingSweep } from './billing-engine.repository'
 
 export const billingEngineService = {
-  async runSweep(params: BillingSweepParams) {
+  async runSweep(params: BillingSweepParams & { timeBudgetMs?: number }) {
     const writer = getSettings().billingWriter
     if (writer !== 'express') throw errors.writerInactive(writer)
 

@@ -199,7 +199,10 @@ export function createGuardResolver(options: {
       return [
         middleware((req) => {
           const credential = singleCredential(req)
-          const configured = getSettings().schedulerKey
+          const configured =
+            security.bearer === 'cron'
+              ? getSettings().cronSecret
+              : getSettings().schedulerKey
           if (!configured) {
             throw new AppHttpError({
               code: 'auth/scheduler-disabled',
@@ -208,7 +211,9 @@ export function createGuardResolver(options: {
             })
           }
           if (
-            credential.kind !== 'scheduler' ||
+            (security.bearer === 'cron'
+              ? credential.kind !== 'oauth'
+              : credential.kind !== 'scheduler') ||
             !secretsMatch(credential.value, configured)
           ) {
             throw new AppHttpError({

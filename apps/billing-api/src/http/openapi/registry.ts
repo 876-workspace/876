@@ -67,6 +67,7 @@ const securitySchemes = {
   appApiKey: { type: 'apiKey', in: 'header', name: 'x-876-api-key' },
   internalKey: { type: 'apiKey', in: 'header', name: 'x-internal-key' },
   schedulerKey: { type: 'apiKey', in: 'header', name: 'x-scheduler-key' },
+  cronSecret: { type: 'http', scheme: 'bearer', bearerFormat: 'CRON_SECRET' },
 } as const
 
 export function buildOpenApiDocument(options: {

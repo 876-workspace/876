@@ -29,7 +29,7 @@ export type BillingSecurity =
   | { kind: 'organizationMember' }
   | { kind: 'integration'; scope: string }
   | { kind: 'admin' }
-  | { kind: 'scheduler' }
+  | { kind: 'scheduler'; bearer?: 'cron' }
 
 type StatusCode = `${1 | 2 | 3 | 4 | 5}${string}`
 
@@ -68,7 +68,9 @@ function openApiSecurity(
     case 'admin':
       return [{ internalKey: [] }]
     case 'scheduler':
-      return [{ schedulerKey: [] }]
+      return security.bearer === 'cron'
+        ? [{ cronSecret: [] }]
+        : [{ schedulerKey: [] }]
     case 'integration':
       return [
         { internalKey: [] },

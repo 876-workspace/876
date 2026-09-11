@@ -33801,6 +33801,11 @@
         "type": "apiKey",
         "in": "header",
         "name": "x-scheduler-key"
+      },
+      "cronSecret": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "CRON_SECRET"
       }
     },
     "schemas": {
