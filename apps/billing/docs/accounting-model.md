@@ -2,11 +2,14 @@
 
 This document outlines the accounts-receivable (AR) and billing logic in the 876 Billing engine.
 
-## 1. Intent vs. Receivable
+## 1. Intent, Receivable, and Immediate Sale
 
 - **Quotes, Estimates, and Subscriptions** represent intent to bill. They do not impact AR.
 - **Only a finalized Invoice** creates a receivable. Draft invoices do not
   change AR.
+- A **Sales Receipt** represents an immediate paid sale. It records the sale and
+  settled cash together and therefore does **not** create AR, a
+  `PaymentAllocation`, or unused customer credit.
 
 ## 2. Invoices & Receivables
 
@@ -126,16 +129,77 @@ Once any refund exists against a payment, the ordinary replace/cancel correction
 path is intentionally blocked. Later correction must preserve the refund and its
 cash-out evidence rather than pretending the original receipt never happened.
 
-## 5. Credit Notes (No Cash)
+## 5. Sales Receipts (Immediate Paid Sale)
 
-- Credit notes reduce a customer's receivable without moving cash (e.g., for returns, overcharges).
-- A credit note's `balanceAmount` can be applied to open invoices via `CreditNoteAllocation`, held as unused customer credit, or refunded.
+A Sales Receipt is the commercial primitive for a sale where payment is
+collected at the same moment the sale is recorded.
+
+Creation is one atomic workflow:
+
+```text
+Sales Receipt
+  + immutable sale lines/totals
+  + settled Payment evidence
+  + BankTransaction evidence
+  + Inventory consumption where applicable
+  + durable outbox event
+```
+
+It deliberately does **not** create:
+
+```text
+Invoice
+Accounts Receivable
+PaymentAllocation
+PAYMENT_RECEIVED customer-ledger credit
+unused customer credit
+```
+
+The linked Payment exists for cash/banking/provider evidence. Its
+`unappliedAmount` is `0`, and ordinary Payments Received surfaces exclude it so
+an immediate sale is not presented as both a Sales Receipt and a second customer
+payment.
+
+### Corrections and refunds
+
+`PAID | VOID` is the Sales Receipt financial lifecycle. Sending or viewing the
+document is communication state, not another financial status.
+
+- **Void** means the original immediate sale was entered incorrectly. The
+  workflow reverses the settled Payment/bank evidence, restores the original
+  inventory sale movement, marks the receipt `VOID`, and creates no AR entry.
+- **Return / value correction** creates a Credit Note linked to the Sales
+  Receipt. Physical stock is restored only for explicit returned quantities.
+- **Refund** returns cash from that Credit Note through the canonical Refund
+  primitive. Sales Receipt refund orchestration creates the Credit Note and
+  Refund atomically.
+
+Sales Receipt correction presentation is derived rather than encoded into the
+financial status:
+
+```text
+creditedAmount   = sum(non-void linked Credit Notes)
+refundedAmount   = sum(cash Refunds from those linked Credit Notes)
+refundableAmount = max(totalAmount - creditedAmount, 0)
+refundStatus     = NONE | PARTIALLY_REFUNDED | REFUNDED
+```
+
+A Credit Note can exist without an immediate cash refund, so `creditedAmount`
+and `refundedAmount` must remain distinct.
+
+## 6. Credit Notes (No Cash)
+
+- Credit notes reduce a customer's receivable or correct recognized sale value
+  without themselves moving cash (e.g., returns or overcharges).
+- A credit note may be standalone, invoice-linked, or Sales-Receipt-linked.
+- A credit note's `balanceAmount` can be applied to open invoices via
+  `CreditNoteAllocation`, held as unused customer credit, or refunded.
 - Applying a credit note reduces both the invoice amount due and the note's
   available balance without creating a cash movement.
 - Refunding a credit note consumes its remaining `balanceAmount`; when the
   balance reaches zero the note becomes `CLOSED`.
 
-## 6. Refunds (Cash Out)
+## 7. Refunds (Cash Out)
 
 - Refunds represent cash returned to the customer.
 - Every refund has exactly one value source: either a `CreditNote` balance or a
@@ -169,9 +233,9 @@ some of the original receipt remains allocated to invoices.
   reconciliation provenance. The lower-level contract keeps those fields
   optional for future provider-driven execution, where settlement evidence may
   be supplied by the provider path instead.
-- App-scoped integration refunds may target payments attributed to that source
-  app. Credit-note refunds remain tenant-finance operations because credit notes
-  do not currently carry app-source attribution.
+- App-scoped integration refunds may target payments or Sales Receipts attributed
+  to that source app. Credit-note refunds remain tenant-finance operations where
+  the source document itself is not app-attributed.
 
 ### Provider execution is a later layer
 
@@ -181,7 +245,7 @@ such as `requested -> processing -> succeeded | failed`, provider refund IDs,
 attempts, and webhook reconciliation. Provider state must not replace the
 canonical refund or customer-ledger evidence.
 
-## 7. Denormalized Customer AR
+## 8. Denormalized Customer AR
 
 Customer AR position is denormalized directly on the `Customer` record for fast querying:
 
@@ -189,6 +253,9 @@ Customer AR position is denormalized directly on the `Customer` record for fast 
 - `Customer.unusedCredits` = Sum of unapplied cash (`Payment.unappliedAmount`) + open credit-note balances (`CreditNote.balanceAmount`).
 - `SUCCEEDED` and `PARTIALLY_REFUNDED` payments both contribute any positive
   `unappliedAmount` to available cash credit.
+- Creating a Sales Receipt leaves both `outstandingReceivable` and
+  `unusedCredits` unchanged. A later Sales Receipt Credit Note/refund can affect
+  customer credit through the normal Credit Note/Refund rules.
 - **Strict Consistency**: These values are recomputed from source rows by `recomputeCustomerAr` inside the transaction after every payment, credit note, refund, finalization, void, or write-off mutation that changes AR.
 
 The Customers module intentionally keeps its local open-invoice status predicate
@@ -197,7 +264,7 @@ Customers to recompute AR; importing Documents back into Customers would create
 a cross-module cycle. The two lists must remain contract-tested against the same
 four durable collectible statuses until the dependency direction is redesigned.
 
-## 8. Customer account projection
+## 9. Customer account projection
 
 `customer_account` is a read model over Billing-owned financial facts. It is not
 a persisted account table and does not become a second source of truth.
@@ -213,11 +280,17 @@ The projection exposes:
 - `netPosition`: `outstandingReceivable - availableCredit`;
 - the latest bounded slice of append-only customer-ledger activity.
 
+Sales Receipts are shown in customer commercial transaction history separately
+from the AR statement. Do not redefine `lifetimeBilled` to include immediate
+sales without an explicit coordinated metric migration; a future broader
+`lifetimeSales` projection can include both finalized invoices and Sales
+Receipts.
+
 The API retains `unusedCredits` and `entries` compatibility aliases alongside
 `availableCredit` and `statement` while callers migrate to the canonical typed
 projection.
 
-## 9. Customer statements
+## 10. Customer statements
 
 Statements are derived from `CustomerLedgerEntry`; hosts must not rebuild them
 by merging invoices and payments independently.
@@ -251,6 +324,11 @@ remain on statement entries even when the first UI renders only date,
 description, amount, and running balance. They are the link back to auditable
 financial evidence.
 
+Sales Receipts themselves do not add AR statement entries because their sale and
+cash are settled simultaneously. They belong in customer Transactions/Activity,
+not as a synthetic debit-and-credit pair that would add noise to the receivable
+ledger.
+
 ## Flow Diagram
 
 ```text
@@ -262,8 +340,16 @@ financial evidence.
                                                  ▲
                                                  │ (reduces balance)
  [Payment / CreditNote / Write-off] ─────────────┘
+
+ [Immediate paid sale]
           │
-          │ (cash/credit corrections may reverse)
           ▼
-      [Refund] ──────────(cash out)
+   [Sales Receipt] ─────► [Settled Payment / Bank evidence]
+          │
+          └─────────────► [Inventory sale movement]
+
+ [Invoice or Sales Receipt correction]
+          │
+          ▼
+     [Credit Note] ─────► [Refund] (cash out)
 ```
