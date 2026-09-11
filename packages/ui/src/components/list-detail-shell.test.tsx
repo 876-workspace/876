@@ -2,13 +2,18 @@ import { describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 
-import { ListDetailShell, useListDetailRoute } from './list-detail-shell'
+import {
+  ListDetailShell,
+  useListDetailRoute,
+  usePathDetailSegments,
+} from './list-detail-shell'
 import { Page } from './page'
 
-const mocks = vi.hoisted(() => ({ segments: [] as string[] }))
+const mocks = vi.hoisted(() => ({ segments: [] as string[], pathname: '/' }))
 
 vi.mock('next/navigation', () => ({
   useSelectedLayoutSegments: () => mocks.segments,
+  usePathname: () => mocks.pathname,
 }))
 
 function Probe({ takeover = [] as string[] }) {
@@ -494,5 +499,50 @@ describe('ListDetailShell bleed', () => {
     expect(screen.getByTestId('toolbar').parentElement!.className).toContain(
       '@3xl/list-detail:bg-876-canvas'
     )
+  })
+})
+
+function PathProbe({ base }: { base: string }) {
+  return (
+    <pre data-testid="path">{JSON.stringify(usePathDetailSegments(base))}</pre>
+  )
+}
+
+function pathSegments(pathname: string, base = '/users') {
+  mocks.pathname = pathname
+  render(<PathProbe base={base} />)
+  const value = JSON.parse(screen.getByTestId('path').textContent ?? 'null')
+  cleanup()
+  return value
+}
+
+describe('usePathDetailSegments', () => {
+  // Regression: inside a parallel-route slot, layout segments describe the
+  // slot, so a list reading them never collapsed when a record opened.
+  it('reports no segments on the index route', () => {
+    expect(pathSegments('/users')).toEqual([])
+  })
+
+  it('reports the record key when a record is open', () => {
+    expect(pathSegments('/users/alejandra')).toEqual(['alejandra'])
+  })
+
+  it('reports nested tab segments after the record key', () => {
+    expect(pathSegments('/users/alejandra/invoices')).toEqual([
+      'alejandra',
+      'invoices',
+    ])
+  })
+
+  it('ignores a sibling path that only shares the prefix text', () => {
+    expect(pathSegments('/users-archive/alejandra')).toEqual([])
+  })
+
+  it('accepts a base path with a trailing slash', () => {
+    expect(pathSegments('/orgs/acme', '/orgs/')).toEqual(['acme'])
+  })
+
+  it('decodes encoded segments and keeps malformed ones raw', () => {
+    expect(pathSegments('/users/a%20b/%E0%A4%A')).toEqual(['a b', '%E0%A4%A'])
   })
 })

@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { useSelectedLayoutSegments } from 'next/navigation'
+import { usePathname, useSelectedLayoutSegments } from 'next/navigation'
 
 import { cn } from '../lib/utils'
 
@@ -26,6 +26,36 @@ function isRouteSegment(segment: string): boolean {
 export function useDetailSegments(): string[] {
   const segments = useSelectedLayoutSegments()
   return React.useMemo(() => segments.filter(isRouteSegment), [segments])
+}
+
+function decodeSegment(segment: string): string {
+  try {
+    return decodeURIComponent(segment)
+  } catch {
+    return segment
+  }
+}
+
+/**
+ * The URL segments below `basePath`, read from the pathname.
+ *
+ * Use this instead of `useDetailSegments` from a component rendered inside a
+ * parallel-route slot: `useSelectedLayoutSegments` there reports the slot's own
+ * tree, not the detail route beside it, so the list would never see a record
+ * open.
+ */
+export function usePathDetailSegments(basePath: string): string[] {
+  const pathname = usePathname()
+  return React.useMemo(() => {
+    const prefix = basePath.endsWith('/') ? basePath : `${basePath}/`
+    if (!pathname.startsWith(prefix)) return []
+
+    return pathname
+      .slice(prefix.length)
+      .split('/')
+      .filter(Boolean)
+      .map(decodeSegment)
+  }, [pathname, basePath])
 }
 
 export type ListDetailRoute = {
