@@ -59,6 +59,7 @@ export interface SalesReceiptVoidParams {
 
 export interface SalesReceiptListParams {
   status?: SalesReceiptStatus
+  customerId?: string
 }
 
 export type SalesReceipt = {
