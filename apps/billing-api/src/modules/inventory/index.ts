@@ -4,4 +4,5 @@ export {
   consume,
   inventoryService,
   restore,
+  returnStock,
 } from './inventory.service'
