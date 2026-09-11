@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Prisma } from '@/db'
 
 const mocks = vi.hoisted(() => ({
   claimCommand: vi.fn(),
@@ -35,8 +36,12 @@ vi.mock('@/modules/inventory', () => ({
   consume: mocks.consume,
   restore: mocks.restore,
 }))
-vi.mock('@/modules/ledger', () => ({ recordLedgerEntry: mocks.recordLedgerEntry }))
-vi.mock('@/modules/outbox', () => ({ enqueueBillingEvent: mocks.enqueueBillingEvent }))
+vi.mock('@/modules/ledger', () => ({
+  recordLedgerEntry: mocks.recordLedgerEntry,
+}))
+vi.mock('@/modules/outbox', () => ({
+  enqueueBillingEvent: mocks.enqueueBillingEvent,
+}))
 vi.mock('@/platform/prisma-errors', () => ({
   isRetryableTransactionError: () => false,
 }))
@@ -60,13 +65,17 @@ vi.mock('../repositories/invoices/settlement', () => ({
   settleWithAvailableCredits: mocks.settleWithAvailableCredits,
 }))
 
-import { finalizeInvoiceWorkflow } from './finalize-invoice'
+import {
+  applyInvoiceFinalizeEffects,
+  finalizeInvoiceWorkflow,
+} from './finalize-invoice'
 import { sendInvoiceWorkflow } from './send-invoice'
 import { voidInvoiceWorkflow } from './void-invoice'
 import { writeOffInvoiceWorkflow } from './write-off-invoice'
 
 const idempotency = { key: 'retry-key', requestHash: 'hash_1' }
 const finalizeParams = { autoApplyCredits: false }
+const transaction = {} as unknown as Prisma.TransactionClient
 
 function draftInvoice() {
   return {
@@ -217,6 +226,70 @@ describe('Invoice application workflows', () => {
     expect(mocks.completeCommand).not.toHaveBeenCalled()
   })
 
+  it('applies canonical finalize effects to an already loaded subscription invoice', async () => {
+    await expect(
+      applyInvoiceFinalizeEffects(transaction, 'ten_1', {
+        invoice: draftInvoice(),
+        paymentTerm: {
+          id: 'pterm_1',
+          name: 'Due on receipt',
+          rule: 'DUE_ON_RECEIPT',
+          dueDays: 0,
+        },
+        salesperson: null,
+        autoApplyCredits: false,
+        now: 100,
+        ledgerDescription: 'Subscription invoice INV-001 finalized',
+      })
+    ).resolves.toEqual({ data: null, error: null })
+
+    expect(mocks.markInvoiceFinalized).toHaveBeenCalledTimes(1)
+    expect(mocks.recordLedgerEntry).toHaveBeenCalledWith(
+      transaction,
+      expect.objectContaining({
+        idempotencyKey: 'invoice:inv_1:finalized',
+        description: 'Subscription invoice INV-001 finalized',
+      })
+    )
+    expect(mocks.enqueueBillingEvent).toHaveBeenCalledTimes(1)
+  })
+
+  it('auto-applies credits only when the finalized invoice has a positive total', async () => {
+    await expect(
+      applyInvoiceFinalizeEffects(transaction, 'ten_1', {
+        invoice: draftInvoice(),
+        paymentTerm: null,
+        salesperson: null,
+        autoApplyCredits: true,
+        now: 100,
+      })
+    ).resolves.toEqual({ data: null, error: null })
+
+    expect(mocks.settleWithAvailableCredits).toHaveBeenCalledWith(
+      transaction,
+      expect.objectContaining({ id: 'inv_1', amountDue: 1000n }),
+      100
+    )
+  })
+
+  it('does not auto-apply credits to a zero-total finalized invoice', async () => {
+    await expect(
+      applyInvoiceFinalizeEffects(transaction, 'ten_1', {
+        invoice: { ...draftInvoice(), totalAmount: 0n },
+        paymentTerm: null,
+        salesperson: null,
+        autoApplyCredits: true,
+        now: 100,
+      })
+    ).resolves.toEqual({ data: null, error: null })
+
+    expect(mocks.settleWithAvailableCredits).not.toHaveBeenCalled()
+    expect(mocks.markInvoiceFinalized).toHaveBeenCalledWith(
+      transaction,
+      expect.objectContaining({ status: 'PAID' })
+    )
+  })
+
   it('records sending an open invoice without changing its financial state first', async () => {
     mocks.findInvoiceForSend.mockResolvedValue(openInvoice())
 
@@ -225,12 +298,15 @@ describe('Invoice application workflows', () => {
       error: null,
     })
 
-    expect(mocks.markInvoiceSent).toHaveBeenCalledWith({}, {
-      id: 'inv_1',
-      status: 'OPEN',
-      sentAt: null,
-      now: 100,
-    })
+    expect(mocks.markInvoiceSent).toHaveBeenCalledWith(
+      {},
+      {
+        id: 'inv_1',
+        status: 'OPEN',
+        sentAt: null,
+        now: 100,
+      }
+    )
     expect(mocks.enqueueBillingEvent).toHaveBeenCalledWith({}, 'ten_1', {
       type: 'invoice.sent',
       version: 1,
@@ -258,12 +334,15 @@ describe('Invoice application workflows', () => {
       error: null,
     })
 
-    expect(mocks.markInvoiceSent).toHaveBeenCalledWith({}, {
-      id: 'inv_1',
-      status: 'OVERDUE',
-      sentAt: 50,
-      now: 100,
-    })
+    expect(mocks.markInvoiceSent).toHaveBeenCalledWith(
+      {},
+      {
+        id: 'inv_1',
+        status: 'OVERDUE',
+        sentAt: 50,
+        now: 100,
+      }
+    )
   })
 
   it('rejects recording a send for a draft invoice', async () => {
@@ -344,9 +423,7 @@ describe('Invoice application workflows', () => {
       amountDue: 0n,
     })
 
-    await expect(
-      voidInvoiceWorkflow('ten_1', 'inv_1', {})
-    ).resolves.toEqual({
+    await expect(voidInvoiceWorkflow('ten_1', 'inv_1', {})).resolves.toEqual({
       data: null,
       error: 'Only an unsettled collectible invoice can be voided.',
       status: 409,
@@ -360,30 +437,38 @@ describe('Invoice application workflows', () => {
     mocks.findInvoiceForWriteOff.mockResolvedValue(openInvoice())
 
     await expect(
-      writeOffInvoiceWorkflow('ten_1', 'inv_1', { reason: 'Collection exhausted' })
+      writeOffInvoiceWorkflow('ten_1', 'inv_1', {
+        reason: 'Collection exhausted',
+      })
     ).resolves.toEqual({ data: { id: 'inv_1' }, error: null })
 
-    expect(mocks.markInvoiceWrittenOff).toHaveBeenCalledWith({}, {
-      id: 'inv_1',
-      amount: 1000n,
-      now: 100,
-      reason: 'Collection exhausted',
-      metadata: null,
-    })
-    expect(mocks.recordLedgerEntry).toHaveBeenCalledWith({}, {
-      tenantId: 'ten_1',
-      customerId: 'cus_1',
-      subscriptionId: null,
-      invoiceId: 'inv_1',
-      type: 'WRITE_OFF',
-      direction: 'CREDIT',
-      amount: 1000n,
-      currency: 'JMD',
-      description: 'Invoice INV-001 written off',
-      idempotencyKey: 'invoice:inv_1:write-off',
-      effectiveAt: 100,
-      createdAt: 100,
-    })
+    expect(mocks.markInvoiceWrittenOff).toHaveBeenCalledWith(
+      {},
+      {
+        id: 'inv_1',
+        amount: 1000n,
+        now: 100,
+        reason: 'Collection exhausted',
+        metadata: null,
+      }
+    )
+    expect(mocks.recordLedgerEntry).toHaveBeenCalledWith(
+      {},
+      {
+        tenantId: 'ten_1',
+        customerId: 'cus_1',
+        subscriptionId: null,
+        invoiceId: 'inv_1',
+        type: 'WRITE_OFF',
+        direction: 'CREDIT',
+        amount: 1000n,
+        currency: 'JMD',
+        description: 'Invoice INV-001 written off',
+        idempotencyKey: 'invoice:inv_1:write-off',
+        effectiveAt: 100,
+        createdAt: 100,
+      }
+    )
     expect(mocks.restore).not.toHaveBeenCalled()
     expect(mocks.recomputeCustomerAr).toHaveBeenCalledWith(
       {},
@@ -416,7 +501,9 @@ describe('Invoice application workflows', () => {
     })
 
     await expect(
-      writeOffInvoiceWorkflow('ten_1', 'inv_1', { reason: 'Collection exhausted' })
+      writeOffInvoiceWorkflow('ten_1', 'inv_1', {
+        reason: 'Collection exhausted',
+      })
     ).resolves.toEqual({
       data: null,
       error: 'Only an invoice with an open balance can be written off.',
