@@ -3,6 +3,7 @@ import type { DocumentLineCreateParams } from './invoice'
 import type { TaxBehavior } from './enums'
 
 export type SalesReceiptStatus = 'PAID' | 'VOID'
+export type SalesReceiptRefundStatus = 'NONE' | 'PARTIALLY_REFUNDED' | 'REFUNDED'
 
 export interface SalesReceiptLineCreateParams extends DocumentLineCreateParams {
   /** Variant selected for this line when the Item is variant-mode. */
@@ -72,8 +73,12 @@ export type SalesReceipt = {
   id: string
   number: string
   status: SalesReceiptStatus
+  refundStatus: SalesReceiptRefundStatus
   currency: string
   totalAmount: string
+  creditedAmount: string
+  refundedAmount: string
+  refundableAmount: string
   receiptAt: number
 } & Record<string, unknown>
 
