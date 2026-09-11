@@ -1,5 +1,6 @@
 import { AppHttpError } from '@/http/errors'
 import type { IntegrationAttribution } from '@/http/integration/idempotency'
+import type { IdempotencyContext } from '@/types/commerce'
 
 import { documentList, serializeDocument } from './documents.serializers'
 import { salesReceipts } from './repositories/sales-receipts'
@@ -7,8 +8,12 @@ import type { ServiceResult } from './schemas/api'
 import type {
   SalesReceiptCreateParams,
   SalesReceiptStatus,
+  SalesReceiptVoidParams,
 } from './schemas/sales-receipt'
-import { createSalesReceiptWorkflow } from './workflows'
+import {
+  createSalesReceiptWorkflow,
+  voidSalesReceiptWorkflow,
+} from './workflows'
 
 async function unwrapSalesReceipt<T>(result: Awaited<ServiceResult<T>>): Promise<T> {
   if (result.error === null) return result.data
@@ -73,6 +78,22 @@ export const salesReceiptsService = {
     return {
       resource: { object: 'sales_receipt' as const, id: result.id },
       replayed: result.replayed === true,
+    }
+  },
+
+  async void(
+    tenantId: string,
+    id: string,
+    body: SalesReceiptVoidParams,
+    sourceAppId?: string,
+    idempotency?: IdempotencyContext
+  ) {
+    if (sourceAppId) await ownedSalesReceipt(tenantId, id, sourceAppId)
+    return {
+      object: 'sales_receipt' as const,
+      ...(await unwrapSalesReceipt(
+        await voidSalesReceiptWorkflow(tenantId, id, body, idempotency)
+      )),
     }
   },
 }
