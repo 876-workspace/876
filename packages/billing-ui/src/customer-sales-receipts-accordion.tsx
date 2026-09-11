@@ -8,6 +8,7 @@ import { Badge } from '@876/ui/badge'
 import { ChevronDownIcon, ChevronRightIcon } from '@876/ui/icons'
 
 import { Link } from './link'
+import { formatMinorAmount } from './customer-transactions-accordions'
 
 export interface CustomerSalesReceipt {
   id: string
@@ -59,7 +60,9 @@ export function CustomerSalesReceiptsAccordion({
                       <th className="px-4 py-3 font-medium">Sales receipt</th>
                       <th className="px-4 py-3 font-medium">Date</th>
                       <th className="px-4 py-3 font-medium">Status</th>
-                      <th className="px-4 py-3 text-right font-medium">Amount</th>
+                      <th className="px-4 py-3 text-right font-medium">
+                        Amount
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -114,21 +117,4 @@ function formatDate(timestamp: number): string {
     month: 'short',
     year: 'numeric',
   })
-}
-
-function formatMinorAmount(
-  amount: string,
-  currency: string,
-  decimalPlaces: number
-): string {
-  const value = BigInt(amount)
-  const negative = value < 0n
-  const absolute = negative ? -value : value
-  if (decimalPlaces === 0)
-    return `${currency} ${negative ? '-' : ''}${absolute.toString()}`
-
-  const scale = 10n ** BigInt(decimalPlaces)
-  const whole = absolute / scale
-  const fraction = (absolute % scale).toString().padStart(decimalPlaces, '0')
-  return `${currency} ${negative ? '-' : ''}${whole}.${fraction}`
 }

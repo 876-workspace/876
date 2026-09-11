@@ -215,7 +215,7 @@ function formatDate(timestamp: number): string {
   })
 }
 
-function formatMinorAmount(
+export function formatMinorAmount(
   amount: string,
   currency: string,
   decimalPlaces: number
