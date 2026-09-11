@@ -74,8 +74,8 @@ export function createInvoiceResourceRoute(resource: ProxiedResource) {
 export function createInvoiceFinanceResourceRoute(
   resource: ProxiedResource,
   permissions: {
-    read: 'currencies:read' | 'payments:read' | 'taxes:read'
-    write: 'currencies:write' | 'payments:write' | 'taxes:write'
+    read: 'currencies:read' | 'payments:read' | 'taxes:read' | 'sales:read'
+    write: 'currencies:write' | 'payments:write' | 'taxes:write' | 'sales:write'
   }
 ) {
   const proxy = createInvoiceResourceRoute(resource)
@@ -88,9 +88,12 @@ export function createInvoiceFinanceResourceRoute(
     if (!isSignedSession(session))
       return apiError('Invoice authentication is required.', { status: 401 })
 
-    const organizationId = session.user.orgId ?? (await getInvoiceContext())?.orgId
+    const organizationId =
+      session.user.orgId ?? (await getInvoiceContext())?.orgId
     if (!organizationId)
-      return apiError('Select an organization to access Invoice.', { status: 400 })
+      return apiError('Select an organization to access Invoice.', {
+        status: 400,
+      })
 
     const access = await requireInvoiceFinancePermission(
       organizationId,

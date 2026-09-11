@@ -10,6 +10,10 @@ import { getInvoiceContext } from '@/lib/auth/context'
 import { formatMoney } from '@/lib/format'
 import { getBilling } from '@/lib/services/billing'
 import { CustomerContacts } from './_components/customer-contacts'
+import {
+  CustomerSalesSummaryData,
+  CustomerSalesSummaryFallback,
+} from './_components/customer-sales-summary'
 
 export const metadata: Metadata = {
   title: 'Customer',
@@ -26,11 +30,23 @@ export default function CustomerDetailPage({
       <Suspense fallback={<CustomerReceivablesPanelSkeleton />}>
         <CustomerReceivablesData params={params} />
       </Suspense>
+      <Suspense fallback={<CustomerSalesSummaryFallback />}>
+        <CustomerSalesSummaryRouteData params={params} />
+      </Suspense>
       <Suspense fallback={<CustomerContactsPanelSkeleton />}>
         <CustomerContactsData params={params} />
       </Suspense>
     </div>
   )
+}
+
+async function CustomerSalesSummaryRouteData({
+  params,
+}: {
+  params: Promise<{ customerId: string }>
+}) {
+  const { customerId } = await params
+  return <CustomerSalesSummaryData customerId={customerId} />
 }
 
 async function CustomerReceivablesData({

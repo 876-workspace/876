@@ -73,6 +73,7 @@ describe('invoice settings navigation', () => {
         href: '/settings/modules/time-tracking',
       },
       { label: 'Customers settings', href: '/settings/modules/customers' },
+      { label: 'Reports settings', href: '/settings/modules/reports' },
       { label: 'CRM settings', href: '/settings/modules/crm' },
     ])
   })

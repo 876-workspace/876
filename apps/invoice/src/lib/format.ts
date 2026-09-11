@@ -29,3 +29,7 @@ export function formatDate(value: number | null | undefined): string {
     day: 'numeric',
   })
 }
+
+export function unixTimestampToDateInput(timestamp: number): string {
+  return new Date(Math.floor(timestamp) * 1000).toISOString().slice(0, 10)
+}

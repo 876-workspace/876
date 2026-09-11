@@ -15,6 +15,11 @@ import { Skeleton } from '@876/ui/skeleton'
 import { resolveItemDetail } from '@/app/(app)/_lib/detail-data'
 import { formatMoney } from '@/lib/format'
 
+import {
+  ItemSalesSummaryData,
+  ItemSalesSummaryFallback,
+} from './_components/item-sales-summary'
+
 interface Props {
   params: Promise<{ itemId: string }>
 }
@@ -90,6 +95,10 @@ async function ItemOverviewData({ params }: Props) {
           />
         </DetailCardSection>
       ) : null}
+
+      <Suspense fallback={<ItemSalesSummaryFallback />}>
+        <ItemSalesSummaryData itemId={item.id} />
+      </Suspense>
 
       <DetailCardSection title="Item">
         <DetailCardFacts>
