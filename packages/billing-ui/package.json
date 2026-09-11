@@ -262,6 +262,14 @@
     "./panels/item-sales-summary-panel": {
       "types": "./src/panels/item-sales-summary-panel.tsx",
       "default": "./src/panels/item-sales-summary-panel.tsx"
+    },
+    "./panels/invoice-document-panel": {
+      "types": "./src/panels/invoice-document-panel.tsx",
+      "default": "./src/panels/invoice-document-panel.tsx"
+    },
+    "./document/invoice-document-data": {
+      "types": "./src/document/invoice-document-data.ts",
+      "default": "./src/document/invoice-document-data.ts"
     }
   },
   "scripts": {
