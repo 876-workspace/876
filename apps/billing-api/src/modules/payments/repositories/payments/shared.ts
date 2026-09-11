@@ -6,6 +6,10 @@ import {
 } from '@/modules/documents'
 import { generateId } from '@/platform/ids'
 import type { PaymentCreateParams } from '../../schemas/payment'
+import {
+  attributionData,
+  type IntegrationAttribution,
+} from '../integrations/attribution'
 
 export class PaymentMutationError extends Error {
   constructor(
@@ -44,6 +48,23 @@ interface CurrentPaymentTargets {
   customerId: string
   paymentModeId: string
   depositAccountId: string
+}
+
+type PaymentEvidenceParams = Pick<
+  PaymentCreateParams,
+  | 'customerId'
+  | 'paymentModeId'
+  | 'amount'
+  | 'bankCharges'
+  | 'currency'
+  | 'paymentDate'
+  | 'referenceNumber'
+  | 'notes'
+> & {
+  paymentId: string
+  depositAccountId: string
+  number: string
+  unappliedAmount: bigint
 }
 
 /** Resolves and validates every tenant-owned resource referenced by a payment. */
@@ -148,6 +169,58 @@ export async function loadPaymentTargets(
   }
 
   return { account, invoices: invoiceMap }
+}
+
+/**
+ * Writes the canonical Payment and matched bank credit after the caller has
+ * resolved the commercial meaning of the cash. It intentionally does not post
+ * customer A/R ledger entries or invoice allocations.
+ */
+export async function writePaymentEvidence(
+  tx: TransactionClient,
+  tenantId: string,
+  params: PaymentEvidenceParams,
+  now: number,
+  attribution?: IntegrationAttribution
+) {
+  await tx.payment.create({
+    data: {
+      id: params.paymentId,
+      tenantId,
+      ...attributionData(attribution),
+      customerId: params.customerId,
+      paymentModeId: params.paymentModeId,
+      depositAccountId: params.depositAccountId,
+      number: params.number,
+      status: 'SUCCEEDED',
+      amount: params.amount,
+      unappliedAmount: params.unappliedAmount,
+      bankCharges: params.bankCharges,
+      currency: params.currency,
+      paymentDate: params.paymentDate,
+      referenceNumber: params.referenceNumber ?? null,
+      notes: params.notes ?? null,
+      createdAt: now,
+      updatedAt: now,
+    },
+  })
+
+  await tx.bankTransaction.create({
+    data: {
+      id: generateId('BankTransaction'),
+      tenantId,
+      accountId: params.depositAccountId,
+      paymentId: params.paymentId,
+      type: 'CREDIT',
+      amount: params.amount - params.bankCharges,
+      date: params.paymentDate,
+      description: `Payment ${params.number}`,
+      status: 'MATCHED',
+      reference: params.referenceNumber ?? params.number,
+      createdAt: now,
+      updatedAt: now,
+    },
+  })
 }
 
 /** Applies allocations and captures the invoice state needed for safe reversal. */
