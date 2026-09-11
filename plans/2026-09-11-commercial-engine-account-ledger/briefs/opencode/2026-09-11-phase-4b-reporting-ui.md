@@ -13,6 +13,12 @@ the tree concurrently. **Stay inside the scope below.** Never edit
 `packages/billing/src/navigation.ts`, `**/recurring-invoices/**`, invoice
 detail pages, or `packages/billing-ui/src/recurring-invoice*`.
 
+**Do not edit `packages/billing-ui/package.json`** — the 4a run is adding its
+own subpath exports there right now. List every new subpath export your panels
+need in your report under "Exports to add"; the orchestrator adds them. Until
+then, import your new panels in tests by relative path. Do not edit
+`packages/billing/src/navigation.ts` or any `recurring-invoice*` file.
+
 ## Read first (binding)
 
 `CLAUDE.md` (UI Copy, UI Design, Loading States), `.agents/rules/app-structure.md`,

@@ -2,7 +2,7 @@
 
 - **Run ID:** `2026-09-11-commercial-engine-account-ledger`
 - **Branch:** `feat/commercial-engine-account-ledger` (cut from `main` @ `b649f9175`)
-- **Status:** IN_PROGRESS
+- **Status:** COMPLETED ✅ (branch scope; not pushed, no PR)
 - **Delegates:** Codex (`gpt-5.6-terra`, high) for Phases 1–2 until its usage
   limit (reset 20:12); then opencode running `muse-spark-1.3-contributor-free`
   (user's choice), which — unlike the Muse CLI — can execute commands here.
@@ -118,6 +118,7 @@ sound.
 | 3     | opencode (Muse 1.3) | [briefs/opencode/2026-09-11-phase-3-reporting.md](./briefs/opencode/2026-09-11-phase-3-reporting.md) |
 | 4a    | opencode (Muse 1.3) | [briefs/opencode/2026-09-11-phase-4a-recurring-invoices-ui.md](./briefs/opencode/2026-09-11-phase-4a-recurring-invoices-ui.md) |
 | 4b    | opencode (Muse 1.3) | [briefs/opencode/2026-09-11-phase-4b-reporting-ui.md](./briefs/opencode/2026-09-11-phase-4b-reporting-ui.md) |
+| 4c    | codex    | [briefs/codex/2026-09-11-phase-4c-finish-ui.md](./briefs/codex/2026-09-11-phase-4c-finish-ui.md) (4a/4b were interrupted; Codex finished both) |
 
 ## Execution reports
 
@@ -145,7 +146,8 @@ sound.
     by the orchestrator (2b); error codes registered in `@876/core`.
 - [ ] **Phase 3 — Reporting data plane** (M2 backend + SDK + `reports` settings)
 - [x] **Phase 2c — recurring tests** (Muse: 64 tests; orchestrator mutation-checked the frequency and sweep-exclusion fixes — both caught) · **Phase 3 — reporting** (now also subscriptions: revenue by source, new/canceled/churn, MRR, per-customer) 
-- [ ] **Phase 4 — Host UI** (recurring invoices, reports pages, dashboard, customer & item overview panels — Billing + Invoice)
+- [x] **Phase 4 — Host UI** — 4a/4b (Muse) interrupted without reports; Codex 4c finished. Orchestrator re-ran every gate and removed one new unused import.
+- [x] Phase 4 (original line) (recurring invoices, reports pages, dashboard, customer & item overview panels — Billing + Invoice)
 - [x] Docs: `apps/billing/docs/accounting-model.md` §1a generated invoices, `apps/billing-api/README.md` scheduled sweep
 - [x] Docs: reporting definitions (Phase 3, accounting-model §11)
 - Phase 3 orchestrator review: preference PATCH moved from `reports:read` to
@@ -178,7 +180,13 @@ node scripts/check-app-structure.mjs
 
 ## Handoff state
 
-Phases 1–3 committed. Phase 4a (recurring invoices UI) running on opencode/Muse; Phase 4b (reporting UI) starts when 4a lands (shared billing-ui package exports).
+All phases committed on `feat/commercial-engine-account-ledger`. Final
+verification (orchestrator, foreground): billing-api 941 tests + lint (0
+errors) + boundaries + contract + db:validate; @876/core 1096; @876/billing
+358; @876/billing-ui 493; @876/billing-app 930; @876/invoice-app 523;
+check:transpile OK; app-structure only the pre-existing ConsoleHome issue.
+
+Next: push, open the PR, and handle the deployment notes below.
 
 ## Deployment notes (not code)
 
