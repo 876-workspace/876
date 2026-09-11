@@ -268,7 +268,7 @@ enum BillingTiming {
   IN_ADVANCE
   IN_ARREARS
 
-  @@map("BillingTiming")
+  @@map("BillingBillingTiming")
 }
 
 enum ProrationBehavior {
@@ -441,7 +441,7 @@ enum BillingRunStatus {
   FAILED
   SKIPPED
 
-  @@map("BillingBillingRunStatus")
+  @@map("BillingRunStatus")
 }
 
 enum PaymentTermRule {
