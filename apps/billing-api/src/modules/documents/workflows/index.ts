@@ -1,5 +1,6 @@
 export { createSalesReceiptWorkflow } from './create-sales-receipt'
 export { finalizeInvoiceWorkflow } from './finalize-invoice'
+export { refundSalesReceiptWorkflow } from './refund-sales-receipt'
 export { sendInvoiceWorkflow } from './send-invoice'
 export { transitionQuoteWorkflow } from './transition-quote'
 export { voidInvoiceWorkflow } from './void-invoice'
