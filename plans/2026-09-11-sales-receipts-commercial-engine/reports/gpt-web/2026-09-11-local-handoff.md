@@ -4,387 +4,525 @@
 **Branch:** `feat/sales-receipts-commercial-engine`  
 **Base:** `main`  
 **Handoff date:** 2026-09-11  
-**Status:** IN PROGRESS — continue locally; not merge-ready  
-**Code snapshot before this report commit:** `bc34bb52c4e98241066e92fe007baa78cb49c4a1` (`billing: expose sales receipt browser client`)  
+**Status:** IN PROGRESS — substantially implemented, but not merge-ready until local verification and the remaining correctness items are closed  
+**Code snapshot immediately before this handoff update:** `a5691bddd1c4145ceb7c1dbc15711c9a83cb9043` (`plans: resync sales receipt implementation tracker`)  
 **Base / merge-base snapshot:** `b864b752f909ead27fa30c9c2b04c8681b3a2346`  
-**Branch comparison at handoff:** 122 commits ahead of `main`, 0 behind before this report commit  
-**PR:** none opened; none authorized by this GPT Web run
+**Branch comparison immediately before this handoff update:** **157 commits ahead of `main`, 0 behind**  
+**PR:** none opened
 
-## Purpose of this handoff
+## Read this first
 
-The user is continuing implementation locally. This document records the real branch state, the architectural decisions that must be preserved, the files and behavior already implemented, known gaps, and the safest continuation/verification sequence.
+This report supersedes the earlier handoff state in this same file. The branch has moved materially forward since the first handoff.
 
-Do **not** treat `tracker.md` as an accurate completion map at this point. It was created before most implementation work and was not resynchronized as the branch evolved. The branch contains substantially more completed work than the tracker checkboxes show. Reconcile the tracker against code before using it as a completion signal.
-
-The original implementation plan remains authoritative for scope and invariants:
+The tracker has also now been reconciled with the actual branch and is useful again:
 
 - `plans/2026-09-11-sales-receipts-commercial-engine/plan.md`
 - `plans/2026-09-11-sales-receipts-commercial-engine/tracker.md`
+- this report
 
-Read those files plus the binding repository rules listed in `plan.md` before continuing.
+Before continuing locally, re-read the binding repository rules listed in `plan.md`, especially the root `CLAUDE.md`, GPT Web operating rules, finance-app parity, Billing data-plane/commercial-platform rules, SDK conventions, Express/API rules, app structure/layout, testing, naming/types/error handling, and git rules.
 
----
-
-## Executive implementation state
-
-The core Sales Receipt commercial engine is substantially implemented.
-
-A Sales Receipt is modeled as an **immediate paid sale**, not as an Invoice shortcut and not as an ordinary Payments Received transaction. Creation coordinates the commercial document, settled Payment evidence, BankTransaction evidence, Inventory consumption, and Outbox event without creating Accounts Receivable, unused customer credit, or PaymentAllocation rows.
-
-The branch now contains:
-
-- additive Prisma persistence and migration for Sales Receipts;
-- a Payment-owned settled-payment recording seam;
-- a settled-payment reversal seam for void/correction behavior;
-- create, list, retrieve, void, refund, and accepted Quote → Sales Receipt workflows/routes;
-- explicit stock return behavior for partial returns;
-- Credit Note + Refund composition for Sales Receipt refunds;
-- OAuth/integration scopes and integration API support;
-- tenant and integration `@876/billing` SDK resources;
-- Quote SDK conversion helpers;
-- shared Sales Receipt list/customer-history UI in `@876/billing-ui`;
-- real Invoice Sales Receipt list/detail loading instead of the old fake Invoice-backed scaffold;
-- a new Billing Sales Receipts list/detail route family;
-- Billing browser-side Sales Receipt mutation client.
-
-The largest incomplete user-facing slice is **Sales Receipt creation UI**, especially the shared form and the Invoice same-origin mutation proxy/client. Test coverage, generated API-contract verification, documentation, tracker resync, and final review are also still required.
+No executable verification was run from GPT Web. Treat every compile/test/build/migration claim as **unverified until run locally**.
 
 ---
 
-## Non-negotiable architecture decisions
+# 1. Executive state
 
-Preserve these even if local refactors change file layout.
+Sales Receipts are now implemented as a first-class Billing commercial primitive rather than an Invoice shortcut.
 
-### 1. Sales Receipt is not an Invoice
-
-Do not create an Invoice internally just to reuse invoice lifecycle code.
-
-The intended paths are separate:
+The intended economic model is preserved:
 
 ```text
-Credit sale:
-Quote -> Invoice -> Payment -> A/R settlement
+Intent
+  Quote / Subscription / Estimate
 
-Immediate paid sale:
-Quote? -> Sales Receipt + settled Payment evidence
+Credit sale
+  Invoice -> Accounts Receivable -> later settlement
+
+Immediate paid sale
+  Sales Receipt -> settled Payment + bank evidence immediately
 ```
 
-An accepted Quote may convert directly to a Sales Receipt when payment details are supplied. There is no intermediate Invoice.
-
-### 2. Sales Receipt creation must remain A/R-neutral
-
-Creation must not:
-
-- create an Invoice;
-- create a customer Accounts Receivable debit;
-- create a `PAYMENT_RECEIVED` customer-ledger credit;
-- create `PaymentAllocation` rows;
-- create unused customer credit;
-- change open/overdue invoice balances.
-
-The embedded Payment is payment/banking/provider evidence for cash that is already fully consumed by the Sales Receipt.
-
-Expected embedded Payment semantics:
+A Sales Receipt creation does **not** create:
 
 ```text
-status = SUCCEEDED
+Invoice
+Accounts Receivable
+PaymentAllocation
+PAYMENT_RECEIVED customer-ledger credit
+unused customer credit
+```
+
+The linked `Payment` exists as durable cash/banking/provider evidence. Its `unappliedAmount` is zero, and the ordinary Payments Received resource intentionally excludes Sales-Receipt-owned Payments.
+
+The branch now has working implementation slices across:
+
+- Prisma persistence and additive migration;
+- Sales Receipt numbering and IDs;
+- settled-payment recording and reversal seams;
+- atomic create workflow;
+- list/retrieve APIs;
+- void/correction workflow;
+- partial stock-return primitive;
+- atomic Credit Note + Refund Sales Receipt refund workflow;
+- tenant and integration API routes;
+- dedicated OAuth scopes;
+- `@876/billing` tenant + integration SDK resources;
+- customer Transactions integration;
+- shared Billing/Invoice list UI;
+- real Billing and Invoice Sales Receipt detail pages;
+- **New Sales Receipt** forms in both Billing and Invoice;
+- Invoice same-origin Sales Receipt proxy/client boundary;
+- amount-only Sales Receipt refund pages in both hosts;
+- shared Refund + Void lifecycle actions;
+- derived correction/refund projection fields;
+- accounting-model documentation;
+- request/client tests added, though not executed.
+
+---
+
+# 2. Non-negotiable architectural invariants
+
+Preserve these while finishing the branch.
+
+## 2.1 Billing owns the truth
+
+Billing API is the canonical resource owner.
+
+Do not create:
+
+- an Invoice-app Sales Receipt model;
+- a second Sales Receipt payment model;
+- app-local accounting rules;
+- a second totals calculator;
+- app-local inventory mutations.
+
+Billing and Invoice are hosts over the same Sales Receipt IDs and records.
+
+## 2.2 Sales Receipt is not a paid Invoice
+
+Do not implement Sales Receipt by creating/finalizing an Invoice and immediately allocating a Payment.
+
+That would create unnecessary AR and then settle it, pollute statement/ledger semantics, and make future POS/retail use cases depend on invoice lifecycle.
+
+## 2.3 Embedded Payment is not Payments Received
+
+The linked Payment must remain distinct from ordinary customer Payments Received.
+
+Sales Receipt payment invariants:
+
+```text
+amount = SalesReceipt.totalAmount
 unappliedAmount = 0
-allocations = []
+invoiceAllocations = []
 ```
 
-This is intentionally different from ordinary Payments Received.
+It must not post the ordinary `PAYMENT_RECEIVED` customer-ledger credit.
 
-### 3. Embedded Sales Receipt Payments stay out of default Payments Received
+The current Payments repository excludes Sales-Receipt-owned Payments from the normal payment list/retrieve/update/apply/cancel paths. Preserve that separation.
 
-The Payment is still a real canonical `Payment` and still participates in banking/provider/audit/refund behavior, but it must not appear as an ordinary standalone Payments Received row by default.
+## 2.4 Credit Note and Refund remain separate facts
 
-The Payment repository list/retrieve/update/delete handling was adjusted around this distinction. Review those changes carefully before altering Payment queries.
-
-### 4. Inventory ownership remains generic
-
-Inventory owns stock movement and validation. It does **not** own Sales Receipt lifecycle policy.
-
-Sales Receipt workflows call generic inventory primitives with evidence such as:
-
-```ts
-{ type: 'sales-receipt', id: salesReceiptId }
-```
-
-Partial return behavior was added to Inventory so callers can explicitly restore selected quantities without teaching Inventory what a refund means.
-
-### 5. Refund value correction and cash movement remain separate
-
-A Sales Receipt refund composes existing canonical concepts:
+For real returns/refunds:
 
 ```text
-Credit Note = commercial/value correction
-Refund      = money moving back out
-Inventory   = only explicit returned quantities
+Sales Receipt
+    -> Credit Note     economic/value correction
+    -> Refund          cash leaves business
 ```
 
-Do not collapse those into one new refund table or one giant Sales Receipt status machine.
+The Sales Receipt refund workflow composes those two existing primitives atomically.
 
-The document financial lifecycle remains fundamentally:
+Do not collapse returned value and cash movement into Sales Receipt amount fields.
+
+## 2.5 Void is not Refund
+
+`VOID` means the original immediate sale was entered incorrectly.
+
+Void reverses:
+
+- settled Payment evidence;
+- matched bank evidence;
+- original inventory sale movement;
+- the Sales Receipt financial state.
+
+It does not manufacture AR activity.
+
+A receipt with return/refund evidence cannot be voided.
+
+## 2.6 Physical stock restoration is explicit
+
+A monetary credit/refund does not automatically imply every physical item was returned.
+
+The Inventory partial-return primitive restores only explicitly requested item/variant quantities and prevents cumulative over-return.
+
+The current product refund form intentionally performs **amount-only refunds** and submits `returnLines: []` until a proper returned-line quantity editor is built.
+
+---
+
+# 3. Persistence and migration
+
+## Added persistence
+
+Key files:
 
 ```text
-PAID | VOID
+apps/billing-api/prisma/schema/sales-receipt.prisma
+apps/billing-api/prisma/schema/sales-receipt-line.prisma
+apps/billing-api/prisma/migrations/20260911120000_sales_receipts_commercial_engine/migration.sql
 ```
 
-Refund presentation should be derived separately (`none`, partial, refunded) from linked correction/refund evidence.
+The model includes the canonical immediate-sale relationships:
 
-### 6. Partial refunds reverse tax proportionally
+- tenant;
+- customer;
+- optional source Quote;
+- one linked Payment;
+- optional salesperson snapshot;
+- optional price-list snapshot;
+- immutable Sales Receipt lines;
+- Credit Notes;
+- totals/currency/receipt date;
+- source app/integration attribution;
+- void metadata.
 
-The refund workflow was corrected so amount-only partial refunds proportionally reverse the original Sales Receipt tax instead of creating a zero-tax Credit Note. Do not regress this to `taxAmount = 0` on partial refunds.
-
-Returned stock quantities remain explicit and independent from monetary refund amount.
-
-### 7. Integration provenance must cover both receipt and embedded Payment
-
-Integration-created Sales Receipts carry source attribution/idempotency metadata. The embedded Payment writer already supported attribution; the settled-payment seam was updated to forward it.
-
-Do not allow the receipt to be attributed while its linked Payment loses source provenance.
-
-### 8. Billing remains the canonical commercial plane
-
-Do not introduce an Invoice-owned Sales Receipt model/API.
-
-`apps/invoice` is a host over the Billing data plane. Shared types/resources belong in `@876/billing`; reusable presentation belongs in `@876/billing-ui` when both hosts genuinely consume it.
-
-### 9. Modules are not feature flags
-
-Billing Sales Receipts live under the existing Sales product area. Do not invent a new `salesReceipts: boolean` product feature flag just to gate the route.
-
-Use the canonical module/navigation/plan system for module availability and the existing broader Sales access/permission model for host access.
-
----
-
-## Persistence and migration already implemented
-
-### New Prisma files
-
-- `apps/billing-api/prisma/schema/sales-receipt.prisma`
-- `apps/billing-api/prisma/schema/sales-receipt-line.prisma`
-
-### Migration
-
-- `apps/billing-api/prisma/migrations/20260911120000_sales_receipts_commercial_engine/migration.sql`
-
-The migration is additive and introduces the Sales Receipt persistence needed by this feature.
-
-Related existing schema files were updated for relations/enums, including:
-
-- `enums.prisma`
-- `payment.prisma`
-- `quote.prisma`
-- `credit-note.prisma`
-- `customer.prisma`
-- `tenant.prisma`
-- `salesperson.prisma`
-- `tax-rate.prisma`
-- `price.prisma`
-- `price-list.prisma`
-- `item.prisma`
-- `item-variant.prisma`
-
-The local agent must run Prisma validation/drift/generation processes required by current repo rules. GPT Web did **not** execute those commands.
-
-Pay special attention to relation cardinality/uniqueness for:
-
-- one Sales Receipt → one embedded Payment;
-- optional Quote → converted Sales Receipt;
-- Credit Notes sourced from a Sales Receipt;
-- line references to item/variant/price/tax snapshots.
-
-Do not assume migration correctness merely because schema and SQL exist.
-
----
-
-## Payment seam already implemented
-
-### Added
-
-- `apps/billing-api/src/modules/payments/settled-payment.ts`
-- `apps/billing-api/src/modules/payments/settled-payment-reversal.ts`
-
-### Shared Payment repository refactor
-
-Relevant changes include:
-
-- `repositories/payments/shared.ts`
-- `repositories/payments/create.ts`
-- `repositories/payments/list.ts`
-- `repositories/payments/retrieve.ts`
-- `repositories/payments/apply.ts`
-- `repositories/payments/update.ts`
-- `repositories/payments/delete.ts`
-
-The settled-payment writer validates the same canonical customer/payment-mode/deposit-account/currency constraints but writes fully-consumed Payment evidence without A/R allocations/customer credit.
-
-Integration attribution is forwarded through `writePaymentEvidence(...)`.
-
-The local agent should specifically regression-test ordinary Payments Received after this refactor. The public behavior of ordinary Payment creation is supposed to remain unchanged.
-
----
-
-## Core Sales Receipt create workflow already implemented
-
-Primary files:
-
-- `apps/billing-api/src/modules/documents/workflows/create-sales-receipt.ts`
-- `apps/billing-api/src/modules/documents/repositories/sales-receipt-workflow.ts`
-- `apps/billing-api/src/modules/documents/schemas/sales-receipt.ts`
-
-The workflow supports two sources:
-
-### Manual Sales Receipt
-
-Caller supplies customer, lines, payment mode, deposit account, and optional pricing/document details.
-
-The workflow resolves through existing owners rather than reimplementing pricing/document arithmetic.
-
-### Accepted Quote conversion
-
-Caller supplies an accepted Quote plus payment details.
-
-The workflow copies historical commercial values from the accepted Quote and creates a direct Sales Receipt.
-
-Important conversion rule:
+Financial status is intentionally:
 
 ```text
-Quote must be ACCEPTED
-Quote -> Sales Receipt directly
-No intermediate Invoice
+PAID
+VOID
 ```
 
-Creation also:
+There is no persisted `DRAFT` or `SENT` Sales Receipt financial status.
 
-- generates document and Payment numbers through the existing document-number owner;
-- records the settled Payment;
-- persists the receipt + immutable lines;
-- consumes inventory;
-- enqueues `sales-receipt.created` in the same transaction;
-- supports integration idempotency/source attribution;
-- protects against duplicate quote conversion.
+Communication state should remain independent if/when sending is added.
 
-Inspect transaction retry/error handling before changing this workflow. It intentionally treats payment, stock, and receipt creation as one commercial operation.
+## Related Prisma changes
+
+Relations were added/updated on:
+
+- `Payment`
+- `Quote`
+- `CreditNote`
+- `Customer`
+- `Tenant`
+- `Item`
+- `ItemVariant`
+- `Price`
+- `PriceList`
+- `TaxRate`
+- `Salesperson`
+
+`DocumentType.SALES_RECEIPT` and Sales Receipt status values were added to the enum schema.
+
+## Migration policy
+
+The migration is additive.
+
+It does **not**:
+
+- rewrite existing Invoices;
+- convert historical paid Invoices into Sales Receipts;
+- reclassify historical Payments;
+- delete financial evidence.
+
+The migration has **not been executed or Prisma-validated by GPT Web**.
+
+Local verification must include schema validate/drift and migration testing against an appropriate test/local database.
 
 ---
 
-## Sales Receipt repositories and read model already implemented
+# 4. IDs and numbering
+
+Sales Receipt IDs use the canonical platform ID generator.
+
+Conceptually:
+
+```text
+SalesReceipt      -> sr_...
+SalesReceiptLine  -> srl_...
+```
+
+Document numbering joins the existing centralized sequence owner:
+
+```text
+DocumentType.SALES_RECEIPT
+SR-000001
+```
+
+`apps/billing-api/src/modules/documents/__tests__/document-numbers.test.ts` was updated, but the test was not run.
+
+---
+
+# 5. Payment architecture
+
+The most important backend refactor was separating durable cash evidence from A/R semantics.
+
+## New settled-payment seam
+
+Key files:
+
+```text
+apps/billing-api/src/modules/payments/settled-payment.ts
+apps/billing-api/src/modules/payments/settled-payment-reversal.ts
+apps/billing-api/src/modules/payments/repositories/payments/shared.ts
+```
+
+The shared seam owns reusable payment/bank behavior without forcing customer-ledger semantics.
+
+Ordinary Payments Received still performs its existing workflow:
+
+```text
+create Payment
++ PAYMENT_RECEIVED customer-ledger credit
++ PaymentAllocation(s)
++ recompute AR
++ BankTransaction
+```
+
+Sales Receipt instead performs:
+
+```text
+create Payment
+unappliedAmount = 0
+NO PAYMENT_RECEIVED AR credit
+NO PaymentAllocation
++ BankTransaction
+```
+
+## Payments Received exclusion
+
+Normal payment repository paths were changed so Sales-Receipt-owned Payments do not masquerade as Payments Received.
+
+Review these files during local verification:
+
+```text
+apps/billing-api/src/modules/payments/repositories/payments/list.ts
+apps/billing-api/src/modules/payments/repositories/payments/retrieve.ts
+apps/billing-api/src/modules/payments/repositories/payments/update.ts
+apps/billing-api/src/modules/payments/repositories/payments/apply.ts
+apps/billing-api/src/modules/payments/repositories/payments/delete.ts
+```
+
+Direct ordinary payment refund handling was also prevented from becoming the Sales Receipt refund path.
+
+---
+
+# 6. Create workflow
+
+Primary implementation:
+
+```text
+apps/billing-api/src/modules/documents/workflows/create-sales-receipt.ts
+apps/billing-api/src/modules/documents/repositories/sales-receipt-workflow.ts
+```
+
+Creation coordinates under a serializable transaction:
+
+```text
+resolve customer/defaults
+resolve quote snapshot OR manual document lines
+resolve pricing/tax through existing owners
+calculate totals
+validate total > 0
+validate bank charges < total
+allocate SR number
+allocate Payment number
+record settled Payment
+create SalesReceipt + immutable lines
+consume Inventory for tracked item/variant lines
+write sales-receipt.created Outbox event
+commit
+```
+
+If inventory/payment/document persistence fails inside that transaction, the operation should roll back as one commercial event.
+
+## Source/integration attribution
+
+Integration-created Sales Receipts carry source attribution/idempotency data.
+
+The embedded Payment now also receives the same source provenance.
+
+Invoice's integration create route **requires** `Idempotency-Key`; this was caught during the later continuation and the Invoice browser client now supplies it.
+
+Tenant/manual Sales Receipt create does not currently have a generic command-idempotency wrapper. The request is atomic, but if local review decides tenant create also needs replayable idempotency, add it deliberately without inventing unstable resource IDs.
+
+---
+
+# 7. Inventory behavior
+
+Creation consumes tracked stock through the generic Inventory domain using:
+
+```text
+reference: { type: 'sales-receipt', id: salesReceiptId }
+reason: 'sale'
+```
+
+Inventory was not taught Sales Receipt lifecycle policy.
+
+## Partial returns
 
 Added:
 
-- `repositories/sales-receipts/index.ts`
-- `repositories/sales-receipts/list.ts`
-- `repositories/sales-receipts/retrieve.ts`
+```text
+apps/billing-api/src/modules/inventory/repositories/return-stock.ts
+```
 
-List supports tenant ownership plus optional:
+The primitive:
 
-- `status` (`PAID | VOID`);
-- integration `sourceAppId` restriction;
-- `customerId` filtering.
+- accepts explicit item/variant targets and quantities;
+- verifies original sale movements exist;
+- accounts for prior sale-reversal quantities;
+- prevents cumulative return quantities exceeding original sold quantities;
+- writes auditable return movement evidence.
 
-`customerId` filtering was added specifically so customer activity surfaces can discover Sales Receipts **without manufacturing A/R ledger entries**.
-
-Do not solve customer history by posting Sales Receipts into the customer A/R ledger.
+Do not replace this with manual stock adjustment from the Sales Receipt workflow.
 
 ---
 
-## Void workflow already implemented
+# 8. Void workflow
 
 Primary file:
 
-- `apps/billing-api/src/modules/documents/workflows/void-sales-receipt.ts`
+```text
+apps/billing-api/src/modules/documents/workflows/void-sales-receipt.ts
+```
 
-Supporting payment reversal:
+Void behavior:
 
-- `apps/billing-api/src/modules/payments/settled-payment-reversal.ts`
+```text
+require receipt exists
+require not already VOID
+block if Credit Note/refund evidence exists
+reverse settled Payment/bank evidence
+restore original inventory sale movement
+mark Sales Receipt VOID
+emit sales-receipt.voided
+```
 
-The void path is intended to reverse eligible settled payment/bank evidence and inventory exactly once without introducing A/R activity.
+Void has no A/R ledger effect.
 
-Local work should add/confirm tests for:
+Billing and Invoice now both expose a permission-gated **Void** action from Sales Receipt detail.
 
-- PAID → VOID happy path;
-- inventory restoration;
-- repeated/replayed void;
-- void after incompatible refunds/returns;
-- bank/payment evidence correctness;
-- no A/R/customer-credit side effects;
-- event/idempotency behavior.
+The shared UI presents an explicit warning that Void is only for an incorrectly entered original sale. Backend validation remains authoritative.
 
----
-
-## Refund / return workflow already implemented
-
-Primary file:
-
-- `apps/billing-api/src/modules/documents/workflows/refund-sales-receipt.ts`
-
-Credit Note reuse/refactor:
-
-- `repositories/credit-notes/create.ts`
-- `repositories/credit-notes/record.ts`
-- `schemas/credit-note.ts`
-
-Refund reuse/refactor:
-
-- `modules/payments/repositories/refunds/create.ts`
-- `modules/payments/repositories/refunds/shared.ts`
-
-Inventory return primitive:
-
-- `modules/inventory/repositories/return-stock.ts`
-- `modules/inventory/inventory.service.ts`
-- `modules/inventory/index.ts`
-- `src/types/inventory.ts`
-
-### Refund semantics implemented
-
-The workflow creates a linked commercial correction and cash refund atomically.
-
-A monetary refund does **not** automatically mean all stock was physically returned.
-
-Returned stock must be supplied explicitly through return lines/quantities.
-
-The Inventory primitive validates cumulative returns so a line cannot be returned beyond its original sold quantity.
-
-### Important tax behavior
-
-Partial refunds proportionally reverse original tax. Preserve this behavior unless the commercial engine later gains a more explicit line-level refund allocation model.
-
-### Local tests that are especially important
-
-- full refund;
-- multiple partial refunds whose total reaches receipt value;
-- over-refund rejection;
-- partial tax calculation;
-- zero-tax receipt;
-- monetary refund with no stock return;
-- partial stock return;
-- repeated partial returns across multiple refunds;
-- over-return rejection;
-- service/non-stock lines;
-- failed Refund write rolling back Credit Note and stock mutation;
-- failed inventory return rolling back Credit Note/Refund.
+Browser refund/void commands now send `Idempotency-Key` headers so supported command retries cannot duplicate correction operations.
 
 ---
 
-## API/controller/service routing already implemented
+# 9. Refund / return workflow
 
-Added:
+Primary implementation:
 
-- `sales-receipts.routes.ts`
-- `sales-receipts.controller.ts`
-- `sales-receipts.service.ts`
+```text
+apps/billing-api/src/modules/documents/workflows/refund-sales-receipt.ts
+apps/billing-api/src/modules/documents/repositories/credit-notes/record.ts
+apps/billing-api/src/modules/payments/repositories/refunds/shared.ts
+```
 
-Mounted through:
+The workflow is intentionally atomic.
 
-- `apps/billing-api/src/http/routes.ts`
-- `apps/billing-api/src/modules/documents/index.ts`
+```text
+Sales Receipt refund request
+  -> validate receipt is PAID
+  -> compute already credited amount
+  -> cap refund at remaining uncredited sale value
+  -> optionally restore explicit returned stock quantities
+  -> issue Credit Note linked to Sales Receipt
+  -> create Refund from Credit Note
+  -> update normal customer credit/ledger projections
+  -> emit sales-receipt.refunded
+```
 
-### Tenant routes
+## Partial tax correction
 
-Implemented conceptual surface:
+Amount-only partial refunds proportionally reverse the original Sales Receipt tax mix.
+
+This prevents a partial refund from reducing only revenue while leaving all original tax recognized.
+
+Exact line-level returned-tax attribution can be improved later without changing the Credit Note + Refund contract.
+
+## Product refund UI now exists
+
+Both apps now have:
+
+```text
+/sales-receipts/:salesReceiptId/refund
+```
+
+The route uses the existing shared `@876/billing-ui/refund-form` but submits through `salesReceipts.refund(...)`, not the generic raw Refund endpoint.
+
+That distinction is critical because the Sales Receipt endpoint performs the required Credit Note + Refund composition.
+
+Current UI supports amount-only refunds.
+
+It intentionally submits:
+
+```text
+returnLines: []
+```
+
+until an explicit receipt-line quantity return editor exists.
+
+---
+
+# 10. Derived correction/refund projection
+
+The Billing service now computes canonical Sales Receipt correction fields instead of making hosts interpret nested Credit Note/Refund arrays.
+
+Every serialized Sales Receipt now includes:
+
+```text
+creditedAmount
+refundedAmount
+refundableAmount
+refundStatus
+```
+
+Definitions:
+
+```text
+creditedAmount
+  = sum(totalAmount of non-VOID Sales-Receipt-linked Credit Notes)
+
+refundedAmount
+  = sum(cash Refund amounts from those non-VOID linked Credit Notes)
+
+refundableAmount
+  = max(SalesReceipt.totalAmount - creditedAmount, 0)
+
+refundStatus
+  = NONE
+  | PARTIALLY_REFUNDED
+  | REFUNDED
+```
+
+This deliberately distinguishes value correction from cash returned.
+
+Example:
+
+```text
+Sales Receipt total:     10,000
+Credit Note held:         2,000
+Cash refunded:                0
+
+creditedAmount:           2,000
+refundedAmount:               0
+refundableAmount:         8,000
+refundStatus:              NONE
+```
+
+The remaining Credit Note balance can still be refunded through the canonical Credit Note refund flow; the Sales Receipt cannot create another value correction over the already credited amount.
+
+These fields are now typed and validated in `@876/billing`.
+
+---
+
+# 11. API surface
+
+Sales Receipts are mounted under Billing API v1.
+
+Tenant routes implemented:
 
 ```text
 GET  /api/v1/sales-receipts
@@ -395,625 +533,587 @@ POST /api/v1/sales-receipts/:salesReceiptId/void
 POST /api/v1/quotes/:quoteId/convert-to-sales-receipt
 ```
 
-Tenant permissions use existing Sales permissions (`sales:read`, `sales:write`).
+Integration routes implemented:
 
-### Integration routes
+```text
+GET  /api/v1/integrations/organizations/:organizationId/sales-receipts
+POST /api/v1/integrations/organizations/:organizationId/sales-receipts
+GET  /api/v1/integrations/organizations/:organizationId/sales-receipts/:salesReceiptId
+POST /api/v1/integrations/organizations/:organizationId/sales-receipts/:salesReceiptId/refund
+POST /api/v1/integrations/organizations/:organizationId/sales-receipts/:salesReceiptId/void
+POST /api/v1/integrations/organizations/:organizationId/quotes/:quoteId/convert-to-sales-receipt
+```
 
-Implemented organization-scoped create/list/get/refund/void plus Quote conversion under the existing integration route family.
+List supports:
 
-Dedicated OAuth/integration scopes were added to:
+```text
+status = PAID | VOID
+customerId
+```
 
-- `apps/api/src/modules/oauth/oauth.scopes.ts`
+Current list behavior follows the neighboring bounded document resource and does not yet expose cursor pagination.
 
-Scopes:
+## OAuth scopes
+
+Declared:
 
 ```text
 billing.sales-receipts.read
 billing.sales-receipts.write
 ```
 
-### Important deployment gap
+**Important deployment action:** Invoice's deployed connection must be granted these scopes in its provisioning-profile revision.
 
-Declaring scopes in code is not sufficient for already-provisioned product connections.
-
-Invoice/Billing integration provisioning-profile data must be checked and updated locally/deployment-side so relevant app connections are actually granted the new scopes where needed.
-
-Do not assume deployed integrations can call these routes merely because OAuth discovery now advertises them.
+Like Quote scopes, `financeScopes` are provisioning data, not a hardcoded repository constant. Do not invent a code-level allowlist just to avoid the provisioning update.
 
 ---
 
-## Mutation response contract was normalized
+# 12. Generated API contracts
 
-During implementation an SDK/API mismatch was found: the SDK expected a Sales Receipt resource while mutation service methods initially returned only `{ object, id }`.
+The source routes changed, but GPT Web did **not** run contract generation/check commands.
 
-The service was changed so create, Quote conversion, refund, and void return the freshly serialized canonical Sales Receipt resource.
+Do not hand-edit generated route/OpenAPI manifests simply to silence drift.
 
-Preserve this consistency unless the broader API standard explicitly requires separate mutation-result schemas.
+Local continuation must regenerate/check through the repository-supported commands and review the resulting generated diff.
+
+Expect route-manifest/OpenAPI drift until that step is run.
 
 ---
 
-## `@876/billing` SDK implementation already present
+# 13. `@876/billing` SDK
 
-### Tenant SDK
+Sales Receipts are first-class SDK resources.
 
-Added:
-
-- `packages/billing/src/types/sales-receipt.ts`
-- `packages/billing/src/types/sales-receipt.schema.ts`
-- `packages/billing/src/resources/sales-receipts.ts`
-
-Wired into:
-
-- `packages/billing/src/client.ts`
-- `packages/billing/src/index.ts`
-
-Canonical surface:
+Tenant client:
 
 ```ts
-billing.salesReceipts.list(...)
+billing.salesReceipts.list()
 billing.salesReceipts.retrieve(id)
 billing.salesReceipts.create(params)
 billing.salesReceipts.refund(id, params)
 billing.salesReceipts.void(id, params)
+
+billing.quotes.convertToSalesReceipt(id, params)
 ```
 
-The list contract supports `status` and `customerId`.
+Integration client has the corresponding Sales Receipt resource and quote-conversion method.
 
-Guaranteed response fields were tightened enough for shared UI:
-
-```ts
-object: 'sales_receipt'
-id: string
-number: string
-status: 'PAID' | 'VOID'
-currency: string
-totalAmount: string
-receiptAt: number
-```
-
-The schema remains passthrough-friendly so backend fields can evolve without requiring synchronized SDK releases for every additive field.
-
-### Quote tenant helper
-
-`packages/billing/src/resources/quotes.ts` now exposes direct conversion to Sales Receipt in the same lifecycle style as Quote → Invoice.
-
-### Integration SDK
-
-Added:
-
-- `packages/billing/src/integration/resources/sales-receipts.ts`
-- `packages/billing/src/integration/types/sales-receipt.ts`
-- `packages/billing/src/integration/types/sales-receipt.schema.ts`
-
-Wired through:
-
-- `packages/billing/src/integration/client.ts`
-- `packages/billing/src/integration/index.ts`
-
-Integration Quote conversion was also added to:
-
-- `packages/billing/src/integration/resources/quotes.ts`
-
-Integration create/conversion requires a stable idempotency key according to the existing integration conventions.
-
-### Variant typing fix
-
-While wiring Sales Receipt form contracts, an existing SDK gap was found: Billing API document lines support `variantId`, but `DocumentLineCreateParams` in `@876/billing` omitted it.
-
-That canonical type was updated. Preserve the field so Sales Receipt line submission does not collapse variant stock identity to item identity.
-
----
-
-## Shared UI already implemented
-
-Added to `@876/billing-ui`:
-
-- `src/sales-receipts-list.tsx`
-- `src/customer-sales-receipts-accordion.tsx`
-
-Package subpath exports were added in:
-
-- `packages/billing-ui/package.json`
-
-`document-status.ts` now contains canonical Sales Receipt filter vocabulary rather than each host inventing its own.
-
-Supported financial filters are:
+The SDK response contract now guarantees:
 
 ```text
-all
-paid
-void
+id
+number
+status
+refundStatus
+currency
+totalAmount
+creditedAmount
+refundedAmount
+refundableAmount
+receiptAt
 ```
 
-Do not restore `draft` or `sent` as Sales Receipt financial statuses. Sending/emailing is communication state, not the commercial financial lifecycle.
+while remaining passthrough-compatible for additional backend fields.
 
-The shared list follows the existing `CustomersList` host-policy pattern:
+Sales Receipt create lines support `variantId` so variant-mode stock is not degraded to item-level sales.
 
-- `@876/billing-ui` owns reusable table/list-detail rendering;
-- the host supplies `baseHref`;
-- the host supplies money/date/status formatting policy where appropriate;
-- host routing/auth/module/session policy remains in the app.
+Do not move this resource onto `$876`; it remains a Billing commercial resource.
 
 ---
 
-## Customer transaction/history integration already implemented
+# 14. Invoice same-origin integration boundary
 
-Modified:
+Invoice does not call Billing API credentials directly from the browser.
 
-- `apps/billing/src/app/(app)/customers/[customerId]/transactions/page.tsx`
-- `apps/invoice/src/app/(app)/customers/[customerId]/transactions/page.tsx`
-
-Both hosts now request Sales Receipts separately by `customerId` and render them as commercial history alongside the existing ledger-backed transaction sections.
-
-This design is intentional.
-
-The current customer `account().statement` is an A/R/accounting ledger read model. A Sales Receipt does not create A/R, so it must **not** be forced into that statement just to make the UI discover it.
-
-The shared `CustomerSalesReceiptsAccordion` renders receipt activity separately.
-
-A/R statement/aging semantics remain unchanged.
-
----
-
-## Invoice Sales Receipt surface already corrected
-
-### Before this branch
-
-Invoice had a Sales Receipts UI/navigation scaffold but it was fake:
-
-- the list loaded Invoices and cast them as Sales Receipts;
-- the detail page searched `listInvoices()` for a receipt ID;
-- status filters included `draft` and `sent`.
-
-### Current branch
-
-Modified:
-
-- `apps/invoice/src/app/(app)/sales-receipts/[salesReceiptId]/page.tsx`
-- `apps/invoice/src/app/(app)/sales-receipts/_components/sales-receipts-list-data.tsx`
-- `apps/invoice/src/app/(app)/sales-receipts/_components/sales-receipts-list.tsx`
-- `apps/invoice/src/app/(app)/sales-receipts/_components/sales-receipts-toolbar.tsx`
-
-Invoice now reads the canonical Sales Receipt resource via its request-scoped Billing client.
-
-The list/detail no longer substitutes Invoice data.
-
-The local Invoice list component has been reduced toward a host wrapper around shared `@876/billing-ui` presentation.
-
-### Cleanup still needed
-
-Inspect remaining Invoice-local Sales Receipt table/list files for dead or now-redundant presentation code. Remove only after confirming no imports/tests still depend on them.
-
----
-
-## Billing Sales Receipt host surface already added
-
-Billing previously had no actual Sales Receipt route sibling under `(sales)`.
-
-Added:
-
-- `apps/billing/src/app/(app)/(sales)/sales-receipts/layout.tsx`
-- `.../sales-receipts/(list)/page.tsx`
-- `.../sales-receipts/[salesReceiptId]/page.tsx`
-- `.../sales-receipts/_components/sales-receipts-list-data.tsx`
-- `.../sales-receipts/_components/sales-receipts-list.tsx`
-- `.../sales-receipts/_components/sales-receipts-section.tsx`
-
-The new host surface:
-
-- sits under the existing `(sales)` parent, which already gates `sales:read` and the broader Sales product area;
-- loads through canonical `getBilling()` / `@876/billing` rather than adding new methods to the legacy `service` compatibility facade;
-- consumes shared `@876/billing-ui` receipt list presentation;
-- preserves the existing list-detail/Suspense shell pattern.
-
-Do not move this new resource back onto the legacy Billing `service` facade unless a separate migration decision requires it.
-
----
-
-## Billing browser mutation client already added
-
-Added:
-
-- `apps/billing/src/lib/client/sales-receipts.ts`
-
-Wired into:
-
-- `apps/billing/src/lib/client/index.ts`
-
-This was the last code slice completed before the handoff snapshot.
-
-It provides the browser-side mutation boundary needed by a future shared create/refund/void UI.
-
----
-
-# What is NOT finished
-
-## Priority 1 — Finish Sales Receipt creation UI
-
-This is the largest incomplete product slice.
-
-Both Billing and Invoice already expose/expect a `New` Sales Receipt route in their UI patterns, but there is not yet one coherent shared creation experience backed by the new resource.
-
-### Recommended direction
-
-Build **one shared Sales Receipt create form in `@876/billing-ui`** using the existing shared `DocumentLineItemsEditor` rather than duplicating invoice/quote forms again.
-
-The form should own reusable Sales Receipt UX only:
-
-- customer selection;
-- line items;
-- item + variant identity;
-- quantity/rate/tax/discount handling through existing shared money/editor code;
-- receipt date;
-- currency;
-- salesperson/price-list fields only if current host data supports them cleanly;
-- payment mode;
-- deposit account;
-- payment date;
-- payment reference;
-- bank charges;
-- receipt reference;
-- notes/terms;
-- in-context error rendering;
-- pending/submit state;
-- redirect to created receipt on success.
-
-The host should own:
-
-- auth/session resolution;
-- access/module gating;
-- data loading;
-- same-origin transport/mutation callback;
-- route return destinations;
-- app-specific shell.
-
-### Do not extend the existing invoice/quote `DocumentCreateForm` into a giant incompatible union unless local review proves that is genuinely cleaner.
-
-Billing and Invoice currently each have their own document-create host wrapper. Sales Receipt adds required settlement fields and materially different submit semantics. The clean plan at handoff is a dedicated shared Sales Receipt form built on the already-shared line-item editor.
-
-## Priority 2 — Finish Invoice browser mutation boundary
-
-Billing browser client support exists.
-
-Invoice still needs the matching safe mutation path.
-
-Invoice browser code should not call Billing API directly with server credentials. Follow Invoice's established same-origin proxy approach:
+New proxy support:
 
 ```text
-browser -> Invoice /api/... proxy -> request-scoped/server Billing client -> Billing API
+apps/invoice/src/app/api/sales-receipts/[[...path]]/route.ts
+apps/invoice/src/lib/api/resource-manifest.ts
+apps/invoice/src/lib/client/sales-receipts.ts
 ```
 
-Recommended work:
+`sales-receipts` was added to the explicit proxy resource manifest.
 
-1. add narrow `apps/invoice/src/lib/client/sales-receipts.ts`;
-2. export it from `apps/invoice/src/lib/client/index.ts`;
-3. add the same-origin API route(s) needed for create, and later refund/void if UI exposes them;
-4. validate body contracts with canonical/shared schemas where current route conventions allow;
-5. preserve Invoice auth/access behavior;
-6. add client/proxy tests following neighboring Payments/Documents patterns.
+The existing manifest test dynamically compares the route directory set to `PROXIED_RESOURCES`, so this route joins that existing contract coverage automatically.
 
-Do not overload Invoice's generic `documents` browser client with Sales Receipt payloads if that creates an incompatible invoice/quote/sales-receipt union.
+## Important idempotency detail
 
-## Priority 3 — Add `new` routes in both hosts
+Invoice's product-app integration create endpoint requires `Idempotency-Key`.
 
-Billing:
+The new Invoice browser Sales Receipt client generates that header for create.
+
+Refund and Void clients in both Billing and Invoice also generate command idempotency keys.
+
+Added Invoice client test:
+
+```text
+apps/invoice/src/lib/client/sales-receipts.test.ts
+```
+
+It asserts create/refund/void route encoding and idempotency headers.
+
+The test was added but not executed.
+
+---
+
+# 15. Shared product UI
+
+New/extended `@876/billing-ui` surfaces include:
+
+```text
+sales-receipts-list
+sales-receipt-create-form
+sales-receipt-lifecycle-actions
+customer-sales-receipts-accordion
+shared sales-receipt status options
+```
+
+Exports were added to `packages/billing-ui/package.json`.
+
+Billing and Invoice own:
+
+- route composition;
+- auth/permissions;
+- server data loading;
+- browser transport wrappers;
+- destination hrefs.
+
+The shared package owns the reusable finance presentation and validation.
+
+That matches the finance-app parity rule and avoids a second Invoice-specific Sales Receipt implementation.
+
+---
+
+# 16. List and detail UI
+
+## Billing
+
+New route family under:
+
+```text
+apps/billing/src/app/(app)/(sales)/sales-receipts/
+```
+
+Includes:
+
+- list page;
+- Suspense/list-detail layout;
+- real SDK-backed list loader;
+- detail page;
+- new form route;
+- refund route;
+- create/refund/lifecycle host wrappers.
+
+## Invoice
+
+The previous Sales Receipt scaffold no longer substitutes Invoice data.
+
+Invoice now reads real Sales Receipt records for list/detail and uses the same shared list/create/lifecycle UI as Billing.
+
+## Financial filters
+
+The old placeholder financial statuses were removed.
+
+Current filter vocabulary:
+
+```text
+All
+Paid
+Void
+```
+
+Do not reintroduce `Draft` or `Sent` as Sales Receipt financial states.
+
+Refund state is shown separately on detail.
+
+---
+
+# 17. New Sales Receipt form
+
+A real create form now exists in **both Billing and Invoice**.
+
+Shared implementation:
+
+```text
+packages/billing-ui/src/sales-receipt-create-form.tsx
+```
+
+Host routes:
 
 ```text
 apps/billing/src/app/(app)/(sales)/sales-receipts/new/page.tsx
-```
-
-Invoice:
-
-```text
 apps/invoice/src/app/(app)/sales-receipts/new/page.tsx
 ```
 
-Follow existing route-shell rules:
+Form fields currently include:
 
-- creation is a route, not a modal/dialog;
-- preserve list-detail takeover behavior already used by finance routes;
-- start independent server reads concurrently/Suspense where current host conventions support it;
-- mutation errors stay in-context rather than replacing the shell;
-- permission failures use established no-access behavior.
+- customer;
+- currency;
+- receipt date;
+- sale reference;
+- item/variant lines;
+- quantity;
+- rate;
+- line tax;
+- amount/percentage discount through the shared line editor;
+- payment mode;
+- deposit account filtered by currency;
+- payment reference;
+- bank charges;
+- notes;
+- terms.
 
-Required supporting reads likely include customers/items/currencies/payment modes/deposit accounts, with optional salesperson/price-list reads depending on final form scope.
+It uses the existing shared `DocumentLineItemsEditor` and server-owned Billing calculation remains authoritative.
 
-## Priority 4 — Add lifecycle controls to detail as appropriate
+The UI enforces stock previews for tracked items/variants; Inventory still performs the authoritative mutation-time stock check.
 
-List/detail reading exists, but richer actions are not fully surfaced.
+The form correctly represents an immediate sale:
 
-Consider shared UI for:
+```text
+button: Create sales receipt
+NO Save Draft
+NO Invoice creation
+```
 
-- Refund Sales Receipt;
-- Void Sales Receipt;
-- print/PDF/send later if/when document delivery infrastructure is already available;
-- derived refund state display.
+## Known create-form follow-ups
 
-Do not add speculative communication/POS subsystems as part of this run.
+The form does **not** yet expose:
 
-## Priority 5 — Reconcile and expand tests
+- salesperson selector;
+- explicit price-list selector;
+- quote prefill/conversion mode.
 
-Most implementation in this branch is currently **untested by this GPT Web run**.
+The backend supports salesperson/price-list defaults and direct Quote conversion.
 
-At minimum add/verify focused coverage across these areas.
+The page currently preloads up to 100 active Items and 100 active variants. For large catalogs, replace this with the same server-search/typeahead pattern used elsewhere rather than simply raising the limit indefinitely.
 
-### Billing API workflow tests
+---
 
-Create:
+# 18. Customer Transactions and AR
 
-- manual Sales Receipt success;
-- accepted Quote conversion success;
-- non-accepted Quote rejection;
-- duplicate Quote conversion/replay;
-- integration idempotent replay;
-- idempotency key + payload mismatch conflict;
-- unavailable customer/payment mode/account/currency failures;
-- inventory failure rolls back Payment/BankTransaction/receipt/event;
-- embedded Payment gets zero unapplied amount;
-- no `PaymentAllocation` rows;
-- no `PAYMENT_RECEIVED` ledger entry;
-- integration attribution reaches Payment.
+Sales Receipts now appear in customer commercial transaction history in both Billing and Invoice through a shared accordion/surface.
 
-Void:
+They intentionally do **not** become synthetic customer-statement entries.
 
-- valid void;
-- inventory restoration exactly once;
-- settled Payment/bank reversal;
-- repeated void/replay;
-- incompatible refunded/returned state blocked;
-- no A/R side effects.
+Creation leaves these unchanged:
 
-Refund:
+```text
+Customer.outstandingReceivable
+Customer.unusedCredits
+```
 
-- full refund;
-- partial refund;
-- proportional tax reversal;
-- cumulative over-refund rejected;
-- explicit stock return;
-- no stock return when returnLines omitted;
+Sales Receipt activity belongs in Transactions/Activity.
+
+AR statement/aging remains invoice/ledger based.
+
+The accounting model now documents this explicitly.
+
+---
+
+# 19. Accounting documentation
+
+Updated:
+
+```text
+apps/billing/docs/accounting-model.md
+```
+
+It now documents:
+
+- intent vs receivable vs immediate paid sale;
+- Sales Receipt no-A/R semantics;
+- embedded settled Payment behavior;
+- Void vs return/refund;
+- Credit Note + Refund correction chain;
+- derived correction/refund fields;
+- Sales Receipt AR neutrality;
+- statement behavior;
+- updated financial flow diagram.
+
+Preserve these rules if local refactoring changes naming or code structure.
+
+---
+
+# 20. Quote → Sales Receipt conversion — implemented backend, UI intentionally withheld
+
+Backend and SDK conversion support exists.
+
+A Quote converted to Sales Receipt copies the accepted historical commercial values and requires payment/deposit details.
+
+It creates **no intermediate Invoice**.
+
+However, do **not** expose the product UI action yet.
+
+## Critical remaining invariant
+
+`Quote` currently has two separate one-to-one conversion relations:
+
+```text
+convertedInvoice
+convertedSalesReceipt
+```
+
+That does not by itself guarantee one economic conversion across both kinds.
+
+A Quote can be prevented from creating two Invoices and can be prevented from creating two Sales Receipts, but cross-kind exclusivity still needs a shared mechanism.
+
+At minimum the final design must ensure:
+
+```text
+Accepted Quote
+  -> either Invoice
+  -> or Sales Receipt
+  -> never both
+```
+
+and it must remain true under concurrent requests.
+
+During this continuation `quotes.retrieve()` was extended to load both conversion targets in preparation for the fix, but the shared cross-kind claim/constraint is **not complete**.
+
+### Recommended solution direction
+
+Prefer one explicit Quote conversion claim owned by Documents rather than relying on two independent relation checks.
+
+Possible patterns to evaluate locally:
+
+1. additive Quote conversion fields claimed atomically, e.g. conversion kind + timestamp/resource identity;
+2. a dedicated QuoteConversion row with a unique `quoteId` and conversion kind/resource evidence;
+3. another existing repository-approved transactional claim mechanism if one already exists.
+
+Whatever is chosen must handle both sequential and truly concurrent Invoice-vs-Sales-Receipt conversion attempts.
+
+Do not solve only the UI visibility case.
+
+Required tests should include:
+
+```text
+accepted quote -> invoice -> Sales Receipt rejected
+accepted quote -> Sales Receipt -> invoice rejected
+concurrent invoice + Sales Receipt conversion -> exactly one wins
+same-kind conversion retry remains idempotent/replayed
+```
+
+After this is closed, add the Quote UI choice:
+
+```text
+Convert to Invoice      pay later
+Convert to Sales Receipt paid now
+```
+
+The Sales Receipt choice needs payment mode/deposit-account inputs before submission.
+
+---
+
+# 21. Tests added vs tests still needed
+
+## Added but not executed
+
+- document-number Sales Receipt updates;
+- `apps/billing-api/src/modules/documents/__tests__/sales-receipt.schemas.test.ts`;
+- `apps/invoice/src/lib/client/sales-receipts.test.ts`;
+- existing Invoice proxy-manifest test automatically covers the new resource directory/manifest parity.
+
+Schema tests pin:
+
+- valid manual immediate sale;
+- customer/lines required for manual create;
+- quote conversion cannot override quote commercial snapshot fields;
+- duplicate return-line IDs rejected.
+
+Invoice browser client tests pin:
+
+- required integration create idempotency key;
+- encoded refund route;
+- encoded void route;
+- command idempotency headers.
+
+## Still required
+
+Prioritize tests for:
+
+### Create
+
+- Sale creates one Sales Receipt and one embedded Payment.
+- `unappliedAmount = 0`.
+- no PaymentAllocation.
+- no customer `PAYMENT_RECEIVED` ledger credit.
+- A/R unchanged.
+- customer unused credit unchanged.
+- inventory consumes once.
+- bank transaction created once.
+- outbox event written once.
+- failure in Inventory/Payment/document event rolls back all parts.
+
+### Payments Received isolation
+
+- embedded Sales Receipt Payment absent from normal payment list.
+- cannot retrieve/update/apply/cancel embedded payment through normal payment endpoints.
+- cannot direct-refund the embedded payment through ordinary unapplied-payment refund path.
+
+### Void
+
+- reverses payment/bank evidence;
+- restores inventory exactly once;
+- no A/R mutation;
+- blocked after Credit Note/refund evidence;
+- retry/idempotency behavior.
+
+### Refund
+
+- partial amount refund creates linked Credit Note + Refund atomically;
+- proportional tax behavior;
+- partial refund correctly updates projected fields;
+- repeat refund capped at uncredited value;
+- explicit stock return quantities restored;
 - cumulative over-return rejected;
-- rollback of Credit Note/Refund/Inventory on any failure.
+- service/non-stock lines cannot be falsely returned to inventory;
+- transaction rollback leaves no half-created Credit Note or Refund.
 
-### API route/security tests
+### Tenant/integration isolation
 
-Add tenant and integration route tests for:
+- wrong tenant cannot access a receipt;
+- app-scoped integration access cannot retrieve/mutate another source app's receipt;
+- scope checks use dedicated Sales Receipt scopes.
 
-- read scope;
-- write scope;
-- missing/wrong scopes;
-- organization ownership;
-- source-app isolation where appropriate;
-- customerId/status query validation;
-- mutation idempotency headers;
-- Quote conversion routes.
+### Quote conversion
 
-### Payment regression tests
+- all cross-kind exclusivity cases described above.
 
-Because payment internals were refactored, verify ordinary Payments Received still:
+### SDK/UI
 
-- posts normal customer ledger credit;
-- allocates to invoices;
-- leaves unapplied customer credit when appropriate;
-- does not accidentally filter ordinary payments;
-- preserves update/delete/refund behavior.
-
-### Inventory tests
-
-Test the new return primitive independently:
-
-- tracked item;
-- tracked variant;
-- non-stock/service line behavior;
-- repeated partial returns;
-- over-return conflict;
-- missing original movement;
-- tenant/reference isolation.
-
-### SDK tests
-
-Tenant and integration clients should pin:
-
-- paths;
-- methods;
-- query serialization;
-- request bodies;
-- idempotency header behavior;
-- schemas;
-- Quote conversion helper.
-
-### UI tests
-
-Add/adjust Billing + Invoice tests for:
-
-- real Sales Receipt list loading;
-- paid/void filtering only;
-- shared list/detail behavior;
-- customer Sales Receipt history;
-- create form validation/submission/error behavior once implemented;
-- host guard/module behavior.
+- Sales Receipt schema projection fields;
+- Billing browser lifecycle client routing/idempotency;
+- shared create-form payload mapping;
+- Billing and Invoice route permission gates;
+- refund form does not allow more than `refundableAmount`.
 
 ---
 
-## Priority 6 — API contract generation/check
+# 22. Reporting still incomplete
 
-The route implementation changed, but generated route/OpenAPI contract artifacts were intentionally **not hand-edited**.
+Sales Receipts are not yet wired into canonical sales-report projections.
 
-Run the repo's canonical API contract generation/check workflow and commit whatever generated artifacts are required by current rules.
-
-Do not manually fabricate route-manifest/OpenAPI output.
-
-Verify the generated contract includes:
-
-- tenant Sales Receipt routes;
-- integration Sales Receipt routes;
-- Quote → Sales Receipt conversion routes;
-- dedicated integration scopes;
-- `customerId` and status query fields;
-- correct success/error envelopes.
-
----
-
-## Priority 7 — Provisioning scope grants
-
-The OAuth scope registry now advertises:
+Target semantic rule:
 
 ```text
-billing.sales-receipts.read
-billing.sales-receipts.write
+commercial sales =
+  finalized/non-void Invoice sales
+  + non-void Sales Receipt sales
+  - applicable Credit Notes
 ```
 
-Inspect canonical provisioning-profile data for Invoice and any product integration expected to consume Sales Receipts. Existing connections may require a profile revision/reprovisioning path before deployed calls work.
-
-This is a deployment/data-plane task, not just a code declaration.
-
----
-
-## Priority 8 — Reporting integration
-
-Customer activity integration exists separately from A/R.
-
-Still review existing Sales reports and extend them only where there is an established reporting owner.
-
-Expected behavior:
+But keep these invoice/AR-based:
 
 ```text
-Sales totals/history: include Sales Receipts where appropriate
-A/R aging: exclude Sales Receipts
-Open receivables: exclude Sales Receipts
-Customer available credit: unchanged by Sales Receipt creation
+AR aging
+open receivables
+overdue invoices
 ```
 
-Do not rename existing metrics such as `lifetimeBilled` casually. If its semantics are invoice-only, either preserve that meaning or add a coordinated new sales metric rather than silently broadening it.
+Do not build a parallel reporting subsystem just for this feature.
+
+Extend the existing report owner only where current architecture provides a canonical place.
+
+`lifetimeBilled` remains intentionally invoice-specific for now. Do not silently change its meaning. If the product needs a broader customer metric, add a clearly named `lifetimeSales` projection in a coordinated change.
 
 ---
 
-## Priority 9 — Documentation
+# 23. Permissions and access
 
-Still required:
-
-- update `apps/billing/docs/accounting-model.md`;
-- document credit sale vs immediate paid sale;
-- document why embedded Sales Receipt Payments are not ordinary Payments Received;
-- document Sales Receipt void/refund/return correction semantics;
-- update relevant product docs/feature specs if they enumerate sales documents;
-- record integration scope/provisioning implications.
-
-Suggested accounting explanation:
+Billing Sales Receipt pages use the existing sales permissions:
 
 ```text
-Invoice sale:
-Dr Accounts Receivable
-Cr Sales Revenue
-Cr Tax Payable
-
-Payment against Invoice:
-Dr Cash/Bank
-Cr Accounts Receivable
-
-Sales Receipt:
-Dr Cash/Bank
-Cr Sales Revenue
-Cr Tax Payable
-
-No Accounts Receivable leg is created for the Sales Receipt.
+sales:read
+sales:write
 ```
 
-Inventory COGS/stock accounting remains subject to the current commercial engine's existing inventory/accounting ownership.
+Invoice does not currently have a Sales-Receipt-specific app permission family.
+
+The new host routes reuse the existing sales-document permissions rather than inventing local-only permission names:
+
+- create uses `invoices.create`;
+- refund/void uses `invoices.edit`.
+
+Revisit this only as part of a coordinated access-catalog evolution, not as an isolated Sales Receipt string addition.
+
+The Billing API remains authoritative with its tenant `sales:*` permission and integration Sales Receipt OAuth scopes.
 
 ---
 
-## Priority 10 — Tracker and plan resync
+# 24. Module and feature gating
 
-`tracker.md` is currently stale.
-
-Before closeout, inspect code and mark actual state rather than mechanically checking everything.
-
-Likely current high-level state:
+The canonical module already exists:
 
 ```text
-Phase 1 persistence: largely implemented, needs verification/tests
-Phase 2 payment seam: implemented, needs regression tests
-Phase 3 create workflow: implemented, needs focused tests
-Phase 4 API/read routes: implemented, needs contract/security tests
-Phase 5 void: implemented, needs focused tests
-Phase 6 Quote conversion: implemented, needs tests
-Phase 7 returns/refunds: implemented, needs tests/refinement review
-Phase 8 SDK: implemented, needs tests
-Phase 9 UI: list/detail substantially implemented; create form/mutation completion remains
-Phase 10 customer/reporting: customer history implemented; reporting review remains
-Phase 11 docs/finalization: incomplete
+sales-receipts
 ```
 
-Keep `plan.md` status `IN_PROGRESS` until verification and remaining UI/docs are coherent.
+Do not create another module key.
+
+Do not add a dedicated boolean product feature merely because Sales Receipts are now implemented.
+
+Billing's route family lives under the existing broader `sales` product feature/access shell, while module/navigation availability remains governed by the canonical module system.
+
+This follows the repository rule:
+
+```text
+modules != feature flags
+```
 
 ---
 
-## Known review risks
+# 25. Known static/compile risks to check first locally
 
-### 1. Branch has many small commits
+Because GPT Web could not run typecheck, check these immediately.
 
-At handoff the branch was 122 commits ahead of `main` before this report commit. This is largely connector write granularity, not 122 conceptual features.
+## Shared create form
 
-Do not assume commit boundaries correspond to implementation phases. Preserve history unless the repo's normal local/PR process explicitly calls for consolidation/squash.
+File:
 
-### 2. Schema/migration were not validated
+```text
+packages/billing-ui/src/sales-receipt-create-form.tsx
+```
 
-The SQL and Prisma schema were written but no migration, generation, validation, or drift command was run by GPT Web.
+Verify:
 
-### 3. Refactored Payment and Refund internals are high-risk regression surfaces
+- React namespace types resolve as expected;
+- `SalesReceiptCreateParams` minor-unit types accept the prepared string values;
+- `DocumentLineItemsEditor` draft-to-payload mapping matches current types;
+- percentage discount conversion uses the correct subtotal semantics;
+- currency changes correctly clear stale catalog selections;
+- no missing imports/format helper drift.
 
-The feature intentionally reuses existing payment/refund owners. This is architecturally preferable, but it means ordinary payment/refund behavior must receive regression testing.
+## Host item/variant mapping
 
-### 4. Tracker does not reflect branch reality
+Verified by inspection against SDK types:
 
-Do not use unchecked boxes to infer missing code.
+- Item has `name`, `defaultSellingAmount`, `defaultSellingCurrency`, stock fields.
+- Variant has `name`, `sku`, `defaultSellingAmount`, `defaultSellingCurrency`, `stockQuantity`.
 
-### 5. UI compile issues may remain
+Still run typecheck to validate inference through the page mapping.
 
-Shared exports, host imports, Next route typing, response-field narrowing, money formatter expectations, and client/server boundaries have not been typechecked.
+## Derived correction projection
 
-### 6. API generated artifacts may be stale
+File:
 
-Run canonical contract generation/check; do not hand-edit output.
+```text
+apps/billing-api/src/modules/documents/sales-receipts.service.ts
+```
 
-### 7. Provisioning profiles may not grant new scopes
+Verify Prisma-inferred `creditNotes/refunds` shapes satisfy the local projection helper and that all list/retrieve/mutation resource responses contain the new required SDK fields.
 
-Code-level scopes and deployment-level grants are different concerns.
+## Detail action imports/client boundaries
 
-### 8. Refund accounting needs tests, not intuition
-
-The current implementation uses proportional tax reversal for amount-only partial refunds. Validate exact rounding behavior in minor units against the commercial engine's money rules.
-
----
-
-# Recommended local continuation order
-
-Use this order to avoid doing UI work on top of a broken backend contract.
-
-1. Pull/checkout `feat/sales-receipts-commercial-engine` and read `CLAUDE.md`, GPT Web rules, this handoff, `plan.md`, and `tracker.md`.
-2. Inspect `git diff main...HEAD` and preserve local/other-agent changes if any have landed since this handoff.
-3. Run formatting/typecheck on the narrowest affected packages first to expose compile errors before adding more code.
-4. Validate Prisma schema and migration; fix relation/enum/migration issues without changing core invariants.
-5. Run/add focused Billing API tests for create/void/refund/return and Payment regressions.
-6. Run API contract generation/check and commit generated artifacts if required.
-7. Finish Invoice same-origin Sales Receipt mutation proxy/client.
-8. Build shared `@876/billing-ui` Sales Receipt create form using the shared line-item editor.
-9. Add Billing and Invoice `/sales-receipts/new` routes using host-owned loaders/mutation callbacks.
-10. Add/refine detail lifecycle actions only after create is stable.
-11. Run Billing SDK/integration SDK tests.
-12. Run Billing/Invoice/shared-UI tests and typechecks.
-13. Review/reporting behavior; keep A/R neutral.
-14. Update accounting/product docs.
-15. Remove confirmed dead placeholder/duplicate Sales Receipt UI code.
-16. Resync tracker/plan against actual implementation.
-17. Run full required verification and perform final diff review against `main`.
-18. Write the final implementation report only after the above is complete.
+Verify Billing and Invoice detail pages correctly cross the server/client boundary into their lifecycle wrappers and that Next's route composition accepts the nested refund pages in the existing list-detail shell.
 
 ---
 
-## Verification commands from the implementation plan
+# 26. Verification commands
 
-GPT Web did not execute these. Run them locally and adjust package names only if current workspace metadata differs.
+Use the repository's real package names if any command aliases differ.
+
+The original plan lists the expected verification matrix. At minimum run:
 
 ```bash
 pnpm --filter @876/billing-api typecheck
@@ -1038,100 +1138,218 @@ pnpm --filter @876/invoice typecheck
 pnpm --filter @876/invoice test
 ```
 
-Also run any canonical Prisma generation/format command required by the current Billing API package before typecheck if the generated client is stale. Follow current repository scripts rather than guessing a raw Prisma command.
+Also run the repository-supported API contract generation command before `api:contract:check` if contract artifacts are expected to change.
+
+Do not mark the tracker complete until real output has been captured/reviewed.
 
 ---
 
-## Suggested targeted first-pass verification
+# 27. Recommended local continuation order
 
-Before running the entire suite, a useful local sequence is:
+Use this order to minimize churn.
 
-```text
-1. Prisma validate/generate as prescribed by package scripts
-2. Billing API typecheck
-3. Billing API Sales Receipt workflow/route tests
-4. Billing API Payment/Refund/Inventory regression tests
-5. @876/billing typecheck/tests
-6. @876/billing-ui typecheck/tests
-7. Billing app typecheck
-8. Invoice app typecheck
-9. API contract check
-10. Full affected-package tests/builds
+## Step 1 — Pull and establish exact branch state
+
+```bash
+git switch feat/sales-receipts-commercial-engine
+git pull
 ```
 
-If typecheck fails in UI first, do not paper over it with `as unknown as` unless the boundary is already an established compatibility layer. Prefer fixing canonical SDK response typing or host mapping.
+Then read:
+
+```text
+CLAUDE.md
+.agents/rules/gpt-web-operating-rules.md
+plans/2026-09-11-sales-receipts-commercial-engine/plan.md
+plans/2026-09-11-sales-receipts-commercial-engine/tracker.md
+this handoff
+```
+
+## Step 2 — Run typecheck before adding more features
+
+Start with:
+
+```text
+@876/billing-api
+@876/billing
+@876/billing-ui
+Billing app
+Invoice app
+```
+
+Fix concrete static errors before broad refactors.
+
+## Step 3 — Close Quote cross-kind conversion exclusivity
+
+This is the highest-priority correctness gap.
+
+Do not expose the Quote → Sales Receipt product action until concurrent one-conversion semantics are guaranteed.
+
+## Step 4 — Regenerate/check API contracts
+
+Sales Receipt routes/scopes are new and generated contract artifacts are expected to move.
+
+Review generated diffs rather than manually editing them.
+
+## Step 5 — Run focused tests and add missing workflow/API tests
+
+Start with the Sales Receipt request/client tests already added, then add/create integration tests around transactional negative space and tenant/source isolation.
+
+## Step 6 — Apply/validate migration in a safe environment
+
+Confirm:
+
+- schema validity;
+- no destructive drift;
+- FK/index names;
+- existing Billing data remains intact;
+- new tables/relations work with Prisma generation.
+
+## Step 7 — Add Quote conversion UX
+
+Once exclusivity is closed:
+
+```text
+Accepted Quote
+  [Convert to Invoice]
+  [Convert to Sales Receipt]
+```
+
+Sales Receipt conversion must collect payment mode/deposit account and optional references before submission.
+
+## Step 8 — Add explicit returned-line quantity UI
+
+Keep the existing amount-only refund workflow intact.
+
+Add line selection/quantity only when the UI can correctly show sold quantity, previously returned quantity, and remaining returnable quantity.
+
+## Step 9 — Extend existing sales reports
+
+Only through the canonical report owner.
+
+Do not touch A/R aging semantics.
+
+## Step 10 — Provision deployed Invoice scopes
+
+Update the relevant provisioning-profile revision with:
+
+```text
+billing.sales-receipts.read
+billing.sales-receipts.write
+```
+
+Without this data update, Invoice's new proxy/client code can be structurally correct but fail authorization in a deployed environment.
+
+## Step 11 — Full verification and adversarial review
+
+Review for:
+
+- duplicate helpers/resources;
+- stale Invoice placeholder Sales Receipt components no longer used;
+- hidden Payments Received leakage;
+- accidental AR/customer-credit effects;
+- BigInt/JSON serialization problems;
+- tenant/source isolation gaps;
+- cross-kind Quote conversion race;
+- refund/void idempotency;
+- stock over-return;
+- error swallowing;
+- generated-contract drift;
+- module/feature-gating drift;
+- large-catalog create-form behavior.
+
+## Step 12 — Finalize docs/tracker/report
+
+Only after verification:
+
+- mark tracker items from actual evidence;
+- update `plan.md` status from `IN_PROGRESS` to completed if warranted;
+- write a final implementation report with commands/results and migration/provisioning notes;
+- then prepare PR/merge according to current user permission and repo rules.
 
 ---
 
-## Final acceptance criteria for this run
+# 28. Things deliberately not built
 
-Do not mark the run complete until all of the following are true:
+Do not expand this branch into speculative commerce scope.
 
-- manual Sales Receipt can be created from Billing and Invoice;
-- accepted Quote can convert directly to Sales Receipt with payment details;
-- Sales Receipt creation is atomic across receipt/payment/bank/inventory/outbox;
-- no Invoice/A/R/unused-credit/PaymentAllocation is created by a Sales Receipt;
-- embedded Payment is hidden from ordinary Payments Received while remaining available for banking/audit/refund internals;
-- list/retrieve work in tenant and integration authorities;
-- void reverses eligible sale settlement/inventory exactly once;
-- refund composes Credit Note + Refund and only restores explicitly returned stock;
-- partial refunds handle tax correctly in integer minor units;
-- integration attribution and idempotency work for both receipt and Payment;
-- Billing and Invoice consume the same canonical resource;
-- customer commercial history shows Sales Receipts without contaminating A/R statements;
-- Sales Receipt statuses remain financially `PAID | VOID` with refund state derived separately;
-- generated API contracts and provisioning scopes are coherent;
-- tests/typecheck/lint/build/database checks required by repo rules pass;
-- accounting/product documentation is updated;
-- `tracker.md` and `plan.md` reflect reality;
-- final diff review finds no duplicate domain model, speculative Orders/POS scope, swallowed errors, unsafe compatibility residue, or accidental A/R behavior;
-- final implementation report is written.
+Still out of scope:
+
+- Orders;
+- carts;
+- checkout sessions;
+- POS registers/cash drawers/shifts;
+- store/location/channel models;
+- fulfillment;
+- promotions;
+- gift cards;
+- loyalty;
+- restaurant tables/kitchen tickets;
+- marketplace order orchestration;
+- new payment-provider adapters.
+
+Sales Receipt is the commercial primitive those future systems can consume; they do not need to be built here.
 
 ---
 
-## No claims of verification
+# 29. Current branch assessment
 
-No local shell was available to this GPT Web implementation run. Therefore I did **not** execute or verify:
+The branch is no longer just backend scaffolding. It now has a coherent immediate-sale lifecycle across the Billing plane and the two finance hosts:
 
-- TypeScript typecheck;
-- ESLint/lint;
-- Vitest/test suites;
-- package builds;
+```text
+Create
+  -> Sales Receipt
+  -> settled Payment/bank evidence
+  -> Inventory sale movement
+
+Inspect
+  -> same canonical record in Billing and Invoice
+  -> customer Transactions visibility
+  -> no AR statement noise
+
+Correct entered-in-error sale
+  -> Void
+  -> reverse payment/bank
+  -> restore inventory
+
+Real customer refund
+  -> Sales Receipt refund
+  -> Credit Note
+  -> Refund
+  -> optional explicit inventory return
+```
+
+The main reasons it is still **not merge-ready** are now concentrated:
+
+1. no executable verification has been run from this session;
+2. Quote cross-kind conversion exclusivity must be made concurrency-safe;
+3. generated API contracts need regeneration/checking;
+4. workflow/API negative-space tests are incomplete;
+5. deployment provisioning must grant the new Invoice scopes;
+6. sales-report integration remains unfinished;
+7. physical returned-line UI remains intentionally incomplete;
+8. local typecheck may expose static issues in the newly added shared form/host route code.
+
+Do not discard the current architecture to fix those items. Finish them within the existing ownership boundaries.
+
+---
+
+# 30. GPT Web verification statement
+
+GPT Web did **not** execute:
+
+- typecheck;
+- lint;
+- unit/integration tests;
+- builds;
 - Prisma generation;
-- Prisma schema validation;
-- migration application;
-- database drift checks;
+- Prisma validation/drift commands;
+- migrations;
 - API contract generation/check;
-- runtime browser flows;
-- deployed OAuth/provisioning behavior.
+- deployment provisioning updates.
 
-The code should be treated as an implemented but **unverified** branch until the local agent completes those steps.
+No claim is made that any of those pass.
 
----
+No PR was opened.
 
-## Short continuation brief for a local coding agent
-
-```text
-Continue on feat/sales-receipts-commercial-engine.
-
-Read:
-- CLAUDE.md
-- .agents/rules/gpt-web-operating-rules.md
-- all rules listed in plans/2026-09-11-sales-receipts-commercial-engine/plan.md
-- plan.md
-- tracker.md
-- reports/gpt-web/2026-09-11-local-handoff.md
-
-Do not rewrite the Sales Receipt architecture into invoice+payment.
-Preserve A/R neutrality, zero-unapplied embedded Payments, no PaymentAllocation,
-explicit stock returns, Credit Note + Refund separation, and direct accepted
-Quote -> Sales Receipt conversion.
-
-First validate/fix the existing backend/Prisma/SDK changes and add targeted tests.
-Then finish Invoice same-origin Sales Receipt mutations, a shared @876/billing-ui
-Sales Receipt create form, and /sales-receipts/new in Billing + Invoice.
-Run canonical API contract generation/check, provisioning-scope review, docs,
-tracker resync, full verification, and final diff review before claiming complete.
-
-Do not open or merge a PR unless separately authorized by the user.
-```
+The local/orchestrating agent owns all executable verification and final merge readiness.
