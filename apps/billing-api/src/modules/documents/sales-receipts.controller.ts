@@ -1,12 +1,14 @@
 import type { Request, Response } from 'express'
 
 import { getPrincipal } from '@/http/auth'
+import { optionalCommandIdempotency } from '@/http/command-idempotency'
 import { integrationAttribution } from '@/http/integration/idempotency'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 
 import type {
   SalesReceiptCreateParams,
   SalesReceiptStatus,
+  SalesReceiptVoidParams,
 } from './schemas/sales-receipt'
 import { salesReceiptsService as service } from './sales-receipts.service'
 
@@ -45,6 +47,22 @@ export const salesReceiptsController = {
       validBody<SalesReceiptCreateParams>(req)
     )
     res.status(201).json(result.resource)
+  },
+
+  async void(req: Request, res: Response) {
+    const salesReceiptId = param(req, 'salesReceiptId')
+    const body = validBody<SalesReceiptVoidParams>(req)
+    res
+      .status(201)
+      .json(
+        await service.void(
+          tenant(req),
+          salesReceiptId,
+          body,
+          undefined,
+          optionalCommandIdempotency(req, { salesReceiptId, body })
+        )
+      )
   },
 
   async integrationList(req: Request, res: Response) {
