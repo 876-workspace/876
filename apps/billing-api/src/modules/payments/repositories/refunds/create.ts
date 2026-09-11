@@ -111,6 +111,7 @@ export async function create(
             where: {
               id: params.paymentId,
               tenantId,
+              salesReceipt: { is: null },
               ...(sourceAppId ? { sourceAppId } : {}),
             },
             select: {
