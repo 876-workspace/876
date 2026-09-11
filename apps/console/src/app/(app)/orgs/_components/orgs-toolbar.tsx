@@ -34,6 +34,7 @@ export function OrgsToolbar({ status }: { status: string }) {
       title="Organizations"
       titleFilter={
         <StatusFilterHeading
+          basePath="/orgs"
           label="Organizations"
           value={status}
           options={ORG_STATUS_OPTIONS}

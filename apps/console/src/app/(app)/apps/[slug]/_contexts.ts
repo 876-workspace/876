@@ -18,5 +18,5 @@ export async function resolveAppContexts(
   const app = await resolveApp(slug)
   if (!app) return []
 
-  return [appSidebarContext(app.app_kind, slug, app.name)]
+  return [appSidebarContext(app.app_kind, slug, app.name, app.logo_url)]
 }

@@ -34,6 +34,7 @@ export function UsersToolbar({ status }: { status: string }) {
       title="Users"
       titleFilter={
         <StatusFilterHeading
+          basePath="/users"
           label="Users"
           value={status}
           options={USER_STATUS_OPTIONS}

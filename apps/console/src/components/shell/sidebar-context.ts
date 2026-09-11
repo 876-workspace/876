@@ -39,6 +39,12 @@ export type SidebarContext = {
   href: string
   /** Icon key for the back control. A string, like every registry icon. */
   icon?: string
+  /**
+   * The context's own logo, for a context that is a record with one (an app).
+   * A plain URL string so the registry still crosses the RSC boundary; `null`
+   * means "has a logo slot but none is set", so initials render instead.
+   */
+  logoUrl?: string | null
   colorClassName?: string
   activeClassName?: string
   /** The context to return to. `null` only for the platform root. */

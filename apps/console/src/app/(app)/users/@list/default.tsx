@@ -1,6 +1,10 @@
-import { UsersListData } from '../_components/users-list-data'
+import UsersListSlot from './page'
 
-/** Fallback for a hard navigation whose slot state cannot be recovered. */
+/**
+ * A hard load of a record URL cannot recover the slot's active page, so the
+ * list renders unfiltered — the same tree as the index page, so closing the
+ * record does not reshape the column.
+ */
 export default function UsersListDefault() {
-  return <UsersListData />
+  return <UsersListSlot searchParams={Promise.resolve({})} />
 }

@@ -4,6 +4,7 @@ import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
 import { ChevronsLeft } from '@876/ui/icons'
 import { Logo } from '@876/ui/logo'
+import { OrgAvatar } from '@876/ui/org-avatar'
 import {
   Sidebar as SidebarRoot,
   SidebarContent,
@@ -92,12 +93,7 @@ export function Sidebar({
       }}
     >
       <SidebarHeader className="border-sidebar-border border-b px-3 pt-3 pb-3 group-data-[collapsible=icon]:px-2">
-        <ContextHeader
-          context={context}
-          parent={parent}
-          expanded={expanded}
-          onBack={() => setDismissed({ key: context.key, pathname })}
-        />
+        <ConsoleHome />
         <SlotRegion slots={slots} region="top" expanded={expanded} />
       </SidebarHeader>
 
@@ -107,6 +103,15 @@ export function Sidebar({
           className="flex flex-1 flex-col gap-2"
         >
           <SlotRegion slots={slots} region="above-nav" expanded={expanded} />
+
+          {parent ? (
+            <ContextIdentity
+              context={context}
+              parent={parent}
+              expanded={expanded}
+              onBack={() => setDismissed({ key: context.key, pathname })}
+            />
+          ) : null}
 
           <ContextBody
             context={context}
@@ -129,32 +134,13 @@ export function Sidebar({
   )
 }
 
-function ContextHeader({
-  context,
-  parent,
-  expanded,
-  onBack,
-}: {
-  context: SidebarContext
-  parent: SidebarContext | null
-  expanded: boolean
-  onBack: () => void
-}) {
-  if (parent)
-    return (
-      <BackControl
-        context={context}
-        parent={parent}
-        expanded={expanded}
-        onBack={onBack}
-      />
-    )
-
+/** The Console mark. It titles the rail in every context, never the context. */
+function ConsoleHome() {
   return (
     <Link
       href="/"
       aria-label="Console home"
-      className="focus-visible:ring-sidebar-ring flex min-h-9 items-center gap-3 rounded-lg focus-visible:ring-2 focus-visible:outline-hidden group-data-[collapsible=icon]:justify-center"
+      className="focus-visible:ring-sidebar-ring flex min-h-9 items-center gap-3 rounded-lg group-data-[collapsible=icon]:justify-center focus-visible:ring-2 focus-visible:outline-hidden"
     >
       <span className="border-sidebar-border flex size-8 shrink-0 items-center justify-center rounded-xl border">
         <Logo className="text-sidebar-foreground text-[0.8125rem] leading-none" />
@@ -166,7 +152,11 @@ function ContextHeader({
   )
 }
 
-function BackControl({
+/**
+ * Names the open context above its first entry. An app shows its own logo; a
+ * context without one (a section, Storage) shows its rail icon instead.
+ */
+function ContextIdentity({
   context,
   parent,
   expanded,
@@ -177,47 +167,87 @@ function BackControl({
   expanded: boolean
   onBack: () => void
 }) {
-  const label = `Back to ${parent.backLabel}`
+  // An unknown key resolves to the registry's generic fallback icon.
+  const iconKey = context.icon ?? ''
+  const tile =
+    context.logoUrl !== undefined ? (
+      <OrgAvatar
+        name={context.title}
+        src={context.logoUrl}
+        size="sm"
+        className="size-8 rounded-xl text-[0.625rem]"
+      />
+    ) : (
+      <span className="border-sidebar-border flex size-8 shrink-0 items-center justify-center rounded-xl border">
+        <NavIcon
+          icon={iconKey}
+          className={cn(
+            'size-4 shrink-0',
+            context.colorClassName ?? resolveNavIconColor(iconKey)
+          )}
+        />
+      </span>
+    )
 
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
+    <div
+      data-slot="sidebar-context-identity"
+      className={cn(
+        'flex flex-col gap-2',
+        expanded ? 'min-w-0' : 'items-center'
+      )}
+    >
+      {expanded ? (
+        <div className="flex min-w-0 items-center gap-1">
+          <Link
+            href={context.href}
+            aria-label={context.title}
+            className="text-sidebar-foreground focus-visible:ring-sidebar-ring flex min-h-9 min-w-0 flex-1 items-center gap-2.5 rounded-lg text-[0.8125rem] font-medium focus-visible:ring-2 focus-visible:outline-hidden"
+          >
+            {tile}
+            <span className="flex min-w-0 flex-1 flex-col text-left">
+              <span className="min-w-0 truncate">{context.title}</span>
+              {context.subtitle ? (
+                <span className="text-muted-foreground min-w-0 truncate text-[0.6875rem] leading-tight font-normal">
+                  {context.subtitle}
+                </span>
+              ) : null}
+            </span>
+          </Link>
           <button
             type="button"
             onClick={onBack}
-            aria-label={label}
-            className={cn(
-              'text-sidebar-foreground hover:bg-sidebar-accent focus-visible:ring-sidebar-ring group flex min-h-9 min-w-0 items-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-hidden',
-              expanded
-                ? 'w-full gap-2 px-2 py-1.5 text-[0.8125rem]'
-                : 'size-9 justify-center p-0'
-            )}
+            aria-label={`Back to ${parent.backLabel}`}
+            className="text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:ring-sidebar-ring flex size-7 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
           >
-            <ChevronsLeft
-              aria-hidden="true"
-              className={cn(
-                'size-3.5 shrink-0 transition-transform duration-150 group-hover:-translate-x-0.5',
-                context.colorClassName ?? 'text-muted-foreground'
-              )}
-            />
-            {expanded ? (
-              <span className="flex min-w-0 flex-1 flex-col text-left">
-                <span className="min-w-0 truncate">{context.title}</span>
-                {context.subtitle ? (
-                  <span className="text-muted-foreground min-w-0 truncate text-[0.6875rem] leading-tight font-normal">
-                    {context.subtitle}
-                  </span>
-                ) : null}
-              </span>
-            ) : null}
+            <ChevronsLeft aria-hidden="true" className="size-4" />
           </button>
-        }
+        </div>
+      ) : (
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Link
+                href={context.href}
+                aria-label={context.title}
+                className="focus-visible:ring-sidebar-ring flex size-9 items-center justify-center rounded-lg focus-visible:ring-2 focus-visible:outline-hidden"
+              >
+                {tile}
+              </Link>
+            }
+          />
+          <TooltipContent side="right" sideOffset={8}>
+            {context.title}
+          </TooltipContent>
+        </Tooltip>
+      )}
+      <div
+        className={cn(
+          'bg-sidebar-border my-1 h-px',
+          expanded ? 'w-full' : 'w-5 self-center'
+        )}
       />
-      <TooltipContent side="right" sideOffset={8} hidden={expanded}>
-        {label}
-      </TooltipContent>
-    </Tooltip>
+    </div>
   )
 }
 

@@ -1,0 +1,121 @@
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { AppError } from '@876/ui/app-error'
+import { buttonVariants } from '@876/ui/button'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@876/ui/empty'
+import { Flag } from '@876/ui/icons'
+
+import { workspace } from '@/lib/services/workspace'
+import { listAppModules } from '@/lib/console/modules'
+import { resolveApp } from '../../_data'
+import { FeaturesList } from './features-list'
+
+/**
+ * Data half of the list column. Rendered from the section layout inside a
+ * Suspense boundary, so the toolbar is interactive before this resolves.
+ */
+export async function FeaturesListData({
+  slug,
+  searchParams,
+}: {
+  slug: string
+  searchParams: Promise<{ q?: string; after?: string; before?: string }>
+}) {
+  const { q, after, before } = await searchParams
+  const query = q?.trim() || undefined
+
+  const app = await resolveApp(slug)
+  if (!app) notFound()
+
+  const [featureResult, modulesResult] = await Promise.all([
+    workspace.features.list({
+      appId: app.id,
+      limit: 100,
+      search: query,
+      startingAfter: query ? undefined : after,
+      endingBefore: query ? undefined : before,
+    }),
+    app.app_kind === 'product'
+      ? listAppModules(app.id, false)
+      : Promise.resolve({ data: null, error: null }),
+  ])
+
+  if (featureResult.error)
+    return (
+      <AppError
+        title="Feature flags are temporarily unavailable"
+        error={featureResult.error}
+        variant="banner"
+        showCode
+      />
+    )
+
+  const features = featureResult.data?.data ?? []
+  const moduleFeatureIds = (modulesResult.data?.data ?? [])
+    .filter((module) => module.status === 'active' && module.feature_id)
+    .map((module) => module.feature_id as string)
+
+  return (
+    <div className="space-y-3">
+      {modulesResult.error ? (
+        <AppError
+          title="Module associations are temporarily unavailable"
+          error={modulesResult.error}
+          variant="inline"
+          showCode
+        />
+      ) : null}
+      <FeaturesList
+        appSlug={slug}
+        data={features}
+        query={q ?? ''}
+        moduleFeatureIds={moduleFeatureIds}
+        hasMore={featureResult.data?.has_more ?? false}
+        firstId={features[0]?.id ?? null}
+        lastId={features.at(-1)?.id ?? null}
+        toolbarAction={
+          // Keyed because this element is created here, in a Server Component,
+          // and rendered among siblings inside the client table. React
+          // re-validates a Flight-deserialized element as an array child and
+          // warns without one; it is a dev-only warning with no runtime effect.
+          <div key="feature-toolbar-actions" className="flex gap-2">
+            <Link
+              href={`/apps/${slug}/features/diagnostics`}
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+            >
+              Diagnose access
+            </Link>
+          </div>
+        }
+        emptyState={
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Flag className="text-amber-600 dark:text-amber-400" />
+              </EmptyMedia>
+              <EmptyTitle>No features</EmptyTitle>
+              <EmptyDescription>
+                Create a feature flag for {app.name}.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <Link
+                href={`/apps/${slug}/features/new`}
+                className={buttonVariants({ variant: 'info', size: 'sm' })}
+              >
+                Create feature
+              </Link>
+            </EmptyContent>
+          </Empty>
+        }
+      />
+    </div>
+  )
+}

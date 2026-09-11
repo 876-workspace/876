@@ -9,7 +9,7 @@ import { cn } from '@876/core/utils'
 import { DataTable } from '@876/ui/data-table'
 import { buttonVariants } from '@876/ui/button'
 import { Input } from '@876/ui/input'
-import { CreditCard, Plus, SearchIcon } from '@876/ui/icons'
+import { CreditCard, SearchIcon } from '@876/ui/icons'
 import {
   Empty,
   EmptyContent,
@@ -21,9 +21,9 @@ import {
 
 import { formatDate, statusBadgeClass } from '@/lib/format'
 
-type Props = { data: AdminProduct[]; appId: string; appSlug: string }
+type Props = { data: AdminProduct[]; appSlug: string }
 
-function formatPrice(product: AdminProduct): string {
+export function formatPrice(product: AdminProduct): string {
   const price = product.prices[0]
   if (!price || price.unit_amount === 0) return 'Free'
   const amount = (price.unit_amount / 100).toFixed(2)
@@ -104,25 +104,15 @@ export function PlansTable({ data, appSlug }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:w-80 lg:w-96">
-          <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search plans by name or slug…"
-            className="pl-9"
-            aria-label="Search plans"
-          />
-        </div>
-
-        <Link
-          href={`/apps/${appSlug}/plans/new`}
-          className={buttonVariants({ variant: 'info', size: 'sm' })}
-        >
-          <Plus className="size-4" strokeWidth={2.25} />
-          Add plan
-        </Link>
+      <div className="relative w-full sm:w-80 lg:w-96">
+        <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search plans by name or slug…"
+          className="pl-9"
+          aria-label="Search plans"
+        />
       </div>
 
       <div className="876-card overflow-hidden">

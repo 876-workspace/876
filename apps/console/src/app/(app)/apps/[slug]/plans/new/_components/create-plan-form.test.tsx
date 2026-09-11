@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CreatePlanSetup } from '@/types/plans'
@@ -110,5 +110,50 @@ describe('CreatePlanForm', () => {
     expect(screen.getByRole('checkbox', { name: /Invoices/ })).toBeChecked()
     expect(mocks.push).not.toHaveBeenCalled()
     expect(mocks.refresh).not.toHaveBeenCalled()
+  })
+
+  it('shows the step indicator inside the card header, labels under numbers', () => {
+    render(<CreatePlanForm appSlug="876-invoice" setup={setup()} />)
+
+    const header = screen.getByRole('banner')
+    const steps = within(header).getByRole('list', {
+      name: 'Plan setup steps',
+    })
+    expect(
+      within(header).getByRole('heading', { name: 'New Plan' })
+    ).toBeVisible()
+    const items = within(steps).getAllByRole('listitem')
+    expect(items.map((item) => item.textContent)).toEqual([
+      '1Details',
+      '2Modules',
+    ])
+    expect(
+      within(steps).getByText('Details').closest('[aria-current]')
+    ).toHaveAttribute('aria-current', 'step')
+  })
+
+  it('moves the current step to Modules after Continue', async () => {
+    const user = userEvent.setup()
+    render(<CreatePlanForm appSlug="876-invoice" setup={setup()} />)
+    await user.type(screen.getByLabelText(/Name/), 'Invoice Pro')
+    await user.type(screen.getByLabelText(/Slug/), 'invoice-pro')
+
+    await user.click(screen.getByRole('button', { name: 'Continue' }))
+
+    const steps = screen.getByRole('list', { name: 'Plan setup steps' })
+    expect(
+      within(steps).getByText('Modules').closest('[aria-current]')
+    ).toHaveAttribute('aria-current', 'step')
+    expect(
+      within(steps).getByText('Details').closest('[aria-current]')
+    ).toBeNull()
+  })
+
+  it('closes back to the plans list from the header', () => {
+    render(<CreatePlanForm appSlug="876-invoice" setup={setup()} />)
+
+    expect(
+      screen.getByRole('link', { name: 'Close new plan' })
+    ).toHaveAttribute('href', '/apps/876-invoice/plans')
   })
 })

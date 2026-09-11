@@ -11,7 +11,10 @@ export default function Loading() {
           "all" here made the heading and the checked dropdown option flash the
           wrong filter before the page arrived. */}
       <AppsToolbar status={resolveStatusFilter(undefined)} />
-      <DataTableSkeleton columns={APPS_SKELETON_COLUMNS} />
+      <DataTableSkeleton
+        columns={APPS_SKELETON_COLUMNS}
+        className="-mx-4 rounded-none border-x-0 sm:-mx-6 lg:-mx-8"
+      />
     </Page>
   )
 }
