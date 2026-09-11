@@ -31,15 +31,9 @@ export function SalesReceiptsList({
   const query = searchParams.toString()
   const selectedId = segments[0] ?? null
 
-  // The status filter is applied here rather than in the query because a
-  // layout receives no `searchParams`, and the list has to live in the layout
-  // to survive opening a record.
   const status = searchParams.get('status')
   const rows =
-    status === 'draft' ||
-    status === 'sent' ||
-    status === 'paid' ||
-    status === 'void'
+    status === 'paid' || status === 'void'
       ? receipts.filter((receipt) => receipt.status.toLowerCase() === status)
       : receipts
 
