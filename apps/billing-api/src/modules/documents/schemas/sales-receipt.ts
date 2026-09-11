@@ -17,6 +17,14 @@ const positiveMinorAmountSchema = minorAmountSchema.refine(
   'Enter an amount greater than zero.'
 )
 
+const paymentShape = {
+  paymentModeId: IdSchema,
+  depositAccountId: IdSchema,
+  paymentDate: unixTimestampSchema.optional(),
+  paymentReferenceNumber: optionalShortTextSchema,
+  bankCharges: minorAmountSchema.optional(),
+}
+
 const salesReceiptCreateShape = {
   quoteId: IdSchema.nullable().optional(),
   customerId: IdSchema.nullable().optional(),
@@ -30,11 +38,7 @@ const salesReceiptCreateShape = {
   notes: optionalTextSchema,
   terms: optionalTextSchema,
   lines: z.array(DocumentLineCreateSchema).min(1).max(100).optional(),
-  paymentModeId: IdSchema,
-  depositAccountId: IdSchema,
-  paymentDate: unixTimestampSchema.optional(),
-  paymentReferenceNumber: optionalShortTextSchema,
-  bankCharges: minorAmountSchema.optional(),
+  ...paymentShape,
 }
 
 function salesReceiptCreateSchema(integration: boolean) {
@@ -95,6 +99,30 @@ export const IntegrationSalesReceiptCreateSchema = salesReceiptCreateSchema(true
 
 export type SalesReceiptCreateParams = z.infer<typeof SalesReceiptCreateSchema>
 export type SalesReceiptCreateInput = z.input<typeof SalesReceiptCreateSchema>
+
+export const SalesReceiptQuoteConversionSchema = z
+  .strictObject({
+    salespersonId: IdSchema.nullable().optional(),
+    receiptAt: unixTimestampSchema.optional(),
+    referenceNumber: optionalShortTextSchema,
+    taxBehavior: TaxBehaviorSchema.optional(),
+    notes: optionalTextSchema,
+    terms: optionalTextSchema,
+    ...paymentShape,
+  })
+  .superRefine((value, context) => {
+    if ((value.bankCharges ?? 0n) < 0n)
+      context.addIssue({
+        code: 'custom',
+        message: 'Bank charges cannot be negative.',
+        path: ['bankCharges'],
+      })
+  })
+  .transform((value) => ({ ...value, bankCharges: value.bankCharges ?? 0n }))
+
+export type SalesReceiptQuoteConversionParams = z.infer<
+  typeof SalesReceiptQuoteConversionSchema
+>
 
 export const SalesReceiptVoidSchema = z.strictObject({
   reason: z.string().trim().min(1).max(500).nullable().optional(),
