@@ -268,7 +268,7 @@ enum BillingTiming {
   IN_ADVANCE
   IN_ARREARS
 
-  @@map("BillingBillingTiming")
+  @@map("BillingTiming")
 }
 
 enum ProrationBehavior {
