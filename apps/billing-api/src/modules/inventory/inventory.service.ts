@@ -3,6 +3,7 @@ import type {
   InventoryLine,
   InventoryMutation,
   InventoryRestore,
+  InventoryReturn,
 } from '@/types/inventory'
 
 import * as repository from './repositories'
@@ -25,6 +26,14 @@ export function restore(
   return repository.restore(tx, tenantId, params)
 }
 
+export function returnStock(
+  tx: InventoryTransaction,
+  tenantId: string,
+  params: InventoryReturn
+) {
+  return repository.returnStock(tx, tenantId, params)
+}
+
 export function adjust(tenantId: string, params: InventoryAdjustment) {
   return repository.adjust(tenantId, params)
 }
@@ -42,4 +51,5 @@ export const inventoryService = {
   checkAvailability,
   consume,
   restore,
+  returnStock,
 }
