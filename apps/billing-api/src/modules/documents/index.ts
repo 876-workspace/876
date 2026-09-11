@@ -2,6 +2,7 @@ export { nextDocumentNumber } from './document-numbers.repository'
 export { createDocumentsRouter } from './documents.routes'
 export { createInternalDocumentsRouter } from './documents.internal-routes'
 export { createQuoteLifecycleRouter } from './quote-lifecycle.routes'
+export { createSalesReceiptsRouter } from './sales-receipts.routes'
 export {
   collectibleInvoiceStatuses,
   isCollectibleInvoiceStatus,
