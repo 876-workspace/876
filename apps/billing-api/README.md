@@ -22,6 +22,35 @@ Prometheus telemetry are exposed at `/health`, `/ready`, `/openapi.json`, and
 `/metrics`. Internal projections and the scheduler endpoint live under
 `/internal` and require service credentials.
 
+## Scheduled billing sweep
+
+One sweep generates everything that is due and keeps invoice state current:
+
+1. subscription invoices whose billing date (or advance-invoice date) has come;
+2. Recurring Invoice profiles whose next run has come;
+3. scheduled subscription pause / resume / cancel changes;
+4. the `OVERDUE` status flip for collectible invoices past their due date.
+
+Every claim is `FOR UPDATE SKIP LOCKED` inside its own transaction and is
+idempotent per period (`billing_subscription_billing_runs`,
+`billing_recurring_invoice_runs`), so two overlapping sweeps never produce a
+second invoice. Invoices are dated at their scheduled time, not the time the
+sweep ran.
+
+Triggers:
+
+| Trigger | Route | Credential |
+| --- | --- | --- |
+| Vercel cron (daily, 06:00 UTC — `vercel.json`) | `GET /internal/billing-sweep/cron` | `Authorization: Bearer $CRON_SECRET` |
+| Any external scheduler | `POST /internal/billing-sweep` | `x-scheduler-key: $BILLING_SCHEDULER_KEY` |
+| Operator, on demand | `POST /api/v1/admin/billing/run` | internal key |
+
+The Vercel team is on the Hobby plan, which allows one cron run per day, so the
+cron invocation drains all due work under a 240-second budget and reports
+`hasMore` if it had to stop. Both secrets fail closed: an unset secret disables
+its route (503) rather than opening it. Set `CRON_SECRET` on the Vercel project
+before relying on the cron.
+
 ## Architecture
 
 Each bounded context under `src/modules` owns its routes, controllers,

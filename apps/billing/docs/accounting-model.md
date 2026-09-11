@@ -11,6 +11,43 @@ This document outlines the accounts-receivable (AR) and billing logic in the 876
   settled cash together and therefore does **not** create AR, a
   `PaymentAllocation`, or unused customer credit.
 
+## 1a. Generated invoices (subscriptions and Recurring Invoices)
+
+Two schedules produce ordinary invoices without a person creating them. Both
+run in the Billing sweep (see `apps/billing-api/README.md`) and both finalize
+through the **same** finalize core as a manually finalized invoice
+(`applyInvoiceFinalizeEffects`): inventory consumption, `INVOICE_FINALIZED`
+ledger debit, optional credit auto-apply, customer AR recompute, and the
+`invoice.finalized` event. There is no second finalization path.
+
+- **Subscription invoices** (`billingReason` `SUBSCRIPTION_CREATE`,
+  `SUBSCRIPTION_CYCLE`, `SUBSCRIPTION_UPDATE`) price the subscription's items
+  for one service period. A billing run row per `(subscription, period)` makes
+  the run idempotent.
+  - When a second subscription is consolidated into an invoice that is already
+    finalized, the appended amount posts its own `INVOICE_FINALIZED` debit keyed
+    by that billing run — the statement must show every amount added to AR.
+  - Lifecycle order matters. An `IN_ADVANCE` subscription cancelled at period
+    end is **not** invoiced for the period it never enters. An `IN_ARREARS`
+    subscription cancelled at period end **is** invoiced once for the final
+    period it served, and then cancelled.
+- **Recurring Invoices** (`billingReason` `RECURRING_INVOICE`) are profiles
+  holding a customer, currency, template lines and a cadence. Each run creates
+  an invoice from the template, then leaves it as a draft, finalizes it, or
+  finalizes and marks it sent, per the profile's generation mode.
+  - Runs are anchored on the profile's start date: occurrence *k* is
+    `startAt + k × interval`, so a profile started on the 31st bills on the last
+    day of shorter months and returns to the 31st afterwards.
+  - Pausing skips periods; resuming continues from the next future occurrence
+    and never back-fills the skipped periods.
+  - A run that cannot be generated (customer archived, currency disabled) is
+    recorded as failed and retried by the next sweep; it never advances the
+    schedule, so no period is silently lost.
+
+`AUTO_CHARGE` collection is not implemented: a subscription or recurring
+invoice is issued and collected like any other invoice until a payment
+processor is live.
+
 ## 2. Invoices & Receivables
 
 - An invoice represents money owed by a customer.
@@ -328,6 +365,56 @@ Sales Receipts themselves do not add AR statement entries because their sale and
 cash are settled simultaneously. They belong in customer Transactions/Activity,
 not as a synthetic debit-and-credit pair that would add noise to the receivable
 ledger.
+
+## 11. Reporting definitions
+
+Reports are read-only SQL projections over the facts above. Every money value
+is a minor-unit string grouped per currency; currencies are never converted or
+summed together. Aggregates are computed in SQL (`GROUP BY` / `$queryRaw`);
+application code only aligns pre-aggregated rows onto the emitted bucket grid.
+
+- **Sales (gross)** = finalized, non-void invoices (`OPEN`, `SENT`,
+  `PARTIALLY_PAID`, `OVERDUE`, `PAID`, and `UNCOLLECTIBLE` — the sale happened;
+  never `DRAFT` or `VOID`) by `issueAt`, **plus** non-void (`PAID`) Sales
+  Receipts by `receiptAt`. Opening-balance invoices are not sales and are
+  excluded. Amounts use pre-tax `subtotal − discount` as `netAmount` (credit
+  notes carry no discount column, so their net is the subtotal), with
+  `taxAmount` and `totalAmount` kept separately.
+- **Credits** = issued non-void credit notes (`OPEN`/`CLOSED`) by `issueAt`.
+- **Net sales** = gross − credits, per currency.
+- **Cash received** = `SUCCEEDED` / `PARTIALLY_REFUNDED` / `REFUNDED` payments
+  by `paymentDate` (reversed/failed/pending payments never count), split into
+  `payments` (receivables cash) and `salesReceipts` (immediate-sale cash — the
+  Sales-Receipt-linked payments the Payments Received list excludes).
+  **Refunds** count by `refundedAt`. **Net cash** = received − refunds.
+- **Receivables aging** as of a date: open collectible invoices' `amountDue`
+  bucketed by whole days past `dueAt` — `current` (no due date, or due today
+  or later), `1-30`, `31-60`, `61-90`, `90+` (day 91 and beyond).
+- **Item sales** are line-level: invoice and sales-receipt lines sell,
+  credit-note lines return. Variants stay separated. **Customer sales** net the
+  same three document legs per customer and currency.
+- **Subscription revenue** splits invoice sales by `billingReason`:
+  `subscription` (`SUBSCRIPTION_CREATE` / `SUBSCRIPTION_CYCLE` /
+  `SUBSCRIPTION_UPDATE`), `recurring-invoice` (`RECURRING_INVOICE`), and
+  `one-off` (everything else). Totals are unchanged; the split is a breakdown.
+- **Subscription summary**: current `active` / `trialing` / `paused` counts
+  plus MRR/ARR per currency, computed by the one annualising rule the
+  dashboard shares (`DAY × 365`, `WEEK × 52`, `MONTH × 12`, `YEAR × 1` over
+  the interval count, from recurring prices on live subscriptions). Per bucket:
+  `new` (`startAt ?? createdAt`), `canceled` (`canceledAt`), `ended`
+  (`endedAt`), `paused` (`pausedAt`), and subscription-source revenue.
+  `churnRate` = canceled-in-range ÷ active-at-range-start (`null` when nothing
+  was active). Historical MRR is not reconstructed — only current MRR is
+  reported, because no subscription-history snapshots exist yet.
+- **Bucketing** uses the tenant `reports` settings module (`timezone`,
+  default `America/Jamaica`; `fiscal-year-start-month`, default `1`).
+  `fiscal-year-start-month` is exposed on summary responses for hosts but does
+  not change month bucketing. Buckets start Monday for weeks, are emitted
+  zero-filled for `day` / `week` / `month`, and carry unix-second start/end
+  instants. Ranges are bounded (`from` < `to`, at most 400 days).
+- **Customer enrichment** reuses the same repositories: `lifetimeSales`
+  (invoices + receipts), `lifetimeCredits` (issued credit-note totals),
+  `lastSaleAt`, `activeSubscriptionCount`, and per-currency current MRR.
 
 ## Flow Diagram
 
