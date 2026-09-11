@@ -8,8 +8,6 @@ import {
 
 const SALES_RECEIPT_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All', headingLabel: 'All Sales Receipts' },
-  { value: 'draft', label: 'Draft', headingLabel: 'Draft Sales Receipts' },
-  { value: 'sent', label: 'Sent', headingLabel: 'Sent Sales Receipts' },
   { value: 'paid', label: 'Paid', headingLabel: 'Paid Sales Receipts' },
   { value: 'void', label: 'Void', headingLabel: 'Void Sales Receipts' },
 ]
