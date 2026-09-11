@@ -8,6 +8,14 @@ import {
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service, type LegacyBillingRecord } from '@/lib/service'
 
+import { MetricCard } from './_components/dashboard-metric-card'
+import {
+  DashboardCompactSalesData,
+  DashboardCompactSalesFallback,
+  DashboardOverdueData,
+  DashboardSalesMonthData,
+} from './_components/dashboard-reports'
+
 export const metadata = {
   title: 'Dashboard',
   description: 'Billing workspace overview.',
@@ -58,6 +66,12 @@ async function DashboardPageData() {
           value={String(overview.productCount)}
           color="bg-purple-500/10 text-purple-600 dark:text-purple-400"
         />
+        <Suspense fallback={<MetricCardFallback label="Sales this month" />}>
+          <DashboardSalesMonthData />
+        </Suspense>
+        <Suspense fallback={<MetricCardFallback label="Overdue receivables" />}>
+          <DashboardOverdueData />
+        </Suspense>
       </section>
 
       {/* Revenue and Receivables Section */}
@@ -70,13 +84,6 @@ async function DashboardPageData() {
               <h2 className="text-lg font-bold tracking-tight">
                 Recurring Revenue
               </h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Contracted recurring value from active subscriptions.
-                <br />
-                <span className="text-xs italic">
-                  (Does not include one-off invoices)
-                </span>
-              </p>
             </div>
 
             {overview.recurringRevenue.length === 0 ? (
@@ -129,9 +136,6 @@ async function DashboardPageData() {
               <h2 className="text-lg font-bold tracking-tight">
                 Outstanding Receivables
               </h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Total value of issued invoices and pending balances.
-              </p>
             </div>
 
             {overview.issuedInvoiceTotals.length === 0 ? (
@@ -174,35 +178,25 @@ async function DashboardPageData() {
           </div>
         </section>
       </div>
+
+      <div className="mt-6">
+        <Suspense fallback={<DashboardCompactSalesFallback />}>
+          <DashboardCompactSalesData />
+        </Suspense>
+      </div>
     </div>
   )
 }
 
-function MetricCard({
-  label,
-  value,
-  color,
-  trend,
-}: {
-  label: string
-  value: string
-  color: string
-  trend?: string
-}) {
+function MetricCardFallback({ label }: { label: string }) {
   return (
-    <div className="876-card group relative overflow-hidden p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-      <div
-        className={`absolute -top-6 -right-6 h-24 w-24 rounded-full opacity-20 blur-2xl transition-opacity group-hover:opacity-40 ${color.split(' ')[0]}`}
-      />
-      <div className="mb-4 flex items-start justify-between">
-        <p className="text-muted-foreground text-sm font-medium">{label}</p>
-        {trend && (
-          <span className="bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase">
-            {trend}
-          </span>
-        )}
-      </div>
-      <p className="text-3xl font-extrabold tracking-tight">{value}</p>
+    <div
+      className="876-card p-5"
+      aria-label={`Loading ${label}`}
+      aria-hidden="true"
+    >
+      <div className="bg-muted h-4 w-28 animate-pulse rounded" />
+      <div className="bg-muted mt-4 h-8 w-24 animate-pulse rounded" />
     </div>
   )
 }

@@ -24,3 +24,29 @@ describe('Billing item overview loading', () => {
     expect(itemRead).toBeGreaterThan(dataStart)
   })
 })
+
+describe('Billing item sales overview', () => {
+  it('renders the item sales summary in its own Suspense boundary', () => {
+    expect(source).toContain('fallback={<ItemSalesSummaryFallback />}')
+    expect(source).toContain('<ItemSalesSummaryData itemId={item.id} />')
+  })
+
+  it('feeds the panel from the item sales summary', () => {
+    const component = readFileSync(
+      new URL('./_components/item-sales-summary.tsx', import.meta.url),
+      'utf8'
+    )
+    expect(component).toContain('billing.items.salesSummary(itemId)')
+    expect(component).toContain('quantitySold')
+    expect(component).toContain('quantityReturned')
+  })
+
+  it('maps service errors to an error panel state', () => {
+    const component = readFileSync(
+      new URL('./_components/item-sales-summary.tsx', import.meta.url),
+      'utf8'
+    )
+    expect(component).toContain("status: 'error'")
+    expect(component).toContain('ItemSalesSummaryPanelSkeleton')
+  })
+})

@@ -10,6 +10,10 @@ import { getWorkspaceContext, hasPermission } from '@/lib/auth/billing-context'
 import { formatMoney } from '@/lib/format'
 import { getBilling } from '@/lib/services/billing'
 import { CustomerContacts } from './_components/customer-contacts'
+import {
+  CustomerSalesSummaryData,
+  CustomerSalesSummaryFallback,
+} from './_components/customer-sales-summary'
 
 export const metadata: Metadata = {
   title: 'Customer details',
@@ -25,6 +29,9 @@ export default function CustomerDetailPage({
     <div className="space-y-6">
       <Suspense fallback={<CustomerReceivablesPanelSkeleton />}>
         <CustomerReceivablesData params={params} />
+      </Suspense>
+      <Suspense fallback={<CustomerSalesSummaryFallback />}>
+        <CustomerSalesSummaryRouteData params={params} />
       </Suspense>
       <Suspense fallback={<CustomerContactsPanelSkeleton />}>
         <CustomerContactsData params={params} />
@@ -74,6 +81,15 @@ async function CustomerReceivablesData({
       }}
     />
   )
+}
+
+async function CustomerSalesSummaryRouteData({
+  params,
+}: {
+  params: Promise<{ customerId: string }>
+}) {
+  const { customerId } = await params
+  return <CustomerSalesSummaryData customerId={customerId} />
 }
 
 async function CustomerContactsData({

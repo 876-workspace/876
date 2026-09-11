@@ -13,6 +13,11 @@ import { resolveItem } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 
+import {
+  ItemSalesSummaryData,
+  ItemSalesSummaryFallback,
+} from './_components/item-sales-summary'
+
 interface Props {
   params: Promise<{ itemId: string }>
 }
@@ -84,6 +89,10 @@ async function ItemOverviewData({ params }: Props) {
           />
         </section>
       ) : null}
+
+      <Suspense fallback={<ItemSalesSummaryFallback />}>
+        <ItemSalesSummaryData itemId={item.id} />
+      </Suspense>
 
       <DetailActionList
         title="Item workspace"

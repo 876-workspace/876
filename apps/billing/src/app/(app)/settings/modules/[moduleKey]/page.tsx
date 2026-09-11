@@ -4,8 +4,14 @@ import { Badge } from '@876/ui/badge'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 import { Switch } from '@876/ui/switch'
 
+import { ReportPreferencesForm } from '@/features/settings/components/report-preferences-form'
+import {
+  curatedReportTimezones,
+  supportedReportTimezones,
+} from '@/features/settings/report-timezones'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { BILLING_MODULE_CATALOG, isBillingModuleKey } from '@/lib/modules'
+import { getBilling } from '@/lib/services/billing'
 
 type Props = { params: Promise<{ moduleKey: string }> }
 
@@ -13,7 +19,7 @@ export default async function ModuleSettingsPage({ params }: Props) {
   const { moduleKey } = await params
   if (!isBillingModuleKey(moduleKey)) notFound()
 
-  await requirePagePermission('settings:read')
+  const context = await requirePagePermission('settings:read')
 
   const moduleDefinition = BILLING_MODULE_CATALOG.find(
     (module) => module.key === moduleKey
@@ -51,6 +57,42 @@ export default async function ModuleSettingsPage({ params }: Props) {
           </div>
         </div>
       </div>
+
+      {moduleKey === 'reports' ? (
+        <ReportPreferencesSection
+          canManage={context.permissions.includes('sales:write')}
+        />
+      ) : null}
     </Page>
+  )
+}
+
+async function ReportPreferencesSection({
+  canManage,
+}: {
+  canManage: boolean
+}) {
+  const billing = await getBilling()
+  const result = await billing.reportPreferences.retrieve()
+  if (result.error)
+    return (
+      <p className="876-card text-muted-foreground mt-4 max-w-2xl p-5 text-sm">
+        Report preferences could not be loaded: {result.error.message}
+      </p>
+    )
+  return (
+    <div className="mt-6 max-w-2xl">
+      <ReportPreferencesForm
+        initial={{
+          timezone: result.data.timezone,
+          fiscalYearStartMonth: result.data.fiscalYearStartMonth,
+        }}
+        timeZones={curatedReportTimezones(
+          supportedReportTimezones(),
+          result.data.timezone
+        )}
+        canManage={canManage}
+      />
+    </div>
   )
 }
