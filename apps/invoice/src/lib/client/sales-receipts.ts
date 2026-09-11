@@ -12,10 +12,15 @@ import { request } from './request'
 const resourcePath = (salesReceiptId: string) =>
   `/api/sales-receipts/${encodeURIComponent(salesReceiptId)}`
 
+function idempotencyKey(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`
+}
+
 export const salesReceipts = {
   create(params: SalesReceiptCreateParams) {
     return request<SalesReceipt>('/api/sales-receipts', {
       method: 'POST',
+      headers: { 'Idempotency-Key': idempotencyKey() },
       body: JSON.stringify(params),
     })
   },
