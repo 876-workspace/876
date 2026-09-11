@@ -1,5 +1,7 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
+import { buttonVariants } from '@876/ui/button'
 import {
   DetailCard,
   DetailCardBody,
@@ -13,6 +15,10 @@ import {
 } from '@876/ui/detail-card'
 import { ReceiptText } from '@876/ui/icons'
 
+import {
+  getWorkspaceContext,
+  hasPermission,
+} from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { getBilling } from '@/lib/services/billing'
 import { documentStatusVariant } from '@/lib/status'
@@ -27,7 +33,10 @@ export const metadata = {
 export default async function SalesReceiptDetailPage({ params }: Props) {
   const { salesReceiptId } = await params
   const billing = await getBilling()
-  const result = await billing.salesReceipts.retrieve(salesReceiptId)
+  const [result, context] = await Promise.all([
+    billing.salesReceipts.retrieve(salesReceiptId),
+    getWorkspaceContext(),
+  ])
   if (result.error) {
     if (result.error.code === 'sales-receipt/not-found') notFound()
     return (
@@ -50,6 +59,11 @@ export default async function SalesReceiptDetailPage({ params }: Props) {
       : typeof receipt.customerName === 'string'
         ? receipt.customerName
         : '—'
+  const canRefund =
+    receipt.status === 'PAID' &&
+    BigInt(receipt.refundableAmount) > 0n &&
+    context !== null &&
+    hasPermission(context, 'sales:write')
 
   return (
     <DetailCard aria-label={`Sales receipt details: ${receipt.number}`}>
@@ -66,6 +80,16 @@ export default async function SalesReceiptDetailPage({ params }: Props) {
           </Badge>
         }
         subtitle={customer}
+        actions={
+          canRefund ? (
+            <Link
+              href={`/sales-receipts/${receipt.id}/refund`}
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+            >
+              Refund
+            </Link>
+          ) : undefined
+        }
         closeHref="/sales-receipts"
         closeLabel="Close sales receipt details"
       />
@@ -82,6 +106,18 @@ export default async function SalesReceiptDetailPage({ params }: Props) {
               value={formatDate(receipt.receiptAt)}
             />
             <DetailCardFact label="Currency" value={receipt.currency} mono />
+            <DetailCardFact
+              label="Credited"
+              value={formatMoney(receipt.creditedAmount, receipt.currency)}
+            />
+            <DetailCardFact
+              label="Cash refunded"
+              value={formatMoney(receipt.refundedAmount, receipt.currency)}
+            />
+            <DetailCardFact
+              label="Refund state"
+              value={receipt.refundStatus.toLowerCase().replaceAll('_', ' ')}
+            />
           </DetailCardFacts>
         </DetailCardSection>
       </DetailCardBody>
