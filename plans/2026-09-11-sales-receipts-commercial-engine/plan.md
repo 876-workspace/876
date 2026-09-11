@@ -3,7 +3,7 @@
 **Run ID:** `2026-09-11-sales-receipts-commercial-engine`  
 **Branch:** `feat/sales-receipts-commercial-engine`  
 **Base:** `main`  
-**Status:** IN_PROGRESS
+**Status:** COMPLETED ✅ (branch scope) — follow-ups listed below
 
 ## Overview
 
@@ -249,6 +249,40 @@ Use the actual workspace names from each affected `package.json` if they differ 
 
 Current work is active on `feat/sales-receipts-commercial-engine`. The plan is the unit of completion. Before each code edit, inspect the exact neighboring implementation and preserve current public compatibility. Verification is not executed by GPT Web and must never be reported as passing from this run.
 
+## Local closeout (2026-09-11, orchestrator)
+
+GPT web's implementation was reviewed and the direction kept. Two Codex passes
+(`gpt-5.6-terra`, high) closed the merge blockers; briefs and reports are under
+`briefs/codex/` and `reports/codex/`.
+
+- Fixed: 11 billing-api type errors, SDK integration schema typing, host null
+  narrowing, 12 documents↔payments circular dependencies, stale v1 contract
+  artifacts and route matrix, host test inventory drift.
+- Closed: Quote cross-kind conversion exclusivity — both conversions lock the
+  quote row (`FOR UPDATE`) inside their transaction and re-check both relations.
+  Same-kind re-conversion now replays the existing document instead of 409.
+- Deduplicated: document line payload mapping now lives once in
+  `@876/billing-ui/document/document-line-payload`.
+- Migration compared against `prisma migrate diff` from `main`'s schema: matches;
+  the extra credit-note single-source CHECK constraint is intentional.
+
+Verification (run locally, all green): billing-api typecheck / lint (0 errors) /
+boundaries / test 769 / api:contract:check / db:validate; `@876/billing` 341;
+`@876/billing-ui` 417; `@876/billing-app` 875; `@876/invoice-app` 498;
+`check:transpile` OK. `check-app-structure` reports one pre-existing `main`
+violation (`ConsoleHome`), unrelated.
+
+## Follow-ups (deliberately not in this branch)
+
+1. Quote → Sales Receipt product UI action (backend + SDK ready).
+2. Returned-line quantity UI for refunds (API supports `returnLines`).
+3. Include non-void Sales Receipts in existing sales report projections.
+4. Deployment data: grant `billing.sales-receipts.read/write` in the Invoice
+   provisioning-profile revision, and apply the migration.
+5. Real-database concurrency test for the quote conversion lock.
+6. Server-side catalog search in the create form (currently preloads 100 items).
+7. Invoice's older `toInvoiceLine` still diverges from the shared line mapper.
+
 ## PR preparation summary
 
-Not ready. No PR is authorized or planned from this GPT Web run.
+Single feature PR `feat/sales-receipts-commercial-engine` → `main`.

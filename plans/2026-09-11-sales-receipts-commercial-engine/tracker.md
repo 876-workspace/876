@@ -2,7 +2,7 @@
 
 **Run:** `2026-09-11-sales-receipts-commercial-engine`  
 **Branch:** `feat/sales-receipts-commercial-engine`  
-**Status:** IN_PROGRESS — substantial implementation landed; local verification/final closeout required
+**Status:** COMPLETED ✅ for branch scope — see plan.md "Local closeout" and "Follow-ups"
 
 ## Repository preparation
 
