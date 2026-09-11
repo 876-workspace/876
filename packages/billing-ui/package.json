@@ -199,6 +199,10 @@
       "types": "./src/payments-table.tsx",
       "default": "./src/payments-table.tsx"
     },
+    "./sales-receipt-create-form": {
+      "types": "./src/sales-receipt-create-form.tsx",
+      "default": "./src/sales-receipt-create-form.tsx"
+    },
     "./sales-receipts-list": {
       "types": "./src/sales-receipts-list.tsx",
       "default": "./src/sales-receipts-list.tsx"
