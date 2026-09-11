@@ -10,7 +10,10 @@ import { recordLedgerEntry } from '@/modules/ledger'
 import { err, ok } from '../result'
 import { hasEnabledCurrency } from '@/modules/currencies'
 import { recomputeCustomerAr } from '@/modules/customers'
-import { RefundMutationError } from './shared'
+import {
+  createCreditNoteRefund,
+  RefundMutationError,
+} from './shared'
 import { isRetryableTransactionError } from '@/platform/prisma-errors'
 
 /** Records a cash return to a customer drawn from a credit note or an overpaid payment. */
@@ -31,6 +34,24 @@ export async function create(
   try {
     await prisma.$transaction(
       async (tx) => {
+        if (params.creditNoteId) {
+          await createCreditNoteRefund(tx, tenantId, {
+            refundId,
+            number,
+            customerId: params.customerId,
+            creditNoteId: params.creditNoteId,
+            paymentModeId: params.paymentModeId,
+            depositAccountId: params.depositAccountId,
+            amount: params.amount,
+            currency: params.currency,
+            reason: params.reason,
+            notes: params.notes,
+            refundedAt: params.refundedAt,
+            now,
+          })
+          return
+        }
+
         const customer = await tx.customer.findFirst({
           where: { id: params.customerId, tenantId, status: 'ACTIVE' },
           select: { id: true },
@@ -64,111 +85,67 @@ export async function create(
             )
         }
 
-        if (params.creditNoteId) {
-          const creditNote = await tx.creditNote.findFirst({
-            where: { id: params.creditNoteId, tenantId },
-            select: {
-              customerId: true,
-              currency: true,
-              status: true,
-              balanceAmount: true,
-            },
-          })
-          if (!creditNote)
-            throw new RefundMutationError('Credit note not found.', 404)
-          if (creditNote.customerId !== params.customerId)
-            throw new RefundMutationError(
-              'The credit note belongs to a different customer.',
-              422
-            )
-          if (creditNote.currency !== params.currency)
-            throw new RefundMutationError(
-              'The credit note uses a different currency.',
-              422
-            )
-          if (creditNote.status !== 'OPEN')
-            throw new RefundMutationError(
-              'Only an open credit note can be refunded.',
-              409
-            )
-          if (creditNote.balanceAmount < params.amount)
-            throw new RefundMutationError(
-              'Refund exceeds the credit note balance.',
-              422
-            )
-
-          const newBalance = creditNote.balanceAmount - params.amount
-          await tx.creditNote.update({
-            where: { id: params.creditNoteId },
-            data: {
-              balanceAmount: newBalance,
-              status: newBalance === 0n ? 'CLOSED' : 'OPEN',
-              updatedAt: now,
-            },
-          })
-        } else {
-          const payment = await tx.payment.findFirst({
-            where: {
-              id: params.paymentId,
-              tenantId,
-              salesReceipt: { is: null },
-              ...(sourceAppId ? { sourceAppId } : {}),
-            },
-            select: {
-              customerId: true,
-              currency: true,
-              status: true,
-              amount: true,
-              amountRefunded: true,
-              unappliedAmount: true,
-            },
-          })
-          if (!payment) throw new RefundMutationError('Payment not found.', 404)
-          if (
-            payment.status !== 'SUCCEEDED' &&
-            payment.status !== 'PARTIALLY_REFUNDED'
+        const payment = await tx.payment.findFirst({
+          where: {
+            id: params.paymentId,
+            tenantId,
+            salesReceipt: { is: null },
+            ...(sourceAppId ? { sourceAppId } : {}),
+          },
+          select: {
+            customerId: true,
+            currency: true,
+            status: true,
+            amount: true,
+            amountRefunded: true,
+            unappliedAmount: true,
+          },
+        })
+        if (!payment) throw new RefundMutationError('Payment not found.', 404)
+        if (
+          payment.status !== 'SUCCEEDED' &&
+          payment.status !== 'PARTIALLY_REFUNDED'
+        )
+          throw new RefundMutationError(
+            'Only a successful payment with refundable credit can be refunded.',
+            409
           )
-            throw new RefundMutationError(
-              'Only a successful payment with refundable credit can be refunded.',
-              409
-            )
-          if (payment.customerId !== params.customerId)
-            throw new RefundMutationError(
-              'The payment belongs to a different customer.',
-              422
-            )
-          if (payment.currency !== params.currency)
-            throw new RefundMutationError(
-              'The payment uses a different currency.',
-              422
-            )
-          if (payment.unappliedAmount < params.amount)
-            throw new RefundMutationError(
-              "Refund exceeds the payment's unapplied amount.",
-              422
-            )
+        if (payment.customerId !== params.customerId)
+          throw new RefundMutationError(
+            'The payment belongs to a different customer.',
+            422
+          )
+        if (payment.currency !== params.currency)
+          throw new RefundMutationError(
+            'The payment uses a different currency.',
+            422
+          )
+        if (payment.unappliedAmount < params.amount)
+          throw new RefundMutationError(
+            "Refund exceeds the payment's unapplied amount.",
+            422
+          )
 
-          const amountRefunded = payment.amountRefunded + params.amount
-          await tx.payment.update({
-            where: { id: params.paymentId },
-            data: {
-              unappliedAmount: { decrement: params.amount },
-              amountRefunded: { increment: params.amount },
-              status:
-                amountRefunded === payment.amount
-                  ? 'REFUNDED'
-                  : 'PARTIALLY_REFUNDED',
-              updatedAt: now,
-            },
-          })
-        }
+        const amountRefunded = payment.amountRefunded + params.amount
+        await tx.payment.update({
+          where: { id: params.paymentId },
+          data: {
+            unappliedAmount: { decrement: params.amount },
+            amountRefunded: { increment: params.amount },
+            status:
+              amountRefunded === payment.amount
+                ? 'REFUNDED'
+                : 'PARTIALLY_REFUNDED',
+            updatedAt: now,
+          },
+        })
 
         await tx.refund.create({
           data: {
             id: refundId,
             tenantId,
             customerId: params.customerId,
-            creditNoteId: params.creditNoteId ?? null,
+            creditNoteId: null,
             paymentId: params.paymentId ?? null,
             paymentModeId: params.paymentModeId ?? null,
             depositAccountId: params.depositAccountId ?? null,
@@ -187,7 +164,7 @@ export async function create(
           tenantId,
           customerId: params.customerId,
           paymentId: params.paymentId ?? null,
-          creditNoteId: params.creditNoteId ?? null,
+          creditNoteId: null,
           refundId,
           type: 'REFUND_ISSUED',
           direction: 'DEBIT',
