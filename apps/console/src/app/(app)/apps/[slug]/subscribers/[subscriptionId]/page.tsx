@@ -1,40 +1,17 @@
-import { workspace } from '@/lib/services/workspace'
-import { platform } from '@/lib/services/platform'
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { resolveApp } from '../../_data'
+import { resolveApp, resolveSubscription } from '../../_data'
 import {
   DetailAccordionGroup,
   DetailAccordionSection,
 } from '@/components/patterns/detail/detail-accordion'
 import { Field } from '@/components/patterns/detail/info-section'
 import { formatDate } from '@/lib/format'
-import { cn } from '@876/core/utils'
 
 type Props = { params: Promise<{ slug: string; subscriptionId: string }> }
-
-function getStatusDotColor(status: string) {
-  switch (status) {
-    case 'active':
-    case 'trialing':
-      return 'bg-emerald-500'
-    case 'past_due':
-    case 'unpaid':
-    case 'paused':
-      return 'bg-amber-500'
-    case 'canceled':
-    case 'incomplete_expired':
-      return 'bg-slate-400'
-    case 'incomplete':
-    case 'blocked':
-      return 'bg-red-500'
-    default:
-      return 'bg-muted-foreground'
-  }
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
@@ -57,37 +34,12 @@ async function SubscriptionDetailData({ params }: Props) {
 
   if (!app || app.app_kind !== 'product') notFound()
 
-  const { data } = await workspace.apps.entitlements.list(app.id)
-  const subscriptions = data ?? []
-  const subscription = subscriptions.find((s) => s.id === subscriptionId)
+  const subscription = await resolveSubscription(app.id, subscriptionId)
 
   if (!subscription) notFound()
 
-  const { data: org } = await platform.organizations.retrieve({
-    id: subscription.organization_id,
-  })
-
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-          <h1 className="text-foreground text-xl font-medium tracking-tight">
-            {org?.name ?? org?.slug ?? subscription.organization_id}
-          </h1>
-          <div className="text-muted-foreground flex items-center gap-1.5 text-[0.8125rem] font-medium">
-            <span
-              className={cn(
-                'size-2 rounded-full',
-                getStatusDotColor(subscription.status)
-              )}
-            />
-            <span className="capitalize">
-              {subscription.status.replace('_', ' ')}
-            </span>
-          </div>
-        </div>
-      </div>
-
+    <div className="mx-auto max-w-3xl">
       <DetailAccordionGroup defaultValue="overview">
         <DetailAccordionSection
           title="Subscription overview"
@@ -172,11 +124,7 @@ async function SubscriptionDetailData({ params }: Props) {
 
 function SubscriptionDetailFallback() {
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-7 w-52" />
-        <Skeleton className="h-4 w-20" />
-      </div>
+    <div className="mx-auto max-w-3xl">
       <Skeleton className="h-80 w-full rounded-lg" />
     </div>
   )

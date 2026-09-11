@@ -26,6 +26,18 @@ export const resolveProduct = cache(async (appId: string, slugOrId: string) => {
   )
 })
 
+export const resolveOrganization = cache(async (id: string) => {
+  const { data } = await platform.organizations.retrieve({ id })
+  return data ?? null
+})
+
+export const resolveSubscription = cache(
+  async (appId: string, subscriptionId: string) => {
+    const { data } = await listCompleteAppSubscriptions(appId)
+    return data.find((s) => s.id === subscriptionId) ?? null
+  }
+)
+
 /**
  * Returns complete Core entitlement subscriptions for one app.
  *
