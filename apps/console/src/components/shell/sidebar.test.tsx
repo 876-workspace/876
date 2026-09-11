@@ -15,13 +15,17 @@ vi.mock('next/navigation', () => ({ usePathname }))
 import { navConfig } from '@/components/shell/nav-config'
 import { navContexts } from '@/components/shell/nav-contexts'
 import { Sidebar } from '@/components/shell/sidebar'
-import { sidebarContexts } from '@/components/shell/sidebar-context'
+import {
+  sidebarContexts,
+  type SidebarContextDefinition,
+} from '@/components/shell/sidebar-context'
 import type { SidebarSlot } from '@/components/shell/sidebar-slots'
 
 function renderSidebar(
   pathname: string,
   slots: SidebarSlot[] = [],
-  defaultOpen = true
+  defaultOpen = true,
+  contexts: readonly SidebarContextDefinition[] = navContexts
 ) {
   usePathname.mockReturnValue(pathname)
 
@@ -29,7 +33,7 @@ function renderSidebar(
     <TooltipProvider>
       <SidebarProvider defaultOpen={defaultOpen}>
         <SidebarTrigger />
-        <Sidebar navigation={navConfig} contexts={navContexts} slots={slots} />
+        <Sidebar navigation={navConfig} contexts={contexts} slots={slots} />
       </SidebarProvider>
     </TooltipProvider>
   )
@@ -39,14 +43,55 @@ function navigation() {
   return screen.getByRole('navigation', { name: 'Console navigation' })
 }
 
+/** Navigation entries only — the identity row's link is not an entry. */
 function linkNames(): string[] {
   return within(navigation())
     .queryAllByRole('link')
+    .filter((link) => !link.closest('[data-slot="sidebar-context-identity"]'))
     .map((link) => link.getAttribute('aria-label') ?? link.textContent ?? '')
 }
 
 function backControl(name: string) {
   return screen.getByRole('button', { name })
+}
+
+function identityRow() {
+  return document.querySelector<HTMLElement>(
+    '[data-slot="sidebar-context-identity"]'
+  )
+}
+
+/**
+ * An app-record context, declared inline: `components/` may not import the
+ * `features/apps` builder, and the shell only needs the context's shape.
+ */
+function crmContext(logoUrl: string | null): SidebarContextDefinition[] {
+  return [
+    ...navContexts,
+    {
+      key: 'app-876-crm',
+      kind: 'product',
+      backLabel: '876 CRM',
+      title: '876 CRM',
+      href: '/apps/876-crm',
+      icon: 'apps',
+      logoUrl,
+      parentKey: 'platform',
+      groups: [
+        {
+          key: 'app-sections',
+          entries: [
+            {
+              key: 'app-overview',
+              title: 'Overview',
+              href: '/apps/876-crm',
+              icon: 'apps',
+            },
+          ],
+        },
+      ],
+    },
+  ]
 }
 
 function sidebarRoot() {
@@ -65,11 +110,15 @@ describe('Sidebar', () => {
       renderSidebar('/users')
 
       const sidebar = sidebarRoot()
-      const gap = document.querySelector<HTMLElement>('[data-slot="sidebar-gap"]')
+      const gap = document.querySelector<HTMLElement>(
+        '[data-slot="sidebar-gap"]'
+      )
 
       expect(sidebar).toHaveAttribute('data-variant', 'sidebar')
       expect(sidebar).toHaveAttribute('data-state', 'expanded')
-      expect(gap).toHaveClass('group-data-[collapsible=icon]:w-(--sidebar-width-icon)')
+      expect(gap).toHaveClass(
+        'group-data-[collapsible=icon]:w-(--sidebar-width-icon)'
+      )
       expect(gap?.className).not.toContain(
         'w-[calc(var(--sidebar-width)-var(--876-shell-gutter))]'
       )
@@ -78,13 +127,12 @@ describe('Sidebar', () => {
     it('renders the Console identity in the root sidebar header', () => {
       renderSidebar('/users')
 
-      expect(screen.getByRole('link', { name: 'Console home' })).toHaveAttribute(
-        'href',
-        '/'
-      )
-      expect(screen.getByRole('link', { name: 'Console home' })).toHaveTextContent(
-        'Console'
-      )
+      expect(
+        screen.getByRole('link', { name: 'Console home' })
+      ).toHaveAttribute('href', '/')
+      expect(
+        screen.getByRole('link', { name: 'Console home' })
+      ).toHaveTextContent('Console')
     })
 
     it('renders expanded entry labels by default', () => {
@@ -197,10 +245,14 @@ describe('Sidebar', () => {
     it('keeps the index item marked on a record route it owns', () => {
       renderSidebar('/requests/req_1')
 
-      expect(screen.getByRole('link', { name: 'Requests' })).toHaveAttribute(
-        'aria-current',
-        'page'
-      )
+      const entries = screen
+        .getAllByRole('link', { name: 'Requests' })
+        .filter(
+          (link) => !link.closest('[data-slot="sidebar-context-identity"]')
+        )
+
+      expect(entries).toHaveLength(1)
+      expect(entries[0]).toHaveAttribute('aria-current', 'page')
       expect(
         screen.getByRole('link', { name: 'Customers' })
       ).not.toHaveAttribute('aria-current')
@@ -327,6 +379,116 @@ describe('Sidebar', () => {
       const icon = users.querySelector('svg')
 
       expect(icon?.className.baseVal ?? '').toMatch(/text-amber-500/)
+    })
+  })
+
+  describe('the context identity row', () => {
+    it('keeps the Console mark in the header inside an app context', () => {
+      renderSidebar('/apps/876-crm', [], true, crmContext(null))
+
+      expect(
+        screen.getByRole('link', { name: 'Console home' })
+      ).toHaveAttribute('href', '/')
+      expect(
+        screen.getByRole('link', { name: 'Console home' })
+      ).toHaveTextContent('Console')
+    })
+
+    it('names the app and shows its logo when one is set', () => {
+      renderSidebar(
+        '/apps/876-crm',
+        [],
+        true,
+        crmContext('https://cdn.example/crm.png')
+      )
+
+      const row = identityRow()
+      const link = within(row as HTMLElement).getByRole('link', {
+        name: '876 CRM',
+      })
+
+      expect(link).toHaveAttribute('href', '/apps/876-crm')
+      expect(link).toHaveTextContent('876 CRM')
+      expect(row?.querySelector('img')).toHaveAttribute(
+        'src',
+        'https://cdn.example/crm.png'
+      )
+    })
+
+    it('renders the app initials when the logo is null', () => {
+      renderSidebar('/apps/876-crm', [], true, crmContext(null))
+
+      const row = identityRow()
+
+      expect(row?.querySelector('img')).toBeNull()
+      expect(row).toHaveTextContent('8C')
+    })
+
+    it('renders an icon tile, not an image, for a section context', () => {
+      renderSidebar('/projects')
+
+      const row = identityRow()
+
+      expect(
+        within(row as HTMLElement).getByRole('link', { name: 'Projects' })
+      ).toHaveAttribute('href', '/projects')
+      expect(row?.querySelector('img')).toBeNull()
+      expect(row?.querySelector('svg')).not.toBeNull()
+    })
+
+    it('renders an icon tile for Storage, which has no entries', () => {
+      renderSidebar('/storage')
+
+      const row = identityRow()
+
+      expect(
+        within(row as HTMLElement).getByRole('link', { name: 'Storage' })
+      ).toBeInTheDocument()
+      expect(row?.querySelector('img')).toBeNull()
+    })
+
+    it('renders no identity row on the platform rail', () => {
+      renderSidebar('/users')
+
+      expect(identityRow()).toBeNull()
+    })
+
+    it('returns to the platform rail from the identity row back button', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/apps/876-crm', [], true, crmContext(null))
+
+      await user.click(backControl('Back to Console'))
+
+      expect(identityRow()).toBeNull()
+      expect(screen.getByRole('link', { name: 'Users' })).toBeInTheDocument()
+    })
+
+    it('collapses to the tile alone with no back button', () => {
+      renderSidebar('/apps/876-crm', [], false, crmContext(null))
+
+      const row = identityRow()
+
+      expect(
+        within(row as HTMLElement).getByRole('link', { name: '876 CRM' })
+      ).toHaveTextContent('8C')
+      expect(screen.queryByRole('button', { name: /^Back to/ })).toBeNull()
+    })
+
+    it('names the context in a tooltip on the collapsed tile', async () => {
+      const user = userEvent.setup()
+      renderSidebar('/apps/876-crm', [], false, crmContext(null))
+
+      await user.hover(
+        within(identityRow() as HTMLElement).getByRole('link', {
+          name: '876 CRM',
+        })
+      )
+
+      await screen.findByText('876 CRM')
+
+      expect(
+        document.querySelector('[data-slot="tooltip-content"]')
+      ).toHaveTextContent('876 CRM')
     })
   })
 

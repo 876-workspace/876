@@ -1,16 +1,11 @@
 import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 import type { AdminApp } from '@876/platform/compat'
-import type { RouteTabItem } from '@876/ui/route-tabs'
 
 import type { SidebarContextDefinition } from '@/components/shell/sidebar-context'
 import { PLATFORM_CONTEXT_KEY } from '@/components/shell/sidebar-context'
 
 /**
- * One section of an app's record, independent of how it is presented.
- *
- * The tab strip and the sidebar's product context are two renderings of this
- * one list. Declaring it once is what stops a section from existing on the tabs
- * and not in the rail, which is the same product navigating two different ways.
+ * One section of an app's record, rendered by the sidebar's product context.
  */
 export type AppDetailSection = {
   key: string
@@ -115,18 +110,6 @@ export function appDetailSections(
   ]
 }
 
-/** The app record's tab strip. */
-export function getAppTabs(
-  appKind: AdminApp['app_kind'],
-  base: string
-): RouteTabItem[] {
-  return appDetailSections(appKind).map((section) => ({
-    label: section.label,
-    href: `${base}${section.segment}`,
-    ...(section.segment === '' ? { exact: true } : {}),
-  }))
-}
-
 /**
  * The sidebar context for one app record.
  *
@@ -137,7 +120,8 @@ export function getAppTabs(
 export function appSidebarContext(
   appKind: AdminApp['app_kind'],
   slug: string,
-  appName: string
+  appName: string,
+  logoUrl: string | null
 ): SidebarContextDefinition {
   const base = `/apps/${slug}`
   const entries: NavEntry[] = appDetailSections(appKind).map((section) => ({
@@ -154,6 +138,7 @@ export function appSidebarContext(
     title: appName,
     href: base,
     icon: 'apps',
+    logoUrl,
     colorClassName: 'text-purple-500 dark:text-purple-400',
     activeClassName: 'bg-purple-500/12 ring-purple-500/30',
     parentKey: PLATFORM_CONTEXT_KEY,
