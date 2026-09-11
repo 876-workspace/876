@@ -135,12 +135,21 @@ export async function refundSalesReceiptWorkflow(
       const creditNoteId = generateId('CreditNote')
       const refundId = generateId('Refund')
       const refundedAt = params.refundedAt ?? now
+
+      // Amount-only refunds preserve the original receipt's tax mix. Exact
+      // returned-line tax attribution can be added later without changing the
+      // Credit Note + Refund accounting contract.
+      const taxAmount =
+        receipt.totalAmount > 0n
+          ? (params.amount * receipt.taxAmount) / receipt.totalAmount
+          : 0n
+      const netAmount = params.amount - taxAmount
       const totals = computeTotals([
         {
           description: `Return/refund for Sales Receipt ${receipt.number}`,
           quantity: 1,
-          unitAmount: params.amount,
-          taxAmount: 0n,
+          unitAmount: netAmount,
+          taxAmount,
           discountAmount: 0n,
         },
       ])
