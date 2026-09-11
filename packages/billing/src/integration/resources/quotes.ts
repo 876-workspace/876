@@ -3,6 +3,7 @@ import {
   BillingQuoteListSchema,
   BillingQuoteSchema,
 } from '../schemas'
+import { BillingSalesReceiptSchema } from '../types/sales-receipt.schema'
 import { IntegrationRequest } from '../request'
 import type { IntegrationRuntime } from '../runtime'
 import type {
@@ -13,6 +14,10 @@ import type {
   BillingQuoteListParams,
   IntegrationCreateOptions,
 } from '../types'
+import type {
+  BillingSalesReceipt,
+  BillingSalesReceiptQuoteConversionParams,
+} from '../types/sales-receipt'
 import type {
   QuotePreference,
   QuotePreferenceUpdateParams,
@@ -150,6 +155,28 @@ export function createIntegrationQuotesResource(runtime: IntegrationRuntime) {
           headers: { 'Idempotency-Key': options.idempotencyKey },
         },
         BillingInvoiceSchema
+      )
+    },
+
+    convertToSalesReceipt(
+      organizationId: string,
+      quoteId: string,
+      params: BillingSalesReceiptQuoteConversionParams,
+      options: IntegrationCreateOptions
+    ) {
+      return IntegrationRequest<BillingSalesReceipt>(
+        runtime,
+        {
+          method: 'POST',
+          path: lifecyclePath(
+            organizationId,
+            quoteId,
+            'convert-to-sales-receipt'
+          ),
+          body: params,
+          headers: { 'Idempotency-Key': options.idempotencyKey },
+        },
+        BillingSalesReceiptSchema
       )
     },
 
