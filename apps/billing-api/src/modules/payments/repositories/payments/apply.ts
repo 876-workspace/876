@@ -16,7 +16,7 @@ import {
 } from './shared'
 import { isRetryableTransactionError } from '@/platform/prisma-errors'
 
-/** Applies previously unapplied customer cash to open invoices. */
+/** Applies previously unapplied ordinary customer cash to open invoices. */
 export async function apply(
   tenantId: string,
   paymentId: string,
@@ -36,6 +36,7 @@ export async function apply(
           where: {
             id: paymentId,
             tenantId,
+            salesReceipt: { is: null },
             ...(sourceAppId ? { sourceAppId } : {}),
           },
         })
