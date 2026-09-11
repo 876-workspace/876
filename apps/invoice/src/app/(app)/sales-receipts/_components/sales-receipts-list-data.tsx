@@ -78,7 +78,7 @@ export async function SalesReceiptsListData() {
     totalAmount: receipt.totalAmount,
     currency: receipt.currency,
     status: receipt.status,
-    date: receipt.receiptAt,
+    receiptAt: receipt.receiptAt,
   }))
 
   return (
