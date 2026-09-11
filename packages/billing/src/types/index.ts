@@ -89,6 +89,7 @@ export type {
   InvoiceWriteOffParams,
   InvoiceCreated,
   InvoiceUpdateParams,
+  InvoiceDetail,
   DeletedInvoice,
   QuoteListParams,
   QuoteCreateParams,

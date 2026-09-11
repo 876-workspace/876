@@ -1,3 +1,6 @@
+import { InvoiceDetailSchema } from '../types/invoice.schema'
+import type { InvoiceDetail } from '../types/invoice'
+
 import { Request } from '../request'
 import type { Runtime } from '../runtime'
 import {
@@ -54,14 +57,14 @@ export function createInvoicesResource(runtime: Runtime) {
     },
     /** Retrieves a single invoice by ID. */
     retrieve(invoiceId: string, options?: RequestOptions) {
-      return Request<Invoice>(
+      return Request<InvoiceDetail>(
         runtime,
         {
           method: 'GET',
           path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}`,
           signal: options?.signal,
         },
-        InvoiceSchema
+        InvoiceDetailSchema
       )
     },
     /** Updates a draft invoice. */

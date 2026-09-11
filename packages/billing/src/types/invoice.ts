@@ -5,6 +5,7 @@ import type { MinorAmount } from './common'
  * A line used when creating a quote or invoice.
  */
 export interface DocumentLineCreateParams {
+  variantId?: string | null
   /**
    * ID of the catalog item this line references, if any.
    */
@@ -358,6 +359,8 @@ export interface InvoiceUpdateParams {
   referenceNumber?: string | null
   /** Short subject line for the invoice. */
   subject?: string | null
+  /** Replacement line items. Accepted only while the invoice is a draft. */
+  lines?: DocumentLineCreateParams[]
 }
 
 /**
@@ -486,4 +489,85 @@ export interface DeletedQuote {
   id: string
   /** Always true for a deleted resource. */
   deleted: true
+}
+
+/** Full invoice returned by retrieve, including immutable line snapshots. */
+export interface InvoiceDetail {
+  object: 'invoice'
+  id: string
+  number: string
+  status:
+    | 'DRAFT'
+    | 'OPEN'
+    | 'SENT'
+    | 'PARTIALLY_PAID'
+    | 'OVERDUE'
+    | 'PAID'
+    | 'UNCOLLECTIBLE'
+    | 'VOID'
+  customerId: string
+  currency: string
+  billingReason: string
+  subscriptionId: string | null
+  recurringInvoiceId?: string | null
+  customerName: string | null
+  customerEmail: string | null
+  billingAddressSnapshot: unknown
+  taxBehavior: 'EXCLUSIVE' | 'INCLUSIVE'
+  subject: string | null
+  orderNumber: string | null
+  referenceNumber: string | null
+  paymentTermName: string | null
+  salespersonName: string | null
+  notes: string | null
+  terms: string | null
+  issueAt: number | null
+  dueAt: number | null
+  servicePeriodStart: number | null
+  servicePeriodEnd: number | null
+  subtotalAmount: string
+  taxAmount: string
+  discountAmount: string
+  shippingAmount: string
+  adjustmentAmount: string
+  totalAmount: string
+  amountDue: string
+  amountPaid: string
+  amountCredited: string
+  customer: {
+    id: string
+    name: string
+    companyName: string | null
+    email: string | null
+    phone: string | null
+    addresses: InvoiceAddress[]
+  }
+  lines: InvoiceLine[]
+  lateFeeAssessment: { sourceInvoice: { id: string; number: string } } | null
+}
+
+export interface InvoiceAddress {
+  attention: string | null
+  line1: string | null
+  line2: string | null
+  city: string | null
+  state: string | null
+  postalCode: string | null
+  countryCode: string | null
+}
+
+export interface InvoiceLine {
+  id: string
+  itemId: string | null
+  variantId: string | null
+  priceId: string | null
+  description: string
+  quantity: number
+  position: number
+  unitAmount: string
+  taxAmount: string
+  discountAmount: string
+  totalAmount: string
+  servicePeriodStart: number | null
+  servicePeriodEnd: number | null
 }
