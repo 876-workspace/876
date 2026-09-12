@@ -142,7 +142,7 @@ export type {
 } from './credit-note'
 export { CreditNoteListSchema, CreditNoteSchema } from './credit-note.schema'
 
-// Bank
+// Bank accounts + booked transactions
 export type {
   BankAccountCreateParams,
   BankAccountUpdateParams,
@@ -170,6 +170,71 @@ export {
   BankTransactionSchema,
   BankTransactionListSchema,
 } from './bank-transaction.schema'
+
+// Banking engine: statement evidence, matching, transfers, rules, reconciliation
+export type {
+  StatementLineType,
+  StatementLineStatus,
+  StatementImportSource,
+  StatementFormat,
+  StatementDateFormat,
+  StatementNumberFormat,
+  StatementFileMapping,
+  StatementFilePreviewParams,
+  StatementFileImportParams,
+  BankStatementLineInput,
+  BankStatementImportCreateParams,
+  BankStatementImport,
+  BankStatementLine,
+  BankStatementImportWithLines,
+  BankStatementMatchItem,
+  BankStatementMatch,
+  BankStatementMatchParams,
+  BankMatchCandidate,
+  BankStatementCategorizeParams,
+  BankStatementCategorizeResult,
+  BankStatementPreviewLine,
+  BankStatementPreviewError,
+  BankStatementPreview,
+  BankTransferCreateParams,
+  BankTransfer,
+  BankReconciliationCreateParams,
+  BankReconciliation,
+  BankRuleField,
+  BankRuleOperator,
+  BankRuleConditionParams,
+  BankRuleAction,
+  BankRuleCreateParams,
+  BankRuleUpdateParams,
+  BankRule,
+  DeletedBankRule,
+  BankStatementImportList,
+  BankStatementLineList,
+  BankMatchCandidateList,
+  BankTransferList,
+  BankReconciliationList,
+  BankRuleList,
+  BankingRequestOptions,
+} from './banking-engine'
+export {
+  BankStatementImportSchema,
+  BankStatementLineSchema,
+  BankStatementImportWithLinesSchema,
+  BankStatementPreviewSchema,
+  BankStatementMatchSchema,
+  BankMatchCandidateSchema,
+  BankStatementCategorizeResultSchema,
+  BankTransferSchema,
+  BankReconciliationSchema,
+  BankRuleSchema,
+  DeletedBankRuleSchema,
+  BankStatementImportListSchema,
+  BankStatementLineListSchema,
+  BankMatchCandidateListSchema,
+  BankTransferListSchema,
+  BankReconciliationListSchema,
+  BankRuleListSchema,
+} from './banking-engine.schema'
 
 // Payment mode + payment
 export type {
