@@ -120,7 +120,8 @@ export function ReconciliationWorkspace({
         setError(result.error?.message ?? 'Could not create reconciliation.')
         return
       }
-      setReconciliations((current) => [result.data!, ...current])
+      const created = result.data
+      setReconciliations((current) => [created, ...current])
       setSelectedIds(new Set())
       setOpeningBalance('')
       setClosingBalance('')
