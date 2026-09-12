@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { Button } from '@876/ui/button'
@@ -50,14 +50,24 @@ interface InitialAccount {
 export function BankAccountForm({
   currencies,
   initial,
+  initialBanks = [],
+  initialBranches = [],
+  initialDirectoryError = null,
+  countryCode = 'JM',
 }: {
   currencies: Array<{ value: string; label: string }>
   initial?: InitialAccount
+  initialBanks?: BankDirectoryBank[]
+  initialBranches?: BankDirectoryBranch[]
+  initialDirectoryError?: string | null
+  countryCode?: string
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  const [directoryError, setDirectoryError] = useState<string | null>(null)
+  const [directoryError, setDirectoryError] = useState<string | null>(
+    initialDirectoryError
+  )
   const [name, setName] = useState(initial?.name ?? '')
   const [accountType, setAccountType] = useState<BankAccountType>(
     initial?.accountType ?? 'CHECKING'
@@ -67,9 +77,7 @@ export function BankAccountForm({
   )
   const [description, setDescription] = useState(initial?.description ?? '')
   const [isActive, setIsActive] = useState(initial?.isActive ?? true)
-  const [countryCode] = useState('JM')
-  const [banks, setBanks] = useState<BankDirectoryBank[]>([])
-  const [branches, setBranches] = useState<BankDirectoryBranch[]>([])
+  const [branches, setBranches] = useState<BankDirectoryBranch[]>(initialBranches)
   const [directoryBankId, setDirectoryBankId] = useState(
     initial?.directoryBankId ?? ''
   )
@@ -82,38 +90,31 @@ export function BankAccountForm({
   const [accountNumberLast4, setAccountNumberLast4] = useState(
     initial?.accountNumberLast4 ?? ''
   )
+  const skipPrimedBranchLoad = useRef(
+    Boolean(initial?.directoryBankId && initialBranches.length)
+  )
 
   const linksBank = BANK_LINKED.has(accountType)
   const requiresBranch = BRANCH_REQUIRED.has(accountType)
   const selectedBank = useMemo(
-    () => banks.find((bank) => bank.id === directoryBankId) ?? null,
-    [banks, directoryBankId]
+    () => initialBanks.find((bank) => bank.id === directoryBankId) ?? null,
+    [initialBanks, directoryBankId]
   )
-
-  useEffect(() => {
-    if (!linksBank) return
-    let active = true
-    void client.bankDirectory.listBanks(countryCode).then((result) => {
-      if (!active) return
-      if (result.error || !result.data) {
-        setDirectoryError(
-          result.error?.message ?? 'Could not load the bank directory.'
-        )
-        return
-      }
-      setBanks(result.data.data)
-      setDirectoryError(null)
-    })
-    return () => {
-      active = false
-    }
-  }, [countryCode, linksBank])
 
   useEffect(() => {
     if (!linksBank || !directoryBankId) {
       setBranches([])
       return
     }
+
+    if (
+      skipPrimedBranchLoad.current &&
+      directoryBankId === initial?.directoryBankId
+    ) {
+      skipPrimedBranchLoad.current = false
+      return
+    }
+
     let active = true
     void client.bankDirectory.listBranches(directoryBankId).then((result) => {
       if (!active) return
@@ -129,7 +130,7 @@ export function BankAccountForm({
     return () => {
       active = false
     }
-  }, [directoryBankId, linksBank])
+  }, [directoryBankId, initial?.directoryBankId, linksBank])
 
   function changeAccountType(next: BankAccountType) {
     setAccountType(next)
@@ -141,9 +142,11 @@ export function BankAccountForm({
   }
 
   function changeBank(next: string) {
+    skipPrimedBranchLoad.current = false
     setDirectoryBankId(next)
     setDirectoryBranchId('')
     setBranches([])
+    setDirectoryError(null)
   }
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -167,8 +170,7 @@ export function BankAccountForm({
 
     setError(null)
     startTransition(async () => {
-      const bankName =
-        selectedBank?.name ?? initial?.institutionName ?? null
+      const bankName = selectedBank?.name ?? initial?.institutionName ?? null
       const params = {
         name,
         accountType,
@@ -243,7 +245,9 @@ export function BankAccountForm({
           <>
             <Field label="Country" htmlFor="bank-account-country">
               <NativeSelect id="bank-account-country" value={countryCode} disabled>
-                <NativeSelectOption value="JM">Jamaica (JM)</NativeSelectOption>
+                <NativeSelectOption value={countryCode}>
+                  {countryCode === 'JM' ? 'Jamaica (JM)' : countryCode}
+                </NativeSelectOption>
               </NativeSelect>
             </Field>
             <Field label="Financial institution" htmlFor="bank-account-bank">
@@ -252,9 +256,10 @@ export function BankAccountForm({
                 value={directoryBankId}
                 onChange={(event) => changeBank(event.target.value)}
                 required
+                disabled={Boolean(directoryError) && initialBanks.length === 0}
               >
                 <NativeSelectOption value="">Select a bank</NativeSelectOption>
-                {banks.map((bank) => (
+                {initialBanks.map((bank) => (
                   <NativeSelectOption key={bank.id} value={bank.id}>
                     {bank.shortName ?? bank.name} · {bank.bankCode}
                   </NativeSelectOption>
@@ -270,7 +275,7 @@ export function BankAccountForm({
                 value={directoryBranchId}
                 onChange={(event) => setDirectoryBranchId(event.target.value)}
                 required={requiresBranch}
-                disabled={!directoryBankId}
+                disabled={!directoryBankId || Boolean(directoryError)}
               >
                 <NativeSelectOption value="">
                   {directoryBankId ? 'Select a branch' : 'Select a bank first'}
