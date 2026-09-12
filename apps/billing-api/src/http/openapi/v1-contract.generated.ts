@@ -179,6 +179,175 @@ export const v1OperationMetadata = {
     summary: 'Delete a manual account transaction',
     tags: ['Banking'],
   },
+  'GET /banking/directory/banks': {
+    operationId: 'billing-banking_list_directory_banks',
+    summary: 'List banks from the shared financial directory',
+    tags: ['Billing'],
+  },
+  'GET /banking/directory/banks/{bankId}/branches': {
+    operationId: 'billing-banking_list_directory_branches',
+    summary: 'List branches for a shared-directory bank',
+    tags: ['Billing'],
+  },
+  'GET /banking/directory/branches': {
+    operationId: 'billing-banking_list_directory_branches_by_ids',
+    summary: 'List shared-directory branches across banks by ids',
+    tags: ['Billing'],
+  },
+  'GET /banking/deposits': {
+    operationId: 'billing-banking_list_deposits',
+    summary: 'List bank deposits',
+    tags: ['Billing'],
+  },
+  'POST /banking/deposits': {
+    operationId: 'billing-banking_create_deposit',
+    summary: 'Record a deposit from a holding account',
+    tags: ['Billing'],
+  },
+  'GET /banking/deposits/{depositId}': {
+    operationId: 'billing-banking_retrieve_deposit',
+    summary: 'Retrieve a bank deposit',
+    tags: ['Billing'],
+  },
+  'POST /banking/deposits/{depositId}/void': {
+    operationId: 'billing-banking_void_deposit',
+    summary: 'Void a recorded bank deposit',
+    tags: ['Billing'],
+  },
+  'GET /banking/accounts/{accountId}/statement-imports': {
+    operationId: 'billing-banking_list_statement_imports',
+    summary: 'List bank statement imports',
+    tags: ['Billing'],
+  },
+  'POST /banking/accounts/{accountId}/statement-imports': {
+    operationId: 'billing-banking_create_statement_import',
+    summary: 'Import normalized bank statement lines',
+    tags: ['Billing'],
+  },
+  'GET /banking/statement-imports/{importId}': {
+    operationId: 'billing-banking_retrieve_statement_import',
+    summary: 'Retrieve a bank statement import',
+    tags: ['Billing'],
+  },
+  'POST /banking/statement-imports/{importId}/undo': {
+    operationId: 'billing-banking_undo_statement_import',
+    summary: 'Undo an unresolved bank statement import',
+    tags: ['Billing'],
+  },
+  'GET /banking/accounts/{accountId}/statement-lines': {
+    operationId: 'billing-banking_list_statement_lines',
+    summary: 'List external bank statement lines',
+    tags: ['Billing'],
+  },
+  'GET /banking/statement-lines/{lineId}': {
+    operationId: 'billing-banking_retrieve_statement_line',
+    summary: 'Retrieve an external bank statement line',
+    tags: ['Billing'],
+  },
+  'GET /banking/statement-lines/{lineId}/matches': {
+    operationId: 'billing-banking_list_statement_match_candidates',
+    summary: 'List candidate booked cash matches',
+    tags: ['Billing'],
+  },
+  'POST /banking/statement-lines/{lineId}/matches': {
+    operationId: 'billing-banking_match_statement_line',
+    summary: 'Match a statement line to booked cash',
+    tags: ['Billing'],
+  },
+  'POST /banking/statement-lines/{lineId}/unmatch': {
+    operationId: 'billing-banking_unmatch_statement_line',
+    summary: 'Reverse a statement-line match',
+    tags: ['Billing'],
+  },
+  'POST /banking/statement-lines/{lineId}/categorize': {
+    operationId: 'billing-banking_categorize_statement_line',
+    summary: 'Book and categorize a statement line',
+    tags: ['Billing'],
+  },
+  'POST /banking/statement-lines/{lineId}/exclude': {
+    operationId: 'billing-banking_exclude_statement_line',
+    summary: 'Exclude a statement line from review',
+    tags: ['Billing'],
+  },
+  'POST /banking/statement-lines/{lineId}/restore': {
+    operationId: 'billing-banking_restore_statement_line',
+    summary: 'Restore an excluded statement line',
+    tags: ['Billing'],
+  },
+  'GET /banking/transfers': {
+    operationId: 'billing-banking_list_transfers',
+    summary: 'List bank transfers',
+    tags: ['Billing'],
+  },
+  'POST /banking/transfers': {
+    operationId: 'billing-banking_create_transfer',
+    summary: 'Create a same-currency bank transfer',
+    tags: ['Billing'],
+  },
+  'GET /banking/accounts/{accountId}/reconciliations': {
+    operationId: 'billing-banking_list_reconciliations',
+    summary: 'List bank reconciliation periods',
+    tags: ['Billing'],
+  },
+  'POST /banking/accounts/{accountId}/reconciliations': {
+    operationId: 'billing-banking_create_reconciliation',
+    summary: 'Create a bank reconciliation draft',
+    tags: ['Billing'],
+  },
+  'GET /banking/reconciliations/{reconciliationId}': {
+    operationId: 'billing-banking_retrieve_reconciliation',
+    summary: 'Retrieve a bank reconciliation',
+    tags: ['Billing'],
+  },
+  'POST /banking/reconciliations/{reconciliationId}/complete': {
+    operationId: 'billing-banking_complete_reconciliation',
+    summary: 'Complete a zero-difference reconciliation',
+    tags: ['Billing'],
+  },
+  'POST /banking/reconciliations/{reconciliationId}/reopen': {
+    operationId: 'billing-banking_reopen_reconciliation',
+    summary: 'Reopen the latest completed reconciliation',
+    tags: ['Billing'],
+  },
+  'GET /banking/rules': {
+    operationId: 'billing-banking_list_rules',
+    summary: 'List bank recognition rules',
+    tags: ['Billing'],
+  },
+  'POST /banking/rules': {
+    operationId: 'billing-banking_create_rule',
+    summary: 'Create a bank recognition rule',
+    tags: ['Billing'],
+  },
+  'GET /banking/rules/{ruleId}': {
+    operationId: 'billing-banking_retrieve_rule',
+    summary: 'Retrieve a bank recognition rule',
+    tags: ['Billing'],
+  },
+  'PATCH /banking/rules/{ruleId}': {
+    operationId: 'billing-banking_update_rule',
+    summary: 'Update a bank recognition rule',
+    tags: ['Billing'],
+  },
+  'DELETE /banking/rules/{ruleId}': {
+    operationId: 'billing-banking_delete_rule',
+    summary: 'Delete an unused bank recognition rule',
+    tags: ['Billing'],
+  },
+  'POST /banking/accounts/{accountId}/statement-imports/preview': {
+    operationId: 'billing-banking_preview_statement_file',
+    summary: 'Preview a CSV or TSV bank statement',
+    description:
+      'Parses uploaded statement text using an explicit column mapping and returns normalized bank evidence without persisting or booking it.',
+    tags: ['Billing'],
+  },
+  'POST /banking/accounts/{accountId}/statement-imports/file': {
+    operationId: 'billing-banking_import_statement_file',
+    summary: 'Import a validated CSV or TSV bank statement',
+    description:
+      'Re-parses the source statement with the approved mapping and persists normalized external bank evidence only when every row is valid.',
+    tags: ['Billing'],
+  },
   'GET /products': {
     summary: 'List products',
     tags: ['Catalog'],
@@ -6179,6 +6348,8296 @@ export const v1OperationContracts = {
               },
               required: ['data', 'error'],
               type: 'object',
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/directory/banks': {
+    tags: ['Billing'],
+    summary: 'List banks from the shared financial directory',
+    operationId: 'billing-banking_list_directory_banks',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'countryCode',
+        schema: {
+          default: 'JM',
+          type: 'string',
+          minLength: 2,
+          maxLength: 2,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Bank directory list returned.',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-directory-bank',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          countryCode: {
+                            type: 'string',
+                            minLength: 2,
+                            maxLength: 2,
+                          },
+                          name: {
+                            type: 'string',
+                          },
+                          shortName: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          bankCode: {
+                            type: 'string',
+                          },
+                          clearingSystem: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          institutionType: {
+                            type: 'string',
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'countryCode',
+                          'name',
+                          'shortName',
+                          'bankCode',
+                          'clearingSystem',
+                          'institutionType',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'url',
+                    'total_count',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/directory/banks/{bankId}/branches': {
+    tags: ['Billing'],
+    summary: 'List branches for a shared-directory bank',
+    operationId: 'billing-banking_list_directory_branches',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'bankId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Bank branch directory list returned.',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-directory-branch',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          bankId: {
+                            type: 'string',
+                          },
+                          name: {
+                            type: 'string',
+                          },
+                          transitNumber: {
+                            type: 'string',
+                          },
+                          routingNumber: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'bankId',
+                          'name',
+                          'transitNumber',
+                          'routingNumber',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'url',
+                    'total_count',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/directory/branches': {
+    tags: ['Billing'],
+    summary: 'List shared-directory branches across banks by ids',
+    operationId: 'billing-banking_list_directory_branches_by_ids',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'ids',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Bank branch directory list returned.',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-directory-branch',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          bankId: {
+                            type: 'string',
+                          },
+                          name: {
+                            type: 'string',
+                          },
+                          transitNumber: {
+                            type: 'string',
+                          },
+                          routingNumber: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'bankId',
+                          'name',
+                          'transitNumber',
+                          'routingNumber',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'url',
+                    'total_count',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/deposits': {
+    tags: ['Billing'],
+    summary: 'List bank deposits',
+    operationId: 'billing-banking_list_deposits',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-deposit',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          sourceAccountId: {
+                            type: 'string',
+                          },
+                          destinationAccountId: {
+                            type: 'string',
+                          },
+                          amount: {
+                            type: 'string',
+                          },
+                          currency: {
+                            type: 'string',
+                          },
+                          depositedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          description: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          reference: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          status: {
+                            type: 'string',
+                            enum: ['posted', 'reversed'],
+                          },
+                          reversedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          transactionIds: {
+                            type: 'array',
+                            items: {
+                              type: 'string',
+                            },
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'sourceAccountId',
+                          'destinationAccountId',
+                          'amount',
+                          'currency',
+                          'depositedAt',
+                          'description',
+                          'reference',
+                          'status',
+                          'reversedAt',
+                          'createdAt',
+                          'updatedAt',
+                          'transactionIds',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'url',
+                    'total_count',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/deposits': {
+    tags: ['Billing'],
+    summary: 'Record a deposit from a holding account',
+    operationId: 'billing-banking_create_deposit',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              sourceAccountId: {
+                type: 'string',
+                minLength: 1,
+              },
+              destinationAccountId: {
+                type: 'string',
+                minLength: 1,
+              },
+              transactionIds: {
+                minItems: 1,
+                maxItems: 100,
+                type: 'array',
+                items: {
+                  type: 'string',
+                  minLength: 1,
+                },
+              },
+              amount: {
+                type: 'string',
+                pattern: '^\\d+$',
+              },
+              currency: {
+                type: 'string',
+                minLength: 3,
+                maxLength: 3,
+              },
+              depositedAt: {
+                type: 'integer',
+                exclusiveMinimum: 0,
+                maximum: 9007199254740991,
+              },
+              description: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              reference: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 120,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+            },
+            required: [
+              'sourceAccountId',
+              'destinationAccountId',
+              'transactionIds',
+              'amount',
+              'currency',
+              'depositedAt',
+            ],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-deposit',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    sourceAccountId: {
+                      type: 'string',
+                    },
+                    destinationAccountId: {
+                      type: 'string',
+                    },
+                    amount: {
+                      type: 'string',
+                    },
+                    currency: {
+                      type: 'string',
+                    },
+                    depositedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    description: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    reference: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['posted', 'reversed'],
+                    },
+                    reversedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    transactionIds: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'sourceAccountId',
+                    'destinationAccountId',
+                    'amount',
+                    'currency',
+                    'depositedAt',
+                    'description',
+                    'reference',
+                    'status',
+                    'reversedAt',
+                    'createdAt',
+                    'updatedAt',
+                    'transactionIds',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/deposits/{depositId}': {
+    tags: ['Billing'],
+    summary: 'Retrieve a bank deposit',
+    operationId: 'billing-banking_retrieve_deposit',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'depositId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-deposit',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    sourceAccountId: {
+                      type: 'string',
+                    },
+                    destinationAccountId: {
+                      type: 'string',
+                    },
+                    amount: {
+                      type: 'string',
+                    },
+                    currency: {
+                      type: 'string',
+                    },
+                    depositedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    description: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    reference: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['posted', 'reversed'],
+                    },
+                    reversedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    transactionIds: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'sourceAccountId',
+                    'destinationAccountId',
+                    'amount',
+                    'currency',
+                    'depositedAt',
+                    'description',
+                    'reference',
+                    'status',
+                    'reversedAt',
+                    'createdAt',
+                    'updatedAt',
+                    'transactionIds',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/deposits/{depositId}/void': {
+    tags: ['Billing'],
+    summary: 'Void a recorded bank deposit',
+    operationId: 'billing-banking_void_deposit',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'depositId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-deposit',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    sourceAccountId: {
+                      type: 'string',
+                    },
+                    destinationAccountId: {
+                      type: 'string',
+                    },
+                    amount: {
+                      type: 'string',
+                    },
+                    currency: {
+                      type: 'string',
+                    },
+                    depositedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    description: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    reference: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['posted', 'reversed'],
+                    },
+                    reversedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    transactionIds: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'sourceAccountId',
+                    'destinationAccountId',
+                    'amount',
+                    'currency',
+                    'depositedAt',
+                    'description',
+                    'reference',
+                    'status',
+                    'reversedAt',
+                    'createdAt',
+                    'updatedAt',
+                    'transactionIds',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/accounts/{accountId}/statement-imports': {
+    tags: ['Billing'],
+    summary: 'List bank statement imports',
+    operationId: 'billing-banking_list_statement_imports',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'accountId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-statement-import',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          accountId: {
+                            type: 'string',
+                          },
+                          source: {
+                            type: 'string',
+                            enum: ['file', 'email', 'feed', 'api'],
+                          },
+                          format: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                enum: [
+                                  'csv',
+                                  'tsv',
+                                  'ofx',
+                                  'qif',
+                                  'camt-053',
+                                  'camt-054',
+                                  'mt940',
+                                ],
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          sourceFileId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          sourceName: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          status: {
+                            type: 'string',
+                            enum: ['pending', 'completed', 'undone', 'failed'],
+                          },
+                          transactionCount: {
+                            type: 'integer',
+                            minimum: 0,
+                            maximum: 9007199254740991,
+                          },
+                          duplicateCount: {
+                            type: 'integer',
+                            minimum: 0,
+                            maximum: 9007199254740991,
+                          },
+                          completedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          undoneAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'accountId',
+                          'source',
+                          'format',
+                          'sourceFileId',
+                          'sourceName',
+                          'status',
+                          'transactionCount',
+                          'duplicateCount',
+                          'completedAt',
+                          'undoneAt',
+                          'createdAt',
+                          'updatedAt',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'url',
+                    'total_count',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/accounts/{accountId}/statement-imports': {
+    tags: ['Billing'],
+    summary: 'Import normalized bank statement lines',
+    operationId: 'billing-banking_create_statement_import',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'accountId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              source: {
+                type: 'string',
+                enum: ['file', 'email', 'feed', 'api'],
+              },
+              format: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    enum: [
+                      'csv',
+                      'tsv',
+                      'ofx',
+                      'qif',
+                      'camt-053',
+                      'camt-054',
+                      'mt940',
+                    ],
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              sourceFileId: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              sourceName: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 255,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              mapping: {
+                anyOf: [
+                  {
+                    type: 'object',
+                    propertyNames: {
+                      type: 'string',
+                    },
+                    additionalProperties: {},
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              lines: {
+                minItems: 1,
+                maxItems: 500,
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    externalId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          minLength: 1,
+                          maxLength: 255,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    postedAt: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                    authorizedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: 0,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    type: {
+                      type: 'string',
+                      enum: ['credit', 'debit'],
+                    },
+                    amount: {
+                      type: 'string',
+                      pattern: '^\\d+$',
+                    },
+                    currency: {
+                      type: 'string',
+                      minLength: 3,
+                      maxLength: 3,
+                    },
+                    description: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          minLength: 1,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    payee: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          minLength: 1,
+                          maxLength: 255,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    reference: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          minLength: 1,
+                          maxLength: 255,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    bankCategory: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          minLength: 1,
+                          maxLength: 160,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    runningBalance: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          pattern: '^-?\\d+$',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: ['postedAt', 'type', 'amount', 'currency'],
+                  additionalProperties: false,
+                },
+              },
+            },
+            required: ['source', 'lines'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-statement-import',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    source: {
+                      type: 'string',
+                      enum: ['file', 'email', 'feed', 'api'],
+                    },
+                    format: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          enum: [
+                            'csv',
+                            'tsv',
+                            'ofx',
+                            'qif',
+                            'camt-053',
+                            'camt-054',
+                            'mt940',
+                          ],
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    sourceFileId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    sourceName: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['pending', 'completed', 'undone', 'failed'],
+                    },
+                    transactionCount: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                    duplicateCount: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                    completedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    undoneAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    lines: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-statement-line',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          accountId: {
+                            type: 'string',
+                          },
+                          importId: {
+                            type: 'string',
+                          },
+                          externalId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          fingerprint: {
+                            type: 'string',
+                          },
+                          postedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          authorizedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          type: {
+                            type: 'string',
+                            enum: ['credit', 'debit'],
+                          },
+                          amount: {
+                            type: 'string',
+                          },
+                          currency: {
+                            type: 'string',
+                          },
+                          description: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          payee: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          reference: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          bankCategory: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          runningBalance: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          status: {
+                            type: 'string',
+                            enum: [
+                              'uncategorized',
+                              'recognized',
+                              'matched',
+                              'categorized',
+                              'excluded',
+                            ],
+                          },
+                          recognitionSource: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                enum: ['rule', 'heuristic', 'ai'],
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          recognizedRuleId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          duplicateOfId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          excludedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'accountId',
+                          'importId',
+                          'externalId',
+                          'fingerprint',
+                          'postedAt',
+                          'authorizedAt',
+                          'type',
+                          'amount',
+                          'currency',
+                          'description',
+                          'payee',
+                          'reference',
+                          'bankCategory',
+                          'runningBalance',
+                          'status',
+                          'recognitionSource',
+                          'recognizedRuleId',
+                          'duplicateOfId',
+                          'excludedAt',
+                          'createdAt',
+                          'updatedAt',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'accountId',
+                    'source',
+                    'format',
+                    'sourceFileId',
+                    'sourceName',
+                    'status',
+                    'transactionCount',
+                    'duplicateCount',
+                    'completedAt',
+                    'undoneAt',
+                    'createdAt',
+                    'updatedAt',
+                    'lines',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/statement-imports/{importId}': {
+    tags: ['Billing'],
+    summary: 'Retrieve a bank statement import',
+    operationId: 'billing-banking_retrieve_statement_import',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'importId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-statement-import',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    source: {
+                      type: 'string',
+                      enum: ['file', 'email', 'feed', 'api'],
+                    },
+                    format: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          enum: [
+                            'csv',
+                            'tsv',
+                            'ofx',
+                            'qif',
+                            'camt-053',
+                            'camt-054',
+                            'mt940',
+                          ],
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    sourceFileId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    sourceName: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['pending', 'completed', 'undone', 'failed'],
+                    },
+                    transactionCount: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                    duplicateCount: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                    completedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    undoneAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    lines: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-statement-line',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          accountId: {
+                            type: 'string',
+                          },
+                          importId: {
+                            type: 'string',
+                          },
+                          externalId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          fingerprint: {
+                            type: 'string',
+                          },
+                          postedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          authorizedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          type: {
+                            type: 'string',
+                            enum: ['credit', 'debit'],
+                          },
+                          amount: {
+                            type: 'string',
+                          },
+                          currency: {
+                            type: 'string',
+                          },
+                          description: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          payee: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          reference: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          bankCategory: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          runningBalance: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          status: {
+                            type: 'string',
+                            enum: [
+                              'uncategorized',
+                              'recognized',
+                              'matched',
+                              'categorized',
+                              'excluded',
+                            ],
+                          },
+                          recognitionSource: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                enum: ['rule', 'heuristic', 'ai'],
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          recognizedRuleId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          duplicateOfId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          excludedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'accountId',
+                          'importId',
+                          'externalId',
+                          'fingerprint',
+                          'postedAt',
+                          'authorizedAt',
+                          'type',
+                          'amount',
+                          'currency',
+                          'description',
+                          'payee',
+                          'reference',
+                          'bankCategory',
+                          'runningBalance',
+                          'status',
+                          'recognitionSource',
+                          'recognizedRuleId',
+                          'duplicateOfId',
+                          'excludedAt',
+                          'createdAt',
+                          'updatedAt',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'accountId',
+                    'source',
+                    'format',
+                    'sourceFileId',
+                    'sourceName',
+                    'status',
+                    'transactionCount',
+                    'duplicateCount',
+                    'completedAt',
+                    'undoneAt',
+                    'createdAt',
+                    'updatedAt',
+                    'lines',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/statement-imports/{importId}/undo': {
+    tags: ['Billing'],
+    summary: 'Undo an unresolved bank statement import',
+    operationId: 'billing-banking_undo_statement_import',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'importId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-statement-import',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    source: {
+                      type: 'string',
+                      enum: ['file', 'email', 'feed', 'api'],
+                    },
+                    format: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          enum: [
+                            'csv',
+                            'tsv',
+                            'ofx',
+                            'qif',
+                            'camt-053',
+                            'camt-054',
+                            'mt940',
+                          ],
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    sourceFileId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    sourceName: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['pending', 'completed', 'undone', 'failed'],
+                    },
+                    transactionCount: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                    duplicateCount: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                    completedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    undoneAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'accountId',
+                    'source',
+                    'format',
+                    'sourceFileId',
+                    'sourceName',
+                    'status',
+                    'transactionCount',
+                    'duplicateCount',
+                    'completedAt',
+                    'undoneAt',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/accounts/{accountId}/statement-lines': {
+    tags: ['Billing'],
+    summary: 'List external bank statement lines',
+    operationId: 'billing-banking_list_statement_lines',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'accountId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-statement-line',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          accountId: {
+                            type: 'string',
+                          },
+                          importId: {
+                            type: 'string',
+                          },
+                          externalId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          fingerprint: {
+                            type: 'string',
+                          },
+                          postedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          authorizedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          type: {
+                            type: 'string',
+                            enum: ['credit', 'debit'],
+                          },
+                          amount: {
+                            type: 'string',
+                          },
+                          currency: {
+                            type: 'string',
+                          },
+                          description: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          payee: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          reference: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          bankCategory: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          runningBalance: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          status: {
+                            type: 'string',
+                            enum: [
+                              'uncategorized',
+                              'recognized',
+                              'matched',
+                              'categorized',
+                              'excluded',
+                            ],
+                          },
+                          recognitionSource: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                enum: ['rule', 'heuristic', 'ai'],
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          recognizedRuleId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          duplicateOfId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          excludedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'accountId',
+                          'importId',
+                          'externalId',
+                          'fingerprint',
+                          'postedAt',
+                          'authorizedAt',
+                          'type',
+                          'amount',
+                          'currency',
+                          'description',
+                          'payee',
+                          'reference',
+                          'bankCategory',
+                          'runningBalance',
+                          'status',
+                          'recognitionSource',
+                          'recognizedRuleId',
+                          'duplicateOfId',
+                          'excludedAt',
+                          'createdAt',
+                          'updatedAt',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'url',
+                    'total_count',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/statement-lines/{lineId}': {
+    tags: ['Billing'],
+    summary: 'Retrieve an external bank statement line',
+    operationId: 'billing-banking_retrieve_statement_line',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'lineId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-statement-line',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    importId: {
+                      type: 'string',
+                    },
+                    externalId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    fingerprint: {
+                      type: 'string',
+                    },
+                    postedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    authorizedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    type: {
+                      type: 'string',
+                      enum: ['credit', 'debit'],
+                    },
+                    amount: {
+                      type: 'string',
+                    },
+                    currency: {
+                      type: 'string',
+                    },
+                    description: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    payee: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    reference: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    bankCategory: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    runningBalance: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    status: {
+                      type: 'string',
+                      enum: [
+                        'uncategorized',
+                        'recognized',
+                        'matched',
+                        'categorized',
+                        'excluded',
+                      ],
+                    },
+                    recognitionSource: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          enum: ['rule', 'heuristic', 'ai'],
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    recognizedRuleId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    duplicateOfId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    excludedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'accountId',
+                    'importId',
+                    'externalId',
+                    'fingerprint',
+                    'postedAt',
+                    'authorizedAt',
+                    'type',
+                    'amount',
+                    'currency',
+                    'description',
+                    'payee',
+                    'reference',
+                    'bankCategory',
+                    'runningBalance',
+                    'status',
+                    'recognitionSource',
+                    'recognizedRuleId',
+                    'duplicateOfId',
+                    'excludedAt',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/statement-lines/{lineId}/matches': {
+    tags: ['Billing'],
+    summary: 'List candidate booked cash matches',
+    operationId: 'billing-banking_list_statement_match_candidates',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'lineId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-match-candidate',
+                          },
+                          bankTransactionId: {
+                            type: 'string',
+                          },
+                          paymentId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          type: {
+                            type: 'string',
+                            enum: ['credit', 'debit'],
+                          },
+                          amount: {
+                            type: 'string',
+                          },
+                          availableAmount: {
+                            type: 'string',
+                          },
+                          date: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          description: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          reference: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          score: {
+                            type: 'integer',
+                            minimum: 0,
+                            maximum: 100,
+                          },
+                          confidence: {
+                            type: 'string',
+                            enum: ['exact', 'strong', 'possible'],
+                          },
+                        },
+                        required: [
+                          'object',
+                          'bankTransactionId',
+                          'paymentId',
+                          'type',
+                          'amount',
+                          'availableAmount',
+                          'date',
+                          'description',
+                          'reference',
+                          'score',
+                          'confidence',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'url',
+                    'total_count',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/statement-lines/{lineId}/matches': {
+    tags: ['Billing'],
+    summary: 'Match a statement line to booked cash',
+    operationId: 'billing-banking_match_statement_line',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'lineId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              items: {
+                minItems: 1,
+                maxItems: 100,
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    bankTransactionId: {
+                      type: 'string',
+                      minLength: 1,
+                    },
+                    amount: {
+                      type: 'string',
+                      pattern: '^\\d+$',
+                    },
+                  },
+                  required: ['bankTransactionId', 'amount'],
+                  additionalProperties: false,
+                },
+              },
+            },
+            required: ['items'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-statement-match',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    statementLineId: {
+                      type: 'string',
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['active', 'reversed'],
+                    },
+                    matchedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    reversedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    items: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-statement-match-item',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          bankTransactionId: {
+                            type: 'string',
+                          },
+                          amount: {
+                            type: 'string',
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'bankTransactionId',
+                          'amount',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'statementLineId',
+                    'status',
+                    'matchedAt',
+                    'reversedAt',
+                    'items',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/statement-lines/{lineId}/unmatch': {
+    tags: ['Billing'],
+    summary: 'Reverse a statement-line match',
+    operationId: 'billing-banking_unmatch_statement_line',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'lineId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-statement-match',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    statementLineId: {
+                      type: 'string',
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['active', 'reversed'],
+                    },
+                    matchedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    reversedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    items: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-statement-match-item',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          bankTransactionId: {
+                            type: 'string',
+                          },
+                          amount: {
+                            type: 'string',
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'bankTransactionId',
+                          'amount',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'statementLineId',
+                    'status',
+                    'matchedAt',
+                    'reversedAt',
+                    'items',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/statement-lines/{lineId}/categorize': {
+    tags: ['Billing'],
+    summary: 'Book and categorize a statement line',
+    operationId: 'billing-banking_categorize_statement_line',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'lineId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              action: {
+                type: 'string',
+                enum: ['manual-deposit', 'manual-withdrawal'],
+              },
+            },
+            required: ['action'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    statementLine: {
+                      type: 'object',
+                      properties: {
+                        object: {
+                          type: 'string',
+                          const: 'bank-statement-line',
+                        },
+                        id: {
+                          type: 'string',
+                        },
+                        accountId: {
+                          type: 'string',
+                        },
+                        importId: {
+                          type: 'string',
+                        },
+                        externalId: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        fingerprint: {
+                          type: 'string',
+                        },
+                        postedAt: {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        authorizedAt: {
+                          anyOf: [
+                            {
+                              type: 'integer',
+                              minimum: -9007199254740991,
+                              maximum: 9007199254740991,
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        type: {
+                          type: 'string',
+                          enum: ['credit', 'debit'],
+                        },
+                        amount: {
+                          type: 'string',
+                        },
+                        currency: {
+                          type: 'string',
+                        },
+                        description: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        payee: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        reference: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        bankCategory: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        runningBalance: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        status: {
+                          type: 'string',
+                          enum: [
+                            'uncategorized',
+                            'recognized',
+                            'matched',
+                            'categorized',
+                            'excluded',
+                          ],
+                        },
+                        recognitionSource: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                              enum: ['rule', 'heuristic', 'ai'],
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        recognizedRuleId: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        duplicateOfId: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        excludedAt: {
+                          anyOf: [
+                            {
+                              type: 'integer',
+                              minimum: -9007199254740991,
+                              maximum: 9007199254740991,
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        createdAt: {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        updatedAt: {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                      },
+                      required: [
+                        'object',
+                        'id',
+                        'accountId',
+                        'importId',
+                        'externalId',
+                        'fingerprint',
+                        'postedAt',
+                        'authorizedAt',
+                        'type',
+                        'amount',
+                        'currency',
+                        'description',
+                        'payee',
+                        'reference',
+                        'bankCategory',
+                        'runningBalance',
+                        'status',
+                        'recognitionSource',
+                        'recognizedRuleId',
+                        'duplicateOfId',
+                        'excludedAt',
+                        'createdAt',
+                        'updatedAt',
+                      ],
+                      additionalProperties: false,
+                    },
+                    match: {
+                      type: 'object',
+                      properties: {
+                        object: {
+                          type: 'string',
+                          const: 'bank-statement-match',
+                        },
+                        id: {
+                          type: 'string',
+                        },
+                        statementLineId: {
+                          type: 'string',
+                        },
+                        status: {
+                          type: 'string',
+                          enum: ['active', 'reversed'],
+                        },
+                        matchedAt: {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        reversedAt: {
+                          anyOf: [
+                            {
+                              type: 'integer',
+                              minimum: -9007199254740991,
+                              maximum: 9007199254740991,
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        items: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              object: {
+                                type: 'string',
+                                const: 'bank-statement-match-item',
+                              },
+                              id: {
+                                type: 'string',
+                              },
+                              bankTransactionId: {
+                                type: 'string',
+                              },
+                              amount: {
+                                type: 'string',
+                              },
+                            },
+                            required: [
+                              'object',
+                              'id',
+                              'bankTransactionId',
+                              'amount',
+                            ],
+                            additionalProperties: false,
+                          },
+                        },
+                      },
+                      required: [
+                        'object',
+                        'id',
+                        'statementLineId',
+                        'status',
+                        'matchedAt',
+                        'reversedAt',
+                        'items',
+                      ],
+                      additionalProperties: false,
+                    },
+                    bankTransactionId: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['statementLine', 'match', 'bankTransactionId'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/statement-lines/{lineId}/exclude': {
+    tags: ['Billing'],
+    summary: 'Exclude a statement line from review',
+    operationId: 'billing-banking_exclude_statement_line',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'lineId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-statement-line',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    importId: {
+                      type: 'string',
+                    },
+                    externalId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    fingerprint: {
+                      type: 'string',
+                    },
+                    postedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    authorizedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    type: {
+                      type: 'string',
+                      enum: ['credit', 'debit'],
+                    },
+                    amount: {
+                      type: 'string',
+                    },
+                    currency: {
+                      type: 'string',
+                    },
+                    description: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    payee: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    reference: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    bankCategory: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    runningBalance: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    status: {
+                      type: 'string',
+                      enum: [
+                        'uncategorized',
+                        'recognized',
+                        'matched',
+                        'categorized',
+                        'excluded',
+                      ],
+                    },
+                    recognitionSource: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          enum: ['rule', 'heuristic', 'ai'],
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    recognizedRuleId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    duplicateOfId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    excludedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'accountId',
+                    'importId',
+                    'externalId',
+                    'fingerprint',
+                    'postedAt',
+                    'authorizedAt',
+                    'type',
+                    'amount',
+                    'currency',
+                    'description',
+                    'payee',
+                    'reference',
+                    'bankCategory',
+                    'runningBalance',
+                    'status',
+                    'recognitionSource',
+                    'recognizedRuleId',
+                    'duplicateOfId',
+                    'excludedAt',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/statement-lines/{lineId}/restore': {
+    tags: ['Billing'],
+    summary: 'Restore an excluded statement line',
+    operationId: 'billing-banking_restore_statement_line',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'lineId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-statement-line',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    importId: {
+                      type: 'string',
+                    },
+                    externalId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    fingerprint: {
+                      type: 'string',
+                    },
+                    postedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    authorizedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    type: {
+                      type: 'string',
+                      enum: ['credit', 'debit'],
+                    },
+                    amount: {
+                      type: 'string',
+                    },
+                    currency: {
+                      type: 'string',
+                    },
+                    description: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    payee: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    reference: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    bankCategory: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    runningBalance: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    status: {
+                      type: 'string',
+                      enum: [
+                        'uncategorized',
+                        'recognized',
+                        'matched',
+                        'categorized',
+                        'excluded',
+                      ],
+                    },
+                    recognitionSource: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          enum: ['rule', 'heuristic', 'ai'],
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    recognizedRuleId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    duplicateOfId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    excludedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'accountId',
+                    'importId',
+                    'externalId',
+                    'fingerprint',
+                    'postedAt',
+                    'authorizedAt',
+                    'type',
+                    'amount',
+                    'currency',
+                    'description',
+                    'payee',
+                    'reference',
+                    'bankCategory',
+                    'runningBalance',
+                    'status',
+                    'recognitionSource',
+                    'recognizedRuleId',
+                    'duplicateOfId',
+                    'excludedAt',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/transfers': {
+    tags: ['Billing'],
+    summary: 'List bank transfers',
+    operationId: 'billing-banking_list_transfers',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-transfer',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          fromAccountId: {
+                            type: 'string',
+                          },
+                          toAccountId: {
+                            type: 'string',
+                          },
+                          amount: {
+                            type: 'string',
+                          },
+                          currency: {
+                            type: 'string',
+                          },
+                          transferredAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          description: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          reference: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          status: {
+                            type: 'string',
+                            enum: ['posted', 'reversed'],
+                          },
+                          reversedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'fromAccountId',
+                          'toAccountId',
+                          'amount',
+                          'currency',
+                          'transferredAt',
+                          'description',
+                          'reference',
+                          'status',
+                          'reversedAt',
+                          'createdAt',
+                          'updatedAt',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'url',
+                    'total_count',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/transfers': {
+    tags: ['Billing'],
+    summary: 'Create a same-currency bank transfer',
+    operationId: 'billing-banking_create_transfer',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              fromAccountId: {
+                type: 'string',
+                minLength: 1,
+              },
+              toAccountId: {
+                type: 'string',
+                minLength: 1,
+              },
+              amount: {
+                type: 'string',
+                pattern: '^\\d+$',
+              },
+              currency: {
+                type: 'string',
+                minLength: 3,
+                maxLength: 3,
+              },
+              transferredAt: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 9007199254740991,
+              },
+              description: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              reference: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 120,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+            },
+            required: [
+              'fromAccountId',
+              'toAccountId',
+              'amount',
+              'currency',
+              'transferredAt',
+            ],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-transfer',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    fromAccountId: {
+                      type: 'string',
+                    },
+                    toAccountId: {
+                      type: 'string',
+                    },
+                    amount: {
+                      type: 'string',
+                    },
+                    currency: {
+                      type: 'string',
+                    },
+                    transferredAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    description: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    reference: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['posted', 'reversed'],
+                    },
+                    reversedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'fromAccountId',
+                    'toAccountId',
+                    'amount',
+                    'currency',
+                    'transferredAt',
+                    'description',
+                    'reference',
+                    'status',
+                    'reversedAt',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/accounts/{accountId}/reconciliations': {
+    tags: ['Billing'],
+    summary: 'List bank reconciliation periods',
+    operationId: 'billing-banking_list_reconciliations',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'accountId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-reconciliation',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          accountId: {
+                            type: 'string',
+                          },
+                          startAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          endAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          openingBalance: {
+                            type: 'string',
+                          },
+                          closingBalance: {
+                            type: 'string',
+                          },
+                          clearedBalance: {
+                            type: 'string',
+                          },
+                          difference: {
+                            type: 'string',
+                          },
+                          status: {
+                            type: 'string',
+                            enum: ['draft', 'completed', 'reopened'],
+                          },
+                          completedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          reopenedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          bankTransactionIds: {
+                            type: 'array',
+                            items: {
+                              type: 'string',
+                            },
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'accountId',
+                          'startAt',
+                          'endAt',
+                          'openingBalance',
+                          'closingBalance',
+                          'clearedBalance',
+                          'difference',
+                          'status',
+                          'completedAt',
+                          'reopenedAt',
+                          'createdAt',
+                          'updatedAt',
+                          'bankTransactionIds',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'url',
+                    'total_count',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/accounts/{accountId}/reconciliations': {
+    tags: ['Billing'],
+    summary: 'Create a bank reconciliation draft',
+    operationId: 'billing-banking_create_reconciliation',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'accountId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              startAt: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 9007199254740991,
+              },
+              endAt: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 9007199254740991,
+              },
+              openingBalance: {
+                type: 'string',
+                pattern: '^-?\\d+$',
+              },
+              closingBalance: {
+                type: 'string',
+                pattern: '^-?\\d+$',
+              },
+              bankTransactionIds: {
+                default: [],
+                maxItems: 1000,
+                type: 'array',
+                items: {
+                  type: 'string',
+                  minLength: 1,
+                },
+              },
+            },
+            required: ['startAt', 'endAt', 'openingBalance', 'closingBalance'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-reconciliation',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    startAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    endAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    openingBalance: {
+                      type: 'string',
+                    },
+                    closingBalance: {
+                      type: 'string',
+                    },
+                    clearedBalance: {
+                      type: 'string',
+                    },
+                    difference: {
+                      type: 'string',
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['draft', 'completed', 'reopened'],
+                    },
+                    completedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    reopenedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    bankTransactionIds: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'accountId',
+                    'startAt',
+                    'endAt',
+                    'openingBalance',
+                    'closingBalance',
+                    'clearedBalance',
+                    'difference',
+                    'status',
+                    'completedAt',
+                    'reopenedAt',
+                    'createdAt',
+                    'updatedAt',
+                    'bankTransactionIds',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/reconciliations/{reconciliationId}': {
+    tags: ['Billing'],
+    summary: 'Retrieve a bank reconciliation',
+    operationId: 'billing-banking_retrieve_reconciliation',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'reconciliationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-reconciliation',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    startAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    endAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    openingBalance: {
+                      type: 'string',
+                    },
+                    closingBalance: {
+                      type: 'string',
+                    },
+                    clearedBalance: {
+                      type: 'string',
+                    },
+                    difference: {
+                      type: 'string',
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['draft', 'completed', 'reopened'],
+                    },
+                    completedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    reopenedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    bankTransactionIds: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'accountId',
+                    'startAt',
+                    'endAt',
+                    'openingBalance',
+                    'closingBalance',
+                    'clearedBalance',
+                    'difference',
+                    'status',
+                    'completedAt',
+                    'reopenedAt',
+                    'createdAt',
+                    'updatedAt',
+                    'bankTransactionIds',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/reconciliations/{reconciliationId}/complete': {
+    tags: ['Billing'],
+    summary: 'Complete a zero-difference reconciliation',
+    operationId: 'billing-banking_complete_reconciliation',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'reconciliationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-reconciliation',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    startAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    endAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    openingBalance: {
+                      type: 'string',
+                    },
+                    closingBalance: {
+                      type: 'string',
+                    },
+                    clearedBalance: {
+                      type: 'string',
+                    },
+                    difference: {
+                      type: 'string',
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['draft', 'completed', 'reopened'],
+                    },
+                    completedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    reopenedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    bankTransactionIds: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'accountId',
+                    'startAt',
+                    'endAt',
+                    'openingBalance',
+                    'closingBalance',
+                    'clearedBalance',
+                    'difference',
+                    'status',
+                    'completedAt',
+                    'reopenedAt',
+                    'createdAt',
+                    'updatedAt',
+                    'bankTransactionIds',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/reconciliations/{reconciliationId}/reopen': {
+    tags: ['Billing'],
+    summary: 'Reopen the latest completed reconciliation',
+    operationId: 'billing-banking_reopen_reconciliation',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'reconciliationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-reconciliation',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    startAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    endAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    openingBalance: {
+                      type: 'string',
+                    },
+                    closingBalance: {
+                      type: 'string',
+                    },
+                    clearedBalance: {
+                      type: 'string',
+                    },
+                    difference: {
+                      type: 'string',
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['draft', 'completed', 'reopened'],
+                    },
+                    completedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    reopenedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    bankTransactionIds: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'accountId',
+                    'startAt',
+                    'endAt',
+                    'openingBalance',
+                    'closingBalance',
+                    'clearedBalance',
+                    'difference',
+                    'status',
+                    'completedAt',
+                    'reopenedAt',
+                    'createdAt',
+                    'updatedAt',
+                    'bankTransactionIds',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/rules': {
+    tags: ['Billing'],
+    summary: 'List bank recognition rules',
+    operationId: 'billing-banking_list_rules',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-rule',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          name: {
+                            type: 'string',
+                          },
+                          priority: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          enabled: {
+                            type: 'boolean',
+                          },
+                          matchMode: {
+                            type: 'string',
+                            enum: ['all', 'any'],
+                          },
+                          automationMode: {
+                            type: 'string',
+                            enum: ['recognize', 'auto-categorize'],
+                          },
+                          accountIds: {
+                            type: 'array',
+                            items: {
+                              type: 'string',
+                            },
+                          },
+                          conditions: {
+                            type: 'array',
+                            items: {
+                              type: 'object',
+                              properties: {
+                                field: {
+                                  type: 'string',
+                                  enum: [
+                                    'description',
+                                    'payee',
+                                    'reference',
+                                    'amount',
+                                    'type',
+                                  ],
+                                },
+                                operator: {
+                                  type: 'string',
+                                  enum: [
+                                    'equals',
+                                    'contains',
+                                    'starts-with',
+                                    'ends-with',
+                                    'greater-than',
+                                    'less-than',
+                                  ],
+                                },
+                                value: {
+                                  type: 'string',
+                                  minLength: 1,
+                                  maxLength: 255,
+                                },
+                                id: {
+                                  type: 'string',
+                                },
+                              },
+                              required: ['field', 'operator', 'value', 'id'],
+                              additionalProperties: false,
+                            },
+                          },
+                          action: {
+                            type: 'object',
+                            properties: {
+                              type: {
+                                type: 'string',
+                                enum: [
+                                  'manual-deposit',
+                                  'manual-withdrawal',
+                                  'review',
+                                ],
+                              },
+                              note: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    minLength: 1,
+                                    maxLength: 255,
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                            },
+                            required: ['type'],
+                            additionalProperties: false,
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'name',
+                          'priority',
+                          'enabled',
+                          'matchMode',
+                          'automationMode',
+                          'accountIds',
+                          'conditions',
+                          'action',
+                          'createdAt',
+                          'updatedAt',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'url',
+                    'total_count',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/rules': {
+    tags: ['Billing'],
+    summary: 'Create a bank recognition rule',
+    operationId: 'billing-banking_create_rule',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 120,
+              },
+              priority: {
+                default: 0,
+                type: 'integer',
+                minimum: 0,
+                maximum: 10000,
+              },
+              enabled: {
+                default: true,
+                type: 'boolean',
+              },
+              matchMode: {
+                default: 'all',
+                type: 'string',
+                enum: ['all', 'any'],
+              },
+              automationMode: {
+                default: 'recognize',
+                type: 'string',
+                enum: ['recognize', 'auto-categorize'],
+              },
+              accountIds: {
+                default: [],
+                maxItems: 100,
+                type: 'array',
+                items: {
+                  type: 'string',
+                  minLength: 1,
+                },
+              },
+              conditions: {
+                minItems: 1,
+                maxItems: 20,
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    field: {
+                      type: 'string',
+                      enum: [
+                        'description',
+                        'payee',
+                        'reference',
+                        'amount',
+                        'type',
+                      ],
+                    },
+                    operator: {
+                      type: 'string',
+                      enum: [
+                        'equals',
+                        'contains',
+                        'starts-with',
+                        'ends-with',
+                        'greater-than',
+                        'less-than',
+                      ],
+                    },
+                    value: {
+                      type: 'string',
+                      minLength: 1,
+                      maxLength: 255,
+                    },
+                  },
+                  required: ['field', 'operator', 'value'],
+                  additionalProperties: false,
+                },
+              },
+              action: {
+                type: 'object',
+                properties: {
+                  type: {
+                    type: 'string',
+                    enum: ['manual-deposit', 'manual-withdrawal', 'review'],
+                  },
+                  note: {
+                    anyOf: [
+                      {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 255,
+                      },
+                      {
+                        type: 'null',
+                      },
+                    ],
+                  },
+                },
+                required: ['type'],
+                additionalProperties: false,
+              },
+            },
+            required: ['name', 'conditions', 'action'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-rule',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    name: {
+                      type: 'string',
+                    },
+                    priority: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    enabled: {
+                      type: 'boolean',
+                    },
+                    matchMode: {
+                      type: 'string',
+                      enum: ['all', 'any'],
+                    },
+                    automationMode: {
+                      type: 'string',
+                      enum: ['recognize', 'auto-categorize'],
+                    },
+                    accountIds: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                    conditions: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          field: {
+                            type: 'string',
+                            enum: [
+                              'description',
+                              'payee',
+                              'reference',
+                              'amount',
+                              'type',
+                            ],
+                          },
+                          operator: {
+                            type: 'string',
+                            enum: [
+                              'equals',
+                              'contains',
+                              'starts-with',
+                              'ends-with',
+                              'greater-than',
+                              'less-than',
+                            ],
+                          },
+                          value: {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['field', 'operator', 'value', 'id'],
+                        additionalProperties: false,
+                      },
+                    },
+                    action: {
+                      type: 'object',
+                      properties: {
+                        type: {
+                          type: 'string',
+                          enum: [
+                            'manual-deposit',
+                            'manual-withdrawal',
+                            'review',
+                          ],
+                        },
+                        note: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                              minLength: 1,
+                              maxLength: 255,
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                      },
+                      required: ['type'],
+                      additionalProperties: false,
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'name',
+                    'priority',
+                    'enabled',
+                    'matchMode',
+                    'automationMode',
+                    'accountIds',
+                    'conditions',
+                    'action',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/rules/{ruleId}': {
+    tags: ['Billing'],
+    summary: 'Retrieve a bank recognition rule',
+    operationId: 'billing-banking_retrieve_rule',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'ruleId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-rule',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    name: {
+                      type: 'string',
+                    },
+                    priority: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    enabled: {
+                      type: 'boolean',
+                    },
+                    matchMode: {
+                      type: 'string',
+                      enum: ['all', 'any'],
+                    },
+                    automationMode: {
+                      type: 'string',
+                      enum: ['recognize', 'auto-categorize'],
+                    },
+                    accountIds: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                    conditions: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          field: {
+                            type: 'string',
+                            enum: [
+                              'description',
+                              'payee',
+                              'reference',
+                              'amount',
+                              'type',
+                            ],
+                          },
+                          operator: {
+                            type: 'string',
+                            enum: [
+                              'equals',
+                              'contains',
+                              'starts-with',
+                              'ends-with',
+                              'greater-than',
+                              'less-than',
+                            ],
+                          },
+                          value: {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['field', 'operator', 'value', 'id'],
+                        additionalProperties: false,
+                      },
+                    },
+                    action: {
+                      type: 'object',
+                      properties: {
+                        type: {
+                          type: 'string',
+                          enum: [
+                            'manual-deposit',
+                            'manual-withdrawal',
+                            'review',
+                          ],
+                        },
+                        note: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                              minLength: 1,
+                              maxLength: 255,
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                      },
+                      required: ['type'],
+                      additionalProperties: false,
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'name',
+                    'priority',
+                    'enabled',
+                    'matchMode',
+                    'automationMode',
+                    'accountIds',
+                    'conditions',
+                    'action',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /banking/rules/{ruleId}': {
+    tags: ['Billing'],
+    summary: 'Update a bank recognition rule',
+    operationId: 'billing-banking_update_rule',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'ruleId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 120,
+              },
+              priority: {
+                type: 'integer',
+                minimum: 0,
+                maximum: 10000,
+              },
+              enabled: {
+                type: 'boolean',
+              },
+              matchMode: {
+                type: 'string',
+                enum: ['all', 'any'],
+              },
+              automationMode: {
+                type: 'string',
+                enum: ['recognize', 'auto-categorize'],
+              },
+              accountIds: {
+                maxItems: 100,
+                type: 'array',
+                items: {
+                  type: 'string',
+                  minLength: 1,
+                },
+              },
+              conditions: {
+                minItems: 1,
+                maxItems: 20,
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    field: {
+                      type: 'string',
+                      enum: [
+                        'description',
+                        'payee',
+                        'reference',
+                        'amount',
+                        'type',
+                      ],
+                    },
+                    operator: {
+                      type: 'string',
+                      enum: [
+                        'equals',
+                        'contains',
+                        'starts-with',
+                        'ends-with',
+                        'greater-than',
+                        'less-than',
+                      ],
+                    },
+                    value: {
+                      type: 'string',
+                      minLength: 1,
+                      maxLength: 255,
+                    },
+                  },
+                  required: ['field', 'operator', 'value'],
+                  additionalProperties: false,
+                },
+              },
+              action: {
+                type: 'object',
+                properties: {
+                  type: {
+                    type: 'string',
+                    enum: ['manual-deposit', 'manual-withdrawal', 'review'],
+                  },
+                  note: {
+                    anyOf: [
+                      {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 255,
+                      },
+                      {
+                        type: 'null',
+                      },
+                    ],
+                  },
+                },
+                required: ['type'],
+                additionalProperties: false,
+              },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-rule',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    name: {
+                      type: 'string',
+                    },
+                    priority: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    enabled: {
+                      type: 'boolean',
+                    },
+                    matchMode: {
+                      type: 'string',
+                      enum: ['all', 'any'],
+                    },
+                    automationMode: {
+                      type: 'string',
+                      enum: ['recognize', 'auto-categorize'],
+                    },
+                    accountIds: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                    conditions: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          field: {
+                            type: 'string',
+                            enum: [
+                              'description',
+                              'payee',
+                              'reference',
+                              'amount',
+                              'type',
+                            ],
+                          },
+                          operator: {
+                            type: 'string',
+                            enum: [
+                              'equals',
+                              'contains',
+                              'starts-with',
+                              'ends-with',
+                              'greater-than',
+                              'less-than',
+                            ],
+                          },
+                          value: {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['field', 'operator', 'value', 'id'],
+                        additionalProperties: false,
+                      },
+                    },
+                    action: {
+                      type: 'object',
+                      properties: {
+                        type: {
+                          type: 'string',
+                          enum: [
+                            'manual-deposit',
+                            'manual-withdrawal',
+                            'review',
+                          ],
+                        },
+                        note: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                              minLength: 1,
+                              maxLength: 255,
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                      },
+                      required: ['type'],
+                      additionalProperties: false,
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'name',
+                    'priority',
+                    'enabled',
+                    'matchMode',
+                    'automationMode',
+                    'accountIds',
+                    'conditions',
+                    'action',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'DELETE /banking/rules/{ruleId}': {
+    tags: ['Billing'],
+    summary: 'Delete an unused bank recognition rule',
+    operationId: 'billing-banking_delete_rule',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'ruleId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-rule',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    deleted: {
+                      type: 'boolean',
+                      const: true,
+                    },
+                  },
+                  required: ['object', 'id', 'deleted'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/accounts/{accountId}/statement-imports/preview': {
+    tags: ['Billing'],
+    summary: 'Preview a CSV or TSV bank statement',
+    description:
+      'Parses uploaded statement text using an explicit column mapping and returns normalized bank evidence without persisting or booking it.',
+    operationId: 'billing-banking_preview_statement_file',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'accountId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              format: {
+                type: 'string',
+                enum: ['csv', 'tsv'],
+              },
+              content: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 2000000,
+              },
+              currency: {
+                type: 'string',
+                minLength: 3,
+                maxLength: 3,
+              },
+              mapping: {
+                oneOf: [
+                  {
+                    type: 'object',
+                    properties: {
+                      dateColumn: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 255,
+                      },
+                      dateFormat: {
+                        type: 'string',
+                        enum: [
+                          'yyyy-mm-dd',
+                          'dd/mm/yyyy',
+                          'mm/dd/yyyy',
+                          'dd-mm-yyyy',
+                          'mm-dd-yyyy',
+                        ],
+                      },
+                      descriptionColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      payeeColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      referenceColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      externalIdColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      balanceColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      numberFormat: {
+                        default: {
+                          decimalSeparator: '.',
+                          thousandsSeparator: ',',
+                        },
+                        type: 'object',
+                        properties: {
+                          decimalSeparator: {
+                            default: '.',
+                            type: 'string',
+                            enum: ['.', ','],
+                          },
+                          thousandsSeparator: {
+                            default: ',',
+                            type: 'string',
+                            enum: [',', '.', 'space', 'none'],
+                          },
+                        },
+                        additionalProperties: false,
+                      },
+                      amountMode: {
+                        type: 'string',
+                        const: 'signed',
+                      },
+                      amountColumn: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 255,
+                      },
+                      positiveDirection: {
+                        default: 'credit',
+                        type: 'string',
+                        enum: ['credit', 'debit'],
+                      },
+                    },
+                    required: [
+                      'dateColumn',
+                      'dateFormat',
+                      'amountMode',
+                      'amountColumn',
+                    ],
+                    additionalProperties: false,
+                  },
+                  {
+                    type: 'object',
+                    properties: {
+                      dateColumn: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 255,
+                      },
+                      dateFormat: {
+                        type: 'string',
+                        enum: [
+                          'yyyy-mm-dd',
+                          'dd/mm/yyyy',
+                          'mm/dd/yyyy',
+                          'dd-mm-yyyy',
+                          'mm-dd-yyyy',
+                        ],
+                      },
+                      descriptionColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      payeeColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      referenceColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      externalIdColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      balanceColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      numberFormat: {
+                        default: {
+                          decimalSeparator: '.',
+                          thousandsSeparator: ',',
+                        },
+                        type: 'object',
+                        properties: {
+                          decimalSeparator: {
+                            default: '.',
+                            type: 'string',
+                            enum: ['.', ','],
+                          },
+                          thousandsSeparator: {
+                            default: ',',
+                            type: 'string',
+                            enum: [',', '.', 'space', 'none'],
+                          },
+                        },
+                        additionalProperties: false,
+                      },
+                      amountMode: {
+                        type: 'string',
+                        const: 'debit-credit',
+                      },
+                      debitColumn: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 255,
+                      },
+                      creditColumn: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 255,
+                      },
+                    },
+                    required: [
+                      'dateColumn',
+                      'dateFormat',
+                      'amountMode',
+                      'debitColumn',
+                      'creditColumn',
+                    ],
+                    additionalProperties: false,
+                  },
+                ],
+                type: 'object',
+              },
+            },
+            required: ['format', 'content', 'currency', 'mapping'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Statement preview returned.',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-statement-preview',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    format: {
+                      type: 'string',
+                      enum: ['csv', 'tsv'],
+                    },
+                    currency: {
+                      type: 'string',
+                      minLength: 3,
+                      maxLength: 3,
+                    },
+                    headers: {
+                      type: 'array',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                    totalRows: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                    validRows: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                    invalidRows: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                    lines: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          sourceRowNumber: {
+                            type: 'integer',
+                            exclusiveMinimum: 0,
+                            maximum: 9007199254740991,
+                          },
+                          externalId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          postedAt: {
+                            type: 'integer',
+                            minimum: 0,
+                            maximum: 9007199254740991,
+                          },
+                          type: {
+                            type: 'string',
+                            enum: ['credit', 'debit'],
+                          },
+                          amount: {
+                            type: 'string',
+                            pattern: '^\\d+$',
+                          },
+                          currency: {
+                            type: 'string',
+                            minLength: 3,
+                            maxLength: 3,
+                          },
+                          description: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          payee: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          reference: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          runningBalance: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^-?\\d+$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: [
+                          'sourceRowNumber',
+                          'externalId',
+                          'postedAt',
+                          'type',
+                          'amount',
+                          'currency',
+                          'description',
+                          'payee',
+                          'reference',
+                          'runningBalance',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    errors: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          rowNumber: {
+                            type: 'integer',
+                            exclusiveMinimum: 0,
+                            maximum: 9007199254740991,
+                          },
+                          field: {
+                            type: 'string',
+                          },
+                          message: {
+                            type: 'string',
+                          },
+                        },
+                        required: ['rowNumber', 'field', 'message'],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'accountId',
+                    'format',
+                    'currency',
+                    'headers',
+                    'totalRows',
+                    'validRows',
+                    'invalidRows',
+                    'lines',
+                    'errors',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /banking/accounts/{accountId}/statement-imports/file': {
+    tags: ['Billing'],
+    summary: 'Import a validated CSV or TSV bank statement',
+    description:
+      'Re-parses the source statement with the approved mapping and persists normalized external bank evidence only when every row is valid.',
+    operationId: 'billing-banking_import_statement_file',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'accountId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              format: {
+                type: 'string',
+                enum: ['csv', 'tsv'],
+              },
+              content: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 2000000,
+              },
+              currency: {
+                type: 'string',
+                minLength: 3,
+                maxLength: 3,
+              },
+              mapping: {
+                oneOf: [
+                  {
+                    type: 'object',
+                    properties: {
+                      dateColumn: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 255,
+                      },
+                      dateFormat: {
+                        type: 'string',
+                        enum: [
+                          'yyyy-mm-dd',
+                          'dd/mm/yyyy',
+                          'mm/dd/yyyy',
+                          'dd-mm-yyyy',
+                          'mm-dd-yyyy',
+                        ],
+                      },
+                      descriptionColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      payeeColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      referenceColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      externalIdColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      balanceColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      numberFormat: {
+                        default: {
+                          decimalSeparator: '.',
+                          thousandsSeparator: ',',
+                        },
+                        type: 'object',
+                        properties: {
+                          decimalSeparator: {
+                            default: '.',
+                            type: 'string',
+                            enum: ['.', ','],
+                          },
+                          thousandsSeparator: {
+                            default: ',',
+                            type: 'string',
+                            enum: [',', '.', 'space', 'none'],
+                          },
+                        },
+                        additionalProperties: false,
+                      },
+                      amountMode: {
+                        type: 'string',
+                        const: 'signed',
+                      },
+                      amountColumn: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 255,
+                      },
+                      positiveDirection: {
+                        default: 'credit',
+                        type: 'string',
+                        enum: ['credit', 'debit'],
+                      },
+                    },
+                    required: [
+                      'dateColumn',
+                      'dateFormat',
+                      'amountMode',
+                      'amountColumn',
+                    ],
+                    additionalProperties: false,
+                  },
+                  {
+                    type: 'object',
+                    properties: {
+                      dateColumn: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 255,
+                      },
+                      dateFormat: {
+                        type: 'string',
+                        enum: [
+                          'yyyy-mm-dd',
+                          'dd/mm/yyyy',
+                          'mm/dd/yyyy',
+                          'dd-mm-yyyy',
+                          'mm-dd-yyyy',
+                        ],
+                      },
+                      descriptionColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      payeeColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      referenceColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      externalIdColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      balanceColumn: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            minLength: 1,
+                            maxLength: 255,
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      numberFormat: {
+                        default: {
+                          decimalSeparator: '.',
+                          thousandsSeparator: ',',
+                        },
+                        type: 'object',
+                        properties: {
+                          decimalSeparator: {
+                            default: '.',
+                            type: 'string',
+                            enum: ['.', ','],
+                          },
+                          thousandsSeparator: {
+                            default: ',',
+                            type: 'string',
+                            enum: [',', '.', 'space', 'none'],
+                          },
+                        },
+                        additionalProperties: false,
+                      },
+                      amountMode: {
+                        type: 'string',
+                        const: 'debit-credit',
+                      },
+                      debitColumn: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 255,
+                      },
+                      creditColumn: {
+                        type: 'string',
+                        minLength: 1,
+                        maxLength: 255,
+                      },
+                    },
+                    required: [
+                      'dateColumn',
+                      'dateFormat',
+                      'amountMode',
+                      'debitColumn',
+                      'creditColumn',
+                    ],
+                    additionalProperties: false,
+                  },
+                ],
+                type: 'object',
+              },
+              sourceFileId: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 255,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+              sourceName: {
+                anyOf: [
+                  {
+                    type: 'string',
+                    minLength: 1,
+                    maxLength: 255,
+                  },
+                  {
+                    type: 'null',
+                  },
+                ],
+              },
+            },
+            required: ['format', 'content', 'currency', 'mapping'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Statement imported.',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank-statement-import',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    source: {
+                      type: 'string',
+                      enum: ['file', 'email', 'feed', 'api'],
+                    },
+                    format: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                          enum: [
+                            'csv',
+                            'tsv',
+                            'ofx',
+                            'qif',
+                            'camt-053',
+                            'camt-054',
+                            'mt940',
+                          ],
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    sourceFileId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    sourceName: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    status: {
+                      type: 'string',
+                      enum: ['pending', 'completed', 'undone', 'failed'],
+                    },
+                    transactionCount: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                    duplicateCount: {
+                      type: 'integer',
+                      minimum: 0,
+                      maximum: 9007199254740991,
+                    },
+                    completedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    undoneAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    lines: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'bank-statement-line',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          accountId: {
+                            type: 'string',
+                          },
+                          importId: {
+                            type: 'string',
+                          },
+                          externalId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          fingerprint: {
+                            type: 'string',
+                          },
+                          postedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          authorizedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          type: {
+                            type: 'string',
+                            enum: ['credit', 'debit'],
+                          },
+                          amount: {
+                            type: 'string',
+                          },
+                          currency: {
+                            type: 'string',
+                          },
+                          description: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          payee: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          reference: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          bankCategory: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          runningBalance: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          status: {
+                            type: 'string',
+                            enum: [
+                              'uncategorized',
+                              'recognized',
+                              'matched',
+                              'categorized',
+                              'excluded',
+                            ],
+                          },
+                          recognitionSource: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                enum: ['rule', 'heuristic', 'ai'],
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          recognizedRuleId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          duplicateOfId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          excludedAt: {
+                            anyOf: [
+                              {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'accountId',
+                          'importId',
+                          'externalId',
+                          'fingerprint',
+                          'postedAt',
+                          'authorizedAt',
+                          'type',
+                          'amount',
+                          'currency',
+                          'description',
+                          'payee',
+                          'reference',
+                          'bankCategory',
+                          'runningBalance',
+                          'status',
+                          'recognitionSource',
+                          'recognizedRuleId',
+                          'duplicateOfId',
+                          'excludedAt',
+                          'createdAt',
+                          'updatedAt',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'accountId',
+                    'source',
+                    'format',
+                    'sourceFileId',
+                    'sourceName',
+                    'status',
+                    'transactionCount',
+                    'duplicateCount',
+                    'completedAt',
+                    'undoneAt',
+                    'createdAt',
+                    'updatedAt',
+                    'lines',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },

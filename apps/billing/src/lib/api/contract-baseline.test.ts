@@ -63,6 +63,34 @@ describe('Billing API v1 contract baseline', () => {
   // documented without appearing in it, so each one is listed here explicitly
   // rather than the check being dropped — an undocumented path still fails.
   const POST_LEGACY_PATHS = [
+    '/banking/directory/banks',
+    '/banking/directory/banks/{bankId}/branches',
+    // Cross-bank branch lookup by ids, added so the banking list resolves a
+    // page of accounts with one directory call instead of one per row.
+    '/banking/directory/branches',
+    '/banking/accounts/{accountId}/statement-imports',
+    '/banking/statement-imports/{importId}',
+    '/banking/statement-imports/{importId}/undo',
+    '/banking/accounts/{accountId}/statement-lines',
+    '/banking/statement-lines/{lineId}',
+    '/banking/statement-lines/{lineId}/matches',
+    '/banking/statement-lines/{lineId}/unmatch',
+    '/banking/statement-lines/{lineId}/categorize',
+    '/banking/statement-lines/{lineId}/exclude',
+    '/banking/statement-lines/{lineId}/restore',
+    '/banking/transfers',
+    '/banking/accounts/{accountId}/reconciliations',
+    '/banking/reconciliations/{reconciliationId}',
+    '/banking/reconciliations/{reconciliationId}/complete',
+    '/banking/reconciliations/{reconciliationId}/reopen',
+    '/banking/rules',
+    '/banking/rules/{ruleId}',
+    '/banking/accounts/{accountId}/statement-imports/preview',
+    '/banking/accounts/{accountId}/statement-imports/file',
+    '/banking/deposits',
+    '/banking/deposits/{depositId}',
+    '/banking/deposits/{depositId}/void',
+
     // Customer contacts: Express-only, and already documented on `main`.
     '/customers/{customerId}/contacts',
     '/customers/{customerId}/contacts/{contactId}',
