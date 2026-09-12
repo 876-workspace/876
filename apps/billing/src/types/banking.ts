@@ -31,11 +31,24 @@ const positiveMinorAmountSchema = minorAmountSchema.refine(
   'Enter an amount greater than zero.'
 )
 
+const directoryIdSchema = z.string().trim().min(1).nullable().optional()
+const accountLast4Schema = z
+  .string()
+  .trim()
+  .regex(/^[A-Za-z0-9]{1,4}$/)
+  .nullable()
+  .optional()
+
 export const BankAccountCreateSchema = z.strictObject({
   name: z.string().trim().min(1).max(120),
   accountType: BankAccountTypeSchema,
   currency: currencyCodeSchema,
   description: optionalTextSchema,
+  directoryBankId: directoryIdSchema,
+  directoryBranchId: directoryIdSchema,
+  institutionName: z.string().trim().min(1).max(160).nullable().optional(),
+  accountHolderName: z.string().trim().min(1).max(160).nullable().optional(),
+  accountNumberLast4: accountLast4Schema,
 })
 
 export const BankAccountUpdateSchema = z
@@ -44,6 +57,11 @@ export const BankAccountUpdateSchema = z
     accountType: BankAccountTypeSchema.optional(),
     currency: currencyCodeSchema.optional(),
     description: optionalTextSchema,
+    directoryBankId: directoryIdSchema,
+    directoryBranchId: directoryIdSchema,
+    institutionName: z.string().trim().min(1).max(160).nullable().optional(),
+    accountHolderName: z.string().trim().min(1).max(160).nullable().optional(),
+    accountNumberLast4: accountLast4Schema,
     isActive: z.boolean().optional(),
   })
   .refine((value) => Object.keys(value).length > 0, 'Nothing to update.')
@@ -126,8 +144,20 @@ export interface BankAccountResource {
   accountType: BankAccountType
   currency: string
   description: string | null
+  directoryBankId: string | null
+  directoryBranchId: string | null
+  institutionName: string | null
+  accountHolderName: string | null
+  accountNumberLast4: string | null
+  openingBalance: string
+  openingBalanceAt: number | null
   isActive: boolean
   balance: string
+  booksBalance: string
+  bankBalance: string | null
+  bankBalanceAt: number | null
+  lastStatementBalance: string | null
+  lastStatementAt: number | null
   createdAt: number
   updatedAt: number
 }
@@ -154,6 +184,11 @@ export interface BankAccountView {
   accountType: BankAccountType
   currency: string
   description: string | null
+  directoryBankId?: string | null
+  directoryBranchId?: string | null
+  institutionName?: string | null
+  accountHolderName?: string | null
+  accountNumberLast4?: string | null
   isActive: boolean
   balance: bigint
   createdAt: number
