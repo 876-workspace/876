@@ -268,9 +268,18 @@ describe('create876Client', () => {
   })
 
   it('creates a bank account through the canonical banking path', async () => {
+    const account = {
+      object: 'bank_account', id: 'blba_1', name: 'Undeposited Funds',
+      accountType: 'UNDEPOSITED_FUNDS', currency: 'JMD', description: null,
+      directoryBankId: null, directoryBranchId: null, institutionName: null,
+      accountHolderName: null,       accountNumberLast4: null, openingBalance: '0',
+      openingBalanceAt: null, isActive: true, isSystem: false, balance: '0', booksBalance: '0',
+      bankBalance: null, bankBalanceAt: null, lastStatementBalance: null,
+      lastStatementAt: null, createdAt: 1789000000, updatedAt: 1789000000,
+    }
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
-        data: { object: 'bank_account', id: 'blba_1' },
+        data: account,
         error: null,
       })
     )
@@ -285,7 +294,7 @@ describe('create876Client', () => {
       currency: 'JMD',
     })
 
-    expect(result.data).toEqual({ object: 'bank_account', id: 'blba_1' })
+    expect(result.data).toEqual(account)
     expect(fetchMock).toHaveBeenCalledWith(
       'https://billing.example.test/api/v1/banking/accounts',
       expect.objectContaining({

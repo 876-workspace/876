@@ -17,6 +17,8 @@ import {
   BankTransferListSchema,
   BankTransferSchema,
   DeletedBankRuleSchema,
+  BankDepositListSchema,
+  BankDepositSchema,
 } from '../types/banking-engine.schema'
 import type {
   BankMatchCandidateList,
@@ -42,6 +44,9 @@ import type {
   BankTransferCreateParams,
   BankTransferList,
   DeletedBankRule,
+  BankDeposit,
+  BankDepositCreateParams,
+  BankDepositList,
   StatementFileImportParams,
   StatementFilePreviewParams,
 } from '../types/banking-engine'
@@ -270,6 +275,54 @@ export function createBankingEngineResources(runtime: Runtime) {
     },
   }
 
+  const bankDeposits = {
+    list(options?: RequestOptions) {
+      return Request<BankDepositList>(
+        runtime,
+        {
+          method: 'GET',
+          path: '/api/v1/banking/deposits',
+          signal: options?.signal,
+        },
+        BankDepositListSchema
+      )
+    },
+    retrieve(id: string, options?: RequestOptions) {
+      return Request<BankDeposit>(
+        runtime,
+        {
+          method: 'GET',
+          path: `/api/v1/banking/deposits/${encodeURIComponent(id)}`,
+          signal: options?.signal,
+        },
+        BankDepositSchema
+      )
+    },
+    create(params: BankDepositCreateParams, options?: RequestOptions) {
+      return Request<BankDeposit>(
+        runtime,
+        {
+          method: 'POST',
+          path: '/api/v1/banking/deposits',
+          body: params,
+          signal: options?.signal,
+        },
+        BankDepositSchema
+      )
+    },
+    void(id: string, options?: RequestOptions) {
+      return Request<BankDeposit>(
+        runtime,
+        {
+          method: 'POST',
+          path: `/api/v1/banking/deposits/${encodeURIComponent(id)}/void`,
+          signal: options?.signal,
+        },
+        BankDepositSchema
+      )
+    },
+  }
+
   const bankReconciliations = {
     list(accountId: string, options?: RequestOptions) {
       return Request<BankReconciliationList>(
@@ -368,11 +421,7 @@ export function createBankingEngineResources(runtime: Runtime) {
         BankRuleSchema
       )
     },
-    update(
-      id: string,
-      params: BankRuleUpdateParams,
-      options?: RequestOptions
-    ) {
+    update(id: string, params: BankRuleUpdateParams, options?: RequestOptions) {
       return Request<BankRule>(
         runtime,
         {
@@ -401,6 +450,7 @@ export function createBankingEngineResources(runtime: Runtime) {
     bankStatementImports,
     bankStatementLines,
     bankTransfers,
+    bankDeposits,
     bankReconciliations,
     bankRules,
   }

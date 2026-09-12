@@ -10,6 +10,7 @@ import type {
   BankStatementMatch,
   BankStatementPreview,
   BankTransfer,
+  BankDeposit,
   DeletedBankRule,
 } from './banking-engine'
 import type { List } from './common'
@@ -165,6 +166,11 @@ export const BankTransferSchema = z.strictObject({
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
 }) satisfies z.ZodType<BankTransfer>
+
+export const BankDepositSchema = z.strictObject({
+  object: z.literal('bank-deposit'), id: z.string(), sourceAccountId: z.string(), destinationAccountId: z.string(), amount: z.string(), currency: z.string(), depositedAt: z.number().int(), description: z.string().nullable(), reference: z.string().nullable(), status: z.enum(['posted', 'reversed']), reversedAt: z.number().int().nullable(), createdAt: z.number().int(), updatedAt: z.number().int(), transactionIds: z.array(z.string()),
+}) satisfies z.ZodType<BankDeposit>
+export const BankDepositListSchema = listSchema(BankDepositSchema) satisfies z.ZodType<import('./common').List<BankDeposit>>
 
 export const BankReconciliationSchema = z.strictObject({
   object: z.literal('bank-reconciliation'),

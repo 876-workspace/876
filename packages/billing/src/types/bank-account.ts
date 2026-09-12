@@ -50,6 +50,8 @@ export interface BankAccount {
   openingBalance: string
   openingBalanceAt: number | null
   isActive: boolean
+  /** Whether this account is the tenant's protected system cash account. */
+  isSystem: boolean
   /** Compatibility alias for `booksBalance`. */
   balance: string
   /** Canonical balance derived from opening balance plus booked cash movements. */

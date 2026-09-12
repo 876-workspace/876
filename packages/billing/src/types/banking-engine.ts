@@ -245,6 +245,34 @@ export interface BankTransfer {
   updatedAt: number
 }
 
+export interface BankDepositCreateParams {
+  sourceAccountId: string
+  destinationAccountId: string
+  transactionIds: string[]
+  amount: string
+  currency: string
+  depositedAt: number
+  description?: string | null
+  reference?: string | null
+}
+export interface BankDeposit {
+  object: 'bank-deposit'
+  id: string
+  sourceAccountId: string
+  destinationAccountId: string
+  amount: string
+  currency: string
+  depositedAt: number
+  description: string | null
+  reference: string | null
+  status: 'posted' | 'reversed'
+  reversedAt: number | null
+  createdAt: number
+  updatedAt: number
+  transactionIds: string[]
+}
+export type BankDepositList = List<BankDeposit>
+
 export interface BankReconciliationCreateParams {
   startAt: number
   endAt: number
