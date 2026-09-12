@@ -1,4 +1,5 @@
 export { createBankingRouter } from './banking.routes'
+export { createBankingCategorizationRouter } from './banking-categorization.routes'
 export { createBankingDirectoryRouter } from './banking-directory.routes'
 export { createBankingEngineRouter } from './banking-engine.routes'
 export { createBankingStatementFileRouter } from './banking-statement-file.routes'
