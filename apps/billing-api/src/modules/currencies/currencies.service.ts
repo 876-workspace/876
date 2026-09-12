@@ -4,6 +4,7 @@ import { nowUnixSeconds } from '@/platform/timestamps'
 import {
   enabledCurrencyExists,
   enableCurrencyRow,
+  findEnabledCurrencyRow,
   listCurrencyRows,
   removeCurrencyRow,
   setDefaultCurrencyRow,
@@ -20,6 +21,14 @@ export async function hasEnabledCurrency(
   currencyCode: string
 ): Promise<boolean> {
   return enabledCurrencyExists(tenantId, currencyCode)
+}
+
+export async function enabledCurrencyDecimalPlaces(
+  tenantId: string,
+  currencyCode: string
+): Promise<number | null> {
+  const row = await findEnabledCurrencyRow(tenantId, currencyCode)
+  return row?.currency.decimalPlaces ?? null
 }
 
 export async function listCurrencies(tenantId: string) {
