@@ -68,6 +68,7 @@ describe('Billing API v1 contract baseline', () => {
     // Cross-bank branch lookup by ids, added so the banking list resolves a
     // page of accounts with one directory call instead of one per row.
     '/banking/directory/branches',
+    '/banking/accounts/{accountId}/account-number',
     '/banking/accounts/{accountId}/statement-imports',
     '/banking/statement-imports/{importId}',
     '/banking/statement-imports/{importId}/undo',

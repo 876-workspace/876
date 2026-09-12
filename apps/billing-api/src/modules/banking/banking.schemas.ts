@@ -3,6 +3,16 @@ import { z } from 'zod'
 const minorAmountSchema = z
   .union([z.string().regex(/^-?\d+$/), z.number().int()])
   .transform((value) => BigInt(value))
+// Account numbers are accepted with the spaces and dashes banks print, then
+// normalized. 4–34 covers local numbers through the IBAN maximum.
+const accountNumberInputSchema = z
+  .string()
+  .transform((value) => value.replace(/[\s-]/g, '').toUpperCase())
+  .pipe(
+    z
+      .string()
+      .regex(/^[A-Z0-9]{4,34}$/, 'Enter a valid account number.')
+  )
 export const bankAccountTypeSchema = z.enum([
   'CHECKING',
   'SAVINGS',
@@ -47,12 +57,7 @@ export const bankAccountCreateBodySchema = z
     directoryBranchId: z.string().trim().min(1).max(255).nullable().optional(),
     institutionName: z.string().trim().min(1).max(160).nullable().optional(),
     accountHolderName: z.string().trim().min(1).max(160).nullable().optional(),
-    accountNumberLast4: z
-      .string()
-      .trim()
-      .regex(/^[A-Za-z0-9]{1,4}$/)
-      .nullable()
-      .optional(),
+    accountNumber: accountNumberInputSchema.nullable().optional(),
     openingBalance: minorAmountSchema.optional(),
     openingBalanceAt: z.number().int().nonnegative().nullable().optional(),
   })
@@ -74,17 +79,18 @@ export const bankAccountUpdateBodySchema = z
     directoryBranchId: z.string().trim().min(1).max(255).nullable().optional(),
     institutionName: z.string().trim().min(1).max(160).nullable().optional(),
     accountHolderName: z.string().trim().min(1).max(160).nullable().optional(),
-    accountNumberLast4: z
-      .string()
-      .trim()
-      .regex(/^[A-Za-z0-9]{1,4}$/)
-      .nullable()
-      .optional(),
+    accountNumber: accountNumberInputSchema.nullable().optional(),
     isActive: z.boolean().optional(),
   })
   .refine((body) => Object.keys(body).length > 0, {
     message: 'Nothing to update.',
   })
+export const bankAccountNumberSchema = z.object({
+  object: z.literal('bank_account_number'),
+  accountId: z.string(),
+  accountNumber: z.string(),
+  accountNumberLast4: z.string(),
+})
 export const bankAccountParamsSchema = z.object({
   accountId: z.string().min(1),
 })

@@ -65,8 +65,10 @@ describe('frozen v1 route authentication matrix', () => {
     // authenticated tenant operations. 369 -> 370: `GET
     // /banking/directory/branches` was added so the banking list can resolve
     // shared-directory branches across banks in one call.
-    expect(operations).toHaveLength(370)
-    expect(protectedPublicOperations()).toHaveLength(369)
+    // 370 -> 371: `GET /banking/accounts/{accountId}/account-number`, the
+    // write-guarded disclosure of a sealed account number.
+    expect(operations).toHaveLength(371)
+    expect(protectedPublicOperations()).toHaveLength(370)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })

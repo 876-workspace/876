@@ -159,6 +159,12 @@ export const v1OperationMetadata = {
     summary: 'Delete an unused financial account',
     tags: ['Banking'],
   },
+  'GET /banking/accounts/{accountId}/account-number': {
+    operationId:
+      'billing-billing_get_banking_accounts_accountId_account_number',
+    summary: 'Billing GET /banking/accounts/{accountId}/account-number',
+    tags: ['Billing'],
+  },
   'GET /banking/accounts/{accountId}/transactions': {
     summary: 'List account transactions',
     tags: ['Banking'],
@@ -5919,6 +5925,103 @@ export const v1OperationContracts = {
               },
               required: ['data', 'error'],
               type: 'object',
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /banking/accounts/{accountId}/account-number': {
+    tags: ['Billing'],
+    summary: 'Billing GET /banking/accounts/{accountId}/account-number',
+    operationId:
+      'billing-billing_get_banking_accounts_accountId_account_number',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'accountId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'bank_account_number',
+                    },
+                    accountId: {
+                      type: 'string',
+                    },
+                    accountNumber: {
+                      type: 'string',
+                    },
+                    accountNumberLast4: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'accountId',
+                    'accountNumber',
+                    'accountNumberLast4',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Validation Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },

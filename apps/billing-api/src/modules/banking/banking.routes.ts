@@ -13,6 +13,7 @@ import { bankingDocs } from './banking.docs'
 import {
   bankAccountCreateBodySchema,
   bankAccountDeletedSchema,
+  bankAccountNumberSchema,
   bankAccountParamsSchema,
   bankAccountSchema,
   bankAccountUpdateBodySchema,
@@ -73,6 +74,22 @@ export function createBankingRouter(resolveGuards: GuardResolver) {
       ...clientErrors,
     },
     handler: bankingController.retrieveAccount,
+  })
+  // Disclosure of the full number requires write access, not read access.
+  api.get({
+    path: '/banking/accounts/:accountId/account-number',
+    ...bankingDocs.retrieveAccountNumber,
+    operationId: 'billing-billing_get_banking_accounts_accountId_account_number',
+    security: { kind: 'tenant', permission: 'banking:write' },
+    request: { params: bankAccountParamsSchema },
+    responses: {
+      200: {
+        description: 'Successful Response',
+        schema: successEnvelopeSchema(bankAccountNumberSchema),
+      },
+      ...clientErrors,
+    },
+    handler: bankingController.retrieveAccountNumber,
   })
   api.patch({
     path: '/banking/accounts/:accountId',

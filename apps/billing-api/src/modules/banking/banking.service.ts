@@ -1,7 +1,13 @@
 import { AppHttpError } from '@/http/errors'
 import { hasEnabledCurrency } from '@/modules/currencies'
 import { generateId } from '@/platform/ids'
+import { getLogger } from '@/platform/logger'
+import {
+  bankAccountNumberContext,
+  getSecureFieldProvider,
+} from '@/platform/secure-field'
 import { nowUnixSeconds } from '@/platform/timestamps'
+import { getVaultClient } from '@/providers/workos'
 import {
   CoreDirectoryUnavailableError,
   HttpCoreDirectoryGateway,
@@ -13,10 +19,12 @@ import {
   deleteBankTransactionRow,
   ensureSystemBankAccounts,
   findBankAccountActivityRow,
+  findBankAccountNumberRow,
   findBankAccountRow,
   findBankTransactionRow,
   listBankAccountRows,
   listBankTransactionRows,
+  type SealedAccountNumber,
   updateBankAccountRow,
   updateBankTransactionRow,
 } from './banking.repository'
@@ -32,6 +40,21 @@ import {
 } from './banking.serializers'
 
 const coreDirectory = new HttpCoreDirectoryGateway()
+const log = getLogger('banking')
+
+async function sealAccountNumber(
+  tenantId: string,
+  bankAccountId: string,
+  accountNumber: string
+): Promise<SealedAccountNumber> {
+  const provider = getSecureFieldProvider(tenantId, getVaultClient())
+  const sealed = await provider.seal(
+    accountNumber,
+    bankAccountNumberContext({ tenantId, bankAccountId })
+  )
+
+  return { ...sealed, last4: accountNumber.slice(-4) }
+}
 
 function listing<T>(data: T[], url: string) {
   return {
@@ -159,10 +182,16 @@ export async function createBankAccount(
   )
 
   try {
+    const id = generateId('BankAccount')
+    const { accountNumber, ...fields } = body
+    const sealed = accountNumber
+      ? await sealAccountNumber(tenantId, id, accountNumber)
+      : null
     const row = await createBankAccountRow(
       tenantId,
-      generateId('BankAccount'),
-      body,
+      id,
+      fields,
+      sealed,
       nowUnixSeconds()
     )
 
@@ -226,10 +255,65 @@ export async function updateBankAccount(
       nextDirectoryBranchId
     )
 
-  const row = await updateBankAccountRow(tenantId, id, body, nowUnixSeconds())
+  const { accountNumber, ...fields } = body
+  let sealed: SealedAccountNumber | null | undefined
+  if (accountNumber === null) sealed = null
+  else if (accountNumber !== undefined)
+    sealed = await sealAccountNumber(tenantId, id, accountNumber)
+
+  const row = await updateBankAccountRow(
+    tenantId,
+    id,
+    fields,
+    sealed,
+    nowUnixSeconds()
+  )
   if (!row) throw missing('account')
 
   return serializeBankAccount(row)
+}
+
+/**
+ * Disclose a tenant's own full account number. Guarded by `banking:write` at
+ * the route; every disclosure is logged without the value.
+ */
+export async function retrieveBankAccountNumber(
+  tenantId: string,
+  id: string,
+  actor: { userId: string | null; appId: string | null }
+) {
+  const row = await findBankAccountNumberRow(tenantId, id)
+  if (!row) throw missing('account')
+  if (!row.accountNumberCiphertext || !row.accountNumberProvider)
+    throw new AppHttpError({
+      code: 'bank_account/number-not-on-file',
+      message: 'This bank account has no account number on file.',
+      httpStatus: 404,
+    })
+
+  const accountNumber = await getSecureFieldProvider(
+    tenantId,
+    getVaultClient()
+  ).unseal(
+    {
+      ciphertext: row.accountNumberCiphertext,
+      keyId: row.accountNumberKeyId,
+      provider: row.accountNumberProvider,
+    },
+    bankAccountNumberContext({ tenantId, bankAccountId: row.id })
+  )
+
+  log.info(
+    { tenantId, bankAccountId: row.id, userId: actor.userId, appId: actor.appId },
+    'banking.account_number.disclosed'
+  )
+
+  return {
+    object: 'bank_account_number' as const,
+    accountId: row.id,
+    accountNumber,
+    accountNumberLast4: accountNumber.slice(-4),
+  }
 }
 
 export async function deleteBankAccount(tenantId: string, id: string) {

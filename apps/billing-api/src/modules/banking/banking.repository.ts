@@ -122,10 +122,28 @@ export async function findBankAccountRow(tenantId: string, id: string) {
   return { ...account, balance: account.openingBalance + movement }
 }
 
+/** The sealed-number columns, written together or cleared together. */
+export type SealedAccountNumber = {
+  ciphertext: string
+  keyId: string | null
+  provider: string
+  last4: string
+}
+
+function sealedAccountNumberData(sealed: SealedAccountNumber | null) {
+  return {
+    accountNumberCiphertext: sealed?.ciphertext ?? null,
+    accountNumberKeyId: sealed?.keyId ?? null,
+    accountNumberProvider: sealed?.provider ?? null,
+    accountNumberLast4: sealed?.last4 ?? null,
+  }
+}
+
 export function createBankAccountRow(
   tenantId: string,
   id: string,
-  body: BankAccountCreateBody,
+  body: Omit<BankAccountCreateBody, 'accountNumber'>,
+  sealed: SealedAccountNumber | null,
   now: number
 ) {
   return prisma.bankAccount.create({
@@ -140,7 +158,7 @@ export function createBankAccountRow(
       directoryBranchId: body.directoryBranchId ?? null,
       institutionName: body.institutionName ?? null,
       accountHolderName: body.accountHolderName ?? null,
-      accountNumberLast4: body.accountNumberLast4 ?? null,
+      ...sealedAccountNumberData(sealed),
       openingBalance: body.openingBalance ?? 0n,
       openingBalanceAt: body.openingBalanceAt ?? null,
       isActive: true,
@@ -166,18 +184,40 @@ export function findBankAccountActivityRow(tenantId: string, id: string) {
   })
 }
 
+/**
+ * `sealed` is `undefined` to leave the stored number untouched, `null` to clear
+ * it, or a freshly sealed value to replace it.
+ */
 export async function updateBankAccountRow(
   tenantId: string,
   id: string,
-  body: BankAccountUpdateBody,
+  body: Omit<BankAccountUpdateBody, 'accountNumber'>,
+  sealed: SealedAccountNumber | null | undefined,
   now: number
 ) {
   const result = await prisma.bankAccount.updateMany({
     where: { tenantId, id },
-    data: { ...body, updatedAt: now },
+    data: {
+      ...body,
+      ...(sealed === undefined ? {} : sealedAccountNumberData(sealed)),
+      updatedAt: now,
+    },
   })
 
   return result.count ? findBankAccountRow(tenantId, id) : null
+}
+
+export function findBankAccountNumberRow(tenantId: string, id: string) {
+  return prisma.bankAccount.findFirst({
+    where: { tenantId, id },
+    select: {
+      id: true,
+      accountNumberCiphertext: true,
+      accountNumberKeyId: true,
+      accountNumberProvider: true,
+      accountNumberLast4: true,
+    },
+  })
 }
 
 export async function deleteBankAccountRow(tenantId: string, id: string) {

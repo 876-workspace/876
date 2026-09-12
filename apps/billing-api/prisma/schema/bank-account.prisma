@@ -18,6 +18,12 @@ model BankAccount {
   institutionName      String?         @map("institution_name") @db.VarChar(160)
   accountHolderName    String?         @map("account_holder_name") @db.VarChar(160)
   accountNumberLast4   String?         @map("account_number_last4") @db.VarChar(4)
+  /// Full account number, sealed through `@/platform/secure-field` and bound to
+  /// this tenant and account. Never serialized; disclosed only by the dedicated
+  /// account-number route. `accountNumberLast4` is derived from it for display.
+  accountNumberCiphertext String?      @map("account_number_ciphertext") @db.Text
+  accountNumberKeyId   String?         @map("account_number_key_id") @db.VarChar(255)
+  accountNumberProvider String?        @map("account_number_provider") @db.VarChar(40)
   openingBalance       BigInt          @default(0) @map("opening_balance")
   openingBalanceAt     Int?            @map("opening_balance_at")
   bankBalance          BigInt?         @map("bank_balance")

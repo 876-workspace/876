@@ -14,8 +14,11 @@
  *    tenant's — fails to decrypt instead of disclosing a card under the wrong
  *    owner.
  *
- * Nothing in this service may call `unseal` outside the path that hands the
- * value straight to a processor, and no route ever returns one.
+ * A card or provider credential is unsealed only on the path that hands it
+ * straight to a processor, and no route ever returns one. The one disclosure
+ * route is a tenant's own deposit account number (`bank_account_number`), which
+ * the organization legitimately needs to read back — for example to print its
+ * payment instructions — and which is gated on `banking:write` and logged.
  */
 
 import {
@@ -58,6 +61,21 @@ export function credentialContext(params: {
     tenant_id: params.tenantId,
     payment_method_id: params.paymentMethodId,
     type: params.type,
+  }
+}
+
+/**
+ * Associated data for a tenant bank account's sealed account number. Shared by
+ * the write and disclosure paths for the same byte-identity reason as above.
+ */
+export function bankAccountNumberContext(params: {
+  tenantId: string
+  bankAccountId: string
+}): SecureFieldContext {
+  return {
+    tenant_id: params.tenantId,
+    bank_account_id: params.bankAccountId,
+    type: 'bank_account_number',
   }
 }
 

@@ -2,6 +2,9 @@ export const bankingDocs = {
   listAccounts: { summary: 'Billing GET /banking/accounts' },
   createAccount: { summary: 'Billing POST /banking/accounts' },
   retrieveAccount: { summary: 'Billing GET /banking/accounts/{accountId}' },
+  retrieveAccountNumber: {
+    summary: 'Billing GET /banking/accounts/{accountId}/account-number',
+  },
   updateAccount: { summary: 'Billing PATCH /banking/accounts/{accountId}' },
   deleteAccount: { summary: 'Billing DELETE /banking/accounts/{accountId}' },
   listTransactions: {
