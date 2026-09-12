@@ -1,8 +1,10 @@
 # GPT Web Final Report: App Metadata Standard
 
-**Run ID:** `2026-09-11-app-metadata-standard`  
-**Branch:** `feature/app-metadata-standard`  
-**Base:** `main`  
+**Run ID:** `2026-09-11-app-metadata-standard`
+
+**Branch:** `feature/app-metadata-standard`
+
+**Base:** `main`
 **Status:** Implementation complete; local verification required
 
 ## Summary

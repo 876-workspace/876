@@ -1,8 +1,10 @@
 # Implementation Plan: App Metadata Standard
 
-**Run ID:** `2026-09-11-app-metadata-standard`  
-**Branch:** `feature/app-metadata-standard`  
-**Base commit:** `b446e258de4529bdf0cd2332ad4b5599c978114e` (`main`)  
+**Run ID:** `2026-09-11-app-metadata-standard`
+
+**Branch:** `feature/app-metadata-standard`
+
+**Base commit:** `b446e258de4529bdf0cd2332ad4b5599c978114e` (`main`)
 **Status:** COMPLETED ✅ — local verification pending
 
 ## Overview
