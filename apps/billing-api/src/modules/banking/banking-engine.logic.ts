@@ -10,9 +10,10 @@ export function statementFingerprint(
   accountId: string,
   line: StatementLineInput
 ): string {
+  // Provider ids are compared separately. Keeping them out of this fingerprint
+  // lets the same bank movement be detected across a feed and a file import.
   const canonical = [
     accountId,
-    line.externalId ?? '',
     line.postedAt.toString(),
     line.type,
     line.amount.toString(),
