@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import type { ComponentProps } from 'react'
 import { notFound, redirect } from 'next/navigation'
 
@@ -15,6 +16,10 @@ import { service } from '@/lib/service'
 
 type Props = {
   params: Promise<{ accountId: string; transactionId: string }>
+}
+
+export const metadata: Metadata = {
+  title: 'Edit Transaction',
 }
 
 export default async function EditBankTransactionPage({ params }: Props) {
