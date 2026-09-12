@@ -10,6 +10,8 @@ export function serializeBankAccount(row: BankAccount & { balance: bigint }) {
     accountType: row.accountType,
     currency: row.currency,
     description: row.description,
+    directoryBankId: row.directoryBankId,
+    directoryBranchId: row.directoryBranchId,
     institutionName: row.institutionName,
     accountHolderName: row.accountHolderName,
     accountNumberLast4: row.accountNumberLast4,
