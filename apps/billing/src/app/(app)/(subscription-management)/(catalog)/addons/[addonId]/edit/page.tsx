@@ -1,8 +1,13 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { CreateForm } from '@/components/patterns/create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
+
+export const metadata: Metadata = {
+  title: 'Edit Add-on',
+}
 
 export default async function EditAddonPage({
   params,
