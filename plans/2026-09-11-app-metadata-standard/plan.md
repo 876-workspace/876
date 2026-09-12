@@ -225,3 +225,116 @@ Next exact step: add the mirrored metadata rule, then classify/fix uncovered rou
 ## PR Preparation Summary
 
 Pending completion. No PR is opened by this run unless explicitly requested.
+---
+
+## Mid-run directive — 2026-09-12 (orchestrator)
+
+Read this before continuing. It corrects the audit method and fixes the exact
+remaining scope, measured on branch head `c4169f189`.
+
+### 1. The audit grep must accept the re-export form
+
+`apps/console/src/app/(app)/workspace/[orgSlug]/{billing,invoice,couriers}/**/page.tsx`
+already own metadata through a shared factory:
+
+```ts
+const { Page, generateMetadata } = createWorkspaceCustomersPage('billing', 'Billing')
+export { generateMetadata }
+export default Page
+```
+
+A grep for `export const metadata|export async function generateMetadata`
+misses this and reports ~14 false positives in Console. **Do not add a second
+metadata export to those files** — two exports of the same name will not
+compile, and the factory is the correct owner. Match this too:
+
+```text
+export \{[^}]*(metadata|generateMetadata)
+```
+
+With that correction the real uncovered counts are Console 36, Billing 6,
+Invoice 3 — not the 98 in the original audit table. Update Phase 1's table
+accordingly rather than treating the old number as work remaining.
+
+### 2. Classified exceptions — leave these alone, record them
+
+- `(app)/@sidebar/**`, `(app)/@mobilenav/**`, `**/@list/page.tsx` — parallel
+  route slots; the canonical route owns metadata (rule §5).
+- `(app)/dashboard/page.tsx` — redirect-only (`redirect('/')`).
+- `apps/billing/src/app/(app)/settings/{users,roles}/(list)/page.tsx` and the
+  Invoice equivalents — `return null` list-state selectors for a shared
+  list/detail layout. Put the section title on the **route layout**, not on
+  these files.
+
+That is 12 exception files in Console and 4 across Billing/Invoice.
+
+### 3. The remaining real work
+
+**Console (24 files):**
+
+```text
+(app)/apps/[slug]/{audit,modules,operations,widgets}/page.tsx
+(app)/apps/[slug]/features/diagnostics/page.tsx
+(app)/apps/[slug]/plans/[planSlug]/pricing/new/page.tsx
+(app)/apps/[slug]/plans/[planSlug]/pricing/[priceId]/edit/page.tsx
+(app)/orgs/[slug]/onboarding/page.tsx
+(app)/requests/new/page.tsx
+(app)/requests/[requestId]/(record)/page.tsx
+(app)/settings/orgs/provisioning/runs/[runId]/page.tsx
+(app)/settings/users/(team)/[id]/page.tsx
+(app)/users/[username]/addresses/new/page.tsx
+(app)/users/[username]/addresses/[addressId]/edit/page.tsx
+(app)/users/[username]/contacts/new/page.tsx
+(app)/users/[username]/contacts/[contactId]/edit/page.tsx
+(app)/widgets/notepad/page.tsx
+(app)/widgets/notepad/access/page.tsx
+(app)/widgets/notes/page.tsx
+(app)/widgets/notes/[...path]/page.tsx
+(app)/widgets/[widgetSlug]/page.tsx
+(app)/widgets/[widgetSlug]/access/page.tsx
+(app)/workspace/[orgSlug]/crm/requests/new/page.tsx
+(app)/workspace/[orgSlug]/crm/requests/[requestId]/(record)/page.tsx
+```
+
+**Billing (2 files):**
+
+```text
+(app)/(subscription-management)/subscriptions/[subscriptionId]/{activity,invoices,billing}/page.tsx
+(app)/(sales)/invoices/[invoiceId]/lines/page.tsx
+```
+
+**Invoice (1 file):**
+
+```text
+(app)/settings/finance/page.tsx     ← redirect-only; classify, do not title
+```
+
+None of the remaining files are Client Components, so `export const metadata`
+is available in all of them.
+
+### 4. Dynamic titles: one sanctioned resolver, no new round trips
+
+`apps/console/src/app/(app)/apps/[slug]/_data.ts` exports `resolveApp`,
+`resolveProduct`, and `resolveOrganization`, all wrapped in `React.cache`.
+`generateMetadata` in that subtree may call them — the page already does, so
+the request is deduplicated (rule §4.4).
+
+Everywhere else, prefer a **static** title. Do not import a service client,
+add a repository call, or await a record in a layout to produce a title. A tab
+reading `Audit` is better than a tab reading `Audit · Acme` bought with a
+navigation waterfall.
+
+### 5. Still binding
+
+- No `robots`, description, canonical, Open Graph, or Twitter fields on these
+  private routes.
+- No app suffix in child titles — the root template owns it.
+- No PII in a title: no customer names, emails, phone numbers, or addresses.
+  `Provisioning run` beats `Run for <org email>`.
+- Keep commits one-file-scoped as you have been; the granularity is right.
+
+### 6. Revised Phase 1 exit criterion
+
+Phase 1 is complete when every file in §2 is recorded as a classified
+exception and every file in §3 has either a local title or a written reason
+it does not need one — not when the grep returns zero.
