@@ -1,8 +1,8 @@
 import { listObject } from '@/http/envelope'
 import { AppHttpError } from '@/http/errors'
 import { generateId } from '@/platform/ids'
-import { nowUnixSeconds } from '@/platform/timestamps'
 import { isUniqueConstraintError } from '@/platform/prisma-errors'
+import { nowUnixSeconds } from '@/platform/timestamps'
 
 import {
   matchConfidence,
@@ -130,7 +130,7 @@ export async function createStatementImport(
     actorId,
     now
   )
-  await recognizeImportedLines(tenantId, accountId, row.lines, now)
+  await recognizeImportedLines(tenantId, accountId, row.lines, actorId, now)
 
   const refreshed = await repository.findStatementImportRow(tenantId, row.id)
   if (!refreshed) throw missing('statement-import')
@@ -142,6 +142,7 @@ async function recognizeImportedLines(
   tenantId: string,
   accountId: string,
   lines: Awaited<ReturnType<typeof repository.createStatementImportRow>>['lines'],
+  actorId: string | null,
   now: number
 ) {
   const rules = await repository.listActiveBankRuleRows(tenantId, accountId)
@@ -154,6 +155,25 @@ async function recognizeImportedLines(
     if (!rule) continue
 
     await repository.recognizeStatementLineRow(tenantId, line.id, rule.id, now)
+    if (rule.automationMode !== 'AUTO_CATEGORIZE') continue
+
+    const action = rule.action as {
+      type: 'manual-deposit' | 'manual-withdrawal' | 'review'
+    }
+    const directionMatches =
+      (action.type === 'manual-deposit' && line.type === 'CREDIT') ||
+      (action.type === 'manual-withdrawal' && line.type === 'DEBIT')
+    if (!directionMatches) continue
+
+    await repository.createManualCategorizationRows(
+      tenantId,
+      line,
+      generateId('BankTransaction'),
+      generateId('BankStatementMatch'),
+      generateId('BankStatementMatchItem'),
+      actorId,
+      now
+    )
   }
 }
 
@@ -317,16 +337,17 @@ export async function matchStatementLine(
     tenantId,
     lineId,
     generateId('BankStatementMatch'),
-    {
-      items: body.items.map((item) => ({
-        ...item,
-        id: generateId('BankStatementMatchItem'),
-      })),
-    },
+    body.items.map((item) => ({
+      ...item,
+      id: generateId('BankStatementMatchItem'),
+    })),
     actorId,
     nowUnixSeconds()
   )
-  if (!row) throw conflict('The statement line changed while it was being matched.')
+  if (!row)
+    throw conflict(
+      'The statement line or selected transaction balance changed while matching.'
+    )
 
   return serializeStatementMatch(row)
 }
@@ -416,6 +437,7 @@ export async function categorizeManualStatementLine(
 
 export async function listBankTransfers(tenantId: string) {
   const rows = await repository.listTransferRows(tenantId)
+
   return listObject({
     data: rows.map(serializeBankTransfer),
     hasMore: false,
@@ -494,15 +516,22 @@ export async function createReconciliation(
     throw invalid('One or more reconciliation transactions were not found.')
   if (
     transactions.some(
-      (row) => row.date < body.startAt || row.date > body.endAt
+      (transaction) =>
+        transaction.date < body.startAt || transaction.date > body.endAt
     )
   )
-    throw invalid('Every reconciled transaction must fall within the statement period.')
-  if (transactions.some((row) => row.reconciliationItems.length > 0))
-    throw conflict('One or more transactions are already in a completed reconciliation.')
+    throw invalid(
+      'Every reconciled transaction must fall within the statement period.'
+    )
+  if (transactions.some((transaction) => transaction.reconciliationItems.length > 0))
+    throw conflict(
+      'One or more transactions are already in a completed reconciliation.'
+    )
 
   const movement = transactions.reduce(
-    (total, row) => total + (row.type === 'CREDIT' ? row.amount : -row.amount),
+    (total, transaction) =>
+      total +
+      (transaction.type === 'CREDIT' ? transaction.amount : -transaction.amount),
     0n
   )
   const clearedBalance = body.openingBalance + movement
@@ -538,7 +567,9 @@ export async function completeReconciliation(
   const current = await repository.findReconciliationRow(tenantId, id)
   if (!current) throw missing('reconciliation')
   if (current.difference !== 0n)
-    throw conflict('A reconciliation can complete only when its difference is zero.')
+    throw conflict(
+      'A reconciliation can complete only when its difference is zero.'
+    )
 
   const result = await repository.completeReconciliationRow(
     tenantId,
@@ -587,6 +618,7 @@ export async function reopenReconciliation(
 
 export async function listBankRules(tenantId: string) {
   const rows = await repository.listBankRuleRows(tenantId)
+
   return listObject({
     data: rows.map(serializeBankRule),
     hasMore: false,
@@ -654,11 +686,13 @@ export async function updateBankRule(
   if (!current) throw missing('bank-rule')
   if (body.accountIds) await validateRuleAccounts(tenantId, body.accountIds)
   validateRuleAutomation({
-    automationMode: body.automationMode ??
+    automationMode:
+      body.automationMode ??
       (current.automationMode === 'AUTO_CATEGORIZE'
         ? 'auto-categorize'
         : 'recognize'),
-    action: body.action ??
+    action:
+      body.action ??
       (current.action as {
         type: 'manual-deposit' | 'manual-withdrawal' | 'review'
       }),
@@ -683,10 +717,14 @@ export async function updateBankRule(
 }
 
 export async function deleteBankRule(tenantId: string, id: string) {
-  if (!(await repository.findBankRuleRow(tenantId, id))) throw missing('bank-rule')
+  if (!(await repository.findBankRuleRow(tenantId, id)))
+    throw missing('bank-rule')
   if ((await repository.countRecognizedRuleLines(tenantId, id)) > 0)
-    throw conflict('A rule used as statement recognition evidence cannot be deleted.')
+    throw conflict(
+      'A rule used as statement recognition evidence cannot be deleted.'
+    )
 
   await repository.deleteBankRuleRow(tenantId, id)
+
   return { object: 'bank-rule' as const, id, deleted: true as const }
 }
