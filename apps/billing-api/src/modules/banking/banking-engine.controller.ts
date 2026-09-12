@@ -4,8 +4,14 @@ import { getPrincipal } from '@/http/auth'
 import { validBody, validParams } from '@/http/middleware/validate'
 
 import * as service from './banking-engine.service'
-import { previewStatementFile } from './banking-statement-file.service'
-import type { StatementFilePreviewBody } from './banking-statement-file.schemas'
+import {
+  importStatementFile,
+  previewStatementFile,
+} from './banking-statement-file.service'
+import type {
+  StatementFileImportBody,
+  StatementFilePreviewBody,
+} from './banking-statement-file.schemas'
 import type {
   BankRuleCreateBody,
   BankRuleUpdateBody,
@@ -40,6 +46,18 @@ export const bankingEngineController = {
         tenantId(req),
         accountId,
         validBody<StatementFilePreviewBody>(req)
+      )
+    )
+  },
+
+  async importStatementFile(req: Request, res: Response) {
+    const { accountId } = validParams<{ accountId: string }>(req)
+    res.status(201).json(
+      await importStatementFile(
+        tenantId(req),
+        accountId,
+        validBody<StatementFileImportBody>(req),
+        actorId(req)
       )
     )
   },
