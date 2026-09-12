@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { Badge } from '@876/ui/badge'
@@ -13,6 +14,10 @@ import { DetailField } from '@/components/patterns/detail/detail-field'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'
+
+export const metadata: Metadata = {
+  title: 'Price List',
+}
 
 export default async function PriceListDetailPage({
   params,
