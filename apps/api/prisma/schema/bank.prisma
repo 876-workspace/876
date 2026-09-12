@@ -1,22 +1,31 @@
 // Bank — table `banks`.
-// Module: directory. Directory reference data: institutions, branches, schools, and agencies.
+// Module: directory. Shared financial-institution reference data. A bank code is
+// meaningful only inside a country's clearing system, so it is never treated as
+// a globally unique identifier.
 
 model Bank {
-  id             String        @id @db.VarChar
-  name           String        @db.VarChar
-  shortName      String?       @map("short_name") @db.VarChar
-  bankCode       String        @unique @map("bank_code") @db.VarChar
-  swiftCode      String?       @map("swift_code") @db.VarChar
-  logoUrl        String?       @map("logo_url") @db.VarChar
-  headOffice     String?       @map("head_office") @db.VarChar
-  website        String?       @db.VarChar
-  deletedAt      BigInt?       @map("deleted_at")
-  deletedBy      String?       @map("deleted_by") @db.VarChar
-  deletionReason String?       @map("deletion_reason")
-  createdAt      BigInt        @map("created_at")
-  updatedAt      BigInt        @map("updated_at")
-  bankAccounts   BankAccount[]
-  bankBranches   BankBranch[]
+  id              String        @id @db.VarChar
+  countryCode     String        @default("JM") @map("country_code") @db.VarChar(2)
+  name            String        @db.VarChar
+  shortName       String?       @map("short_name") @db.VarChar
+  bankCode        String        @map("bank_code") @db.VarChar
+  clearingSystem  String?       @map("clearing_system") @db.VarChar
+  institutionType String        @default("commercial_bank") @map("institution_type") @db.VarChar
+  swiftCode       String?       @map("swift_code") @db.VarChar
+  logoUrl         String?       @map("logo_url") @db.VarChar
+  headOffice      String?       @map("head_office") @db.VarChar
+  website         String?       @db.VarChar
+  deletedAt       BigInt?       @map("deleted_at")
+  deletedBy       String?       @map("deleted_by") @db.VarChar
+  deletionReason  String?       @map("deletion_reason")
+  createdAt       BigInt        @map("created_at")
+  updatedAt       BigInt        @map("updated_at")
 
+  country      Country       @relation(fields: [countryCode], references: [code], onDelete: Restrict, onUpdate: Cascade)
+  bankAccounts BankAccount[]
+  bankBranches BankBranch[]
+
+  @@unique([countryCode, bankCode], map: "banks_country_code_bank_code_key")
+  @@index([countryCode, name], map: "ix_banks_country_name")
   @@map("banks")
 }
