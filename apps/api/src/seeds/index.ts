@@ -20,6 +20,7 @@ import { seedAppAccess } from './app-access'
 import { seedBootstrap } from './bootstrap'
 import { seedDefaultAppPrices } from './default-prices'
 import { seedAllFeatures } from './features'
+import { seedFinancialDirectory } from './financial-directory'
 import { seedGeoCatalog } from './geo'
 import { seedInternalPlans } from './internal-plan'
 import { seedPlans } from './plans'
@@ -34,6 +35,7 @@ export type RunSeedsSummary = {
   bootstrap: Awaited<ReturnType<typeof seedBootstrap>> | null
   appAccess: Awaited<ReturnType<typeof seedAppAccess>> | null
   geo: Awaited<ReturnType<typeof seedGeoCatalog>> | null
+  financialDirectory: Awaited<ReturnType<typeof seedFinancialDirectory>> | null
   features: Awaited<ReturnType<typeof seedAllFeatures>> | null
   plans: Awaited<ReturnType<typeof seedPlans>> | null
   internalPlan: Awaited<ReturnType<typeof seedInternalPlans>> | null
@@ -50,6 +52,7 @@ export async function runSeeds(
     bootstrap: null,
     appAccess: null,
     geo: null,
+    financialDirectory: null,
     features: null,
     plans: null,
     internalPlan: null,
@@ -75,6 +78,18 @@ export async function runSeeds(
     log.info('seeds.geo.started')
     summary.geo = await seedGeoCatalog()
     log.info({ summary: summary.geo }, 'seeds.geo.completed')
+  }
+
+  // Financial directory reference data depends on ISO countries from geo. The
+  // seed itself also checks this dependency so --only=financialDirectory fails
+  // clearly instead of creating orphaned reference data.
+  if (shouldRun('financialDirectory')) {
+    log.info('seeds.financial_directory.started')
+    summary.financialDirectory = await seedFinancialDirectory()
+    log.info(
+      { summary: summary.financialDirectory },
+      'seeds.financial_directory.completed'
+    )
   }
 
   if (shouldRun('features')) {

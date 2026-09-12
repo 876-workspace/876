@@ -58,9 +58,17 @@ describe('frozen v1 route authentication matrix', () => {
     // to both tenant and integration surfaces. 333 -> 337: invoice clone and
     // invoice make-recurring were added to both the tenant and integration
     // surfaces, so an invoice can be duplicated or turned into a recurring
-    // profile without rebuilding its lines client-side.
-    expect(operations).toHaveLength(337)
-    expect(protectedPublicOperations()).toHaveLength(336)
+    // profile without rebuilding its lines client-side. 337 -> 369:
+    // statement-first banking operations (rules, reconciliations, statement
+    // imports/lines, transfers, directory banks/branches) and the bank
+    // deposit lifecycle (list/create/retrieve/void) were added as
+    // authenticated tenant operations. 369 -> 370: `GET
+    // /banking/directory/branches` was added so the banking list can resolve
+    // shared-directory branches across banks in one call.
+    // 370 -> 371: `GET /banking/accounts/{accountId}/account-number`, the
+    // write-guarded disclosure of a sealed account number.
+    expect(operations).toHaveLength(371)
+    expect(protectedPublicOperations()).toHaveLength(370)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })

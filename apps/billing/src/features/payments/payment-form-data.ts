@@ -44,6 +44,11 @@ export async function getPaymentFormData(
         label: `${account.name} (${account.currency})`,
         currency: account.currency,
       })),
+    defaultDepositAccountId:
+      current?.depositAccountId ??
+      accounts.find(
+        (account) => account.isActive && account.accountType === 'UNDEPOSITED_FUNDS'
+      )?.id,
     modes: modes
       .filter((mode) => mode.isActive || mode.id === current?.paymentModeId)
       .map((mode) => ({ value: mode.id, label: mode.name })),

@@ -1,20 +1,20 @@
 import { Request } from '../request'
 import type { Runtime } from '../runtime'
 import {
-  BankAccountCreatedSchema,
   BankAccountDeletedSchema,
   BankAccountListSchema,
   BankAccountSchema,
 } from '../schemas'
 import type {
   BankAccount,
-  BankAccountCreated,
   BankAccountCreateParams,
   BankAccountDeleted,
+  BankAccountNumber,
   BankAccountUpdateParams,
   List,
   RequestOptions,
 } from '../types'
+import { BankAccountNumberSchema } from '../types'
 
 /** `$876.billing.bankAccounts.*` - tenant-owned financial accounts. */
 export function createBankAccountsResource(runtime: Runtime) {
@@ -31,7 +31,7 @@ export function createBankAccountsResource(runtime: Runtime) {
       )
     },
     create(params: BankAccountCreateParams, options?: RequestOptions) {
-      return Request<BankAccountCreated>(
+      return Request<BankAccount>(
         runtime,
         {
           method: 'POST',
@@ -39,8 +39,25 @@ export function createBankAccountsResource(runtime: Runtime) {
           body: params,
           signal: options?.signal,
         },
-        BankAccountCreatedSchema
+        BankAccountSchema
       )
+    },
+    /**
+     * The full account number, sealed at rest. Requires `banking:write`; every
+     * disclosure is logged by the Billing API.
+     */
+    accountNumber: {
+      retrieve(accountId: string, options?: RequestOptions) {
+        return Request<BankAccountNumber>(
+          runtime,
+          {
+            method: 'GET',
+            path: `/api/v1/banking/accounts/${encodeURIComponent(accountId)}/account-number`,
+            signal: options?.signal,
+          },
+          BankAccountNumberSchema
+        )
+      },
     },
     retrieve(accountId: string, options?: RequestOptions) {
       return Request<BankAccount>(
@@ -58,7 +75,7 @@ export function createBankAccountsResource(runtime: Runtime) {
       params: BankAccountUpdateParams,
       options?: RequestOptions
     ) {
-      return Request<BankAccountCreated>(
+      return Request<BankAccount>(
         runtime,
         {
           method: 'PATCH',
@@ -66,7 +83,7 @@ export function createBankAccountsResource(runtime: Runtime) {
           body: params,
           signal: options?.signal,
         },
-        BankAccountCreatedSchema
+        BankAccountSchema
       )
     },
     delete(accountId: string, options?: RequestOptions) {

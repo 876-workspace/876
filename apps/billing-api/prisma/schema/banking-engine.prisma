@@ -1,0 +1,385 @@
+enum BankStatementImportSource {
+  FILE  @map("file")
+  EMAIL @map("email")
+  FEED  @map("feed")
+  API   @map("api")
+
+  @@map("BillingBankStatementImportSource")
+}
+
+enum BankStatementFormat {
+  CSV      @map("csv")
+  TSV      @map("tsv")
+  OFX      @map("ofx")
+  QIF      @map("qif")
+  CAMT_053 @map("camt-053")
+  CAMT_054 @map("camt-054")
+  MT940    @map("mt940")
+
+  @@map("BillingBankStatementFormat")
+}
+
+enum BankStatementImportStatus {
+  PENDING   @map("pending")
+  COMPLETED @map("completed")
+  UNDONE    @map("undone")
+  FAILED    @map("failed")
+
+  @@map("BillingBankStatementImportStatus")
+}
+
+enum BankStatementLineStatus {
+  UNCATEGORIZED @map("uncategorized")
+  RECOGNIZED    @map("recognized")
+  MATCHED       @map("matched")
+  CATEGORIZED   @map("categorized")
+  EXCLUDED      @map("excluded")
+
+  @@map("BillingBankStatementLineStatus")
+}
+
+enum BankRecognitionSource {
+  RULE      @map("rule")
+  HEURISTIC @map("heuristic")
+  AI        @map("ai")
+
+  @@map("BillingBankRecognitionSource")
+}
+
+enum BankStatementMatchStatus {
+  ACTIVE   @map("active")
+  REVERSED @map("reversed")
+
+  @@map("BillingBankStatementMatchStatus")
+}
+
+enum BankRuleMatchMode {
+  ALL @map("all")
+  ANY @map("any")
+
+  @@map("BillingBankRuleMatchMode")
+}
+
+enum BankRuleAutomationMode {
+  RECOGNIZE       @map("recognize")
+  AUTO_CATEGORIZE @map("auto-categorize")
+
+  @@map("BillingBankRuleAutomationMode")
+}
+
+enum BankRuleField {
+  DESCRIPTION @map("description")
+  PAYEE       @map("payee")
+  REFERENCE   @map("reference")
+  AMOUNT      @map("amount")
+  TYPE        @map("type")
+
+  @@map("BillingBankRuleField")
+}
+
+enum BankRuleOperator {
+  EQUALS       @map("equals")
+  CONTAINS     @map("contains")
+  STARTS_WITH  @map("starts-with")
+  ENDS_WITH    @map("ends-with")
+  GREATER_THAN @map("greater-than")
+  LESS_THAN    @map("less-than")
+
+  @@map("BillingBankRuleOperator")
+}
+
+enum BankReconciliationStatus {
+  DRAFT     @map("draft")
+  COMPLETED @map("completed")
+  REOPENED  @map("reopened")
+
+  @@map("BillingBankReconciliationStatus")
+}
+
+enum BankTransferStatus {
+  POSTED   @map("posted")
+  REVERSED @map("reversed")
+
+  @@map("BillingBankTransferStatus")
+}
+
+enum BankDepositStatus {
+  POSTED   @map("posted")
+  REVERSED @map("reversed")
+
+  @@map("BillingBankDepositStatus")
+}
+
+/// One ingestion batch. The source file itself belongs to 876 Storage; Billing
+/// stores only the opaque file id and the mapping used to normalize it.
+model BankStatementImport {
+  id               String                    @id
+  tenantId         String                    @map("tenant_id")
+  accountId        String                    @map("account_id")
+  source           BankStatementImportSource
+  format           BankStatementFormat?
+  sourceFileId     String?                   @map("source_file_id")
+  sourceName       String?                   @map("source_name") @db.VarChar(255)
+  mapping          Json?
+  status           BankStatementImportStatus @default(PENDING)
+  importedBy       String?                   @map("imported_by")
+  transactionCount Int                       @default(0) @map("transaction_count")
+  duplicateCount   Int                       @default(0) @map("duplicate_count")
+  completedAt      Int?                      @map("completed_at")
+  undoneAt         Int?                      @map("undone_at")
+  createdAt        Int                       @map("created_at")
+  updatedAt        Int                       @map("updated_at")
+
+  account BankAccount         @relation(fields: [tenantId, accountId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_statement_imports_account_fkey")
+  lines   BankStatementLine[]
+
+  @@unique([tenantId, id], map: "billing_bank_statement_imports_tenant_id_id_key")
+  @@index([tenantId, accountId, createdAt], map: "billing_bank_statement_imports_account_created_idx")
+  @@index([sourceFileId], map: "billing_bank_statement_imports_source_file_idx")
+  @@map("billing_bank_statement_imports")
+}
+
+/// Immutable evidence supplied by a bank-data source. User decisions live in
+/// match/rule/reconciliation records rather than rewriting source facts.
+model BankStatementLine {
+  id                String                  @id
+  tenantId          String                  @map("tenant_id")
+  accountId         String                  @map("account_id")
+  importId          String                  @map("import_id")
+  externalId        String?                 @map("external_id") @db.VarChar(255)
+  fingerprint       String                  @db.VarChar(64)
+  postedAt          Int                     @map("posted_at")
+  authorizedAt      Int?                    @map("authorized_at")
+  type              BankTransactionType
+  amount            BigInt
+  currency          String                  @db.Char(3)
+  description       String?                 @db.Text
+  payee             String?                 @db.VarChar(255)
+  reference         String?                 @db.VarChar(255)
+  bankCategory      String?                 @map("bank_category") @db.VarChar(160)
+  runningBalance    BigInt?                 @map("running_balance")
+  status            BankStatementLineStatus @default(UNCATEGORIZED)
+  recognitionSource BankRecognitionSource?  @map("recognition_source")
+  recognizedRuleId  String?                 @map("recognized_rule_id")
+  duplicateOfId     String?                 @map("duplicate_of_id")
+  excludedAt        Int?                    @map("excluded_at")
+  createdAt         Int                     @map("created_at")
+  updatedAt         Int                     @map("updated_at")
+
+  account BankAccount         @relation(fields: [tenantId, accountId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_statement_lines_account_fkey")
+  import  BankStatementImport @relation(fields: [tenantId, importId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_statement_lines_import_fkey")
+  // Composite SET NULL would also null required tenantId. The service clears or
+  // blocks these links deliberately before deleting the referenced evidence.
+  recognizedRule BankRule?          @relation(fields: [tenantId, recognizedRuleId], references: [tenantId, id], onDelete: NoAction, onUpdate: Cascade, map: "billing_bank_statement_lines_rule_fkey")
+  duplicateOf    BankStatementLine? @relation("BankStatementDuplicates", fields: [tenantId, duplicateOfId], references: [tenantId, id], onDelete: NoAction, onUpdate: Cascade, map: "billing_bank_statement_lines_duplicate_fkey")
+  duplicates     BankStatementLine[] @relation("BankStatementDuplicates")
+  matches        BankStatementMatch[]
+
+  @@unique([tenantId, id], map: "billing_bank_statement_lines_tenant_id_id_key")
+  @@index([tenantId, accountId, externalId], map: "billing_bank_statement_lines_external_idx")
+  @@index([tenantId, accountId, status, postedAt], map: "billing_bank_statement_lines_account_status_date_idx")
+  @@index([tenantId, accountId, fingerprint], map: "billing_bank_statement_lines_fingerprint_idx")
+  @@index([tenantId, importId], map: "billing_bank_statement_lines_import_idx")
+  @@index([duplicateOfId], map: "billing_bank_statement_lines_duplicate_idx")
+  @@map("billing_bank_statement_lines")
+}
+
+model BankStatementMatch {
+  id              String                   @id
+  tenantId        String                   @map("tenant_id")
+  statementLineId String                   @map("statement_line_id")
+  status          BankStatementMatchStatus @default(ACTIVE)
+  matchedBy       String?                  @map("matched_by")
+  matchedAt       Int                      @map("matched_at")
+  reversedBy      String?                  @map("reversed_by")
+  reversedAt      Int?                     @map("reversed_at")
+  createdAt       Int                      @map("created_at")
+  updatedAt       Int                      @map("updated_at")
+
+  statementLine BankStatementLine       @relation(fields: [tenantId, statementLineId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_statement_matches_line_fkey")
+  items         BankStatementMatchItem[]
+
+  @@unique([tenantId, id], map: "billing_bank_statement_matches_tenant_id_id_key")
+  @@index([tenantId, statementLineId, status], map: "billing_bank_statement_matches_line_status_idx")
+  @@map("billing_bank_statement_matches")
+}
+
+model BankStatementMatchItem {
+  id                String @id
+  tenantId          String @map("tenant_id")
+  matchId           String @map("match_id")
+  bankTransactionId String @map("bank_transaction_id")
+  amount            BigInt
+  createdAt         Int    @map("created_at")
+
+  match           BankStatementMatch @relation(fields: [tenantId, matchId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_statement_match_items_match_fkey")
+  bankTransaction BankTransaction    @relation(fields: [tenantId, bankTransactionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_bank_statement_match_items_transaction_fkey")
+
+  @@unique([tenantId, matchId, bankTransactionId], map: "billing_bank_statement_match_items_transaction_key")
+  @@index([tenantId, bankTransactionId], map: "billing_bank_statement_match_items_bank_transaction_idx")
+  @@map("billing_bank_statement_match_items")
+}
+
+/// Organization-level transaction recognition rule. Account targeting is a
+/// join so one rule can cover several accounts without being copied.
+model BankRule {
+  id             String                 @id
+  tenantId       String                 @map("tenant_id")
+  name           String                 @db.VarChar(120)
+  priority       Int                    @default(0)
+  enabled        Boolean                @default(true)
+  matchMode      BankRuleMatchMode      @default(ALL) @map("match_mode")
+  automationMode BankRuleAutomationMode @default(RECOGNIZE) @map("automation_mode")
+  action         Json
+  createdBy      String?                @map("created_by")
+  createdAt      Int                    @map("created_at")
+  updatedAt      Int                    @map("updated_at")
+
+  tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_rules_tenant_id_fkey")
+  conditions      BankRuleCondition[]
+  accounts        BankRuleAccount[]
+  recognizedLines BankStatementLine[]
+
+  @@unique([tenantId, id], map: "billing_bank_rules_tenant_id_id_key")
+  @@unique([tenantId, name], map: "billing_bank_rules_tenant_name_key")
+  @@index([tenantId, enabled, priority], map: "billing_bank_rules_tenant_enabled_priority_idx")
+  @@map("billing_bank_rules")
+}
+
+model BankRuleCondition {
+  id        String           @id
+  tenantId  String           @map("tenant_id")
+  ruleId    String           @map("rule_id")
+  field     BankRuleField
+  operator  BankRuleOperator
+  value     String           @db.VarChar(255)
+  createdAt Int              @map("created_at")
+
+  rule BankRule @relation(fields: [tenantId, ruleId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_rule_conditions_rule_fkey")
+
+  @@index([tenantId, ruleId], map: "billing_bank_rule_conditions_rule_idx")
+  @@map("billing_bank_rule_conditions")
+}
+
+model BankRuleAccount {
+  tenantId  String @map("tenant_id")
+  ruleId    String @map("rule_id")
+  accountId String @map("account_id")
+
+  rule    BankRule    @relation(fields: [tenantId, ruleId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_rule_accounts_rule_fkey")
+  account BankAccount @relation(fields: [tenantId, accountId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_rule_accounts_account_fkey")
+
+  @@id([tenantId, ruleId, accountId])
+  @@index([tenantId, accountId], map: "billing_bank_rule_accounts_account_idx")
+  @@map("billing_bank_rule_accounts")
+}
+
+model BankReconciliation {
+  id             String                   @id
+  tenantId       String                   @map("tenant_id")
+  accountId      String                   @map("account_id")
+  startAt        Int                      @map("start_at")
+  endAt          Int                      @map("end_at")
+  openingBalance BigInt                   @map("opening_balance")
+  closingBalance BigInt                   @map("closing_balance")
+  clearedBalance BigInt                   @default(0) @map("cleared_balance")
+  difference     BigInt
+  status         BankReconciliationStatus @default(DRAFT)
+  createdBy      String?                  @map("created_by")
+  completedBy    String?                  @map("completed_by")
+  completedAt    Int?                     @map("completed_at")
+  reopenedBy     String?                  @map("reopened_by")
+  reopenedAt     Int?                     @map("reopened_at")
+  createdAt      Int                      @map("created_at")
+  updatedAt      Int                      @map("updated_at")
+
+  account BankAccount              @relation(fields: [tenantId, accountId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_bank_reconciliations_account_fkey")
+  items   BankReconciliationItem[]
+
+  @@unique([tenantId, id], map: "billing_bank_reconciliations_tenant_id_id_key")
+  @@index([tenantId, accountId, endAt], map: "billing_bank_reconciliations_account_end_idx")
+  @@map("billing_bank_reconciliations")
+}
+
+model BankReconciliationItem {
+  id                String @id
+  tenantId          String @map("tenant_id")
+  reconciliationId  String @map("reconciliation_id")
+  bankTransactionId String @map("bank_transaction_id")
+  amount            BigInt
+  createdAt         Int    @map("created_at")
+
+  reconciliation BankReconciliation @relation(fields: [tenantId, reconciliationId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_reconciliation_items_reconciliation_fkey")
+  bankTransaction BankTransaction    @relation(fields: [tenantId, bankTransactionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_bank_reconciliation_items_transaction_fkey")
+
+  @@unique([tenantId, reconciliationId, bankTransactionId], map: "billing_bank_reconciliation_items_transaction_key")
+  @@index([tenantId, bankTransactionId], map: "billing_bank_reconciliation_items_bank_transaction_idx")
+  @@map("billing_bank_reconciliation_items")
+}
+
+model BankTransfer {
+  id            String             @id
+  tenantId      String             @map("tenant_id")
+  fromAccountId String             @map("from_account_id")
+  toAccountId   String             @map("to_account_id")
+  amount        BigInt
+  currency      String             @db.Char(3)
+  transferredAt Int                @map("transferred_at")
+  description   String?            @db.Text
+  reference     String?            @db.VarChar(120)
+  status        BankTransferStatus @default(POSTED)
+  reversedAt    Int?               @map("reversed_at")
+  createdAt     Int                @map("created_at")
+  updatedAt     Int                @map("updated_at")
+
+  fromAccount  BankAccount       @relation("BankTransferFromAccount", fields: [tenantId, fromAccountId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_bank_transfers_from_account_fkey")
+  toAccount    BankAccount       @relation("BankTransferToAccount", fields: [tenantId, toAccountId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_bank_transfers_to_account_fkey")
+  transactions BankTransaction[]
+
+  @@unique([tenantId, id], map: "billing_bank_transfers_tenant_id_id_key")
+  @@index([tenantId, fromAccountId, transferredAt], map: "billing_bank_transfers_from_date_idx")
+  @@index([tenantId, toAccountId, transferredAt], map: "billing_bank_transfers_to_date_idx")
+  @@map("billing_bank_transfers")
+}
+
+model BankDeposit {
+  id                   String            @id
+  tenantId             String            @map("tenant_id")
+  sourceAccountId      String            @map("source_account_id")
+  destinationAccountId String            @map("destination_account_id")
+  amount               BigInt
+  currency             String            @db.Char(3)
+  depositedAt          Int               @map("deposited_at")
+  description          String?           @db.Text
+  reference            String?           @db.VarChar(120)
+  status               BankDepositStatus @default(POSTED)
+  reversedAt           Int?              @map("reversed_at")
+  createdAt            Int               @map("created_at")
+  updatedAt            Int               @map("updated_at")
+
+  sourceAccount      BankAccount       @relation("BankDepositSourceAccount", fields: [tenantId, sourceAccountId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_bank_deposits_source_account_fkey")
+  destinationAccount BankAccount       @relation("BankDepositDestinationAccount", fields: [tenantId, destinationAccountId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_bank_deposits_destination_account_fkey")
+  items              BankDepositItem[]
+  transactions       BankTransaction[]
+
+  @@unique([tenantId, id], map: "billing_bank_deposits_tenant_id_id_key")
+  @@index([tenantId, sourceAccountId, depositedAt], map: "billing_bank_deposits_source_date_idx")
+  @@index([tenantId, destinationAccountId, depositedAt], map: "billing_bank_deposits_destination_date_idx")
+  @@map("billing_bank_deposits")
+}
+
+model BankDepositItem {
+  id                  String @id
+  tenantId            String @map("tenant_id")
+  depositId           String @map("deposit_id")
+  sourceTransactionId String @map("source_transaction_id")
+  amount              BigInt
+  createdAt           Int    @map("created_at")
+
+  deposit           BankDeposit     @relation(fields: [tenantId, depositId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_deposit_items_deposit_fkey")
+  sourceTransaction BankTransaction @relation("BankDepositSourceTransactions", fields: [tenantId, sourceTransactionId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_bank_deposit_items_source_transaction_fkey")
+
+  @@unique([tenantId, depositId, sourceTransactionId], map: "billing_bank_deposit_items_source_key")
+  @@index([tenantId, sourceTransactionId], map: "billing_bank_deposit_items_source_transaction_idx")
+  @@map("billing_bank_deposit_items")
+}

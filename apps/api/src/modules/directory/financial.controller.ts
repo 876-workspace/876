@@ -18,9 +18,12 @@ import type {
 import type {
   BankAccountCreate,
   BankAccountUpdate,
+  BankBranchBatchQuery,
   BankBranchCreate,
+  BankBranchListQuery,
   BankBranchUpdate,
   BankCreate,
+  BankListQuery,
   BankUpdate,
   CreditUnionBranchCreate,
   CreditUnionBranchUpdate,
@@ -40,7 +43,7 @@ function actor(req: Request): string | null {
 // --- Banks ---
 
 export async function listBanks(req: Request, res: Response): Promise<void> {
-  const query = validQuery<ListDirectoryQuery>(req)
+  const query = validQuery<BankListQuery>(req)
 
   res.status(200).json(await service.listBanks(query, isInternal(req)))
 }
@@ -80,11 +83,20 @@ export async function listBankBranches(
   res: Response
 ): Promise<void> {
   const { bank_id } = validParams<{ bank_id: string }>(req)
-  const query = validQuery<ListDirectoryQuery>(req)
+  const query = validQuery<BankBranchListQuery>(req)
 
   res
     .status(200)
     .json(await service.listBankBranches(bank_id, query, isInternal(req)))
+}
+
+export async function listBankBranchesGlobal(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const query = validQuery<BankBranchBatchQuery>(req)
+
+  res.status(200).json(await service.listBankBranchesGlobal(query, isInternal(req)))
 }
 
 export async function retrieveBankBranch(

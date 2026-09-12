@@ -22,9 +22,12 @@ import type {
 
 export type BankRow = {
   id: string
+  countryCode: string
   name: string
   shortName: string | null
   bankCode: string
+  clearingSystem: string | null
+  institutionType: string
   swiftCode: string | null
   logoUrl: string | null
   headOffice: string | null
@@ -35,9 +38,12 @@ export type BankRow = {
 
 export const BANK_SELECT = {
   id: true,
+  countryCode: true,
   name: true,
   shortName: true,
   bankCode: true,
+  clearingSystem: true,
+  institutionType: true,
   swiftCode: true,
   logoUrl: true,
   headOffice: true,
@@ -50,9 +56,12 @@ export function serializeBank(row: BankRow): Bank {
   return {
     object: 'bank',
     id: row.id,
+    country_code: row.countryCode,
     name: row.name,
     short_name: row.shortName,
     bank_code: row.bankCode,
+    clearing_system: row.clearingSystem,
+    institution_type: row.institutionType,
     swift_code: row.swiftCode,
     logo_url: row.logoUrl,
     head_office: row.headOffice,
@@ -68,12 +77,12 @@ export type BankBranchRow = {
   name: string
   transitNumber: string
   routingNumber: string | null
-  addressId: string
+  addressId: string | null
   contactNumber: string | null
   operatingHours: string | null
   createdAt: bigint
   updatedAt: bigint
-  directoryAddress: DirectoryAddressRow
+  directoryAddress: DirectoryAddressRow | null
 }
 
 export const BANK_BRANCH_SELECT = {
@@ -101,7 +110,9 @@ export function serializeBankBranch(row: BankBranchRow): BankBranch {
     address_id: row.addressId,
     contact_number: row.contactNumber,
     operating_hours: row.operatingHours,
-    address: serializeDirectoryAddress(row.directoryAddress),
+    address: row.directoryAddress
+      ? serializeDirectoryAddress(row.directoryAddress)
+      : null,
     created_at: fromDbUnixSeconds(row.createdAt),
     updated_at: fromDbUnixSeconds(row.updatedAt),
   }

@@ -17,11 +17,16 @@ async function main(): Promise<void> {
   const help = args.includes('--help') || args.includes('-h')
 
   if (help) {
-    console.log(`Usage: pnpm node:seed [--only=bootstrap,appAccess,geo,features,plans,internalPlan,defaultPrices]
+    console.log(`Usage: pnpm node:seed [--only=bootstrap,appAccess,geo,financialDirectory,features,plans,internalPlan,defaultPrices]
 
 Seeds platform-owned catalogs/bootstrap records idempotently. Provisioning
 profiles/manifests are intentionally excluded: they are database configuration
 initialized through an explicit environment import, not ordinary seed ownership.
+
+The financialDirectory seed loads versioned country-aware bank and routing-branch
+reference data. Routing identity does not require a physical location; trusted
+structured/geocoded branch addresses can be enriched independently and the seed
+never invents coordinates.
 
 Options:
   --only=<names>  Run only the named seeds (comma-separated).
@@ -33,6 +38,7 @@ Options:
     'bootstrap',
     'appAccess',
     'geo',
+    'financialDirectory',
     'features',
     'plans',
     'internalPlan',

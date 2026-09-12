@@ -1,2 +1,5 @@
-export { hasEnabledCurrency } from './currencies.service'
+export {
+  enabledCurrencyDecimalPlaces,
+  hasEnabledCurrency,
+} from './currencies.service'
 export { createCurrenciesRouter } from './currencies.routes'

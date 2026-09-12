@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { Button } from '@876/ui/button'
@@ -10,6 +10,10 @@ import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { Textarea } from '@876/ui/textarea'
 
 import { client } from '@/lib/client'
+import type {
+  BankDirectoryBank,
+  BankDirectoryBranch,
+} from '@/lib/client/bank-directory'
 import type { BankAccountType } from '@/types/banking'
 
 const ACCOUNT_TYPES: Array<{ value: BankAccountType; label: string }> = [
@@ -22,25 +26,48 @@ const ACCOUNT_TYPES: Array<{ value: BankAccountType; label: string }> = [
   { value: 'PETTY_CASH', label: 'Petty cash' },
 ]
 
+const BANK_LINKED = new Set<BankAccountType>([
+  'CHECKING',
+  'SAVINGS',
+  'CREDIT_CARD',
+])
+const BRANCH_REQUIRED = new Set<BankAccountType>(['CHECKING', 'SAVINGS'])
+
 interface InitialAccount {
   id: string
   name: string
   accountType: BankAccountType
   currency: string
   description: string | null
+  directoryBankId?: string | null
+  directoryBranchId?: string | null
+  institutionName?: string | null
+  accountHolderName?: string | null
+  accountNumberLast4?: string | null
   isActive: boolean
 }
 
 export function BankAccountForm({
   currencies,
   initial,
+  initialBanks = [],
+  initialBranches = [],
+  initialDirectoryError = null,
+  countryCode = 'JM',
 }: {
   currencies: Array<{ value: string; label: string }>
   initial?: InitialAccount
+  initialBanks?: BankDirectoryBank[]
+  initialBranches?: BankDirectoryBranch[]
+  initialDirectoryError?: string | null
+  countryCode?: string
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [directoryError, setDirectoryError] = useState<string | null>(
+    initialDirectoryError
+  )
   const [name, setName] = useState(initial?.name ?? '')
   const [accountType, setAccountType] = useState<BankAccountType>(
     initial?.accountType ?? 'CHECKING'
@@ -50,6 +77,78 @@ export function BankAccountForm({
   )
   const [description, setDescription] = useState(initial?.description ?? '')
   const [isActive, setIsActive] = useState(initial?.isActive ?? true)
+  const [branches, setBranches] = useState<BankDirectoryBranch[]>(initialBranches)
+  const [directoryBankId, setDirectoryBankId] = useState(
+    initial?.directoryBankId ?? ''
+  )
+  const [directoryBranchId, setDirectoryBranchId] = useState(
+    initial?.directoryBranchId ?? ''
+  )
+  const [accountHolderName, setAccountHolderName] = useState(
+    initial?.accountHolderName ?? ''
+  )
+  // The stored number is never sent to the browser. Blank on edit keeps it;
+  // a new value replaces it.
+  const [accountNumber, setAccountNumber] = useState('')
+  const skipPrimedBranchLoad = useRef(
+    Boolean(initial?.directoryBankId && initialBranches.length)
+  )
+
+  const linksBank = BANK_LINKED.has(accountType)
+  const requiresBranch = BRANCH_REQUIRED.has(accountType)
+  const selectedBank = useMemo(
+    () => initialBanks.find((bank) => bank.id === directoryBankId) ?? null,
+    [initialBanks, directoryBankId]
+  )
+  const selectedBranch = useMemo(
+    () => branches.find((branch) => branch.id === directoryBranchId) ?? null,
+    [branches, directoryBranchId]
+  )
+
+  useEffect(() => {
+    if (!linksBank || !directoryBankId) return
+
+    if (
+      skipPrimedBranchLoad.current &&
+      directoryBankId === initial?.directoryBankId
+    ) {
+      skipPrimedBranchLoad.current = false
+      return
+    }
+
+    let active = true
+    void client.bankDirectory.listBranches(directoryBankId).then((result) => {
+      if (!active) return
+      if (result.error || !result.data) {
+        setDirectoryError(
+          result.error?.message ?? 'Could not load bank branches.'
+        )
+        return
+      }
+      setBranches(result.data.data)
+      setDirectoryError(null)
+    })
+    return () => {
+      active = false
+    }
+  }, [directoryBankId, initial?.directoryBankId, linksBank])
+
+  function changeAccountType(next: BankAccountType) {
+    setAccountType(next)
+    if (!BANK_LINKED.has(next)) {
+      setDirectoryBankId('')
+      setDirectoryBranchId('')
+      setBranches([])
+    }
+  }
+
+  function changeBank(next: string) {
+    skipPrimedBranchLoad.current = false
+    setDirectoryBankId(next)
+    setDirectoryBranchId('')
+    setBranches([])
+    setDirectoryError(null)
+  }
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -57,29 +156,52 @@ export function BankAccountForm({
       setError('Enter an account name and currency.')
       return
     }
+    if (linksBank && !directoryBankId) {
+      setError('Select the financial institution for this account.')
+      return
+    }
+    if (requiresBranch && !directoryBranchId) {
+      setError('Select the branch for this bank account.')
+      return
+    }
+    if (
+      accountNumber.trim() &&
+      !/^[A-Z0-9]{4,34}$/.test(accountNumber.replace(/[\s-]/g, '').toUpperCase())
+    ) {
+      setError('Enter the full account number using letters and digits.')
+      return
+    }
 
     setError(null)
     startTransition(async () => {
+      const bankName = selectedBank?.name ?? initial?.institutionName ?? null
+      const params = {
+        name,
+        accountType,
+        currency,
+        description: description.trim() || null,
+        directoryBankId: linksBank ? directoryBankId || null : null,
+        directoryBranchId: linksBank ? directoryBranchId || null : null,
+        institutionName: linksBank ? bankName : null,
+        accountHolderName: accountHolderName.trim() || null,
+      }
+      const enteredNumber = accountNumber.trim()
       const result = initial
         ? await client.bankAccounts.update(initial.id, {
-            name,
-            accountType,
-            currency,
-            description: description.trim() || null,
+            ...params,
+            ...(enteredNumber ? { accountNumber: enteredNumber } : {}),
             isActive,
           })
         : await client.bankAccounts.create({
-            name,
-            accountType,
-            currency,
-            description: description.trim() || null,
+            ...params,
+            accountNumber: enteredNumber || null,
           })
       if (result.error || !result.data) {
         setError(result.error?.message ?? 'Failed to save the bank account.')
         return
       }
 
-      router.push(initial ? `/banking/${initial.id}` : '/banking')
+      router.push(initial ? `/banking/${initial.id}` : `/banking/${result.data.id}`)
       router.refresh()
     })
   }
@@ -116,7 +238,7 @@ export function BankAccountForm({
             id="bank-account-type"
             value={accountType}
             onChange={(event) =>
-              setAccountType(event.target.value as BankAccountType)
+              changeAccountType(event.target.value as BankAccountType)
             }
           >
             {ACCOUNT_TYPES.map((type) => (
@@ -126,6 +248,64 @@ export function BankAccountForm({
             ))}
           </NativeSelect>
         </Field>
+
+        {linksBank ? (
+          <>
+            <Field label="Country" htmlFor="bank-account-country">
+              <NativeSelect id="bank-account-country" value={countryCode} disabled>
+                <NativeSelectOption value={countryCode}>
+                  {countryCode === 'JM' ? 'Jamaica (JM)' : countryCode}
+                </NativeSelectOption>
+              </NativeSelect>
+            </Field>
+            <Field label="Financial institution" htmlFor="bank-account-bank">
+              <NativeSelect
+                id="bank-account-bank"
+                value={directoryBankId}
+                onChange={(event) => changeBank(event.target.value)}
+                required
+                disabled={Boolean(directoryError) && initialBanks.length === 0}
+              >
+                <NativeSelectOption value="">Select a bank</NativeSelectOption>
+                {initialBanks.map((bank) => (
+                  <NativeSelectOption key={bank.id} value={bank.id}>
+                    {bank.shortName ?? bank.name} · {bank.bankCode}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            </Field>
+            <Field
+              label={requiresBranch ? 'Branch' : 'Branch (optional)'}
+              htmlFor="bank-account-branch"
+            >
+              <NativeSelect
+                id="bank-account-branch"
+                value={directoryBranchId}
+                onChange={(event) => setDirectoryBranchId(event.target.value)}
+                required={requiresBranch}
+                disabled={!directoryBankId || Boolean(directoryError)}
+              >
+                <NativeSelectOption value="">
+                  {directoryBankId ? 'Select a branch' : 'Select a bank first'}
+                </NativeSelectOption>
+                {branches.map((branch) => (
+                  <NativeSelectOption key={branch.id} value={branch.id}>
+                    {branch.name} · {branch.transitNumber}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+              {selectedBranch ? (
+                <p className="text-muted-foreground text-xs tabular-nums">
+                  Transit {selectedBranch.transitNumber}
+                  {selectedBranch.routingNumber
+                    ? ` · Routing ${selectedBranch.routingNumber}`
+                    : null}
+                </p>
+              ) : null}
+            </Field>
+          </>
+        ) : null}
+
         <Field label="Currency" htmlFor="bank-account-currency">
           <NativeSelect
             id="bank-account-currency"
@@ -138,6 +318,30 @@ export function BankAccountForm({
               </NativeSelectOption>
             ))}
           </NativeSelect>
+        </Field>
+        <Field label="Account holder" htmlFor="bank-account-holder">
+          <Input
+            id="bank-account-holder"
+            value={accountHolderName}
+            onChange={(event) => setAccountHolderName(event.target.value)}
+            placeholder="Organization or account holder"
+          />
+        </Field>
+        <Field label="Account number" htmlFor="bank-account-number">
+          <Input
+            id="bank-account-number"
+            value={accountNumber}
+            onChange={(event) => setAccountNumber(event.target.value)}
+            maxLength={40}
+            inputMode="text"
+            autoComplete="off"
+            spellCheck={false}
+            placeholder={
+              initial?.accountNumberLast4
+                ? `••••${initial.accountNumberLast4} on file — enter to replace`
+                : '060 455 1234'
+            }
+          />
         </Field>
         {initial ? (
           <label className="border-border flex items-center gap-3 rounded-lg border px-4 py-3 sm:self-end">
@@ -162,9 +366,12 @@ export function BankAccountForm({
         </div>
       </div>
 
+      {directoryError ? (
+        <p className="text-destructive text-sm">{directoryError}</p>
+      ) : null}
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" disabled={isPending}>
+        <Button type="submit" disabled={isPending || Boolean(directoryError)}>
           {isPending ? 'Saving...' : initial ? 'Save' : 'Create'}
         </Button>
         <Button

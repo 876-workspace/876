@@ -31,11 +31,26 @@ const positiveMinorAmountSchema = minorAmountSchema.refine(
   'Enter an amount greater than zero.'
 )
 
+const directoryIdSchema = z.string().trim().min(1).nullable().optional()
+// Mirrors the Billing API: banks print spaces and dashes, the stored value is
+// the normalized 4–34 character number. `null` clears it on update.
+const accountNumberSchema = z
+  .string()
+  .transform((value) => value.replace(/[\s-]/g, '').toUpperCase())
+  .pipe(z.string().regex(/^[A-Z0-9]{4,34}$/, 'Enter a valid account number.'))
+  .nullable()
+  .optional()
+
 export const BankAccountCreateSchema = z.strictObject({
   name: z.string().trim().min(1).max(120),
   accountType: BankAccountTypeSchema,
   currency: currencyCodeSchema,
   description: optionalTextSchema,
+  directoryBankId: directoryIdSchema,
+  directoryBranchId: directoryIdSchema,
+  institutionName: z.string().trim().min(1).max(160).nullable().optional(),
+  accountHolderName: z.string().trim().min(1).max(160).nullable().optional(),
+  accountNumber: accountNumberSchema,
 })
 
 export const BankAccountUpdateSchema = z
@@ -44,6 +59,11 @@ export const BankAccountUpdateSchema = z
     accountType: BankAccountTypeSchema.optional(),
     currency: currencyCodeSchema.optional(),
     description: optionalTextSchema,
+    directoryBankId: directoryIdSchema,
+    directoryBranchId: directoryIdSchema,
+    institutionName: z.string().trim().min(1).max(160).nullable().optional(),
+    accountHolderName: z.string().trim().min(1).max(160).nullable().optional(),
+    accountNumber: accountNumberSchema,
     isActive: z.boolean().optional(),
   })
   .refine((value) => Object.keys(value).length > 0, 'Nothing to update.')
@@ -107,6 +127,13 @@ export interface BankTransactionUpdated {
   id: string
 }
 
+export interface BankAccountNumberResource {
+  object: 'bank_account_number'
+  accountId: string
+  accountNumber: string
+  accountNumberLast4: string
+}
+
 export interface BankAccountDeleted {
   object: 'bank_account'
   id: string
@@ -126,8 +153,20 @@ export interface BankAccountResource {
   accountType: BankAccountType
   currency: string
   description: string | null
+  directoryBankId: string | null
+  directoryBranchId: string | null
+  institutionName: string | null
+  accountHolderName: string | null
+  accountNumberLast4: string | null
+  openingBalance: string
+  openingBalanceAt: number | null
   isActive: boolean
   balance: string
+  booksBalance: string
+  bankBalance: string | null
+  bankBalanceAt: number | null
+  lastStatementBalance: string | null
+  lastStatementAt: number | null
   createdAt: number
   updatedAt: number
 }
@@ -154,6 +193,11 @@ export interface BankAccountView {
   accountType: BankAccountType
   currency: string
   description: string | null
+  directoryBankId?: string | null
+  directoryBranchId?: string | null
+  institutionName?: string | null
+  accountHolderName?: string | null
+  accountNumberLast4?: string | null
   isActive: boolean
   balance: bigint
   createdAt: number

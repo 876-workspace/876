@@ -1,6 +1,8 @@
 import { buildRuntime } from './runtime'
 import { createBankAccountsResource } from './resources/bank-accounts'
+import { createBankDirectoryResource } from './resources/bank-directory'
 import { createBankTransactionsResource } from './resources/bank-transactions'
+import { createBankingEngineResources } from './resources/banking-engine'
 import { createCatalogResources } from './resources/catalog'
 import { createCustomersResource } from './resources/customers'
 import { createCreditNotesResource } from './resources/credit-notes'
@@ -34,10 +36,13 @@ import type { ClientOptions } from './types'
 export function create876Client(options: ClientOptions = {}) {
   const runtime = buildRuntime(options)
   const catalog = createCatalogResources(runtime)
+  const banking = createBankingEngineResources(runtime)
 
   return {
     bankAccounts: createBankAccountsResource(runtime),
+    bankDirectory: createBankDirectoryResource(runtime),
     bankTransactions: createBankTransactionsResource(runtime),
+    ...banking,
     addons: catalog.addons,
     customers: createCustomersResource(runtime),
     creditNotes: createCreditNotesResource(runtime),

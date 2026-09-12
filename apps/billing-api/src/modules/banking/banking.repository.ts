@@ -19,19 +19,84 @@ export async function listBankAccountRows(tenantId: string) {
       _sum: { amount: true },
     }),
   ])
-  const balances = new Map<string, bigint>()
+  const movements = new Map<string, bigint>()
   for (const total of totals) {
     const amount = total._sum.amount ?? 0n
-    balances.set(
+    movements.set(
       total.accountId,
-      (balances.get(total.accountId) ?? 0n) +
+      (movements.get(total.accountId) ?? 0n) +
         (total.type === 'CREDIT' ? amount : -amount)
     )
   }
+
   return accounts.map((account) => ({
     ...account,
-    balance: balances.get(account.id) ?? 0n,
+    balance: account.openingBalance + (movements.get(account.id) ?? 0n),
   }))
+}
+
+export async function ensureSystemBankAccounts(tenantId: string, now: number) {
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { defaultCurrency: true },
+  })
+  if (!tenant) return
+  for (const definition of [
+    {
+      accountType: 'UNDEPOSITED_FUNDS' as const,
+      baseName: 'Undeposited Funds',
+      id: `system_${tenantId}_undeposited_funds`,
+    },
+    {
+      accountType: 'PETTY_CASH' as const,
+      baseName: 'Petty Cash',
+      id: `system_${tenantId}_petty_cash`,
+    },
+  ]) {
+    const existing = await prisma.bankAccount.findFirst({
+      where: { tenantId, accountType: definition.accountType, isSystem: true },
+      select: { id: true },
+    })
+    if (existing) continue
+
+    for (let suffix = 0; suffix <= 1_000_000; suffix += 1) {
+      const name =
+        suffix === 0
+          ? definition.baseName
+          : suffix === 1
+            ? `${definition.baseName} (System)`
+            : `${definition.baseName} (System ${suffix})`
+      const nameTaken = await prisma.bankAccount.findFirst({
+        where: { tenantId, name },
+        select: { id: true },
+      })
+      if (nameTaken) continue
+
+      // `isSystem` engages the partial tenant/type index. `skipDuplicates`
+      // therefore resolves a concurrent first request without treating a
+      // tenant-created holding account as the system account.
+      await prisma.bankAccount.createMany({
+        data: {
+          id: definition.id,
+          tenantId,
+          name,
+          accountType: definition.accountType,
+          currency: tenant.defaultCurrency,
+          openingBalance: 0n,
+          isActive: true,
+          isSystem: true,
+          createdAt: now,
+          updatedAt: now,
+        },
+        skipDuplicates: true,
+      })
+      const ensured = await prisma.bankAccount.findFirst({
+        where: { tenantId, accountType: definition.accountType, isSystem: true },
+        select: { id: true },
+      })
+      if (ensured) break
+    }
+  }
 }
 
 export async function findBankAccountRow(tenantId: string, id: string) {
@@ -44,7 +109,8 @@ export async function findBankAccountRow(tenantId: string, id: string) {
     }),
   ])
   if (!account) return null
-  const balance = totals.reduce(
+
+  const movement = totals.reduce(
     (sum, row) =>
       sum +
       (row.type === 'CREDIT'
@@ -52,21 +118,49 @@ export async function findBankAccountRow(tenantId: string, id: string) {
         : -(row._sum.amount ?? 0n)),
     0n
   )
-  return { ...account, balance }
+
+  return { ...account, balance: account.openingBalance + movement }
+}
+
+/** The sealed-number columns, written together or cleared together. */
+export type SealedAccountNumber = {
+  ciphertext: string
+  keyId: string | null
+  provider: string
+  last4: string
+}
+
+function sealedAccountNumberData(sealed: SealedAccountNumber | null) {
+  return {
+    accountNumberCiphertext: sealed?.ciphertext ?? null,
+    accountNumberKeyId: sealed?.keyId ?? null,
+    accountNumberProvider: sealed?.provider ?? null,
+    accountNumberLast4: sealed?.last4 ?? null,
+  }
 }
 
 export function createBankAccountRow(
   tenantId: string,
   id: string,
-  body: BankAccountCreateBody,
+  body: Omit<BankAccountCreateBody, 'accountNumber'>,
+  sealed: SealedAccountNumber | null,
   now: number
 ) {
   return prisma.bankAccount.create({
     data: {
       id,
       tenantId,
-      ...body,
+      name: body.name,
+      accountType: body.accountType,
+      currency: body.currency,
       description: body.description ?? null,
+      directoryBankId: body.directoryBankId ?? null,
+      directoryBranchId: body.directoryBranchId ?? null,
+      institutionName: body.institutionName ?? null,
+      accountHolderName: body.accountHolderName ?? null,
+      ...sealedAccountNumberData(sealed),
+      openingBalance: body.openingBalance ?? 0n,
+      openingBalanceAt: body.openingBalanceAt ?? null,
       isActive: true,
       createdAt: now,
       updatedAt: now,
@@ -77,27 +171,57 @@ export function createBankAccountRow(
 export function findBankAccountActivityRow(tenantId: string, id: string) {
   return prisma.bankAccount.findFirst({
     where: { tenantId, id },
-    include: { _count: { select: { payments: true, transactions: true } } },
+    include: {
+      _count: {
+        select: {
+          payments: true,
+          transactions: true,
+          statementImports: true,
+          reconciliations: true,
+        },
+      },
+    },
   })
 }
 
+/**
+ * `sealed` is `undefined` to leave the stored number untouched, `null` to clear
+ * it, or a freshly sealed value to replace it.
+ */
 export async function updateBankAccountRow(
   tenantId: string,
   id: string,
-  body: BankAccountUpdateBody,
+  body: Omit<BankAccountUpdateBody, 'accountNumber'>,
+  sealed: SealedAccountNumber | null | undefined,
   now: number
 ) {
   const result = await prisma.bankAccount.updateMany({
     where: { tenantId, id },
-    data: { ...body, updatedAt: now },
+    data: {
+      ...body,
+      ...(sealed === undefined ? {} : sealedAccountNumberData(sealed)),
+      updatedAt: now,
+    },
   })
+
   return result.count ? findBankAccountRow(tenantId, id) : null
 }
 
-export async function deleteBankAccountRow(tenantId: string, id: string) {
-  const result = await prisma.bankAccount.deleteMany({
+export function findBankAccountNumberRow(tenantId: string, id: string) {
+  return prisma.bankAccount.findFirst({
     where: { tenantId, id },
+    select: {
+      id: true,
+      accountNumberCiphertext: true,
+      accountNumberKeyId: true,
+      accountNumberProvider: true,
+      accountNumberLast4: true,
+    },
   })
+}
+
+export async function deleteBankAccountRow(tenantId: string, id: string) {
+  const result = await prisma.bankAccount.deleteMany({ where: { tenantId, id } })
   return result.count > 0
 }
 
@@ -108,6 +232,7 @@ export function listBankTransactionRows(tenantId: string, accountId: string) {
     take: 100,
   })
 }
+
 export function findBankTransactionRow(
   tenantId: string,
   accountId: string,
@@ -117,6 +242,7 @@ export function findBankTransactionRow(
     where: { tenantId, accountId, id },
   })
 }
+
 export function createBankTransactionRow(
   tenantId: string,
   accountId: string,
@@ -138,6 +264,7 @@ export function createBankTransactionRow(
     },
   })
 }
+
 export async function updateBankTransactionRow(
   tenantId: string,
   accountId: string,
@@ -149,8 +276,10 @@ export async function updateBankTransactionRow(
     where: { tenantId, accountId, id },
     data: { ...body, updatedAt: now },
   })
+
   return result.count ? findBankTransactionRow(tenantId, accountId, id) : null
 }
+
 export async function deleteBankTransactionRow(
   tenantId: string,
   accountId: string,
@@ -159,5 +288,6 @@ export async function deleteBankTransactionRow(
   const result = await prisma.bankTransaction.deleteMany({
     where: { tenantId, accountId, id },
   })
+
   return result.count > 0
 }

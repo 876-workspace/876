@@ -35,10 +35,13 @@ import {
   bankAccountCreateSchema,
   bankAccountSchema,
   bankAccountUpdateSchema,
+  bankBranchBatchQuerySchema,
   bankBranchCreateSchema,
+  bankBranchListQuerySchema,
   bankBranchSchema,
   bankBranchUpdateSchema,
   bankCreateSchema,
+  bankListQuerySchema,
   bankSchema,
   bankUpdateSchema,
   creditUnionBranchCreateSchema,
@@ -65,7 +68,7 @@ export function registerFinancialRoutes(resolveGuards: GuardResolver) {
     operationId: 'directory-list_banks',
     summary: docs.LIST_BANKS_SUMMARY,
     description: docs.LIST_BANKS_DESCRIPTION,
-    request: { query: listDirectoryQuerySchema },
+    request: { query: bankListQuerySchema },
     responses: {
       200: {
         description: 'Bank list returned.',
@@ -137,12 +140,28 @@ export function registerFinancialRoutes(resolveGuards: GuardResolver) {
   // --- Bank branches ---
 
   api.get({
+    path: '/bank-branches',
+    middleware: [attachPrincipal],
+    operationId: 'directory-list_all_bank_branches',
+    summary: docs.LIST_ALL_BANK_BRANCHES_SUMMARY,
+    description: docs.LIST_ALL_BANK_BRANCHES_DESCRIPTION,
+    request: { query: bankBranchBatchQuerySchema },
+    responses: {
+      200: {
+        description: 'Bank branch list returned.',
+        schema: listObjectSchema(bankBranchSchema),
+      },
+    },
+    handler: controller.listBankBranchesGlobal,
+  })
+
+  api.get({
     path: '/banks/:bank_id/branches',
     middleware: [attachPrincipal],
     operationId: 'directory-list_bank_branches',
     summary: docs.LIST_BANK_BRANCHES_SUMMARY,
     description: docs.LIST_BANK_BRANCHES_DESCRIPTION,
-    request: { params: bankIdParamsSchema, query: listDirectoryQuerySchema },
+    request: { params: bankIdParamsSchema, query: bankBranchListQuerySchema },
     responses: {
       200: {
         description: 'Bank branch list returned.',

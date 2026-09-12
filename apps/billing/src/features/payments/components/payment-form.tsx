@@ -22,6 +22,7 @@ export function PaymentForm({
   currencies,
   invoices,
   defaultCurrency,
+  defaultDepositAccountId,
   initial,
   prefill,
   returnHref,
@@ -32,6 +33,7 @@ export function PaymentForm({
   currencies: PaymentReceivedCurrencyOption[]
   invoices: PaymentReceivedInvoiceOption[]
   defaultCurrency: string
+  defaultDepositAccountId?: string
   initial?: PaymentReceivedInitial
   prefill?: PaymentReceivedPrefill
   returnHref?: string
@@ -73,6 +75,7 @@ export function PaymentForm({
       currencies={currencies}
       invoices={invoices}
       defaultCurrency={defaultCurrency}
+      defaultDepositAccountId={defaultDepositAccountId}
       initial={initial}
       prefill={prefill}
       onSubmit={save}

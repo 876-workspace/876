@@ -15,6 +15,7 @@ import {
   listBankAccounts,
   listBankTransactions,
   retrieveBankAccount,
+  retrieveBankAccountNumber,
   retrieveBankTransaction,
   updateBankAccount,
   updateBankTransaction,
@@ -46,6 +47,17 @@ export const bankingController = {
   },
   async retrieveAccount(req: Request, res: Response) {
     res.json(await retrieveBankAccount(tenant(req), account(req)))
+  },
+  async retrieveAccountNumber(req: Request, res: Response) {
+    const { userId, appId } = getPrincipal(req)
+    res
+      .set('Cache-Control', 'no-store')
+      .json(
+        await retrieveBankAccountNumber(tenant(req), account(req), {
+          userId,
+          appId,
+        })
+      )
   },
   async updateAccount(req: Request, res: Response) {
     res.json(

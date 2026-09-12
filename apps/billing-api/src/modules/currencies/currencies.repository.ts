@@ -12,6 +12,16 @@ export async function enabledCurrencyExists(
   return currency !== null
 }
 
+export function findEnabledCurrencyRow(tenantId: string, currencyCode: string) {
+  return prisma.tenantCurrency.findFirst({
+    where: { tenantId, currencyCode, isEnabled: true },
+    select: {
+      currencyCode: true,
+      currency: { select: { decimalPlaces: true } },
+    },
+  })
+}
+
 export function listCurrencyRows(tenantId: string) {
   return prisma.tenantCurrency.findMany({
     where: { tenantId, isEnabled: true },

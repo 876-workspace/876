@@ -1,136 +1,96 @@
 import type { BankAccountType } from './enums'
 
-/**
- * Parameters for creating a tenant-owned financial account.
- */
+/** Parameters for creating a tenant-owned financial account. */
 export interface BankAccountCreateParams {
-  /**
-   * The account's display name.
-   */
   name: string
-
-  /**
-   * Classification of the financial account.
-   */
   accountType: BankAccountType
-
-  /**
-   * Three-letter ISO currency code held by the account.
-   */
   currency: string
-
-  /**
-   * An arbitrary description of the account. Often useful for displaying to users.
-   */
   description?: string | null
+  /** Opaque Core financial-directory bank id. */
+  directoryBankId?: string | null
+  /** Opaque Core financial-directory branch id. */
+  directoryBranchId?: string | null
+  institutionName?: string | null
+  accountHolderName?: string | null
+  /**
+   * Full account number. Write-only: it is sealed server-side and never
+   * returned on the account; read it back with `accountNumber.retrieve()`.
+   * Spaces and dashes are accepted; `null` clears it on update.
+   */
+  accountNumber?: string | null
+  /** Signed opening balance in integer minor units. */
+  openingBalance?: string | number
+  openingBalanceAt?: number | null
 }
 
-/**
- * Parameters for updating a financial account.
- */
+/** Parameters for updating financial-account display metadata. */
 export interface BankAccountUpdateParams {
-  /**
-   * The account's display name.
-   */
   name?: string
-
-  /**
-   * Classification of the financial account.
-   */
   accountType?: BankAccountType
-
-  /**
-   * Three-letter ISO currency code held by the account.
-   */
   currency?: string
-
-  /**
-   * An arbitrary description of the account. Often useful for displaying to users.
-   */
   description?: string | null
-
+  directoryBankId?: string | null
+  directoryBranchId?: string | null
+  institutionName?: string | null
+  accountHolderName?: string | null
   /**
-   * Whether the account is active for new deposits.
+   * Full account number. Write-only: it is sealed server-side and never
+   * returned on the account; read it back with `accountNumber.retrieve()`.
+   * Spaces and dashes are accepted; `null` clears it on update.
    */
+  accountNumber?: string | null
   isActive?: boolean
 }
 
-/**
- * This object represents a tenant-owned financial account used for deposits and reconciliation.
- */
+/** A tenant-owned financial account used for booked cash and reconciliation. */
 export interface BankAccount {
-  /**
-   * String representing the object's type. Objects of the same type share the same value.
-   */
   object: 'bank_account'
-
-  /**
-   * Unique identifier for the object.
-   */
   id: string
-
-  /**
-   * The account's display name.
-   */
   name: string
-
-  /**
-   * Classification of the financial account.
-   */
   accountType: BankAccountType
-
-  /**
-   * Three-letter ISO currency code held by the account.
-   */
   currency: string
-
-  /**
-   * An arbitrary description of the account. Often useful for displaying to users.
-   */
   description: string | null
-
-  /**
-   * Whether the account is active for new deposits.
-   */
+  /** Opaque Core directory id; intentionally not a Billing database relation. */
+  directoryBankId: string | null
+  /** Opaque Core branch id; intentionally not a Billing database relation. */
+  directoryBranchId: string | null
+  institutionName: string | null
+  accountHolderName: string | null
+  /** Last four characters of the sealed account number, for display. */
+  accountNumberLast4: string | null
+  openingBalance: string
+  openingBalanceAt: number | null
   isActive: boolean
-
-  /**
-   * Current balance as a decimal string.
-   */
+  /** Whether this account is the tenant's protected system cash account. */
+  isSystem: boolean
+  /** Compatibility alias for `booksBalance`. */
   balance: string
-
-  /**
-   * Time at which the object was created. Measured in seconds since the Unix epoch.
-   */
+  /** Canonical balance derived from opening balance plus booked cash movements. */
+  booksBalance: string
+  /** Latest balance supplied by an external statement/feed source. */
+  bankBalance: string | null
+  bankBalanceAt: number | null
+  lastStatementBalance: string | null
+  lastStatementAt: number | null
   createdAt: number
-
-  /**
-   * Time at which the object was last updated. Measured in seconds since the Unix epoch.
-   */
   updatedAt: number
 }
 
-/**
- * A minimal bank account resource returned after creation.
- */
+/** A minimal bank account resource returned after creation. */
 export interface BankAccountCreated {
-  /**
-   * String representing the object's type. Objects of the same type share the same value.
-   */
   object: 'bank_account'
-
-  /**
-   * Unique identifier for the object.
-   */
   id: string
 }
 
-/**
- * A deleted bank account tombstone.
- */
+/** A deleted bank account tombstone. */
 export interface BankAccountDeleted extends BankAccountCreated {
-  /**
-   * Always true for a deleted object.
-   */
   deleted: true
+}
+
+/** A tenant's own full account number, disclosed on explicit request. */
+export interface BankAccountNumber {
+  object: 'bank_account_number'
+  accountId: string
+  accountNumber: string
+  accountNumberLast4: string
 }

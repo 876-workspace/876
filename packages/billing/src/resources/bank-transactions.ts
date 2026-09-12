@@ -1,14 +1,12 @@
 import { Request } from '../request'
 import type { Runtime } from '../runtime'
 import {
-  BankTransactionCreatedSchema,
   BankTransactionDeletedSchema,
   BankTransactionListSchema,
   BankTransactionSchema,
 } from '../schemas'
 import type {
   BankTransaction,
-  BankTransactionCreated,
   BankTransactionCreateParams,
   BankTransactionDeleted,
   BankTransactionUpdateParams,
@@ -42,7 +40,7 @@ export function createBankTransactionsResource(runtime: Runtime) {
       params: BankTransactionCreateParams,
       options?: RequestOptions
     ) {
-      return Request<BankTransactionCreated>(
+      return Request<BankTransaction>(
         runtime,
         {
           method: 'POST',
@@ -50,7 +48,7 @@ export function createBankTransactionsResource(runtime: Runtime) {
           body: params,
           signal: options?.signal,
         },
-        BankTransactionCreatedSchema
+        BankTransactionSchema
       )
     },
     retrieve(
@@ -74,7 +72,7 @@ export function createBankTransactionsResource(runtime: Runtime) {
       params: BankTransactionUpdateParams,
       options?: RequestOptions
     ) {
-      return Request<BankTransactionCreated>(
+      return Request<BankTransaction>(
         runtime,
         {
           method: 'PATCH',
@@ -82,7 +80,7 @@ export function createBankTransactionsResource(runtime: Runtime) {
           body: params,
           signal: options?.signal,
         },
-        BankTransactionCreatedSchema
+        BankTransactionSchema
       )
     },
     delete(accountId: string, transactionId: string, options?: RequestOptions) {

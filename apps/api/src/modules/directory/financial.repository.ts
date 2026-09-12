@@ -1,14 +1,12 @@
 /**
  * Every query against the financial directory tables.
  *
- * Ported from the financial half of `db/repositories/directory.py`. Reads accept
- * an `includeDeleted` flag because these tables carry tombstone columns; the
- * *decision* to honour it is the service's, since it depends on the caller's
- * privilege (`.claude/rules/deletions.md`).
+ * Reads accept an `includeDeleted` flag because these tables carry tombstone
+ * columns; the service owns the privilege decision. Bank identifiers such as
+ * institution codes are country-scoped reference data rather than global keys.
  *
  * A branch owns its address: the two rows are written together through Prisma's
- * nested write, so a failure cannot leave an orphan address behind — the Python
- * relied on the surrounding session flush for the same guarantee.
+ * nested write so a failure cannot leave an orphan address behind.
  */
 
 import { prisma } from '@/db/client'
@@ -42,6 +40,13 @@ import {
 
 // --- Banks ---
 
+export function countryExists(countryCode: string): Promise<{ code: string } | null> {
+  return prisma.country.findUnique({
+    where: { code: countryCode },
+    select: { code: true },
+  })
+}
+
 export async function findBankById(
   bankId: string,
   includeDeleted = false
@@ -55,20 +60,28 @@ export async function findBankById(
 }
 
 export function findBankByCode(
+  countryCode: string,
   bankCode: string,
   includeDeleted = false
 ): Promise<BankRow | null> {
   return prisma.bank.findFirst({
-    where: { bankCode, ...liveOnly(includeDeleted) },
+    where: { countryCode, bankCode, ...liveOnly(includeDeleted) },
     select: BANK_SELECT,
   })
 }
 
 export function listBanks(
   query: PaginationQuery,
-  options: { includeDeleted: boolean; search?: string | undefined }
+  options: {
+    includeDeleted: boolean
+    search?: string | undefined
+    countryCode?: string | undefined
+    ids?: string[] | undefined
+  }
 ): Promise<{ data: BankRow[]; hasMore: boolean }> {
   const where = {
+    ...(options.countryCode ? { countryCode: options.countryCode } : {}),
+    ...(options.ids?.length ? { id: { in: options.ids } } : {}),
     ...liveOnly(options.includeDeleted),
     ...nameSearch(options.search),
   }
@@ -92,9 +105,12 @@ export function listBanks(
 }
 
 export function createBank(data: {
+  countryCode: string
   name: string
   shortName: string | null
   bankCode: string
+  clearingSystem: string | null
+  institutionType: string
   swiftCode: string | null
   logoUrl: string | null
   headOffice: string | null
@@ -169,10 +185,53 @@ export function findBankBranchByTransit(
 export function listBankBranches(
   bankId: string,
   query: PaginationQuery,
-  options: { includeDeleted: boolean; search?: string | undefined }
+  options: {
+    includeDeleted: boolean
+    search?: string | undefined
+    ids?: string[] | undefined
+  }
 ): Promise<{ data: BankBranchRow[]; hasMore: boolean }> {
   const where = {
     bankId,
+    ...(options.ids?.length ? { id: { in: options.ids } } : {}),
+    ...liveOnly(options.includeDeleted),
+    ...nameSearch(options.search),
+  }
+
+  return paginateByCursor<BankBranchRow>({
+    query,
+    loadAnchor: (id) => findBankBranchById(id, options.includeDeleted),
+    cursorOf: (row) => row.createdAt,
+    fetch: ({ take, cursor, order }) =>
+      prisma.bankBranch.findMany({
+        where: cursor
+          ? {
+              AND: [where, { createdAt: { [cursor.direction]: cursor.value } }],
+            }
+          : where,
+        orderBy: { createdAt: order },
+        take,
+        select: BANK_BRANCH_SELECT,
+      }),
+  })
+}
+
+/**
+ * Cross-bank branch listing for batch resolution: one call carries every
+ * branch id on the page instead of one request per row.
+ */
+export function listBankBranchesGlobal(
+  query: PaginationQuery,
+  options: {
+    includeDeleted: boolean
+    search?: string | undefined
+    bankId?: string | undefined
+    ids?: string[] | undefined
+  }
+): Promise<{ data: BankBranchRow[]; hasMore: boolean }> {
+  const where = {
+    ...(options.bankId ? { bankId: options.bankId } : {}),
+    ...(options.ids?.length ? { id: { in: options.ids } } : {}),
     ...liveOnly(options.includeDeleted),
     ...nameSearch(options.search),
   }
@@ -211,9 +270,6 @@ export function createBankBranch(
   return prisma.bankBranch.create({
     data: {
       id: generateId('bankBranch'),
-      // `connect` rather than a bare `bankId`: setting the scalar selects
-      // Prisma's unchecked create input, which forbids the nested address write
-      // — and writing the address separately is what risks an orphan row.
       bank: { connect: { id: bankId } },
       name: data.name,
       transitNumber: data.transitNumber,
