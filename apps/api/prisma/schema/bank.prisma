@@ -5,7 +5,7 @@
 
 model Bank {
   id              String        @id @db.VarChar
-  countryCode     String        @default("JM") @map("country_code") @db.VarChar(2)
+  countryCode     String        @map("country_code") @db.VarChar(2)
   name            String        @db.VarChar
   shortName       String?       @map("short_name") @db.VarChar
   bankCode        String        @map("bank_code") @db.VarChar
