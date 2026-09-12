@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
+import { useCallback, useMemo, useState, useTransition } from 'react'
 
 import type {
   BankMatchCandidate,
@@ -29,31 +29,33 @@ export function StatementWorkspace({
   accountId,
   currency,
   canManage,
+  initialLines = [],
+  initialError = null,
 }: {
   accountId: string
   currency: string
   canManage: boolean
+  initialLines?: BankStatementLine[]
+  initialError?: string | null
 }) {
   const [isPending, startTransition] = useTransition()
-  const [lines, setLines] = useState<BankStatementLine[]>([])
+  const [lines, setLines] = useState<BankStatementLine[]>(initialLines)
   const [filter, setFilter] = useState<Filter>('all')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(initialError)
   const [candidateLineId, setCandidateLineId] = useState<string | null>(null)
   const [candidates, setCandidates] = useState<BankMatchCandidate[]>([])
 
   const load = useCallback(async () => {
     const result = await client.bankStatementLines.list(accountId)
     if (result.error || !result.data) {
-      setError(result.error?.message ?? 'Could not load statement transactions.')
+      setError(
+        result.error?.message ?? 'Could not load statement transactions.'
+      )
       return
     }
     setLines(result.data.data)
     setError(null)
   }, [accountId])
-
-  useEffect(() => {
-    void load()
-  }, [load])
 
   const visible = useMemo(
     () =>
@@ -61,7 +63,9 @@ export function StatementWorkspace({
     [filter, lines]
   )
 
-  function mutate(operation: () => Promise<{ error: { message: string } | null }>) {
+  function mutate(
+    operation: () => Promise<{ error: { message: string } | null }>
+  ) {
     setError(null)
     startTransition(async () => {
       const result = await operation()
@@ -120,7 +124,9 @@ export function StatementWorkspace({
       {visible.length === 0 ? (
         <p className="text-muted-foreground px-5 py-10 text-center text-sm">
           {lines.length === 0
-            ? 'No statement transactions imported yet.'
+            ? error
+              ? 'Statement transactions are currently unavailable.'
+              : 'No statement transactions imported yet.'
             : 'No statement transactions match this filter.'}
         </p>
       ) : (
@@ -169,7 +175,8 @@ export function StatementWorkspace({
 
                 {canManage ? (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {line.status === 'uncategorized' || line.status === 'recognized' ? (
+                    {line.status === 'uncategorized' ||
+                    line.status === 'recognized' ? (
                       <>
                         <Button
                           type="button"
@@ -196,7 +203,8 @@ export function StatementWorkspace({
                             )
                           }
                         >
-                          Record as {line.type === 'credit' ? 'deposit' : 'withdrawal'}
+                          Record as{' '}
+                          {line.type === 'credit' ? 'deposit' : 'withdrawal'}
                         </Button>
                         <Button
                           type="button"
@@ -204,21 +212,26 @@ export function StatementWorkspace({
                           variant="ghost"
                           disabled={isPending}
                           onClick={() =>
-                            mutate(() => client.bankStatementLines.exclude(line.id))
+                            mutate(() =>
+                              client.bankStatementLines.exclude(line.id)
+                            )
                           }
                         >
                           Exclude
                         </Button>
                       </>
                     ) : null}
-                    {line.status === 'matched' || line.status === 'categorized' ? (
+                    {line.status === 'matched' ||
+                    line.status === 'categorized' ? (
                       <Button
                         type="button"
                         size="sm"
                         variant="outline"
                         disabled={isPending}
                         onClick={() =>
-                          mutate(() => client.bankStatementLines.unmatch(line.id))
+                          mutate(() =>
+                            client.bankStatementLines.unmatch(line.id)
+                          )
                         }
                       >
                         Unmatch
@@ -231,7 +244,9 @@ export function StatementWorkspace({
                         variant="outline"
                         disabled={isPending}
                         onClick={() =>
-                          mutate(() => client.bankStatementLines.restore(line.id))
+                          mutate(() =>
+                            client.bankStatementLines.restore(line.id)
+                          )
                         }
                       >
                         Restore
@@ -242,7 +257,9 @@ export function StatementWorkspace({
 
                 {showingCandidates ? (
                   <div className="bg-muted/30 mt-4 rounded-lg border p-3">
-                    <p className="text-sm font-medium">Possible recorded matches</p>
+                    <p className="text-sm font-medium">
+                      Possible recorded matches
+                    </p>
                     {candidates.length === 0 ? (
                       <p className="text-muted-foreground mt-2 text-sm">
                         No suitable recorded cash movements were found.
@@ -261,13 +278,19 @@ export function StatementWorkspace({
                                   'Recorded bank transaction'}
                               </p>
                               <p className="text-muted-foreground mt-0.5 text-xs">
-                                {new Date(candidate.date * 1000).toLocaleDateString()} ·{' '}
-                                {candidate.confidence} match · score {candidate.score}
+                                {new Date(
+                                  candidate.date * 1000
+                                ).toLocaleDateString()}{' '}
+                                · {candidate.confidence} match · score{' '}
+                                {candidate.score}
                               </p>
                             </div>
                             <div className="flex items-center gap-3">
                               <span className="text-sm font-semibold tabular-nums">
-                                {formatMoney(candidate.availableAmount, currency)}
+                                {formatMoney(
+                                  candidate.availableAmount,
+                                  currency
+                                )}
                               </span>
                               <Button
                                 type="button"
