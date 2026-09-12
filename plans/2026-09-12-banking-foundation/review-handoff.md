@@ -2,139 +2,92 @@
 
 Read `plan.md` first, then `tracker.md`.
 
-## Branch
+## Branch and status
 
 `feature/banking`
 
-Do not open a PR on behalf of GPT-Web. The local orchestrator owns verification,
-repair, commit consolidation/review, and eventual PR/merge decisions.
+**Status:** implementation complete; local verification remains the merge gate.
 
-## Product / architecture direction
+Do not open a PR on behalf of GPT-Web. The local orchestrator owns Prisma generation/validation, migration application, typecheck, lint, tests, builds, contract checks, final repair, review, and eventual PR/merge decisions.
 
-This is a **statement-first Banking implementation**. Caribbean/Jamaican
-businesses must be able to use Banking end-to-end with downloaded/uploaded bank
-statements even when no live feed exists.
+## Architecture to preserve
 
-Core API owns the shared country-aware bank/branch directory. Billing owns an
-organization's financial `BankAccount` and Banking workflows. Billing stores
-opaque Core bank/branch IDs only; do not add cross-database foreign keys or copy
-Core institution/branch rows into Billing.
+This is a statement-first Banking implementation. The Jamaica/Caribbean path must work with uploaded statements even when no live bank feed exists.
 
-## Accounting boundary
+Core API owns country-aware financial-institution reference data. Billing owns each organization's financial accounts and banking workflows. Billing stores opaque Core bank/branch IDs only; do not add cross-database foreign keys or copy Core institution/branch rows into Billing.
 
-Do not collapse these:
+Routing identity and physical location are separate concerns. A trusted routing catalog can establish a branch/transit/routing identity before Core has a trusted structured/geocoded physical address. `BankBranch.addressId` is optional for that reason. Do not invent coordinates just to persist routing data.
 
-- `BankStatementLine`: immutable external bank evidence.
-- `BankTransaction`: canonical internally booked cash evidence.
-- match: links external evidence to already-booked cash.
-- categorization: creates a missing canonical financial operation, then matches.
-- reconciliation: statement-period agreement over canonical booked cash.
+Keep external statement evidence separate from canonical booked cash. Matching links the two; it does not recreate payments or mutate receivables. Reconciliation operates on booked cash for a statement period.
 
-Matching/unmatching must never duplicate a Payment or mutate customer AR.
-
-## What is now implemented on the branch
+## Implemented on the branch
 
 ### Core financial directory
 
-- `Bank` is country-aware (`countryCode`, `clearingSystem`, `institutionType`).
-- bank code uniqueness is `(countryCode, bankCode)`.
-- `Country` relates to banks.
-- hand-written Core migration exists with existing-bank backfill to `JM`.
-- Core financial directory wire schemas, serializer, repository and service are
-  updated to the country-aware shape.
-- duplicate bank-code checks are country-scoped.
-- directory bank-account create/update validates branch ownership by bank.
-- `bankListQuerySchema` exists for future country-filtered listing, but the route
-  still needs to be switched from the generic list schema before claiming the
-  filter is live.
+- `Bank` is country-aware with `countryCode`, `clearingSystem`, and `institutionType`.
+- bank-code uniqueness is `(countryCode, bankCode)` and existing Jamaica-oriented rows are backfilled to `JM` by the migration.
+- `/directory/banks` uses the bank-specific query schema and supports `country_code` filtering.
+- directory schemas, serializers, repository, service, and tests use the country-aware Bank shape.
+- branch ownership is validated when directory bank accounts are written.
+- `BankBranch.addressId` and nested address are nullable for routing-only reference rows.
+- an additive Core migration drops the `bank_branches.address_id` NOT NULL requirement.
+- routing-only branches serialize with null address fields.
 
-### Billing -> Core references
+### Versioned Jamaica reference catalog
 
-- Billing `BankAccount` now has optional opaque `directoryBankId` and
-  `directoryBranchId` fields plus an additive migration.
-- there are no Core foreign keys.
-- Billing API/serializers and `@876/billing` bank-account contracts expose the
-  IDs.
-- updating the bank while retaining an unspecified old branch is guarded so the
-  account cannot silently keep an incompatible branch reference.
-- there is intentionally no remote Core lookup in the Billing identity gateway;
-  add a dedicated bounded Core-directory client/host validation path when the
-  account-setup UI is built.
+- `apps/api/data/financial/jamaica-ach-2026-03.json` is the versioned routing catalog.
+- catalog validation covers the Jamaica composition of 5-digit transit + 3-digit institution code + 1 check digit -> 9-digit routing value.
+- the seed is explicit/idempotent and never runs as an implicit service-start mutation.
+- missing routing branches are created on a fresh Core database without requiring pre-existing geocoded addresses.
+- source free-form addresses remain source evidence until a trusted structured/geocoded enrichment flow exists.
+- tombstoned banks/branches stay tombstoned.
+- focused catalog/seed tests were authored but not executed from the connector seat.
 
-### Statement upload MVP
+### Billing / Core directory boundary
 
-- deterministic UTF-8 CSV/TSV parser.
-- explicit column mapping.
-- signed-amount and separate debit/credit layouts.
-- configurable date formats, decimal separators, and thousands separators.
-- configurable positive direction for credit-card-style statements.
-- currency precision comes from Billing's enabled currency registry.
-- decimal values convert to integer minor units without floating point.
-- preview returns normalized lines plus row-level errors without persistence.
-- import re-runs the same server parser and rejects the whole import when any row
-  is invalid.
-- normalized rows then enter the existing statement-import/dedupe/rule/matching
-  pipeline.
-- optional 876 Storage file ID + source name + mapping are retained as
-  provenance; raw file text is not stored in Billing.
-- focused parser tests were added but have not been executed locally.
+- Billing `BankAccount` stores optional opaque `directoryBankId` and `directoryBranchId` fields plus an additive migration.
+- Billing API and SDK contracts expose those references.
+- a dedicated bounded Core-directory provider handles bank/branch reads rather than overloading the identity gateway.
+- account create/update validates bank existence and branch ownership through Core.
+- changing a bank while silently retaining an incompatible branch is rejected.
 
-### Billing SDK
+### Statement import and Banking UI
 
-- Banking engine types and runtime response schemas exist.
-- Banking resources are registered on `create876Client`:
-  `bankStatementImports`, `bankStatementLines`, `bankTransfers`,
-  `bankReconciliations`, and `bankRules`.
-- raw file preview/import methods are available through the SDK.
-- full Banking account and manual transaction create/update responses now parse
-  through their full schemas instead of collapsing to minimal `{ object, id }`
-  shapes.
-- focused Banking SDK tests were added but have not been executed locally.
+- deterministic CSV/TSV parser with preview-before-import and server-side reparse.
+- signed amount and split debit/credit layouts.
+- date format, decimal separator, thousands separator, positive direction, description, payee, reference, external transaction ID, and running-balance mapping.
+- exact minor-unit conversion without floating point.
+- invalid rows block persistence instead of partially importing.
+- changing file or mapping invalidates the prior preview.
+- optional Storage file ID/source metadata are supported without persisting raw statement text in Billing.
+- account create/edit server-loads initial bank options; browser lookup is limited to the dependent bank -> branch interaction.
+- statement evidence is server-loaded on the account page and supports match/unmatch/categorize/exclude/restore interactions.
+- the previously dangling `/banking/:accountId/reconcile` action now has a real page/workspace using the existing reconciliation API.
+- reconciliation selects booked transactions by period, parses balances using exact minor-unit arithmetic, and exposes history/complete/reopen flows while the server enforces its invariants.
 
-## Local review priorities
+### SDK
 
-1. Run Prisma generation/validation first for both Core and Billing. Repair any
-   relation/type errors before touching UI.
-2. Apply both new hand-written migrations to a disposable database and inspect
-   the resulting indexes/FKs/defaults/backfills.
-3. Run Core API typecheck/lint/tests/build and add tests for country-scoped bank
-   uniqueness + branch ownership.
-4. Run Billing API typecheck/lint/boundaries/tests/build/contract checks. Pay
-   special attention to parser types, bigint transforms, Banking engine Prisma
-   transaction types, and response schema alignment.
-5. Run `@876/billing` typecheck/tests. Verify the Banking barrel exports and the
-   new resource response schemas.
-6. Wire the existing `bankListQuerySchema` to the `/directory/banks` route only
-   if desired; do not add `country_code` to every directory resource query.
-7. Add the versioned Jamaica institution/branch catalog from authoritative
-   BOJ/APL data before building the final account selector UI.
-8. Build account setup and statement upload/preview/import UX before considering
-   live-bank-feed UX.
+- Banking engine types/runtime schemas/resources are registered on `create876Client`.
+- Banking account and manual transaction create/update methods retain their full returned resources.
+- focused SDK tests were authored but not executed locally.
 
-## Jamaica model
+## Local verification priorities
 
-Use generic Core fields:
+1. Generate/validate both Prisma clients and run drift checks.
+2. Apply the Core country-aware-bank migration, Core optional-branch-location migration, and Billing Banking migrations to disposable databases.
+3. Run Core API typecheck/lint/tests/build, including the financial-directory route, country/ownership, and catalog/seed tests.
+4. Run Billing API typecheck/lint/boundaries/tests/build/API contract checks.
+5. Run `@876/billing` typecheck/tests.
+6. Run Billing app typecheck/lint/build and smoke `/banking/new`, account edit/detail, statement import/workspace, and reconciliation.
+7. Fix only demonstrated failures and preserve the bounded contexts above.
+8. Record exact command results before merge.
 
-- institution/bank code -> `Bank.bankCode`;
-- branch/transit code -> `BankBranch.transitNumber`;
-- full domestic routing number where published -> `BankBranch.routingNumber`;
-- clearing profile/network -> bank/catalog metadata.
+## Deliberately deferred, not merge blockers for this run
 
-Do not put Jamaican routing/check-digit composition logic inside generic Billing
-code. Country/clearing-system rules belong to the reference catalog layer.
+Live feeds, PDF/OCR, additional deterministic statement formats, saved mapping profiles, Storage upload of the original statement binary, trusted geocoded branch enrichment, other-country catalogs/selector UI, additional canonical-owner categorization actions, rule authoring UI, reconciliation export/reporting, and full bank-account-number storage remain follow-up work.
 
-## Known unverified areas
+## Verification honesty
 
-All connector-authored implementation remains locally unverified. In particular,
-review:
+GPT-Web did not run Prisma generation/validation, migrations, typecheck, lint, tests, builds, or API contract checks. Tests present in the branch are authored coverage, not passing-test claims.
 
-- Core and Billing Prisma schema validity after generation;
-- hand-written migration SQL and constraint/index names;
-- API route/schema response alignment;
-- Billing SDK barrel exports/resource schemas;
-- statement parser tests and date/number edge cases;
-- match/reconciliation bigint and Prisma transaction typing;
-- exact Core migration assumptions for existing Jamaican bank rows.
-
-Run the repository-approved verification commands listed in `plan.md`, repair all
-failures, and record actual results in `tracker.md` before merge.
+No PR was opened by GPT-Web.
