@@ -23,6 +23,45 @@ export async function retrieve(
         },
       },
       lines: true,
+      allocations: {
+        where: { reversedAt: null },
+        orderBy: { createdAt: 'asc' },
+        select: {
+          id: true,
+          amount: true,
+          createdAt: true,
+          updatedAt: true,
+          payment: {
+            select: {
+              id: true,
+              number: true,
+              paymentDate: true,
+              currency: true,
+              referenceNumber: true,
+              status: true,
+              paymentMode: { select: { id: true, name: true } },
+            },
+          },
+        },
+      },
+      creditNoteAllocations: {
+        where: { reversedAt: null },
+        orderBy: { createdAt: 'asc' },
+        select: {
+          id: true,
+          amount: true,
+          createdAt: true,
+          updatedAt: true,
+          creditNote: {
+            select: {
+              id: true,
+              number: true,
+              issueAt: true,
+              currency: true,
+            },
+          },
+        },
+      },
       lateFeeAssessment: {
         include: { sourceInvoice: { select: { id: true, number: true } } },
       },
