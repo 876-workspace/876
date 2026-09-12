@@ -10,6 +10,8 @@ import { formatDate, formatMoney } from '@/lib/format'
 import { SubscriptionInvoiceActions } from '@/features/subscriptions/components/subscription-invoice-actions'
 import { SubscriptionBillingItemAction } from '@/features/subscriptions/components/subscription-billing-item-action'
 
+export const metadata = { title: 'Billing' }
+
 export default async function SubscriptionBillingPage({
   params,
 }: {
