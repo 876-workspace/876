@@ -1,13 +1,21 @@
 'use client'
 
 import { accountingProviders } from './accounting-providers'
-import { bankAccounts } from './bank-accounts'
 import { addons } from './addons'
 import { auth } from './auth'
+import { bankAccounts } from './bank-accounts'
+import { bankDirectory } from './bank-directory'
+import {
+  bankReconciliations,
+  bankRules,
+  bankStatementImports,
+  bankStatementLines,
+} from './banking-engine'
 import { bankTransactions } from './bank-transactions'
 import { creditNotes } from './credit-notes'
 import { currencies } from './currencies'
 import { customers } from './customers'
+import { discounts } from './discounts'
 import { invoices } from './invoices'
 import { invoicePreferences } from './invoice-preferences'
 import { items } from './items'
@@ -29,7 +37,6 @@ import { roles } from './roles'
 import { salesReceipts } from './sales-receipts'
 import { subscriptions } from './subscriptions'
 import { salespeople } from './salespeople'
-import { discounts } from './discounts'
 import { support } from './support'
 import { taxAuthorities } from './tax-authorities'
 import { taxRates } from './tax-rates'
@@ -39,6 +46,11 @@ export const client = {
   addons,
   auth,
   bankAccounts,
+  bankDirectory,
+  bankReconciliations,
+  bankRules,
+  bankStatementImports,
+  bankStatementLines,
   bankTransactions,
   creditNotes,
   currencies,
