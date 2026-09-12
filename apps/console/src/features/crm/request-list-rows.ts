@@ -60,6 +60,10 @@ export function toRequestListRows({
       teamName: request.teamId
         ? (departmentsById.get(request.teamId)?.name ?? null)
         : null,
+      sourceApp: request.sourceApp,
+      relatedResourceType: request.relatedResourceType,
+      relatedResourceId: request.relatedResourceId,
+      relatedResourceSnapshot: request.relatedResourceSnapshot,
     }
   })
 }

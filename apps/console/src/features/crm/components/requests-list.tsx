@@ -10,7 +10,13 @@ import { RequestPriorityBadge } from './request-priority-badge'
 import { RequestChannelIcon } from './request-source-icon'
 import { RequestStatusBadge } from './request-status-badge'
 import { formatAge } from '../request-format'
+import { RelatedResourceMetadata, SourceAppMetadata } from '../request-attribution'
 import type { RequestChannel, RequestPriority, RequestStatus } from '../types'
+import type {
+  RelatedResourceSnapshot,
+  RelatedResourceType,
+  SourceApp,
+} from '@876/crm'
 
 export type RequestListRow = {
   id: string
@@ -26,6 +32,10 @@ export type RequestListRow = {
   assigneeName: string | null
   assigneeAvatar: string | null
   teamName: string | null
+  sourceApp: SourceApp | null | undefined
+  relatedResourceType: RelatedResourceType | null | undefined
+  relatedResourceId: string | null | undefined
+  relatedResourceSnapshot: RelatedResourceSnapshot | null | undefined
 }
 
 const OPEN_STATUSES = new Set<RequestStatus>(['OPEN', 'IN_PROGRESS'])
@@ -133,6 +143,19 @@ function RequestRow({
                 <span className="truncate">{request.teamName}</span>
               </>
             ) : null}
+            <span aria-hidden="true">·</span>
+            <span>
+              Source: <SourceAppMetadata sourceApp={request.sourceApp} />
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>
+              Related:{' '}
+              <RelatedResourceMetadata
+                type={request.relatedResourceType}
+                id={request.relatedResourceId}
+                snapshot={request.relatedResourceSnapshot}
+              />
+            </span>
           </div>
         </div>
 
