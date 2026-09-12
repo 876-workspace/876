@@ -1,3 +1,9 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Access Required',
+}
+
 export default async function NoAccessPage({
   searchParams,
 }: {

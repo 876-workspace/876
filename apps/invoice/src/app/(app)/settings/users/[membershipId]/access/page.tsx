@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+
 import { AppError } from '@876/ui/app-error'
 import { buildAccessEntries } from '@876/access-ui/entries'
 import { getInvoiceContext } from '@/lib/auth/context'
@@ -6,6 +8,10 @@ import { getWorkspace } from '@/lib/services/workspace'
 import type { AppMembership } from '@876/access-ui/member-types'
 import { loadMemberAppMemberships } from '../../_data'
 import { MemberAccessPanel } from '../_components/member-access-panel'
+
+export const metadata: Metadata = {
+  title: 'App Access',
+}
 
 async function loadRoles(orgId: string, memberships: AppMembership[]) {
   const workspace = await getWorkspace()

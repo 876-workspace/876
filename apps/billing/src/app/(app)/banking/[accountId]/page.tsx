@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -15,6 +16,10 @@ import { formatDate, formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'
 
 type Props = { params: Promise<{ accountId: string }> }
+
+export const metadata: Metadata = {
+  title: 'Bank Account',
+}
 
 export default async function BankAccountPage({ params }: Props) {
   const context = await requirePagePermission('banking:read')

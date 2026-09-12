@@ -1,9 +1,14 @@
+import type { Metadata } from 'next'
 import type { ComponentProps } from 'react'
 import { notFound } from 'next/navigation'
 
 import { DocumentLines } from '@/features/documents/components/document-lines'
 import { resolveQuote } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
+
+export const metadata: Metadata = {
+  title: 'Line Items',
+}
 
 export default async function QuoteLinesPage({
   params,

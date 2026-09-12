@@ -13,6 +13,8 @@ import {
 
 type Props = { params: Promise<{ requestId: string }> }
 
+export const metadata = { title: 'Request' }
+
 export default async function RequestConversationPage({ params }: Props) {
   const { requestId } = await params
   const [requestResult, notesResult, directory] = await Promise.all([

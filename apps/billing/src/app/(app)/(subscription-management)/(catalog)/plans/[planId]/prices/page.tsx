@@ -1,9 +1,14 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { PricesTable } from '@/features/catalog/components/prices-table'
 import { resolvePlan } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
+
+export const metadata: Metadata = {
+  title: 'Prices',
+}
 
 export default async function PlanPricesPage({
   params,

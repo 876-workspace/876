@@ -15,6 +15,8 @@ import { workspaceBase } from '@/features/orgs/app-workspaces'
 
 type Props = { params: Promise<{ orgSlug: string; requestId: string }> }
 
+export const metadata = { title: 'Request' }
+
 export default async function OrgRequestConversationPage({ params }: Props) {
   const { orgSlug, requestId } = await params
   const orgResult = await resolveOrgResult(orgSlug)

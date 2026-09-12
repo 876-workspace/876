@@ -2,15 +2,21 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Button, buttonVariants } from '@876/ui/button'
+import { buttonVariants } from '@876/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
-import { ChevronDownIcon, Copy, DocumentTextIcon, Printer } from '@876/ui/icons'
+import {
+  ChevronDownIcon,
+  Copy,
+  DocumentTextIcon,
+  Printer,
+} from '@876/ui/icons'
 import { cn } from '@876/ui/lib/utils'
+import { GoogleDrive } from '@876/ui/logos/google-drive'
 
 const COPY_CONFIRMATION_MS = 2000
 
@@ -66,18 +72,46 @@ export function DocumentShareControls({
     timer.current = setTimeout(() => setCopied(false), COPY_CONFIRMATION_MS)
   }, [documentLabel, sharePath])
 
+  const shareOnWhatsApp = useCallback(() => {
+    const url = new URL(sharePath, window.location.origin).toString()
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(url)}`,
+      '_blank',
+      'noopener,noreferrer'
+    )
+  }, [sharePath])
+
   return (
     <>
-      <Button
-        type="button"
-        variant="ghost"
-        disabled={disabled}
-        onClick={() => void copyLink()}
-        aria-live="polite"
-      >
-        <Copy className="size-4" />
-        {copied ? 'Copied' : 'Share'}
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className={cn(buttonVariants({ variant: 'ghost' }))}
+          aria-label="Share"
+          disabled={disabled}
+        >
+          <Copy className="size-4" />
+          {copied ? 'Copied' : 'Share'}
+          <ChevronDownIcon className="size-3.5" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="min-w-44">
+          <DropdownMenuItem onClick={() => void copyLink()}>
+            <Copy className="size-4" />
+            Copy link
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={shareOnWhatsApp}>
+            WhatsApp
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled className="flex-col items-start gap-1">
+            <span className="flex items-center gap-2">
+              <GoogleDrive className="size-4" />
+              876 Drive
+            </span>
+            <span className="text-muted-foreground pl-6 text-xs">
+              Save this file to your 876 Drive
+            </span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(buttonVariants({ variant: 'ghost' }))}

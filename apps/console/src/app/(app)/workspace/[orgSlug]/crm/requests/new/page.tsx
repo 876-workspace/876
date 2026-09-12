@@ -13,6 +13,8 @@ import { workspaceBase } from '@/features/orgs/app-workspaces'
 
 type Props = { params: Promise<{ orgSlug: string }> }
 
+export const metadata = { title: 'New Request' }
+
 export default async function NewRequestPage({ params }: Props) {
   const { orgSlug } = await params
   const [orgResult, session] = await Promise.all([

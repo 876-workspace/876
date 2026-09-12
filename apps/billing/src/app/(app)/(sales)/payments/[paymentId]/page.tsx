@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { PaymentDetailCard } from '@876/billing-ui/payment-detail-card'
@@ -7,6 +8,10 @@ import { formatDate, formatMoney } from '@/lib/format'
 import { service, type LegacyBillingRecord } from '@/lib/service'
 
 type Props = { params: Promise<{ paymentId: string }> }
+
+export const metadata: Metadata = {
+  title: 'Payment',
+}
 
 export default async function PaymentPage({ params }: Props) {
   const context = await requirePagePermission('payments:read')

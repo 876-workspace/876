@@ -1,9 +1,14 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import { PlatformUnavailable } from '@/components/platform-unavailable'
 import { getInvoiceContextResult } from '@/lib/auth/context'
 
 import { OnboardingForm } from './_components/onboarding-form'
+
+export const metadata: Metadata = {
+  title: 'Onboarding',
+}
 
 export default async function OnboardingPage() {
   const result = await getInvoiceContextResult()

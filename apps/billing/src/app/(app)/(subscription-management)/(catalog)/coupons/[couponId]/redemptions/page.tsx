@@ -1,9 +1,14 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { resolveCoupon } from '@/app/(app)/_lib/detail-data'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
+
+export const metadata: Metadata = {
+  title: 'Redemptions',
+}
 
 export default async function CouponRedemptionsPage({
   params,

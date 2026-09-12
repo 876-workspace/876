@@ -1,8 +1,13 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { AppError } from '@876/ui/app-error'
 import { DetailCardSection, DetailCardSectionTitle } from '@876/ui/detail-card'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { loadMember } from '../_data'
+
+export const metadata: Metadata = {
+  title: 'User Details',
+}
 
 export default async function MemberOverviewPage({
   params,

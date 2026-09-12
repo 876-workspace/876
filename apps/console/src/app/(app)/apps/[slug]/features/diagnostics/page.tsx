@@ -1,5 +1,6 @@
 import { workspace } from '@/lib/services/workspace'
 import { Suspense } from 'react'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
@@ -19,6 +20,13 @@ import { resolveApp } from '../../_data'
 type Props = {
   params: Promise<{ slug: string }>
   searchParams: Promise<{ organizationId?: string; userId?: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const app = await resolveApp(slug)
+  if (!app) return { title: 'Feature Diagnostics' }
+  return { title: `${app.name} Feature Diagnostics` }
 }
 
 export default async function FeatureDiagnosticsPage({

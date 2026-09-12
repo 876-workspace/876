@@ -6,6 +6,8 @@ type Props = {
   params: Promise<{ username: string }>
 }
 
+export const metadata = { title: 'New Contact' }
+
 export default async function NewContactPage({ params }: Props) {
   const { username } = await params
   const user = await resolveUser(username)

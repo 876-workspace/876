@@ -153,13 +153,16 @@ describe('DocumentToolbar', () => {
 
     // ACT
     await user.click(screen.getByRole('button', { name: 'Share' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Copy link' }))
 
     // ASSERT
     expect(writeText).toHaveBeenCalledTimes(1)
     expect(writeText).toHaveBeenCalledWith(
       'http://localhost:3000/invoices/inv_123'
     )
-    expect(await screen.findByRole('button', { name: 'Copied' })).toBeVisible()
+    expect(await screen.findByRole('button', { name: 'Share' })).toHaveTextContent(
+      'Copied'
+    )
 
     // AFTER — testing-library performs cleanup.
   })
@@ -179,6 +182,7 @@ describe('DocumentToolbar', () => {
 
     // ACT
     await user.click(screen.getByRole('button', { name: 'Share' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Copy link' }))
 
     // ASSERT
     expect(await screen.findByRole('alert')).toHaveTextContent(

@@ -1,8 +1,13 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { AddonsTable } from '@/features/catalog/components/addons-table'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
+
+export const metadata: Metadata = {
+  title: 'Add-ons',
+}
 
 export default async function ProductAddonsPage({
   params,

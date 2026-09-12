@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+
 import { AppError } from '@876/ui/app-error'
 import { DetailCardSection, DetailCardSectionTitle } from '@876/ui/detail-card'
 import type { FinanceMemberSummary } from '@876/billing-ui/panels/access/types'
@@ -10,6 +12,10 @@ import { getInvoiceBillingConfig } from '@/lib/services/billing-config'
 import { loadMember } from '../../_data'
 import { loadRoles } from '../../../roles/_data'
 import { FinanceMemberPanel } from '../_components/finance-member-panel'
+
+export const metadata: Metadata = {
+  title: 'Finance Access',
+}
 
 function memberName(member: { first_name?: string | null; last_name?: string | null; email?: string | null; user_id: string }) {
   return [member.first_name, member.last_name].filter(Boolean).join(' ') || member.email || member.user_id

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 
 import { AppError } from '@876/ui/app-error'
@@ -11,6 +12,10 @@ import type { FinanceMemberSummary } from '@876/billing-ui/panels/access/types'
 import { RoleSection } from '../_components/roles-section'
 import { loadFinanceMembers, loadRole } from '../_data'
 import { loadUsers } from '../../users/_data'
+
+export const metadata: Metadata = {
+  title: 'Role Details',
+}
 
 export default async function RoleDetailPage({ params }: { params: Promise<{ roleId: string }> }) {
   const context = await getInvoiceContextResult()

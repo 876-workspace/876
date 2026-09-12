@@ -3,6 +3,9 @@ import { PageBreadcrumb } from '@876/ui/page'
 
 import { resolveApp, resolveProduct } from '../../../../../_data'
 import { PriceForm } from '../../_components/price-form'
+
+export const metadata = { title: 'Edit Price' }
+
 export default async function EditPricePage({
   params,
 }: {

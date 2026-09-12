@@ -1,4 +1,5 @@
 import { getAppModuleRegistry } from '@876/core/modules'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { listAppModules, listModuleFeatures } from '@/lib/console/modules'
@@ -11,6 +12,13 @@ import type {
 } from '@/types/modules'
 
 type Props = { params: Promise<{ slug: string }> }
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const app = await resolveApp(slug)
+  if (!app) return { title: 'Modules' }
+  return { title: `${app.name} Modules` }
+}
 
 export default async function AppModulesPage({ params }: Props) {
   const { slug } = await params

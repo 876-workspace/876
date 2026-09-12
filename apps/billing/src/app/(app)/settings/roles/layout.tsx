@@ -1,10 +1,15 @@
 import { Suspense, type ReactNode } from 'react'
+import type { Metadata } from 'next'
 
 import { RolesShell } from '@876/billing-ui/panels/access/roles-shell'
 
 import { requirePagePermission } from '@/lib/auth/billing-context'
 
 import { RolesListData } from './_components/roles-list-data'
+
+export const metadata: Metadata = {
+  title: 'Roles',
+}
 
 export default async function RolesLayout({
   children,

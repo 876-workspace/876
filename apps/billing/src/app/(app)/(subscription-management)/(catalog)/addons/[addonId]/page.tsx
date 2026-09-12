@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { DetailField } from '@/components/patterns/detail/detail-field'
@@ -5,6 +6,10 @@ import { MetricCard } from '@/components/patterns/metric-card'
 import { resolveAddon } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate, formatPriceCadence } from '@/lib/format'
+
+export const metadata: Metadata = {
+  title: 'Add-on',
+}
 
 export default async function AddonDetailPage({
   params,
