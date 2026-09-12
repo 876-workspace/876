@@ -24,6 +24,7 @@ export function PaymentForm({
   defaultCurrency,
   initial,
   prefill,
+  returnHref,
 }: {
   customers: PaymentReceivedOption[]
   accounts: PaymentReceivedAccountOption[]
@@ -33,6 +34,7 @@ export function PaymentForm({
   defaultCurrency: string
   initial?: PaymentReceivedInitial
   prefill?: PaymentReceivedPrefill
+  returnHref?: string
 }) {
   const router = useRouter()
 
@@ -46,7 +48,10 @@ export function PaymentForm({
       }
     }
 
-    router.push(initial ? `/payments/${initial.id}` : `/payments/${result.data.id}`)
+    router.push(
+      returnHref ??
+        (initial ? `/payments/${initial.id}` : `/payments/${result.data.id}`)
+    )
     router.refresh()
     return { error: null }
   }
@@ -72,7 +77,7 @@ export function PaymentForm({
       prefill={prefill}
       onSubmit={save}
       onDelete={initial ? remove : undefined}
-      onCancel={() => router.back()}
+      onCancel={() => (returnHref ? router.push(returnHref) : router.back())}
     />
   )
 }
