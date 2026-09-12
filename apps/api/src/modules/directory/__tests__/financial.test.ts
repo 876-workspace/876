@@ -16,6 +16,7 @@ const {
   bankAccount,
   creditUnion,
   creditUnionBranch,
+  country,
   apiKey,
 } = vi.hoisted(() => ({
   bank: {
@@ -63,6 +64,7 @@ const {
     updateMany: vi.fn(),
     deleteMany: vi.fn(),
   },
+  country: { findUnique: vi.fn() },
   apiKey: { findUnique: vi.fn(), update: vi.fn() },
 }))
 
@@ -73,6 +75,7 @@ vi.mock('@/db/client', () => ({
     bankAccount,
     creditUnion,
     creditUnionBranch,
+    country,
     apiKey,
   },
   disconnectDb: vi.fn(),
@@ -94,9 +97,12 @@ const NOW = 1785000000
 function bankRow(overrides: Record<string, unknown> = {}) {
   return {
     id: 'bank_7fJ3',
+    countryCode: 'JM',
     name: 'National Commercial Bank',
     shortName: 'NCB',
     bankCode: '001',
+    clearingSystem: 'JACH',
+    institutionType: 'commercial_bank',
     swiftCode: 'JNCBJMKX',
     logoUrl: null,
     headOffice: '1-7 Knutsford Boulevard, Kingston 5',
@@ -110,9 +116,12 @@ function bankRow(overrides: Record<string, unknown> = {}) {
 const SERIALIZED_BANK = {
   object: 'bank',
   id: 'bank_7fJ3',
+  country_code: 'JM',
   name: 'National Commercial Bank',
   short_name: 'NCB',
   bank_code: '001',
+  clearing_system: 'JACH',
+  institution_type: 'commercial_bank',
   swift_code: 'JNCBJMKX',
   logo_url: null,
   head_office: '1-7 Knutsford Boulevard, Kingston 5',
@@ -209,6 +218,7 @@ beforeEach(() => {
     expiresAt: null,
   })
   apiKey.update.mockResolvedValue({})
+  country.findUnique.mockResolvedValue({ code: 'JM' })
 
   bank.findMany.mockResolvedValue([bankRow()])
   bank.findFirst.mockResolvedValue(bankRow())
@@ -271,6 +281,16 @@ describe('GET /directory/banks', () => {
       },
       error: null,
     })
+  })
+
+  it('filters banks by country when country_code is supplied', async () => {
+    await request(createApp()).get('/directory/banks?country_code=JM').set(KEY_ONLY)
+
+    expect(bank.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ countryCode: 'JM', deletedAt: null }),
+      })
+    )
   })
 
   it('filters out tombstoned rows for an app-key caller', async () => {
@@ -394,13 +414,13 @@ describe('POST /directory/banks', () => {
       data: null,
       error: {
         code: 'bank/duplicate-code',
-        message: 'A bank with this code already exists.',
+        message: 'A bank with this code already exists in the selected country.',
       },
     })
     expect(bank.create).not.toHaveBeenCalled()
   })
 
-  it('treats a soft-deleted row as still holding its code', async () => {
+  it('treats a soft-deleted row as still holding its country-scoped code', async () => {
     // The unique index covers tombstoned rows, so the lookup must include them
     // or a clear 409 becomes a constraint violation surfacing as a 500.
     bank.findFirst.mockResolvedValue(bankRow({ deletedAt: BigInt(NOW) }))
@@ -412,7 +432,9 @@ describe('POST /directory/banks', () => {
 
     expect(response.status).toBe(409)
     expect(bank.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { bankCode: '001' } })
+      expect.objectContaining({
+        where: { countryCode: 'JM', bankCode: '001' },
+      })
     )
   })
 
@@ -450,8 +472,6 @@ describe('POST /directory/banks', () => {
 
 describe('PATCH /directory/banks/:bank_id', () => {
   it('applies only the fields that were sent', async () => {
-    bank.findFirst.mockResolvedValue(null)
-
     await request(createApp())
       .patch('/directory/banks/bank_7fJ3')
       .set(ADMIN)
@@ -488,7 +508,9 @@ describe('PATCH /directory/banks/:bank_id', () => {
   })
 
   it('rejects taking another bank’s code', async () => {
-    bank.findFirst.mockResolvedValue(bankRow({ id: 'bank_other' }))
+    bank.findFirst
+      .mockResolvedValueOnce(bankRow())
+      .mockResolvedValueOnce(bankRow({ id: 'bank_other' }))
 
     const response = await request(createApp())
       .patch('/directory/banks/bank_7fJ3')
@@ -502,7 +524,6 @@ describe('PATCH /directory/banks/:bank_id', () => {
 
   it('answers 404 when the bank is gone', async () => {
     bank.findFirst.mockResolvedValue(null)
-    bank.findUnique.mockResolvedValue(null)
 
     const response = await request(createApp())
       .patch('/directory/banks/bank_missing')
@@ -564,6 +585,23 @@ describe('GET /directory/banks/:bank_id/branches', () => {
         total_count: null,
       },
       error: null,
+    })
+  })
+
+  it('serializes a routing-only branch without a fabricated location', async () => {
+    bankBranch.findMany.mockResolvedValue([
+      branchRow({ addressId: null, directoryAddress: null }),
+    ])
+
+    const response = await request(createApp())
+      .get('/directory/banks/bank_7fJ3/branches')
+      .set(KEY_ONLY)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data.data[0]).toEqual({
+      ...SERIALIZED_BRANCH,
+      address_id: null,
+      address: null,
     })
   })
 
