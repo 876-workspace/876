@@ -32,8 +32,6 @@ export function InvoiceActions({
   const editability = getInvoiceEditability(status)
   const paymentParams = new URLSearchParams({ customerId, invoiceId })
 
-  if (!canWrite && !canRecordPayment) return null
-
   return (
     <DocumentToolbar
       status={status}

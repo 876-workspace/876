@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 
 import { Link } from '../link'
+import { DocumentShareControls } from './document-share-controls'
 import { RECURRING_INTERVAL_UNITS } from '../recurring-invoice-form'
 
 import {
@@ -255,45 +256,12 @@ export function DocumentToolbar({
         </DropdownMenuContent>
       </DropdownMenu>
     ) : null,
-    <Button
+    <DocumentShareControls
       key="share"
-      type="button"
-      variant="ghost"
+      sharePath={sharePath}
+      documentLabel="invoice"
       disabled={isPending}
-      onClick={copyLink}
-      aria-live="polite"
-    >
-      <Copy className="size-4" />
-      {copied ? 'Copied' : 'Share'}
-    </Button>,
-    <DropdownMenu key="print">
-      <DropdownMenuTrigger
-        className={cn(buttonVariants({ variant: 'ghost' }))}
-        aria-label="PDF/Print"
-      >
-        <Printer className="size-4" />
-        PDF/Print
-        <ChevronDownIcon className="size-3.5" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-64">
-        <DropdownMenuItem onClick={() => window.print()}>
-          <Printer className="size-4" />
-          Print
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => window.print()}
-          className="flex-col items-start gap-1"
-        >
-          <span className="flex items-center gap-2">
-            <DocumentTextIcon className="size-4" />
-            Save as PDF
-          </span>
-          <span className="text-muted-foreground pl-6 text-xs">
-            Choose “Save as PDF” in the browser print dialog
-          </span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>,
+    />,
     collectible && recordPaymentHref ? (
       <Link
         key="record-payment"
@@ -306,9 +274,7 @@ export function DocumentToolbar({
     moreItems.length > 0 ? (
       <DropdownMenu key="more">
         <DropdownMenuTrigger
-          className={cn(
-            buttonVariants({ variant: 'outline', size: 'icon-sm' })
-          )}
+          className={cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }))}
           aria-label="More actions"
           disabled={isPending}
         >
@@ -365,13 +331,13 @@ export function DocumentToolbar({
 
   return (
     <div className="print:hidden">
-      <div className="flex flex-wrap items-center gap-1">
+      <div className="border-border flex min-h-11 flex-wrap items-center gap-0.5 border-b">
         {groups.map((group, index) => (
           <div key={index} className="flex items-center gap-1">
             {index > 0 ? (
               <span
                 aria-hidden
-                className="bg-border mx-1 h-4 w-px"
+                className="bg-border mx-1.5 h-5 w-px"
                 data-toolbar-divider
               />
             ) : null}

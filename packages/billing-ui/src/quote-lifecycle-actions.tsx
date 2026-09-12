@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 
 import { Link } from './link'
+import { DocumentShareControls } from './panels/document-share-controls'
 
 import {
   AlertDialog,
@@ -23,7 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@876/ui/dropdown-menu'
-import { MoreHorizontalIcon } from '@876/ui/icons'
+import { MoreHorizontalIcon, Pencil } from '@876/ui/icons'
 
 export type QuoteLifecycleStatus =
   'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELED'
@@ -36,6 +37,12 @@ export interface QuoteLifecycleActionResult {
 }
 
 export interface QuoteLifecycleActionsProps {
+  /**
+   * The quote's path in the host app. When given, Share and PDF/Print are
+   * rendered for every status — they depend on neither the quote's state nor
+   * the viewer's permissions.
+   */
+  sharePath?: string
   status: QuoteLifecycleStatus
   /** Derived from expiresAt so stale DRAFT/SENT rows cannot offer invalid actions. */
   isExpired: boolean
@@ -61,6 +68,7 @@ export function QuoteLifecycleActions({
   canConvert,
   editHref,
   convertedInvoiceHref,
+  sharePath,
   onAction,
 }: QuoteLifecycleActionsProps) {
   const [pending, startTransition] = useTransition()
@@ -80,19 +88,6 @@ export function QuoteLifecycleActions({
   const canEdit = Boolean(editHref) && canWrite && mutable && status === 'DRAFT'
   const canDeleteDraft = canDelete && mutable && status === 'DRAFT'
   const canConvertAccepted = canConvert && status === 'ACCEPTED'
-
-  if (
-    !convertedInvoiceHref &&
-    !canExpire &&
-    !canSend &&
-    !canAccept &&
-    !canDecline &&
-    !canCancel &&
-    !canEdit &&
-    !canDeleteDraft &&
-    !canConvertAccepted
-  )
-    return null
 
   const run = (action: QuoteLifecycleUiAction) =>
     startTransition(async () => {
@@ -126,7 +121,7 @@ export function QuoteLifecycleActions({
             ? 'Accept'
             : null
 
-  const hasMenuActions = canEdit || canResend || canCancel || canDeleteDraft
+  const hasMenuActions = canResend || canCancel || canDeleteDraft
 
   return (
     <>
@@ -158,6 +153,24 @@ export function QuoteLifecycleActions({
           </Button>
         ) : null}
 
+        {canEdit && editHref ? (
+          <Link
+            href={editHref}
+            className={buttonVariants({ variant: 'ghost' })}
+          >
+            <Pencil className="size-4" />
+            Edit
+          </Link>
+        ) : null}
+
+        {sharePath ? (
+          <DocumentShareControls
+            sharePath={sharePath}
+            documentLabel="quote"
+            disabled={pending}
+          />
+        ) : null}
+
         {hasMenuActions ? (
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -171,11 +184,6 @@ export function QuoteLifecycleActions({
               <MoreHorizontalIcon className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {canEdit && editHref ? (
-                <DropdownMenuItem render={<Link href={editHref} />}>
-                  Edit
-                </DropdownMenuItem>
-              ) : null}
               {canResend ? (
                 <DropdownMenuItem
                   disabled={pending}
@@ -192,7 +200,7 @@ export function QuoteLifecycleActions({
                   Cancel
                 </DropdownMenuItem>
               ) : null}
-              {canDeleteDraft && (canEdit || canResend || canCancel) ? (
+              {canDeleteDraft && (canResend || canCancel) ? (
                 <DropdownMenuSeparator />
               ) : null}
               {canDeleteDraft ? (

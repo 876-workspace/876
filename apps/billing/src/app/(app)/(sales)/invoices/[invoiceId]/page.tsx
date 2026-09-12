@@ -70,7 +70,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
 
   return (
     <Page className="print:p-0">
-      <header className="mx-auto mb-3 flex max-w-5xl items-start justify-between gap-3 print:hidden">
+      <header className="border-border flex h-14 items-center justify-between gap-3 border-b print:hidden">
         <h1 className="876-page-title text-balance">{invoice.number}</h1>
         <Link
           href="/invoices"
@@ -81,7 +81,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
         </Link>
       </header>
 
-      <div className="mx-auto mb-3 w-full max-w-5xl">
+      <div className="mb-4 w-full">
         <InvoiceActions
           invoiceId={invoice.id}
           customerId={invoice.customerId}

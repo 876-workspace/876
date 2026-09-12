@@ -95,7 +95,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
           className="print:hidden"
         />
         <DetailCardBody className="min-h-0 p-0 sm:p-0 print:overflow-visible print:p-0">
-          <div className="mx-auto w-full max-w-5xl px-5 pt-5 sm:px-6">
+          <div className="w-full px-2 sm:px-3">
             <InvoiceActions
               invoiceId={invoice.id}
               customerId={customerId}

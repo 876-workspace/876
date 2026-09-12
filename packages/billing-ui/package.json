@@ -270,6 +270,10 @@
     "./document/invoice-document-data": {
       "types": "./src/document/invoice-document-data.ts",
       "default": "./src/document/invoice-document-data.ts"
+    },
+    "./panels/document-share-controls": {
+      "types": "./src/panels/document-share-controls.tsx",
+      "default": "./src/panels/document-share-controls.tsx"
     }
   },
   "scripts": {

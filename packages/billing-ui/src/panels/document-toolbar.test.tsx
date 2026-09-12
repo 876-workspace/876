@@ -479,8 +479,10 @@ describe('DocumentToolbar', () => {
     const dividers = container.querySelectorAll('[data-toolbar-divider]')
 
     // ASSERT
-    // Edit │ Share │ PDF/Print │ Record payment — four groups, three dividers.
-    expect(dividers).toHaveLength(3)
+    // Edit │ Share + PDF/Print │ Record payment — three groups, two dividers.
+    // Share and PDF/Print sit in one group because they are the two controls
+    // that depend on neither status nor permission, and they share a component.
+    expect(dividers).toHaveLength(2)
     expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(
       ['Edit', 'Record payment']
     )
