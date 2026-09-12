@@ -31,6 +31,7 @@ import type {
   BankBranchCreate,
   BankBranchUpdate,
   BankCreate,
+  BankListQuery,
   BankUpdate,
   CreditUnion,
   CreditUnionBranch,
@@ -71,12 +72,13 @@ async function requireCountry(countryCode: string): Promise<void> {
 // --- Banks ---
 
 export async function listBanks(
-  query: ListDirectoryQuery,
+  query: BankListQuery,
   isInternal: boolean
 ): Promise<ListObject<Bank>> {
   const { data, hasMore } = await repository.listBanks(query, {
     includeDeleted: resolveIncludeDeleted(query.include_deleted, isInternal),
     search: query.search,
+    countryCode: query.country_code,
   })
 
   return listObject({
