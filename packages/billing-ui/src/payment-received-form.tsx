@@ -83,6 +83,7 @@ export interface PaymentReceivedFormProps {
   currencies: PaymentReceivedCurrencyOption[]
   invoices: PaymentReceivedInvoiceOption[]
   defaultCurrency: string
+  defaultDepositAccountId?: string
   initial?: PaymentReceivedInitial
   prefill?: PaymentReceivedPrefill
   onSubmit: (
@@ -100,6 +101,7 @@ export function PaymentReceivedForm({
   currencies,
   invoices,
   defaultCurrency,
+  defaultDepositAccountId,
   initial,
   prefill,
   onSubmit,
@@ -124,7 +126,7 @@ export function PaymentReceivedForm({
   const [error, setError] = useState<string | null>(null)
   const [customerId, setCustomerId] = useState(initialCustomerId)
   const [currency, setCurrency] = useState(initialCurrency)
-  const [accountId, setAccountId] = useState(initial?.depositAccountId ?? '')
+  const [accountId, setAccountId] = useState(initial?.depositAccountId ?? defaultDepositAccountId ?? '')
   const [modeId, setModeId] = useState(
     initial?.paymentModeId ?? modes[0]?.value ?? ''
   )

@@ -13,6 +13,9 @@ import type {
   BankStatementMatch,
   BankStatementMatchParams,
   BankStatementPreview,
+  BankDeposit,
+  BankDepositCreateParams,
+  BankDepositList,
   StatementFileImportParams,
   StatementFilePreviewParams,
 } from '@876/billing'
@@ -113,6 +116,24 @@ export const bankReconciliations = {
   },
 }
 
+export const bankDeposits = {
+  list() {
+    return request<BankDepositList>('/api/banking/deposits')
+  },
+  create(params: BankDepositCreateParams) {
+    return request<BankDeposit>('/api/banking/deposits', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    })
+  },
+  retrieve(id: string) {
+    return request<BankDeposit>(depositPath(id))
+  },
+  void(id: string) {
+    return request<BankDeposit>(`${depositPath(id)}/void`, { method: 'POST' })
+  },
+}
+
 export const bankRules = {
   list() {
     return request<BankRuleList>('/api/v1/banking/rules')
@@ -125,3 +146,5 @@ export const bankRules = {
     })
   },
 }
+const depositPath = (id: string) =>
+  `/api/banking/deposits/${encodeURIComponent(id)}`

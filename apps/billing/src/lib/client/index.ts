@@ -7,6 +7,7 @@ import { bankAccounts } from './bank-accounts'
 import { bankDirectory } from './bank-directory'
 import {
   bankReconciliations,
+  bankDeposits,
   bankRules,
   bankStatementImports,
   bankStatementLines,
@@ -48,6 +49,7 @@ export const client = {
   bankAccounts,
   bankDirectory,
   bankReconciliations,
+  bankDeposits,
   bankRules,
   bankStatementImports,
   bankStatementLines,

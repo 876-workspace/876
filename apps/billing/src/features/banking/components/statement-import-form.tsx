@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 import type {
@@ -104,7 +104,12 @@ export function StatementImportForm({
     useState<DecimalSeparator>('.')
   const [thousandsSeparator, setThousandsSeparator] =
     useState<ThousandsSeparator>(',')
-  const [preview, setPreview] = useState<BankStatementPreview | null>(null)
+  const [previewResult, setPreviewResult] = useState<{
+    content: string
+    format: Format
+    mapping: StatementFileMapping
+    data: BankStatementPreview
+  } | null>(null)
 
   const mapping = useMemo<StatementFileMapping | null>(() => {
     if (!dateColumn) return null
@@ -151,11 +156,12 @@ export function StatementImportForm({
     thousandsSeparator,
   ])
 
-  // A preview certifies exactly one file + mapping. Any edit invalidates it so
-  // import can never silently use a mapping the user did not preview.
-  useEffect(() => {
-    setPreview(null)
-  }, [content, format, mapping])
+  const preview =
+    previewResult?.content === content &&
+    previewResult.format === format &&
+    previewResult.mapping === mapping
+      ? previewResult.data
+      : null
 
   async function chooseFile(file: File | null) {
     setError(null)
@@ -245,7 +251,7 @@ export function StatementImportForm({
         setError(result.error?.message ?? 'Could not preview this statement.')
         return
       }
-      setPreview(result.data)
+      setPreviewResult({ content, format, mapping, data: result.data })
     })
   }
 
