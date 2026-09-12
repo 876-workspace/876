@@ -8,6 +8,8 @@ import { OnboardingEditor } from './_components/onboarding-editor'
 
 type Props = { params: Promise<{ slug: string }> }
 
+export const metadata = { title: 'Onboarding' }
+
 export default function OrganizationOnboardingPage({ params }: Props) {
   return (
     <Suspense fallback={<Skeleton className="h-96 w-full rounded-lg" />}>
