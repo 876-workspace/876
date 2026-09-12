@@ -23,9 +23,10 @@ Seeds platform-owned catalogs/bootstrap records idempotently. Provisioning
 profiles/manifests are intentionally excluded: they are database configuration
 initialized through an explicit environment import, not ordinary seed ownership.
 
-The financialDirectory seed loads versioned country-aware bank reference data.
-For Jamaica it enriches only branches that already have trusted Core location
-data; it never invents coordinates for routing-catalog entries.
+The financialDirectory seed loads versioned country-aware bank and routing-branch
+reference data. Routing identity does not require a physical location; trusted
+structured/geocoded branch addresses can be enriched independently and the seed
+never invents coordinates.
 
 Options:
   --only=<names>  Run only the named seeds (comma-separated).
