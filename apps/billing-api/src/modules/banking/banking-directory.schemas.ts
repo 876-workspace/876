@@ -9,6 +9,7 @@ export const bankingDirectoryBankSchema = z.object({
   bankCode: z.string(),
   clearingSystem: z.string().nullable(),
   institutionType: z.string(),
+  logoUrl: z.string().nullable(),
 })
 
 export const bankingDirectoryBranchSchema = z.object({
@@ -22,6 +23,33 @@ export const bankingDirectoryBranchSchema = z.object({
 
 export const bankingDirectoryBanksQuerySchema = z.object({
   countryCode: z.string().trim().length(2).toUpperCase().default('JM'),
+  ids: z
+    .string()
+    .trim()
+    .min(1)
+    .transform((value) =>
+      value
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    )
+    .pipe(z.array(z.string()).min(1).max(100))
+    .optional(),
+})
+
+export const bankingDirectoryBranchesQuerySchema = z.object({
+  ids: z
+    .string()
+    .trim()
+    .min(1)
+    .transform((value) =>
+      value
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    )
+    .pipe(z.array(z.string()).min(1).max(100))
+    .optional(),
 })
 
 export const bankingDirectoryBankParamsSchema = z.object({

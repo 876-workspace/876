@@ -17,6 +17,7 @@ export const BankDirectoryBankSchema = z.strictObject({
   bankCode: z.string(),
   clearingSystem: z.string().nullable(),
   institutionType: z.string(),
+  logoUrl: z.string().nullable(),
 }) satisfies z.ZodType<BankDirectoryBank>
 
 export const BankDirectoryBranchSchema = z.strictObject({

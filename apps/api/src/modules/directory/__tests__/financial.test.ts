@@ -965,6 +965,90 @@ describe('credit unions', () => {
   })
 })
 
+describe('bank identity fields and batch ids', () => {
+  it('exposes the bank short name and logo url on the list', async () => {
+    bank.findMany.mockResolvedValue([
+      bankRow({ shortName: 'NCB', logoUrl: 'https://cdn.876.test/ncb.png' }),
+    ])
+
+    const response = await request(createApp())
+      .get('/directory/banks')
+      .set(KEY_ONLY)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data.data[0]).toEqual({
+      ...SERIALIZED_BANK,
+      short_name: 'NCB',
+      logo_url: 'https://cdn.876.test/ncb.png',
+    })
+  })
+
+  it('exposes branch transit and routing numbers on the list', async () => {
+    bankBranch.findMany.mockResolvedValue([
+      branchRow({ transitNumber: '00412', routingNumber: '0820012' }),
+    ])
+
+    const response = await request(createApp())
+      .get('/directory/banks/bank_7fJ3/branches')
+      .set(KEY_ONLY)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data.data[0]).toEqual({
+      ...SERIALIZED_BRANCH,
+      transit_number: '00412',
+      routing_number: '0820012',
+    })
+  })
+
+  it('filters banks by ids when a batch selector is supplied', async () => {
+    await request(createApp())
+      .get('/directory/banks?ids=bank_7fJ3,bank_other')
+      .set(KEY_ONLY)
+
+    expect(bank.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: { in: ['bank_7fJ3', 'bank_other'] },
+          deletedAt: null,
+        }),
+      })
+    )
+  })
+
+  it('filters a bank’s branches by ids when a batch selector is supplied', async () => {
+    await request(createApp())
+      .get('/directory/banks/bank_7fJ3/branches?ids=bkbr_5t,bkbr_6t')
+      .set(KEY_ONLY)
+
+    expect(bankBranch.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          bankId: 'bank_7fJ3',
+          id: { in: ['bkbr_5t', 'bkbr_6t'] },
+        }),
+      })
+    )
+  })
+
+  it('resolves branches across banks with one ids request', async () => {
+    const response = await request(createApp())
+      .get('/directory/bank-branches?ids=bkbr_5t,bkbr_6t')
+      .set(KEY_ONLY)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data.url).toBe('/directory/bank-branches')
+    expect(bankBranch.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: { in: ['bkbr_5t', 'bkbr_6t'] },
+        }),
+      })
+    )
+    // No parent lookup: the cross-bank list must not 404 on a bank id.
+    expect(bank.findFirst).not.toHaveBeenCalled()
+  })
+})
+
 describe('route shape', () => {
   it('answers 404, not 401, for an unknown path under the prefix', async () => {
     // Guards attach per route, so an unknown path must not be answered by a

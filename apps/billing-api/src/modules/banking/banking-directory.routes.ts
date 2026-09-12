@@ -15,6 +15,7 @@ import {
   bankingDirectoryBankSchema,
   bankingDirectoryBanksQuerySchema,
   bankingDirectoryBranchSchema,
+  bankingDirectoryBranchesQuerySchema,
 } from './banking-directory.schemas'
 
 const invalid: ResponseSpec = {
@@ -46,7 +47,10 @@ export function createBankingDirectoryRouter(resolveGuards: GuardResolver) {
     operationId: 'billing-banking_list_directory_branches',
     summary: 'List branches for a shared-directory bank',
     security: { kind: 'tenant', permission: 'banking:read' },
-    request: { params: bankingDirectoryBankParamsSchema },
+    request: {
+      params: bankingDirectoryBankParamsSchema,
+      query: bankingDirectoryBranchesQuerySchema,
+    },
     responses: {
       200: {
         description: 'Bank branch directory list returned.',
@@ -57,6 +61,24 @@ export function createBankingDirectoryRouter(resolveGuards: GuardResolver) {
       '4XX': invalid,
     },
     handler: bankingDirectoryController.listBranches,
+  })
+
+  api.get({
+    path: '/banking/directory/branches',
+    operationId: 'billing-banking_list_directory_branches_by_ids',
+    summary: 'List shared-directory branches across banks by ids',
+    security: { kind: 'tenant', permission: 'banking:read' },
+    request: { query: bankingDirectoryBranchesQuerySchema },
+    responses: {
+      200: {
+        description: 'Bank branch directory list returned.',
+        schema: successEnvelopeSchema(
+          listObjectSchema(bankingDirectoryBranchSchema)
+        ),
+      },
+      '4XX': invalid,
+    },
+    handler: bankingDirectoryController.listBranchesByIds,
   })
 
   return api.router

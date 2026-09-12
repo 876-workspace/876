@@ -169,6 +169,13 @@ export const LIST_BANK_BRANCHES_DESCRIPTION =
 
 export const LIST_BANK_BRANCHES_RESPONSES = { ..._API_KEY_401 } as const
 
+export const LIST_ALL_BANK_BRANCHES_SUMMARY = 'List bank branches across banks'
+
+export const LIST_ALL_BANK_BRANCHES_DESCRIPTION =
+  'Returns a paginated list of bank branches across banks. Accepts an `ids` batch selector so one call resolves every branch on a page. Protected by API key.'
+
+export const LIST_ALL_BANK_BRANCHES_RESPONSES = { ..._API_KEY_401 } as const
+
 export const LIST_CREDIT_UNIONS_SUMMARY = 'List credit unions'
 
 export const LIST_CREDIT_UNIONS_DESCRIPTION =

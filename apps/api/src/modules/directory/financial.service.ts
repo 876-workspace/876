@@ -28,7 +28,9 @@ import type {
   BankAccountCreate,
   BankAccountUpdate,
   BankBranch,
+  BankBranchBatchQuery,
   BankBranchCreate,
+  BankBranchListQuery,
   BankBranchUpdate,
   BankCreate,
   BankListQuery,
@@ -79,6 +81,7 @@ export async function listBanks(
     includeDeleted: resolveIncludeDeleted(query.include_deleted, isInternal),
     search: query.search,
     countryCode: query.country_code,
+    ids: query.ids,
   })
 
   return listObject({
@@ -202,7 +205,7 @@ export async function deleteBank(
 
 export async function listBankBranches(
   bankId: string,
-  query: ListDirectoryQuery,
+  query: BankBranchListQuery,
   isInternal: boolean
 ): Promise<ListObject<BankBranch>> {
   const includeDeleted = resolveIncludeDeleted(
@@ -217,12 +220,31 @@ export async function listBankBranches(
   const { data, hasMore } = await repository.listBankBranches(bankId, query, {
     includeDeleted,
     search: query.search,
+    ids: query.ids,
   })
 
   return listObject({
     data: data.map(serializeBankBranch),
     hasMore,
     url: `/directory/banks/${bankId}/branches`,
+  })
+}
+
+export async function listBankBranchesGlobal(
+  query: BankBranchBatchQuery,
+  isInternal: boolean
+): Promise<ListObject<BankBranch>> {
+  const { data, hasMore } = await repository.listBankBranchesGlobal(query, {
+    includeDeleted: resolveIncludeDeleted(query.include_deleted, isInternal),
+    search: query.search,
+    bankId: query.bank_id,
+    ids: query.ids,
+  })
+
+  return listObject({
+    data: data.map(serializeBankBranch),
+    hasMore,
+    url: '/directory/bank-branches',
   })
 }
 

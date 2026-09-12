@@ -45,6 +45,7 @@ function bankFrom(value: unknown): CoreDirectoryBank | null {
     clearingSystem:
       typeof record.clearing_system === 'string' ? record.clearing_system : null,
     institutionType: record.institution_type,
+    logoUrl: typeof record.logo_url === 'string' ? record.logo_url : null,
   }
 }
 
@@ -79,9 +80,17 @@ function listItems(payload: unknown, path: string): unknown[] {
   return record.data
 }
 
+function idsParam(ids: string[] | undefined): string {
+  if (!ids?.length) return ''
+  return `&ids=${encodeURIComponent(ids.join(','))}`
+}
+
 export class HttpCoreDirectoryGateway implements CoreDirectoryGateway {
-  async listBanks(countryCode: string): Promise<CoreDirectoryBank[]> {
-    const path = `/directory/banks?country_code=${encodeURIComponent(countryCode)}&limit=100`
+  async listBanks(
+    countryCode: string,
+    ids?: string[]
+  ): Promise<CoreDirectoryBank[]> {
+    const path = `/directory/banks?country_code=${encodeURIComponent(countryCode)}&limit=100${idsParam(ids)}`
     const payload = await this.request(path)
     return listItems(payload, path).map((value) => {
       const bank = bankFrom(value)
@@ -94,8 +103,25 @@ export class HttpCoreDirectoryGateway implements CoreDirectoryGateway {
     })
   }
 
-  async listBranches(bankId: string): Promise<CoreDirectoryBranch[]> {
-    const path = `/directory/banks/${encodeURIComponent(bankId)}/branches?limit=100`
+  async listBranches(
+    bankId: string,
+    ids?: string[]
+  ): Promise<CoreDirectoryBranch[]> {
+    const path = `/directory/banks/${encodeURIComponent(bankId)}/branches?limit=100${idsParam(ids)}`
+    const payload = await this.request(path)
+    return listItems(payload, path).map((value) => {
+      const branch = branchFrom(value)
+      if (!branch)
+        throw new CoreDirectoryUnavailableError({
+          reason: 'invalid-response',
+          path,
+        })
+      return branch
+    })
+  }
+
+  async listBranchesByIds(ids: string[]): Promise<CoreDirectoryBranch[]> {
+    const path = `/directory/bank-branches?limit=100${idsParam(ids)}`
     const payload = await this.request(path)
     return listItems(payload, path).map((value) => {
       const branch = branchFrom(value)

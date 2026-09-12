@@ -9,6 +9,7 @@ export interface BankDirectoryBank {
   bankCode: string
   clearingSystem: string | null
   institutionType: string
+  logoUrl: string | null
 }
 
 export interface BankDirectoryBranch {

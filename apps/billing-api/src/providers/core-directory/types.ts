@@ -6,6 +6,7 @@ export type CoreDirectoryBank = {
   bankCode: string
   clearingSystem: string | null
   institutionType: string
+  logoUrl: string | null
 }
 
 export type CoreDirectoryBranch = {
@@ -17,8 +18,9 @@ export type CoreDirectoryBranch = {
 }
 
 export type CoreDirectoryGateway = {
-  listBanks(countryCode: string): Promise<CoreDirectoryBank[]>
-  listBranches(bankId: string): Promise<CoreDirectoryBranch[]>
+  listBanks(countryCode: string, ids?: string[]): Promise<CoreDirectoryBank[]>
+  listBranches(bankId: string, ids?: string[]): Promise<CoreDirectoryBranch[]>
+  listBranchesByIds(ids: string[]): Promise<CoreDirectoryBranch[]>
   bank(bankId: string): Promise<CoreDirectoryBank | null>
   branch(branchId: string): Promise<CoreDirectoryBranch | null>
 }

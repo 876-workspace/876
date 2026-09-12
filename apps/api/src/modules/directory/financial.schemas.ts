@@ -18,11 +18,41 @@ import {
 
 const countryCodeSchema = z.string().trim().length(2).toUpperCase()
 
+/**
+ * Batch selector for page-wide enrichment (see data-loading.md: one call per
+ * kind, never one request per row). Comma-separated on the wire, matching the
+ * existing `user_ids` convention; capped at 100 like the users list.
+ */
+const idsQueryParam = z
+  .string()
+  .transform((value) =>
+    value
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+  )
+  .pipe(z.array(z.string()).max(100))
+  .optional()
+
 export const bankListQuerySchema = listDirectoryQuerySchema.extend({
   country_code: countryCodeSchema.optional(),
+  ids: idsQueryParam,
 })
 
 export type BankListQuery = z.infer<typeof bankListQuerySchema>
+
+export const bankBranchListQuerySchema = listDirectoryQuerySchema.extend({
+  ids: idsQueryParam,
+})
+
+export type BankBranchListQuery = z.infer<typeof bankBranchListQuerySchema>
+
+export const bankBranchBatchQuerySchema = listDirectoryQuerySchema.extend({
+  bank_id: z.string().min(1).optional(),
+  ids: idsQueryParam,
+})
+
+export type BankBranchBatchQuery = z.infer<typeof bankBranchBatchQuerySchema>
 
 export const bankSchema = z
   .object({

@@ -35,7 +35,9 @@ import {
   bankAccountCreateSchema,
   bankAccountSchema,
   bankAccountUpdateSchema,
+  bankBranchBatchQuerySchema,
   bankBranchCreateSchema,
+  bankBranchListQuerySchema,
   bankBranchSchema,
   bankBranchUpdateSchema,
   bankCreateSchema,
@@ -82,53 +84,75 @@ export function registerFinancialRoutes(resolveGuards: GuardResolver) {
     operationId: 'directory-retrieve_bank',
     summary: docs.RETRIEVE_BANK_SUMMARY,
     description: docs.RETRIEVE_BANK_DESCRIPTION,
-    request: { params: bankIdParamsSchema, query: retrieveDirectoryQuerySchema },
+    request: {
+      params: bankIdParamsSchema,
+      query: retrieveDirectoryQuerySchema,
+    },
     responses: {
       200: { description: 'Bank returned.', schema: bankSchema },
+      404: { description: 'Bank not found.' },
     },
     handler: controller.retrieveBank,
   })
 
   api.post({
     path: '/banks',
-    middleware: [attachPrincipal],
+    security: 'admin',
     operationId: 'directory-create_bank',
     summary: docs.CREATE_BANK_SUMMARY,
     description: docs.CREATE_BANK_DESCRIPTION,
-    security: 'admin',
     request: { body: bankCreateSchema },
     responses: {
       201: { description: 'Bank created.', schema: bankSchema },
+      409: { description: 'A bank with this code already exists.' },
     },
     handler: controller.createBank,
   })
 
   api.patch({
     path: '/banks/:bank_id',
-    middleware: [attachPrincipal],
+    security: 'admin',
     operationId: 'directory-update_bank',
     summary: docs.UPDATE_BANK_SUMMARY,
     description: docs.UPDATE_BANK_DESCRIPTION,
-    security: 'admin',
     request: { params: bankIdParamsSchema, body: bankUpdateSchema },
     responses: {
       200: { description: 'Bank updated.', schema: bankSchema },
+      404: { description: 'Bank not found.' },
     },
     handler: controller.updateBank,
   })
 
   api.delete({
     path: '/banks/:bank_id',
-    middleware: [attachPrincipal],
+    security: 'admin',
     operationId: 'directory-delete_bank',
     summary: docs.DELETE_BANK_SUMMARY,
     description: docs.DELETE_BANK_DESCRIPTION,
-    security: 'admin',
     request: { params: bankIdParamsSchema },
     responses: {
       200: { description: 'Bank deleted.', schema: bankDeletedSchema },
+      404: { description: 'Bank not found.' },
     },
     handler: controller.deleteBank,
+  })
+
+  // --- Bank branches ---
+
+  api.get({
+    path: '/bank-branches',
+    middleware: [attachPrincipal],
+    operationId: 'directory-list_all_bank_branches',
+    summary: docs.LIST_ALL_BANK_BRANCHES_SUMMARY,
+    description: docs.LIST_ALL_BANK_BRANCHES_DESCRIPTION,
+    request: { query: bankBranchBatchQuerySchema },
+    responses: {
+      200: {
+        description: 'Bank branch list returned.',
+        schema: listObjectSchema(bankBranchSchema),
+      },
+    },
+    handler: controller.listBankBranchesGlobal,
   })
 
   api.get({
@@ -137,28 +161,15 @@ export function registerFinancialRoutes(resolveGuards: GuardResolver) {
     operationId: 'directory-list_bank_branches',
     summary: docs.LIST_BANK_BRANCHES_SUMMARY,
     description: docs.LIST_BANK_BRANCHES_DESCRIPTION,
-    request: { params: bankIdParamsSchema, query: listDirectoryQuerySchema },
+    request: { params: bankIdParamsSchema, query: bankBranchListQuerySchema },
     responses: {
       200: {
         description: 'Bank branch list returned.',
         schema: listObjectSchema(bankBranchSchema),
       },
+      404: { description: 'Bank not found.' },
     },
     handler: controller.listBankBranches,
-  })
-
-  api.post({
-    path: '/banks/:bank_id/branches',
-    middleware: [attachPrincipal],
-    operationId: 'directory-create_bank_branch',
-    summary: docs.CREATE_BANK_BRANCH_SUMMARY,
-    description: docs.CREATE_BANK_BRANCH_DESCRIPTION,
-    security: 'admin',
-    request: { params: bankIdParamsSchema, body: bankBranchCreateSchema },
-    responses: {
-      201: { description: 'Bank branch created.', schema: bankBranchSchema },
-    },
-    handler: controller.createBankBranch,
   })
 
   api.get({
@@ -172,37 +183,258 @@ export function registerFinancialRoutes(resolveGuards: GuardResolver) {
       query: retrieveDirectoryQuerySchema,
     },
     responses: {
-      200: { description: 'Bank branch returned.', schema: bankBranchSchema },
+      200: {
+        description: 'Bank branch returned.',
+        schema: bankBranchSchema,
+      },
+      404: { description: 'Bank branch not found.' },
     },
     handler: controller.retrieveBankBranch,
   })
 
+  api.post({
+    path: '/banks/:bank_id/branches',
+    security: 'admin',
+    operationId: 'directory-create_bank_branch',
+    summary: docs.CREATE_BANK_BRANCH_SUMMARY,
+    description: docs.CREATE_BANK_BRANCH_DESCRIPTION,
+    request: { params: bankIdParamsSchema, body: bankBranchCreateSchema },
+    responses: {
+      201: {
+        description: 'Bank branch created.',
+        schema: bankBranchSchema,
+      },
+      404: { description: 'Bank not found.' },
+      409: {
+        description:
+          'A branch with this transit number already exists for this bank.',
+      },
+    },
+    handler: controller.createBankBranch,
+  })
+
   api.patch({
     path: '/bank-branches/:branch_id',
-    middleware: [attachPrincipal],
+    security: 'admin',
     operationId: 'directory-update_bank_branch',
     summary: docs.UPDATE_BANK_BRANCH_SUMMARY,
     description: docs.UPDATE_BANK_BRANCH_DESCRIPTION,
-    security: 'admin',
     request: { params: branchIdParamsSchema, body: bankBranchUpdateSchema },
     responses: {
-      200: { description: 'Bank branch updated.', schema: bankBranchSchema },
+      200: {
+        description: 'Bank branch updated.',
+        schema: bankBranchSchema,
+      },
+      404: { description: 'Bank branch not found.' },
     },
     handler: controller.updateBankBranch,
   })
 
   api.delete({
     path: '/bank-branches/:branch_id',
-    middleware: [attachPrincipal],
+    security: 'admin',
     operationId: 'directory-delete_bank_branch',
     summary: docs.DELETE_BANK_BRANCH_SUMMARY,
     description: docs.DELETE_BANK_BRANCH_DESCRIPTION,
-    security: 'admin',
     request: { params: branchIdParamsSchema },
     responses: {
-      200: { description: 'Bank branch deleted.', schema: bankBranchDeletedSchema },
+      200: {
+        description: 'Bank branch deleted.',
+        schema: bankBranchDeletedSchema,
+      },
+      404: { description: 'Bank branch not found.' },
     },
     handler: controller.deleteBankBranch,
+  })
+
+  // --- Credit unions ---
+
+  api.get({
+    path: '/credit-unions',
+    middleware: [attachPrincipal],
+    operationId: 'directory-list_credit_unions',
+    summary: docs.LIST_CREDIT_UNIONS_SUMMARY,
+    description: docs.LIST_CREDIT_UNIONS_DESCRIPTION,
+    request: { query: listDirectoryQuerySchema },
+    responses: {
+      200: {
+        description: 'Credit union list returned.',
+        schema: listObjectSchema(creditUnionSchema),
+      },
+    },
+    handler: controller.listCreditUnions,
+  })
+
+  api.get({
+    path: '/credit-unions/:credit_union_id',
+    middleware: [attachPrincipal],
+    operationId: 'directory-retrieve_credit_union',
+    summary: docs.RETRIEVE_CREDIT_UNION_SUMMARY,
+    description: docs.RETRIEVE_CREDIT_UNION_DESCRIPTION,
+    request: {
+      params: creditUnionIdParamsSchema,
+      query: retrieveDirectoryQuerySchema,
+    },
+    responses: {
+      200: {
+        description: 'Credit union returned.',
+        schema: creditUnionSchema,
+      },
+      404: { description: 'Credit union not found.' },
+    },
+    handler: controller.retrieveCreditUnion,
+  })
+
+  api.post({
+    path: '/credit-unions',
+    security: 'admin',
+    operationId: 'directory-create_credit_union',
+    summary: docs.CREATE_CREDIT_UNION_SUMMARY,
+    description: docs.CREATE_CREDIT_UNION_DESCRIPTION,
+    request: { body: creditUnionCreateSchema },
+    responses: {
+      201: {
+        description: 'Credit union created.',
+        schema: creditUnionSchema,
+      },
+    },
+    handler: controller.createCreditUnion,
+  })
+
+  api.patch({
+    path: '/credit-unions/:credit_union_id',
+    security: 'admin',
+    operationId: 'directory-update_credit_union',
+    summary: docs.UPDATE_CREDIT_UNION_SUMMARY,
+    description: docs.UPDATE_CREDIT_UNION_DESCRIPTION,
+    request: {
+      params: creditUnionIdParamsSchema,
+      body: creditUnionUpdateSchema,
+    },
+    responses: {
+      200: {
+        description: 'Credit union updated.',
+        schema: creditUnionSchema,
+      },
+      404: { description: 'Credit union not found.' },
+    },
+    handler: controller.updateCreditUnion,
+  })
+
+  api.delete({
+    path: '/credit-unions/:credit_union_id',
+    security: 'admin',
+    operationId: 'directory-delete_credit_union',
+    summary: docs.DELETE_CREDIT_UNION_SUMMARY,
+    description: docs.DELETE_CREDIT_UNION_DESCRIPTION,
+    request: { params: creditUnionIdParamsSchema },
+    responses: {
+      200: {
+        description: 'Credit union deleted.',
+        schema: creditUnionDeletedSchema,
+      },
+      404: { description: 'Credit union not found.' },
+    },
+    handler: controller.deleteCreditUnion,
+  })
+
+  // --- Credit union branches ---
+
+  api.get({
+    path: '/credit-unions/:credit_union_id/branches',
+    middleware: [attachPrincipal],
+    operationId: 'directory-list_credit_union_branches',
+    summary: docs.LIST_CREDIT_UNION_BRANCHES_SUMMARY,
+    description: docs.LIST_CREDIT_UNION_BRANCHES_DESCRIPTION,
+    request: {
+      params: creditUnionIdParamsSchema,
+      query: listDirectoryQuerySchema,
+    },
+    responses: {
+      200: {
+        description: 'Credit union branch list returned.',
+        schema: listObjectSchema(creditUnionBranchSchema),
+      },
+      404: { description: 'Credit union not found.' },
+    },
+    handler: controller.listCreditUnionBranches,
+  })
+
+  api.get({
+    path: '/credit-union-branches/:branch_id',
+    middleware: [attachPrincipal],
+    operationId: 'directory-retrieve_credit_union_branch',
+    summary: docs.RETRIEVE_CREDIT_UNION_BRANCH_SUMMARY,
+    description: docs.RETRIEVE_CREDIT_UNION_BRANCH_DESCRIPTION,
+    request: {
+      params: branchIdParamsSchema,
+      query: retrieveDirectoryQuerySchema,
+    },
+    responses: {
+      200: {
+        description: 'Credit union branch returned.',
+        schema: creditUnionBranchSchema,
+      },
+      404: { description: 'Credit union branch not found.' },
+    },
+    handler: controller.retrieveCreditUnionBranch,
+  })
+
+  api.post({
+    path: '/credit-unions/:credit_union_id/branches',
+    security: 'admin',
+    operationId: 'directory-create_credit_union_branch',
+    summary: docs.CREATE_CREDIT_UNION_BRANCH_SUMMARY,
+    description: docs.CREATE_CREDIT_UNION_BRANCH_DESCRIPTION,
+    request: {
+      params: creditUnionIdParamsSchema,
+      body: creditUnionBranchCreateSchema,
+    },
+    responses: {
+      201: {
+        description: 'Credit union branch created.',
+        schema: creditUnionBranchSchema,
+      },
+      404: { description: 'Credit union not found.' },
+    },
+    handler: controller.createCreditUnionBranch,
+  })
+
+  api.patch({
+    path: '/credit-union-branches/:branch_id',
+    security: 'admin',
+    operationId: 'directory-update_credit_union_branch',
+    summary: docs.UPDATE_CREDIT_UNION_BRANCH_SUMMARY,
+    description: docs.UPDATE_CREDIT_UNION_BRANCH_DESCRIPTION,
+    request: {
+      params: branchIdParamsSchema,
+      body: creditUnionBranchUpdateSchema,
+    },
+    responses: {
+      200: {
+        description: 'Credit union branch updated.',
+        schema: creditUnionBranchSchema,
+      },
+      404: { description: 'Credit union branch not found.' },
+    },
+    handler: controller.updateCreditUnionBranch,
+  })
+
+  api.delete({
+    path: '/credit-union-branches/:branch_id',
+    security: 'admin',
+    operationId: 'directory-delete_credit_union_branch',
+    summary: docs.DELETE_CREDIT_UNION_BRANCH_SUMMARY,
+    description: docs.DELETE_CREDIT_UNION_BRANCH_DESCRIPTION,
+    request: { params: branchIdParamsSchema },
+    responses: {
+      200: {
+        description: 'Credit union branch deleted.',
+        schema: creditUnionBranchDeletedSchema,
+      },
+      404: { description: 'Credit union branch not found.' },
+    },
+    handler: controller.deleteCreditUnionBranch,
   })
 
   // --- Bank accounts ---
@@ -234,169 +466,64 @@ export function registerFinancialRoutes(resolveGuards: GuardResolver) {
       query: retrieveDirectoryQuerySchema,
     },
     responses: {
-      200: { description: 'Bank account returned.', schema: bankAccountSchema },
+      200: {
+        description: 'Bank account returned.',
+        schema: bankAccountSchema,
+      },
+      404: { description: 'Bank account not found.' },
     },
     handler: controller.retrieveBankAccount,
   })
 
   api.post({
     path: '/bank-accounts',
-    middleware: [attachPrincipal],
+    security: 'admin',
     operationId: 'directory-create_bank_account',
     summary: docs.CREATE_BANK_ACCOUNT_SUMMARY,
     description: docs.CREATE_BANK_ACCOUNT_DESCRIPTION,
-    security: 'admin',
     request: { body: bankAccountCreateSchema },
     responses: {
-      201: { description: 'Bank account created.', schema: bankAccountSchema },
+      201: {
+        description: 'Bank account created.',
+        schema: bankAccountSchema,
+      },
+      404: { description: 'Bank or bank branch not found.' },
     },
     handler: controller.createBankAccount,
   })
 
   api.patch({
     path: '/bank-accounts/:account_id',
-    middleware: [attachPrincipal],
+    security: 'admin',
     operationId: 'directory-update_bank_account',
     summary: docs.UPDATE_BANK_ACCOUNT_SUMMARY,
     description: docs.UPDATE_BANK_ACCOUNT_DESCRIPTION,
-    security: 'admin',
     request: { params: accountIdParamsSchema, body: bankAccountUpdateSchema },
     responses: {
-      200: { description: 'Bank account updated.', schema: bankAccountSchema },
+      200: {
+        description: 'Bank account updated.',
+        schema: bankAccountSchema,
+      },
+      404: { description: 'Bank account not found.' },
     },
     handler: controller.updateBankAccount,
   })
 
   api.delete({
     path: '/bank-accounts/:account_id',
-    middleware: [attachPrincipal],
+    security: 'admin',
     operationId: 'directory-delete_bank_account',
     summary: docs.DELETE_BANK_ACCOUNT_SUMMARY,
     description: docs.DELETE_BANK_ACCOUNT_DESCRIPTION,
-    security: 'admin',
     request: { params: accountIdParamsSchema },
     responses: {
-      200: { description: 'Bank account deleted.', schema: bankAccountDeletedSchema },
+      200: {
+        description: 'Bank account deleted.',
+        schema: bankAccountDeletedSchema,
+      },
+      404: { description: 'Bank account not found.' },
     },
     handler: controller.deleteBankAccount,
-  })
-
-  // --- Credit unions ---
-
-  api.get({
-    path: '/credit-unions',
-    middleware: [attachPrincipal],
-    operationId: 'directory-list_credit_unions',
-    summary: docs.LIST_CREDIT_UNIONS_SUMMARY,
-    description: docs.LIST_CREDIT_UNIONS_DESCRIPTION,
-    request: { query: listDirectoryQuerySchema },
-    responses: {
-      200: {
-        description: 'Credit union list returned.',
-        schema: listObjectSchema(creditUnionSchema),
-      },
-    },
-    handler: controller.listCreditUnions,
-  })
-
-  api.post({
-    path: '/credit-unions',
-    middleware: [attachPrincipal],
-    operationId: 'directory-create_credit_union',
-    summary: docs.CREATE_CREDIT_UNION_SUMMARY,
-    description: docs.CREATE_CREDIT_UNION_DESCRIPTION,
-    security: 'admin',
-    request: { body: creditUnionCreateSchema },
-    responses: {
-      201: { description: 'Credit union created.', schema: creditUnionSchema },
-    },
-    handler: controller.createCreditUnion,
-  })
-
-  api.get({
-    path: '/credit-unions/:credit_union_id',
-    middleware: [attachPrincipal],
-    operationId: 'directory-retrieve_credit_union',
-    summary: docs.RETRIEVE_CREDIT_UNION_SUMMARY,
-    description: docs.RETRIEVE_CREDIT_UNION_DESCRIPTION,
-    request: {
-      params: creditUnionIdParamsSchema,
-      query: retrieveDirectoryQuerySchema,
-    },
-    responses: {
-      200: { description: 'Credit union returned.', schema: creditUnionSchema },
-    },
-    handler: controller.retrieveCreditUnion,
-  })
-
-  api.patch({
-    path: '/credit-unions/:credit_union_id',
-    middleware: [attachPrincipal],
-    operationId: 'directory-update_credit_union',
-    summary: docs.UPDATE_CREDIT_UNION_SUMMARY,
-    description: docs.UPDATE_CREDIT_UNION_DESCRIPTION,
-    security: 'admin',
-    request: { params: creditUnionIdParamsSchema, body: creditUnionUpdateSchema },
-    responses: {
-      200: { description: 'Credit union updated.', schema: creditUnionSchema },
-    },
-    handler: controller.updateCreditUnion,
-  })
-
-  api.delete({
-    path: '/credit-unions/:credit_union_id',
-    middleware: [attachPrincipal],
-    operationId: 'directory-delete_credit_union',
-    summary: docs.DELETE_CREDIT_UNION_SUMMARY,
-    description: docs.DELETE_CREDIT_UNION_DESCRIPTION,
-    security: 'admin',
-    request: { params: creditUnionIdParamsSchema },
-    responses: {
-      200: {
-        description: 'Credit union deleted.',
-        schema: creditUnionDeletedSchema,
-      },
-    },
-    handler: controller.deleteCreditUnion,
-  })
-
-  api.get({
-    path: '/credit-unions/:credit_union_id/branches',
-    middleware: [attachPrincipal],
-    operationId: 'directory-list_credit_union_branches',
-    summary: docs.LIST_CREDIT_UNION_BRANCHES_SUMMARY,
-    description: docs.LIST_CREDIT_UNION_BRANCHES_DESCRIPTION,
-    request: {
-      params: creditUnionIdParamsSchema,
-      query: listDirectoryQuerySchema,
-    },
-    responses: {
-      200: {
-        description: 'Credit union branch list returned.',
-        schema: listObjectSchema(creditUnionBranchSchema),
-      },
-    },
-    handler: controller.listCreditUnionBranches,
-  })
-
-  api.post({
-    path: '/credit-unions/:credit_union_id/branches',
-    middleware: [attachPrincipal],
-    operationId: 'directory-create_credit_union_branch',
-    summary: docs.CREATE_CREDIT_UNION_BRANCH_SUMMARY,
-    description: docs.CREATE_CREDIT_UNION_BRANCH_DESCRIPTION,
-    security: 'admin',
-    request: {
-      params: creditUnionIdParamsSchema,
-      body: creditUnionBranchCreateSchema,
-    },
-    responses: {
-      201: {
-        description: 'Credit union branch created.',
-        schema: creditUnionBranchSchema,
-      },
-    },
-    handler: controller.createCreditUnionBranch,
   })
 
   return api.router

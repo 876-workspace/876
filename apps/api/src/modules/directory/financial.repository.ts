@@ -76,10 +76,12 @@ export function listBanks(
     includeDeleted: boolean
     search?: string | undefined
     countryCode?: string | undefined
+    ids?: string[] | undefined
   }
 ): Promise<{ data: BankRow[]; hasMore: boolean }> {
   const where = {
     ...(options.countryCode ? { countryCode: options.countryCode } : {}),
+    ...(options.ids?.length ? { id: { in: options.ids } } : {}),
     ...liveOnly(options.includeDeleted),
     ...nameSearch(options.search),
   }
@@ -183,10 +185,53 @@ export function findBankBranchByTransit(
 export function listBankBranches(
   bankId: string,
   query: PaginationQuery,
-  options: { includeDeleted: boolean; search?: string | undefined }
+  options: {
+    includeDeleted: boolean
+    search?: string | undefined
+    ids?: string[] | undefined
+  }
 ): Promise<{ data: BankBranchRow[]; hasMore: boolean }> {
   const where = {
     bankId,
+    ...(options.ids?.length ? { id: { in: options.ids } } : {}),
+    ...liveOnly(options.includeDeleted),
+    ...nameSearch(options.search),
+  }
+
+  return paginateByCursor<BankBranchRow>({
+    query,
+    loadAnchor: (id) => findBankBranchById(id, options.includeDeleted),
+    cursorOf: (row) => row.createdAt,
+    fetch: ({ take, cursor, order }) =>
+      prisma.bankBranch.findMany({
+        where: cursor
+          ? {
+              AND: [where, { createdAt: { [cursor.direction]: cursor.value } }],
+            }
+          : where,
+        orderBy: { createdAt: order },
+        take,
+        select: BANK_BRANCH_SELECT,
+      }),
+  })
+}
+
+/**
+ * Cross-bank branch listing for batch resolution: one call carries every
+ * branch id on the page instead of one request per row.
+ */
+export function listBankBranchesGlobal(
+  query: PaginationQuery,
+  options: {
+    includeDeleted: boolean
+    search?: string | undefined
+    bankId?: string | undefined
+    ids?: string[] | undefined
+  }
+): Promise<{ data: BankBranchRow[]; hasMore: boolean }> {
+  const where = {
+    ...(options.bankId ? { bankId: options.bankId } : {}),
+    ...(options.ids?.length ? { id: { in: options.ids } } : {}),
     ...liveOnly(options.includeDeleted),
     ...nameSearch(options.search),
   }
