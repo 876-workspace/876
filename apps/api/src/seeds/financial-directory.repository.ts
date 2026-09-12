@@ -61,12 +61,12 @@ export async function upsertSeedBank(data: {
   return { id: row.id, deleted: false, created: true }
 }
 
-export async function enrichSeedBranch(data: {
+export async function upsertSeedBranch(data: {
   bankId: string
   transitNumber: string
   routingNumber: string
   name: string
-}): Promise<'updated' | 'deleted' | 'missing'> {
+}): Promise<'created' | 'updated' | 'deleted'> {
   const existing = await prisma.bankBranch.findUnique({
     where: {
       bankId_transitNumber: {
@@ -76,16 +76,36 @@ export async function enrichSeedBranch(data: {
     },
     select: { id: true, deletedAt: true },
   })
-  if (!existing) return 'missing'
-  if (existing.deletedAt !== null) return 'deleted'
+  const now = BigInt(nowUnixSeconds())
 
-  await prisma.bankBranch.update({
-    where: { id: existing.id },
+  if (existing) {
+    if (existing.deletedAt !== null) return 'deleted'
+
+    await prisma.bankBranch.update({
+      where: { id: existing.id },
+      data: {
+        name: data.name,
+        routingNumber: data.routingNumber,
+        updatedAt: now,
+      },
+    })
+    return 'updated'
+  }
+
+  await prisma.bankBranch.create({
     data: {
+      id: generateId('bankBranch'),
+      bankId: data.bankId,
       name: data.name,
+      transitNumber: data.transitNumber,
       routingNumber: data.routingNumber,
-      updatedAt: BigInt(nowUnixSeconds()),
+      addressId: null,
+      contactNumber: null,
+      operatingHours: null,
+      createdAt: now,
+      updatedAt: now,
     },
+    select: { id: true },
   })
-  return 'updated'
+  return 'created'
 }
