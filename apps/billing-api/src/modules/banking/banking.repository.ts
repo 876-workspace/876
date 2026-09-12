@@ -19,18 +19,19 @@ export async function listBankAccountRows(tenantId: string) {
       _sum: { amount: true },
     }),
   ])
-  const balances = new Map<string, bigint>()
+  const movements = new Map<string, bigint>()
   for (const total of totals) {
     const amount = total._sum.amount ?? 0n
-    balances.set(
+    movements.set(
       total.accountId,
-      (balances.get(total.accountId) ?? 0n) +
+      (movements.get(total.accountId) ?? 0n) +
         (total.type === 'CREDIT' ? amount : -amount)
     )
   }
+
   return accounts.map((account) => ({
     ...account,
-    balance: balances.get(account.id) ?? 0n,
+    balance: account.openingBalance + (movements.get(account.id) ?? 0n),
   }))
 }
 
@@ -44,7 +45,8 @@ export async function findBankAccountRow(tenantId: string, id: string) {
     }),
   ])
   if (!account) return null
-  const balance = totals.reduce(
+
+  const movement = totals.reduce(
     (sum, row) =>
       sum +
       (row.type === 'CREDIT'
@@ -52,7 +54,8 @@ export async function findBankAccountRow(tenantId: string, id: string) {
         : -(row._sum.amount ?? 0n)),
     0n
   )
-  return { ...account, balance }
+
+  return { ...account, balance: account.openingBalance + movement }
 }
 
 export function createBankAccountRow(
@@ -65,8 +68,15 @@ export function createBankAccountRow(
     data: {
       id,
       tenantId,
-      ...body,
+      name: body.name,
+      accountType: body.accountType,
+      currency: body.currency,
       description: body.description ?? null,
+      institutionName: body.institutionName ?? null,
+      accountHolderName: body.accountHolderName ?? null,
+      accountNumberLast4: body.accountNumberLast4 ?? null,
+      openingBalance: body.openingBalance ?? 0n,
+      openingBalanceAt: body.openingBalanceAt ?? null,
       isActive: true,
       createdAt: now,
       updatedAt: now,
@@ -77,7 +87,16 @@ export function createBankAccountRow(
 export function findBankAccountActivityRow(tenantId: string, id: string) {
   return prisma.bankAccount.findFirst({
     where: { tenantId, id },
-    include: { _count: { select: { payments: true, transactions: true } } },
+    include: {
+      _count: {
+        select: {
+          payments: true,
+          transactions: true,
+          statementImports: true,
+          reconciliations: true,
+        },
+      },
+    },
   })
 }
 
@@ -91,13 +110,12 @@ export async function updateBankAccountRow(
     where: { tenantId, id },
     data: { ...body, updatedAt: now },
   })
+
   return result.count ? findBankAccountRow(tenantId, id) : null
 }
 
 export async function deleteBankAccountRow(tenantId: string, id: string) {
-  const result = await prisma.bankAccount.deleteMany({
-    where: { tenantId, id },
-  })
+  const result = await prisma.bankAccount.deleteMany({ where: { tenantId, id } })
   return result.count > 0
 }
 
@@ -108,6 +126,7 @@ export function listBankTransactionRows(tenantId: string, accountId: string) {
     take: 100,
   })
 }
+
 export function findBankTransactionRow(
   tenantId: string,
   accountId: string,
@@ -117,6 +136,7 @@ export function findBankTransactionRow(
     where: { tenantId, accountId, id },
   })
 }
+
 export function createBankTransactionRow(
   tenantId: string,
   accountId: string,
@@ -138,6 +158,7 @@ export function createBankTransactionRow(
     },
   })
 }
+
 export async function updateBankTransactionRow(
   tenantId: string,
   accountId: string,
@@ -149,8 +170,10 @@ export async function updateBankTransactionRow(
     where: { tenantId, accountId, id },
     data: { ...body, updatedAt: now },
   })
+
   return result.count ? findBankTransactionRow(tenantId, accountId, id) : null
 }
+
 export async function deleteBankTransactionRow(
   tenantId: string,
   accountId: string,
@@ -159,5 +182,6 @@ export async function deleteBankTransactionRow(
   const result = await prisma.bankTransaction.deleteMany({
     where: { tenantId, accountId, id },
   })
+
   return result.count > 0
 }
