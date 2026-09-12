@@ -5,9 +5,9 @@ import { fileURLToPath } from 'node:url'
 import { getLogger } from '@/platform/logger'
 
 import {
-  enrichSeedBranch,
   findSeedCountry,
   upsertSeedBank,
+  upsertSeedBranch,
 } from './financial-directory.repository'
 
 const log = getLogger('seeds:financial-directory')
@@ -27,6 +27,7 @@ type CatalogBranch = {
   check_digit: string
   aba: string
   name: string
+  /** Source text retained in the versioned catalog; never coerced into geocoded Core fields. */
   address?: string
 }
 
@@ -44,8 +45,9 @@ export type FinancialDirectorySeedSummary = {
   banksCreated: number
   banksUpdated: number
   banksDeletedPreserved: number
-  branchesEnriched: number
-  branchesPendingLocation: number
+  branchesCreated: number
+  branchesUpdated: number
+  branchesWithoutStructuredLocation: number
   branchesDeletedPreserved: number
 }
 
@@ -67,31 +69,68 @@ export function validateFinancialDirectoryCatalog(
     catalog.schema_version === SCHEMA_VERSION,
     `unsupported catalog schema_version ${String(catalog.schema_version)}`
   )
-  requireCondition(/^\d{4}-\d{2}-\d{2}$/.test(catalog.catalog_revision), 'catalog_revision must be YYYY-MM-DD')
-  requireCondition(/^[A-Z]{2}$/.test(catalog.country_code), 'country_code must be ISO alpha-2 uppercase')
-  requireCondition(catalog.sources.length > 0, 'catalog must declare at least one source')
+  requireCondition(
+    /^\d{4}-\d{2}-\d{2}$/.test(catalog.catalog_revision),
+    'catalog_revision must be YYYY-MM-DD'
+  )
+  requireCondition(
+    /^[A-Z]{2}$/.test(catalog.country_code),
+    'country_code must be ISO alpha-2 uppercase'
+  )
+  requireCondition(
+    catalog.sources.length > 0,
+    'catalog must declare at least one source'
+  )
   requireCondition(catalog.banks.length > 0, 'catalog must contain banks')
 
   const bankCodes = new Set<string>()
   for (const bank of catalog.banks) {
-    requireCondition(/^\d{3}$/.test(bank.bank_code), `invalid bank_code ${bank.bank_code}`)
-    requireCondition(!bankCodes.has(bank.bank_code), `duplicate bank_code ${bank.bank_code}`)
-    requireCondition(Boolean(bank.name.trim()), `${bank.bank_code}: bank name is required`)
-    requireCondition(Boolean(bank.institution_type.trim()), `${bank.bank_code}: institution_type is required`)
+    requireCondition(
+      /^\d{3}$/.test(bank.bank_code),
+      `invalid bank_code ${bank.bank_code}`
+    )
+    requireCondition(
+      !bankCodes.has(bank.bank_code),
+      `duplicate bank_code ${bank.bank_code}`
+    )
+    requireCondition(
+      Boolean(bank.name.trim()),
+      `${bank.bank_code}: bank name is required`
+    )
+    requireCondition(
+      Boolean(bank.institution_type.trim()),
+      `${bank.bank_code}: institution_type is required`
+    )
     bankCodes.add(bank.bank_code)
   }
 
   const branchKeys = new Set<string>()
   for (const branch of catalog.branches) {
-    requireCondition(bankCodes.has(branch.bank_code), `branch references unknown bank_code ${branch.bank_code}`)
-    requireCondition(/^\d{5}$/.test(branch.transit), `invalid branch transit ${branch.transit}`)
-    requireCondition(/^\d$/.test(branch.check_digit), `invalid check digit for ${branch.transit}`)
-    requireCondition(/^\d{9}$/.test(branch.aba), `invalid ABA for ${branch.transit}`)
     requireCondition(
-      branch.aba === `${branch.transit}${branch.bank_code}${branch.check_digit}`,
+      bankCodes.has(branch.bank_code),
+      `branch references unknown bank_code ${branch.bank_code}`
+    )
+    requireCondition(
+      /^\d{5}$/.test(branch.transit),
+      `invalid branch transit ${branch.transit}`
+    )
+    requireCondition(
+      /^\d$/.test(branch.check_digit),
+      `invalid check digit for ${branch.transit}`
+    )
+    requireCondition(
+      /^\d{9}$/.test(branch.aba),
+      `invalid ABA for ${branch.transit}`
+    )
+    requireCondition(
+      branch.aba ===
+        `${branch.transit}${branch.bank_code}${branch.check_digit}`,
       `ABA ${branch.aba} does not match transit/bank/check digit for ${branch.transit}`
     )
-    requireCondition(Boolean(branch.name.trim()), `${branch.transit}: branch name is required`)
+    requireCondition(
+      Boolean(branch.name.trim()),
+      `${branch.transit}: branch name is required`
+    )
     const key = `${branch.bank_code}:${branch.transit}`
     requireCondition(!branchKeys.has(key), `duplicate branch ${key}`)
     branchKeys.add(key)
@@ -106,19 +145,22 @@ function catalogPath(): string {
 export function loadFinancialDirectoryCatalog(
   path: string = catalogPath()
 ): FinancialDirectoryCatalog {
-  const catalog = JSON.parse(readFileSync(path, 'utf-8')) as FinancialDirectoryCatalog
+  const catalog = JSON.parse(
+    readFileSync(path, 'utf-8')
+  ) as FinancialDirectoryCatalog
   validateFinancialDirectoryCatalog(catalog)
   return catalog
 }
 
 /**
- * Seeds country-scoped bank reference data and enriches existing branch records.
+ * Seeds country-scoped bank and routing-branch reference data.
  *
- * The APL catalog does not publish geocoordinates while Core directory addresses
- * require them. The seed therefore never creates a new BankBranch with guessed
- * coordinates. Unmatched branches remain in the versioned catalog and are
- * reported as `branchesPendingLocation` until a trustworthy address/geocode is
- * added to Core through the directory-data workflow.
+ * Routing identity and physical location are deliberately separate concerns.
+ * The authoritative clearing catalog is sufficient to create a BankBranch with
+ * its bank, transit number and routing number. A structured DirectoryAddress is
+ * optional enrichment and is never fabricated from a free-form address or an
+ * inferred geocode. The source address remains preserved in the versioned
+ * catalog until a trusted location workflow enriches the branch.
  */
 export async function seedFinancialDirectory(
   catalog?: FinancialDirectoryCatalog
@@ -136,8 +178,9 @@ export async function seedFinancialDirectory(
     banksCreated: 0,
     banksUpdated: 0,
     banksDeletedPreserved: 0,
-    branchesEnriched: 0,
-    branchesPendingLocation: 0,
+    branchesCreated: 0,
+    branchesUpdated: 0,
+    branchesWithoutStructuredLocation: 0,
     branchesDeletedPreserved: 0,
   }
   const bankIds = new Map<string, string>()
@@ -159,17 +202,25 @@ export async function seedFinancialDirectory(
 
   for (const branch of resolved.branches) {
     const bankId = bankIds.get(branch.bank_code)
-    if (!bankId) throw new FinancialDirectoryCatalogError(`bank ${branch.bank_code} was not seeded`)
+    if (!bankId)
+      throw new FinancialDirectoryCatalogError(
+        `bank ${branch.bank_code} was not seeded`
+      )
 
-    const result = await enrichSeedBranch({
+    const result = await upsertSeedBranch({
       bankId,
       transitNumber: branch.transit,
       routingNumber: branch.aba,
       name: branch.name,
     })
-    if (result === 'updated') summary.branchesEnriched += 1
-    else if (result === 'deleted') summary.branchesDeletedPreserved += 1
-    else summary.branchesPendingLocation += 1
+    if (result === 'created') summary.branchesCreated += 1
+    else if (result === 'updated') summary.branchesUpdated += 1
+    else summary.branchesDeletedPreserved += 1
+
+    // The clearing catalog is authoritative for routing identity, not for
+    // Core's structured/geocoded DirectoryAddress. Track that distinction in
+    // the seed summary instead of inventing location data.
+    if (result === 'created') summary.branchesWithoutStructuredLocation += 1
   }
 
   log.info({ summary }, 'financial_directory.seed.completed')
