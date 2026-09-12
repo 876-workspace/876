@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
@@ -7,6 +8,10 @@ import { PricesTable } from '@/features/catalog/components/prices-table'
 import { resolveItem } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
+
+export const metadata: Metadata = {
+  title: 'Prices',
+}
 
 export default function ItemPricesPage({
   params,
