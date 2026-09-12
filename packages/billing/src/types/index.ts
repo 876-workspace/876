@@ -149,6 +149,7 @@ export type {
   BankAccount,
   BankAccountCreated,
   BankAccountDeleted,
+  BankAccountNumber,
 } from './bank-account'
 export {
   BankAccountTypeSchema,
@@ -156,6 +157,7 @@ export {
   BankAccountDeletedSchema,
   BankAccountSchema,
   BankAccountListSchema,
+  BankAccountNumberSchema,
 } from './bank-account.schema'
 export type {
   BankTransactionCreateParams,

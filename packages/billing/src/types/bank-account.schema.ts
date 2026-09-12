@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type {
+  BankAccountNumber,
   BankAccount,
   BankAccountCreated,
   BankAccountDeleted,
@@ -61,3 +62,10 @@ export const BankAccountSchema = z.strictObject({
 export const BankAccountListSchema = listSchema(
   BankAccountSchema
 ) satisfies z.ZodType<List<BankAccount>>
+
+export const BankAccountNumberSchema = z.strictObject({
+  object: z.literal('bank_account_number'),
+  accountId: z.string().min(1),
+  accountNumber: z.string().min(1),
+  accountNumberLast4: z.string(),
+}) satisfies z.ZodType<BankAccountNumber>

@@ -9,10 +9,12 @@ import type {
   BankAccount,
   BankAccountCreateParams,
   BankAccountDeleted,
+  BankAccountNumber,
   BankAccountUpdateParams,
   List,
   RequestOptions,
 } from '../types'
+import { BankAccountNumberSchema } from '../types'
 
 /** `$876.billing.bankAccounts.*` - tenant-owned financial accounts. */
 export function createBankAccountsResource(runtime: Runtime) {
@@ -39,6 +41,23 @@ export function createBankAccountsResource(runtime: Runtime) {
         },
         BankAccountSchema
       )
+    },
+    /**
+     * The full account number, sealed at rest. Requires `banking:write`; every
+     * disclosure is logged by the Billing API.
+     */
+    accountNumber: {
+      retrieve(accountId: string, options?: RequestOptions) {
+        return Request<BankAccountNumber>(
+          runtime,
+          {
+            method: 'GET',
+            path: `/api/v1/banking/accounts/${encodeURIComponent(accountId)}/account-number`,
+            signal: options?.signal,
+          },
+          BankAccountNumberSchema
+        )
+      },
     },
     retrieve(accountId: string, options?: RequestOptions) {
       return Request<BankAccount>(

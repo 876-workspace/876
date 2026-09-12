@@ -12,7 +12,12 @@ export interface BankAccountCreateParams {
   directoryBranchId?: string | null
   institutionName?: string | null
   accountHolderName?: string | null
-  accountNumberLast4?: string | null
+  /**
+   * Full account number. Write-only: it is sealed server-side and never
+   * returned on the account; read it back with `accountNumber.retrieve()`.
+   * Spaces and dashes are accepted; `null` clears it on update.
+   */
+  accountNumber?: string | null
   /** Signed opening balance in integer minor units. */
   openingBalance?: string | number
   openingBalanceAt?: number | null
@@ -28,7 +33,12 @@ export interface BankAccountUpdateParams {
   directoryBranchId?: string | null
   institutionName?: string | null
   accountHolderName?: string | null
-  accountNumberLast4?: string | null
+  /**
+   * Full account number. Write-only: it is sealed server-side and never
+   * returned on the account; read it back with `accountNumber.retrieve()`.
+   * Spaces and dashes are accepted; `null` clears it on update.
+   */
+  accountNumber?: string | null
   isActive?: boolean
 }
 
@@ -46,6 +56,7 @@ export interface BankAccount {
   directoryBranchId: string | null
   institutionName: string | null
   accountHolderName: string | null
+  /** Last four characters of the sealed account number, for display. */
   accountNumberLast4: string | null
   openingBalance: string
   openingBalanceAt: number | null
@@ -74,4 +85,12 @@ export interface BankAccountCreated {
 /** A deleted bank account tombstone. */
 export interface BankAccountDeleted extends BankAccountCreated {
   deleted: true
+}
+
+/** A tenant's own full account number, disclosed on explicit request. */
+export interface BankAccountNumber {
+  object: 'bank_account_number'
+  accountId: string
+  accountNumber: string
+  accountNumberLast4: string
 }
