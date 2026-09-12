@@ -4,6 +4,8 @@ import { resolveSubscription } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate } from '@/lib/format'
 
+export const metadata = { title: 'Activity' }
+
 export default async function SubscriptionActivityPage({
   params,
 }: {
