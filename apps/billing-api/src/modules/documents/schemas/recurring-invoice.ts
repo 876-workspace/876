@@ -21,15 +21,19 @@ export const recurringInvoiceFrequencySchema = z.strictObject({
   intervalCount: z.number().int().min(1).max(365),
 })
 
-const shape = {
+const scheduleShape = {
   profileName: z.string().trim().min(1).max(200),
-  customerId: IdSchema,
-  currency: currencyCodeSchema,
   frequency: recurringInvoiceFrequencySchema,
   startAt: unixTimestampSchema,
   endAt: unixTimestampSchema.nullable().optional(),
   maxCycles: z.number().int().min(1).nullable().optional(),
   generationMode: recurringInvoiceGenerationModeSchema,
+}
+
+const shape = {
+  ...scheduleShape,
+  customerId: IdSchema,
+  currency: currencyCodeSchema,
   paymentTermId: IdSchema.nullable().optional(),
   salespersonId: IdSchema.nullable().optional(),
   priceListId: IdSchema.nullable().optional(),
@@ -40,21 +44,39 @@ const shape = {
   lines: z.array(DocumentLineCreateSchema).min(1).max(100),
 }
 
+function endAtNotBeforeStart(
+  value: { startAt: number; endAt?: number | null },
+  ctx: z.RefinementCtx
+) {
+  if (
+    value.endAt !== null &&
+    value.endAt !== undefined &&
+    value.endAt < value.startAt
+  )
+    ctx.addIssue({
+      code: 'custom',
+      message: 'endAt must not be before startAt.',
+      path: ['endAt'],
+    })
+}
+
 const recurringInvoiceBaseSchema = z.strictObject(shape)
 
 export const RecurringInvoiceCreateSchema =
-  recurringInvoiceBaseSchema.superRefine((value, ctx) => {
-    if (
-      value.endAt !== null &&
-      value.endAt !== undefined &&
-      value.endAt < value.startAt
-    )
-      ctx.addIssue({
-        code: 'custom',
-        message: 'endAt must not be before startAt.',
-        path: ['endAt'],
-      })
-  })
+  recurringInvoiceBaseSchema.superRefine(endAtNotBeforeStart)
+
+/**
+ * Input for starting a profile from an existing invoice: the document fields
+ * (customer, currency, lines, terms, discount) are the invoice's, so only the
+ * schedule is supplied here.
+ */
+export const RecurringInvoiceFromInvoiceSchema = z
+  .strictObject(scheduleShape)
+  .superRefine(endAtNotBeforeStart)
+
+export type RecurringInvoiceFromInvoiceParams = z.infer<
+  typeof RecurringInvoiceFromInvoiceSchema
+>
 
 export const RecurringInvoiceUpdateSchema = recurringInvoiceBaseSchema
   .partial()

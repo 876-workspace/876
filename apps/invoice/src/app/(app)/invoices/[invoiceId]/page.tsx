@@ -1,17 +1,15 @@
 import { notFound, redirect } from 'next/navigation'
-import { Badge } from '@876/ui/badge'
 import {
   DetailCard,
   DetailCardBody,
-  DetailCardFact,
-  DetailCardFacts,
   DetailCardHeader,
-  DetailCardHeadline,
-  DetailCardIcon,
-  DetailCardIdBar,
-  DetailCardSection,
 } from '@876/ui/detail-card'
-import { CreditCardIcon } from '@876/ui/icons'
+import { InvoiceDocumentPanel } from '@876/billing-ui/panels/invoice-document-panel'
+import {
+  invoiceDocumentData,
+  invoiceSeller,
+} from '@876/billing-ui/document/invoice-document-data'
+import Link from 'next/link'
 import { WorkWidgetContextSetter } from '@876/widgets/react'
 
 import { getInvoiceContext } from '@/lib/auth/context'
@@ -19,12 +17,11 @@ import { canAccess } from '@/lib/auth/access-context'
 import { requireAppPermission } from '@/lib/auth/guards'
 import { createInvoiceWorkContext } from '@/lib/auth/work-widget-context'
 import { getBilling } from '@/lib/services/billing'
+import { getPlatformClient } from '@/lib/services/platform'
 import { formatDate, formatMoney } from '@/lib/format'
-import { documentStatusVariant } from '@/lib/status'
 
 import { InvoiceActions } from './_components/invoice-actions'
 import { InvoiceOriginLink } from './_components/invoice-origin-link'
-import type { InvoiceStatus } from './_lib/invoice-editability'
 
 type Props = { params: Promise<{ invoiceId: string }> }
 
@@ -39,8 +36,14 @@ export default async function InvoiceDetailPage({ params }: Props) {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
 
-  const billing = await getBilling(context.orgId)
-  const result = await billing.invoices.retrieve(invoiceId)
+  const [billing, platform] = await Promise.all([
+    getBilling(context.orgId),
+    getPlatformClient(),
+  ])
+  const [result, organization] = await Promise.all([
+    billing.invoices.retrieve(invoiceId),
+    platform.organizations.retrieve({ id: context.orgId }),
+  ])
   if (result.error?.code === 'invoice/not-found') notFound()
   if (result.error) {
     return (
@@ -58,29 +61,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
   const canWrite = canAccess(access, 'invoices.write')
   const canRecordPayment = canAccess(access, 'payments.create')
 
-  const customer =
-    invoice.customer &&
-    typeof invoice.customer === 'object' &&
-    'name' in invoice.customer
-      ? String(invoice.customer.name ?? '—')
-      : String(invoice.customerName ?? '—')
-  const customerId = String(invoice.customerId ?? '')
-  const number = String(invoice.number ?? invoice.id)
-  const totalAmount = String(invoice.totalAmount ?? '0')
-  const amountDue = String(invoice.amountDue ?? invoice.totalAmount ?? '0')
-  const currency = String(invoice.currency ?? 'JMD')
-  const status = String(invoice.status ?? 'DRAFT') as InvoiceStatus
-  const date =
-    typeof invoice.issueAt === 'number'
-      ? invoice.issueAt
-      : typeof invoice.createdAt === 'number'
-        ? invoice.createdAt
-        : null
-  const record = invoice as unknown as Record<string, unknown>
-  const recurringInvoiceId =
-    typeof record.recurringInvoiceId === 'string'
-      ? record.recurringInvoiceId
-      : null
+  const { number, customerId, status, recurringInvoiceId } = invoice
   let originProfileName: string | null = null
   if (recurringInvoiceId) {
     const origin = await billing.recurringInvoices.retrieve(recurringInvoiceId)
@@ -91,67 +72,78 @@ export default async function InvoiceDetailPage({ params }: Props) {
       )
   }
 
+  // Branding is a preference, not a dependency: an organization whose row
+  // cannot be read still gets its invoice document, without the letterhead.
+  const seller = organization.data
+    ? invoiceSeller(organization.data, context.orgName)
+    : { name: context.orgName, countryLabel: null }
+
   return (
     <>
       <WorkWidgetContextSetter
         context={createInvoiceWorkContext(invoice)}
         routeBase={`/api/invoices/${encodeURIComponent(invoice.id)}/work`}
       />
-      <DetailCard aria-label={`Invoice details: ${number}`}>
+      <DetailCard
+        aria-label={`Invoice details: ${number}`}
+        className="min-h-0 print:h-auto print:overflow-visible print:border-0 print:shadow-none"
+      >
         <DetailCardHeader
-          icon={
-            <DetailCardIcon>
-              <CreditCardIcon className="size-5" />
-            </DetailCardIcon>
-          }
           title={number}
-          meta={
-            <Badge variant={documentStatusVariant(status)}>
-              {status.toLowerCase().replace(/_/g, ' ')}
-            </Badge>
-          }
-          subtitle={customer}
           closeHref="/invoices"
           closeLabel="Close invoice details"
+          className="print:hidden"
         />
-        <div className="px-5 pt-5 sm:px-6 print:hidden">
-          <InvoiceActions
-            invoiceId={invoice.id}
-            customerId={customerId}
-            status={status}
-            canWrite={canWrite}
-            canRecordPayment={canRecordPayment}
-          />
-        </div>
-        <DetailCardBody className="space-y-8">
-          <DetailCardHeadline
-            value={formatMoney(totalAmount, currency)}
-            caption="Invoice total"
-          />
-          <DetailCardSection title="Invoice">
-            <DetailCardFacts>
-              <DetailCardFact label="Customer" value={customer} />
-              <DetailCardFact label="Date" value={formatDate(date)} />
-              <DetailCardFact
-                label="Amount due"
-                value={formatMoney(amountDue, currency)}
-                mono
-              />
-              <DetailCardFact label="Currency" value={currency} mono />
-            </DetailCardFacts>
-            {recurringInvoiceId && originProfileName ? (
-              <div className="mt-4">
-                <InvoiceOriginLink
-                  profileId={recurringInvoiceId}
-                  profileName={originProfileName}
-                />
-              </div>
-            ) : null}
-          </DetailCardSection>
+        <DetailCardBody className="min-h-0 p-0 sm:p-0 print:overflow-visible print:p-0">
+          <div className="w-full px-2 sm:px-3">
+            <InvoiceActions
+              invoiceId={invoice.id}
+              customerId={customerId}
+              status={status}
+              canWrite={canWrite}
+              canRecordPayment={canRecordPayment}
+              documentNumber={invoice.number}
+              totalAmount={formatMoney(invoice.totalAmount, invoice.currency)}
+            />
+          </div>
+          <div className="px-2 pb-8 sm:px-4 print:p-0">
+            <InvoiceDocumentPanel
+              {...invoiceDocumentData(invoice, formatDate, formatMoney)}
+              seller={seller}
+              footer={
+                <>
+                  <p>
+                    {invoice.billingReason === 'MANUAL'
+                      ? 'Manual invoice'
+                      : invoice.billingReason
+                          .toLowerCase()
+                          .replaceAll('_', ' ')}
+                    {invoice.subscriptionId
+                      ? ` · Subscription ${invoice.subscriptionId}`
+                      : ''}
+                  </p>
+                  {invoice.lateFeeAssessment ? (
+                    <p className="mt-1">
+                      Late fee for{' '}
+                      <Link
+                        href={`/invoices/${invoice.lateFeeAssessment.sourceInvoice.id}`}
+                        className="underline underline-offset-2"
+                      >
+                        {invoice.lateFeeAssessment.sourceInvoice.number}
+                      </Link>
+                    </p>
+                  ) : null}
+                  {recurringInvoiceId && originProfileName ? (
+                    <InvoiceOriginLink
+                      profileId={recurringInvoiceId}
+                      profileName={originProfileName}
+                    />
+                  ) : null}
+                </>
+              }
+            />
+          </div>
         </DetailCardBody>
-        <DetailCardIdBar>
-          <span className="truncate">{invoice.id}</span>
-        </DetailCardIdBar>
       </DetailCard>
     </>
   )

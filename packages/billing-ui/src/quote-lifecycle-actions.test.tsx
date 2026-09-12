@@ -29,13 +29,12 @@ describe('QuoteLifecycleActions', () => {
 
     expect(onAction).toHaveBeenCalledWith('send')
 
-    // Draft editing lives in the overflow menu, so it only exists once opened.
-    await user.click(screen.getByRole('button', { name: 'More actions' }))
-    // Base UI's `render` merge keeps the menuitem role on the anchor, so the
-    // href is asserted on the menu item rather than on a bare link role.
-    expect(
-      await screen.findByRole('menuitem', { name: 'Edit' })
-    ).toHaveAttribute('href', '/quotes/quo_1/edit')
+    // Editing a draft is a visible toolbar control, not an overflow item —
+    // burying it made it invisible on every quote that was not a draft.
+    expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute(
+      'href',
+      '/quotes/quo_1/edit'
+    )
   })
 
   it('shows accept, decline, and resend for a valid sent quote', async () => {

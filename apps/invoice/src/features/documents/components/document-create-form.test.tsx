@@ -8,7 +8,16 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const mocks = vi.hoisted(() => ({ create: vi.fn(), customerList: vi.fn() }))
+const mocks = vi.hoisted(() => ({
+  create: vi.fn(),
+  customerList: vi.fn(),
+  push: vi.fn(),
+  refresh: vi.fn(),
+}))
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
+}))
 
 vi.mock('@/lib/client', () => ({
   client: {
@@ -30,6 +39,30 @@ const customers = [
     primaryContact: null,
   },
 ]
+
+const editableInvoice = {
+  invoiceId: 'in_123',
+  status: 'DRAFT' as const,
+  values: {
+    issueAt: 1_788_652_800,
+    dueAt: 1_791_244_800,
+    notes: 'Original note',
+    terms: 'Net 30',
+    orderNumber: 'PO-1',
+    referenceNumber: 'REF-1',
+    subject: 'September services',
+  },
+  lines: [
+    {
+      id: 'line-1',
+      description: 'Consulting',
+      quantity: '1',
+      unitAmount: '1500.07',
+      discountAmount: '0',
+      taxAmount: '0',
+    },
+  ],
+}
 
 /**
  * The customer control is a server-backed typeahead: it fetches nothing until
@@ -311,5 +344,123 @@ describe('DocumentCreateForm', () => {
       '1500.07'
     )
     expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+  })
+
+  it('renders the shared line-items editor in draft edit mode', async () => {
+    render(
+      <DocumentCreateForm
+        kind="invoice"
+        mode="edit"
+        initialDocument={editableInvoice}
+      />
+    )
+
+    expect(
+      await screen.findByRole('button', { name: 'Add line' })
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Line 1 description')).toHaveValue(
+      'Consulting'
+    )
+  })
+
+  it('does not render the line-items editor for a restricted edit', () => {
+    render(
+      <DocumentCreateForm
+        kind="invoice"
+        mode="edit"
+        initialDocument={{ ...editableInvoice, status: 'SENT' }}
+      />
+    )
+
+    expect(screen.queryByRole('button', { name: 'Add line' })).toBeNull()
+    expect(screen.queryByLabelText('Order number')).toBeNull()
+  })
+
+  it('submits the draft edit payload through the supplied handler', async () => {
+    const submit = vi.fn().mockResolvedValue({ data: {}, error: null })
+    const user = userEvent.setup()
+    render(
+      <DocumentCreateForm
+        kind="invoice"
+        mode="edit"
+        initialDocument={editableInvoice}
+        onSubmit={submit}
+      />
+    )
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Save invoice' })
+    )
+
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(1))
+    expect(submit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        issueAt: 1_788_652_800,
+        dueAt: 1_791_244_800,
+        lines: [
+          {
+            description: 'Consulting',
+            quantity: 1,
+            unitAmount: '150007',
+            discountAmount: '0',
+            taxAmount: '0',
+          },
+        ],
+      })
+    )
+  })
+
+  it('keeps draft edit values mounted after a failed submission', async () => {
+    const submit = vi.fn().mockResolvedValue({
+      data: null,
+      error: {
+        code: 'billing/failed',
+        message: 'Invoice could not be updated.',
+      },
+    })
+    const user = userEvent.setup()
+    render(
+      <DocumentCreateForm
+        kind="invoice"
+        mode="edit"
+        initialDocument={editableInvoice}
+        onSubmit={submit}
+      />
+    )
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Save invoice' })
+    )
+
+    expect(
+      await screen.findByText('Invoice could not be updated.')
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Line 1 description')).toHaveValue(
+      'Consulting'
+    )
+    expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+  })
+
+  it('submits only restricted fields for a sent invoice edit', async () => {
+    const submit = vi.fn().mockResolvedValue({ data: {}, error: null })
+    const user = userEvent.setup()
+    render(
+      <DocumentCreateForm
+        kind="invoice"
+        mode="edit"
+        initialDocument={{ ...editableInvoice, status: 'SENT' }}
+        onSubmit={submit}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Save invoice' }))
+
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(1))
+    expect(submit).toHaveBeenCalledWith({
+      dueAt: 1_791_244_800,
+      notes: 'Original note',
+      terms: 'Net 30',
+      referenceNumber: 'REF-1',
+    })
   })
 })

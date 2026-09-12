@@ -21,6 +21,7 @@ export function InvoicesSection({
 
   return (
     <ListDetailSection
+      className="print:h-auto print:p-0 print:[&_[data-slot=list-detail-detail-column]]:h-auto print:[&_[data-slot=list-detail-detail-column]]:overflow-visible print:[&_[data-slot=list-detail-list-column]]:hidden print:[&_[data-slot=list-detail-shell]]:h-auto print:[&_[data-slot=list-detail-shell]]:overflow-visible print:[&_[data-slot=list-detail-shell]>div]:block print:[&_[data-slot=list-detail-shell]>div]:h-auto print:[&_[data-slot=list-detail-shell]>div]:p-0"
       toolbar={<InvoicesToolbar status={status} showPrimary={!open} />}
       list={list}
       takeoverSegments={TAKEOVER_SEGMENTS}

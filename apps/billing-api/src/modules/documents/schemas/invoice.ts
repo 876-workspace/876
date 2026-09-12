@@ -56,8 +56,7 @@ function invoiceCreateSchema(integration: boolean) {
           value.currency ||
           value.subscriptionId ||
           value.priceListId ||
-          ('sourceExternalReference' in value &&
-            value.sourceExternalReference)
+          ('sourceExternalReference' in value && value.sourceExternalReference)
         ) {
           context.addIssue({
             code: 'custom',
@@ -106,6 +105,7 @@ export const InvoiceUpdateSchema = z.strictObject({
   orderNumber: z.string().trim().min(1).max(120).nullable().optional(),
   referenceNumber: z.string().trim().min(1).max(120).nullable().optional(),
   subject: z.string().trim().min(1).max(300).nullable().optional(),
+  lines: z.array(DocumentLineCreateSchema).min(1).max(100).optional(),
 })
 
 export type InvoiceUpdateParams = z.infer<typeof InvoiceUpdateSchema>

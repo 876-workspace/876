@@ -11,6 +11,7 @@ import type {
   InvoicePreference,
   InvoicePreferenceUpdated,
   LateFeeRun,
+  InvoiceDetail,
 } from './invoice'
 import {
   createdResourceSchema,
@@ -93,3 +94,86 @@ export const QuoteListSchema = listSchema(
 export const DeletedQuoteSchema = deletedResourceSchema(
   'quote'
 ) satisfies z.ZodType<DeletedQuote>
+
+/** Full retrieve response; monetary values remain integer minor-unit strings. */
+export const InvoiceDetailSchema = InvoiceSchema.extend({
+  number: z.string(),
+  status: z.enum([
+    'DRAFT',
+    'OPEN',
+    'SENT',
+    'PARTIALLY_PAID',
+    'OVERDUE',
+    'PAID',
+    'UNCOLLECTIBLE',
+    'VOID',
+  ]),
+  customerId: z.string(),
+  currency: z.string(),
+  billingReason: z.string(),
+  subscriptionId: z.string().nullable(),
+  priceListId: z.string().nullable(),
+  salespersonId: z.string().nullable(),
+  customerName: z.string().nullable(),
+  customerEmail: z.string().nullable(),
+  billingAddressSnapshot: z.unknown(),
+  taxBehavior: z.enum(['EXCLUSIVE', 'INCLUSIVE']),
+  subject: z.string().nullable(),
+  orderNumber: z.string().nullable(),
+  referenceNumber: z.string().nullable(),
+  paymentTermName: z.string().nullable(),
+  salespersonName: z.string().nullable(),
+  notes: z.string().nullable(),
+  terms: z.string().nullable(),
+  issueAt: z.number().nullable(),
+  dueAt: z.number().nullable(),
+  servicePeriodStart: z.number().nullable(),
+  servicePeriodEnd: z.number().nullable(),
+  subtotalAmount: z.string().regex(/^-?\d+$/),
+  taxAmount: z.string().regex(/^-?\d+$/),
+  discountAmount: z.string().regex(/^-?\d+$/),
+  shippingAmount: z.string().regex(/^-?\d+$/),
+  adjustmentAmount: z.string().regex(/^-?\d+$/),
+  totalAmount: z.string().regex(/^-?\d+$/),
+  amountDue: z.string().regex(/^-?\d+$/),
+  amountPaid: z.string().regex(/^-?\d+$/),
+  amountCredited: z.string().regex(/^-?\d+$/),
+  customer: z.object({
+    id: z.string(),
+    name: z.string(),
+    companyName: z.string().nullable(),
+    email: z.string().nullable(),
+    phone: z.string().nullable(),
+    addresses: z.array(
+      z.object({
+        attention: z.string().nullable(),
+        line1: z.string().nullable(),
+        line2: z.string().nullable(),
+        city: z.string().nullable(),
+        state: z.string().nullable(),
+        postalCode: z.string().nullable(),
+        countryCode: z.string().nullable(),
+      })
+    ),
+  }),
+  lines: z.array(
+    z.object({
+      id: z.string(),
+      itemId: z.string().nullable(),
+      variantId: z.string().nullable(),
+      priceId: z.string().nullable(),
+      description: z.string(),
+      quantity: z.number().int(),
+      position: z.number().int(),
+      unitAmount: z.string().regex(/^\d+$/),
+      taxAmount: z.string().regex(/^\d+$/),
+      discountAmount: z.string().regex(/^\d+$/),
+      totalAmount: z.string().regex(/^\d+$/),
+      servicePeriodStart: z.number().nullable(),
+      servicePeriodEnd: z.number().nullable(),
+    })
+  ),
+  lateFeeAssessment: z
+    .object({ sourceInvoice: z.object({ id: z.string(), number: z.string() }) })
+    .nullable(),
+}) satisfies z.ZodType<InvoiceDetail>

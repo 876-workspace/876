@@ -174,6 +174,14 @@ describe('Billing API v1 contract baseline', () => {
     '/integrations/organizations/{organizationId}/reports/subscription-summary',
     '/integrations/organizations/{organizationId}/items/{itemId}/sales-summary',
     '/integrations/organizations/{organizationId}/report-preferences',
+    // Invoice clone and make-recurring. Both are Express-only document
+    // commands that reuse the create path server-side, so a duplicate or a
+    // recurring profile keeps the source invoice's line taxes and discounts
+    // instead of being reassembled by the caller.
+    '/invoices/{invoiceId}/clone',
+    '/invoices/{invoiceId}/make-recurring',
+    '/integrations/organizations/{organizationId}/invoices/{invoiceId}/clone',
+    '/integrations/organizations/{organizationId}/invoices/{invoiceId}/make-recurring',
   ]
 
   it('does not document paths absent from the implementation inventory', () => {

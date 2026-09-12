@@ -1,3 +1,6 @@
+import { InvoiceDetailSchema } from '../types/invoice.schema'
+import type { InvoiceDetail } from '../types/invoice'
+
 import { Request } from '../request'
 import type { Runtime } from '../runtime'
 import {
@@ -5,6 +8,7 @@ import {
   InvoiceCreatedSchema,
   InvoiceListSchema,
   InvoiceSchema,
+  RecurringInvoiceSchema,
 } from '../schemas'
 import type {
   Invoice,
@@ -17,6 +21,8 @@ import type {
   InvoiceWriteOffParams,
   InvoiceUpdateParams,
   DeletedInvoice,
+  RecurringInvoice,
+  RecurringInvoiceFromInvoiceParams,
   RequestOptions,
 } from '../types'
 
@@ -54,14 +60,14 @@ export function createInvoicesResource(runtime: Runtime) {
     },
     /** Retrieves a single invoice by ID. */
     retrieve(invoiceId: string, options?: RequestOptions) {
-      return Request<Invoice>(
+      return Request<InvoiceDetail>(
         runtime,
         {
           method: 'GET',
           path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}`,
           signal: options?.signal,
         },
-        InvoiceSchema
+        InvoiceDetailSchema
       )
     },
     /** Updates a draft invoice. */
@@ -155,6 +161,36 @@ export function createInvoicesResource(runtime: Runtime) {
           signal: options?.signal,
         },
         InvoiceCreatedSchema
+      )
+    },
+    /** Clones an invoice as a new draft. */
+    clone(invoiceId: string, options?: RequestOptions) {
+      return Request<InvoiceCreated>(
+        runtime,
+        {
+          method: 'POST',
+          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}/clone`,
+          body: {},
+          signal: options?.signal,
+        },
+        InvoiceCreatedSchema
+      )
+    },
+    /** Creates a recurring profile from the invoice snapshot. */
+    makeRecurring(
+      invoiceId: string,
+      params: RecurringInvoiceFromInvoiceParams,
+      options?: RequestOptions
+    ) {
+      return Request<RecurringInvoice>(
+        runtime,
+        {
+          method: 'POST',
+          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}/make-recurring`,
+          body: params,
+          signal: options?.signal,
+        },
+        RecurringInvoiceSchema
       )
     },
   }

@@ -57,6 +57,30 @@ const currencies = [
   { value: 'JMD', label: 'Jamaican dollar (JMD)', decimalPlaces: 2 },
 ]
 
+const editableInvoice = {
+  invoiceId: 'in_123',
+  status: 'DRAFT' as const,
+  values: {
+    issueAt: 1_788_652_800,
+    dueAt: 1_791_244_800,
+    notes: 'Original note',
+    terms: 'Net 30',
+    orderNumber: 'PO-1',
+    referenceNumber: 'REF-1',
+    subject: 'September services',
+  },
+  lines: [
+    {
+      id: 'line-1',
+      description: 'Consulting',
+      quantity: '1',
+      unitAmount: '125.00',
+      discountAmount: '0',
+      taxAmount: '0',
+    },
+  ],
+}
+
 function renderForm(
   overrides: Partial<React.ComponentProps<typeof DocumentCreateForm>> = {}
 ) {
@@ -101,17 +125,17 @@ describe('DocumentCreateForm', () => {
     })
   })
 
-// The line-item catalogue control is a SearchableSelect combobox, not a native
-// <select>, so it is opened and chosen by role. Mirrors the interaction in
-// packages/ui/src/components/searchable-select.test.tsx.
-async function chooseCatalogueOption(
-  user: ReturnType<typeof userEvent.setup>,
-  lineLabel: string,
-  optionName: string | RegExp
-) {
-  await user.click(screen.getByRole('combobox', { name: lineLabel }))
-  await user.click(await screen.findByRole('option', { name: optionName }))
-}
+  // The line-item catalogue control is a SearchableSelect combobox, not a native
+  // <select>, so it is opened and chosen by role. Mirrors the interaction in
+  // packages/ui/src/components/searchable-select.test.tsx.
+  async function chooseCatalogueOption(
+    user: ReturnType<typeof userEvent.setup>,
+    lineLabel: string,
+    optionName: string | RegExp
+  ) {
+    await user.click(screen.getByRole('combobox', { name: lineLabel }))
+    await user.click(await screen.findByRole('option', { name: optionName }))
+  }
 
   it('renders every catalogue option in the shared editor', async () => {
     const user = userEvent.setup()
@@ -141,7 +165,10 @@ async function chooseCatalogueOption(
     const user = userEvent.setup()
     renderForm({ priceLists: [{ value: 'pl_123', label: 'Standard' }] })
 
-    await user.selectOptions(screen.getByLabelText('Price list (optional)'), 'pl_123')
+    await user.selectOptions(
+      screen.getByLabelText('Price list (optional)'),
+      'pl_123'
+    )
     await chooseCatalogueOption(user, 'Line 1 item', /Consulting/)
 
     expect(screen.getByLabelText('Line 1 rate')).toBeDisabled()
@@ -155,7 +182,10 @@ async function chooseCatalogueOption(
     })
     renderForm({ priceLists: [{ value: 'pl_123', label: 'Standard' }] })
 
-    await user.selectOptions(screen.getByLabelText('Price list (optional)'), 'pl_123')
+    await user.selectOptions(
+      screen.getByLabelText('Price list (optional)'),
+      'pl_123'
+    )
     await chooseCatalogueOption(user, 'Line 1 item', /Consulting/)
 
     await waitFor(() =>
@@ -172,7 +202,10 @@ async function chooseCatalogueOption(
     })
     renderForm({ priceLists: [{ value: 'pl_123', label: 'Standard' }] })
 
-    await user.selectOptions(screen.getByLabelText('Price list (optional)'), 'pl_123')
+    await user.selectOptions(
+      screen.getByLabelText('Price list (optional)'),
+      'pl_123'
+    )
     await chooseCatalogueOption(user, 'Line 1 item', /Consulting/)
     await waitFor(() =>
       expect(screen.getByTestId('line-total-0')).toHaveTextContent('JMD 250.00')
@@ -192,9 +225,13 @@ async function chooseCatalogueOption(
     await user.type(screen.getByLabelText('Line 1 discount'), '101.00')
 
     expect(
-      await screen.findByText('A line discount cannot exceed the line subtotal.')
+      await screen.findByText(
+        'A line discount cannot exceed the line subtotal.'
+      )
     ).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Save draft invoice' })).toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: 'Save draft invoice' })
+    ).toBeDisabled()
     expect(mocks.invoiceCreate).not.toHaveBeenCalled()
   })
 
@@ -202,12 +239,16 @@ async function chooseCatalogueOption(
     const user = userEvent.setup()
     renderForm()
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Save draft invoice' })).toBeEnabled()
+      expect(
+        screen.getByRole('button', { name: 'Save draft invoice' })
+      ).toBeEnabled()
     )
 
     await user.click(screen.getByRole('button', { name: 'Save draft invoice' }))
 
-    expect(await screen.findByText('Select the customer this document is for.')).toBeVisible()
+    expect(
+      await screen.findByText('Select the customer this document is for.')
+    ).toBeVisible()
     expect(mocks.invoiceCreate).not.toHaveBeenCalled()
   })
 
@@ -215,7 +256,9 @@ async function chooseCatalogueOption(
     const user = userEvent.setup()
     renderForm()
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Save draft invoice' })).toBeEnabled()
+      expect(
+        screen.getByRole('button', { name: 'Save draft invoice' })
+      ).toBeEnabled()
     )
     await user.type(
       screen.getByRole('combobox', { name: 'Customer' }),
@@ -238,10 +281,15 @@ async function chooseCatalogueOption(
     const user = userEvent.setup()
     renderForm()
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Save draft invoice' })).toBeEnabled()
+      expect(
+        screen.getByRole('button', { name: 'Save draft invoice' })
+      ).toBeEnabled()
     )
     await fillValidLine(user)
-    await user.selectOptions(screen.getByLabelText('Line 1 discount type'), 'PERCENTAGE')
+    await user.selectOptions(
+      screen.getByLabelText('Line 1 discount type'),
+      'PERCENTAGE'
+    )
     await user.type(screen.getByLabelText('Line 1 discount'), '10')
 
     await user.click(screen.getByRole('button', { name: 'Save draft invoice' }))
@@ -251,7 +299,10 @@ async function chooseCatalogueOption(
         customerId: 'cus_123',
         priceListId: null,
         currency: 'JMD',
-        issueAt: Math.floor(Date.parse(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`) / 1000),
+        issueAt: Math.floor(
+          Date.parse(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`) /
+            1000
+        ),
         notes: null,
         terms: null,
         lines: [
@@ -279,14 +330,115 @@ async function chooseCatalogueOption(
     const user = userEvent.setup()
     renderForm()
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Save draft invoice' })).toBeEnabled()
+      expect(
+        screen.getByRole('button', { name: 'Save draft invoice' })
+      ).toBeEnabled()
     )
     await fillValidLine(user)
 
     await user.click(screen.getByRole('button', { name: 'Save draft invoice' }))
 
-    await waitFor(() => expect(mocks.push).toHaveBeenCalledWith('/invoices/in_123'))
+    await waitFor(() =>
+      expect(mocks.push).toHaveBeenCalledWith('/invoices/in_123')
+    )
     expect(mocks.push).toHaveBeenCalledTimes(1)
     expect(mocks.refresh).toHaveBeenCalledTimes(1)
+  })
+
+  it('renders the shared line-items editor in draft edit mode', async () => {
+    renderForm({ mode: 'edit', initialDocument: editableInvoice })
+
+    expect(
+      await screen.findByRole('button', { name: 'Add line' })
+    ).toBeVisible()
+    expect(screen.getByLabelText('Line 1 description')).toHaveValue(
+      'Consulting'
+    )
+  })
+
+  it('does not render a line-items editor for restricted invoice edits', () => {
+    renderForm({
+      mode: 'edit',
+      initialDocument: { ...editableInvoice, status: 'SENT' },
+    })
+
+    expect(screen.queryByRole('button', { name: 'Add line' })).toBeNull()
+    expect(screen.queryByLabelText('Order number')).toBeNull()
+  })
+
+  it('submits draft edit line changes through the supplied handler', async () => {
+    const submit = vi.fn().mockResolvedValue({ data: {}, error: null })
+    const user = userEvent.setup()
+    renderForm({
+      mode: 'edit',
+      initialDocument: editableInvoice,
+      onSubmit: submit,
+    })
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Save invoice' })
+    )
+
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(1))
+    expect(submit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        issueAt: 1_788_652_800,
+        dueAt: 1_791_244_800,
+        lines: [
+          {
+            description: 'Consulting',
+            quantity: 1,
+            unitAmount: '12500',
+            discountAmount: '0',
+            taxAmount: '0',
+          },
+        ],
+      })
+    )
+  })
+
+  it('keeps the entered draft edit values beside an inline submission failure', async () => {
+    const submit = vi.fn().mockResolvedValue({
+      data: null,
+      error: { message: 'Invoice could not be updated.' },
+    })
+    const user = userEvent.setup()
+    renderForm({
+      mode: 'edit',
+      initialDocument: editableInvoice,
+      onSubmit: submit,
+    })
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Save invoice' })
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Invoice could not be updated.'
+    )
+    expect(screen.getByLabelText('Line 1 description')).toHaveValue(
+      'Consulting'
+    )
+    expect(document.querySelector('[data-sonner-toast]')).toBeNull()
+  })
+
+  it('sends only permitted fields through a restricted edit handler', async () => {
+    const submit = vi.fn().mockResolvedValue({ data: {}, error: null })
+    const user = userEvent.setup()
+    renderForm({
+      mode: 'edit',
+      initialDocument: { ...editableInvoice, status: 'SENT' },
+      onSubmit: submit,
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Save invoice' }))
+
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(1))
+    expect(submit).toHaveBeenCalledWith({
+      dueAt: 1_791_244_800,
+      notes: 'Original note',
+      terms: 'Net 30',
+      referenceNumber: 'REF-1',
+    })
   })
 })

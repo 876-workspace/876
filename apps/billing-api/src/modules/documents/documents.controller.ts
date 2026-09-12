@@ -7,6 +7,7 @@ import {
 } from '@/http/integration/idempotency'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 import { documentsService as service } from './documents.service'
+import { recurringInvoicesService } from './recurring-invoices.service'
 import type {
   CreditNoteApplyParams,
   CreditNoteCreateParams,
@@ -20,6 +21,7 @@ import type {
   InvoiceWriteOffParams,
 } from './schemas/invoice'
 import type { InvoicePreferenceUpdateParams } from './schemas/invoice-preference'
+import type { RecurringInvoiceFromInvoiceParams } from './schemas/recurring-invoice'
 import type {
   QuoteCreateParams,
   QuoteStatus,
@@ -248,6 +250,45 @@ export const documentsController = {
   },
   async invoicesDelete(req: Request, res: Response) {
     res.json(await service.deleteInvoice(tenant(req), param(req, 'invoiceId')))
+  },
+  async invoicesClone(req: Request, res: Response) {
+    res
+      .status(201)
+      .json(await service.cloneInvoice(tenant(req), param(req, 'invoiceId')))
+  },
+  async invoicesIntegrationClone(req: Request, res: Response) {
+    res
+      .status(201)
+      .json(
+        await service.cloneInvoice(
+          tenant(req),
+          param(req, 'invoiceId'),
+          sourceApp(req)
+        )
+      )
+  },
+  async invoicesMakeRecurring(req: Request, res: Response) {
+    res
+      .status(201)
+      .json(
+        await recurringInvoicesService.createFromInvoice(
+          tenant(req),
+          param(req, 'invoiceId'),
+          validBody<RecurringInvoiceFromInvoiceParams>(req)
+        )
+      )
+  },
+  async invoicesIntegrationMakeRecurring(req: Request, res: Response) {
+    res
+      .status(201)
+      .json(
+        await recurringInvoicesService.createFromInvoice(
+          tenant(req),
+          param(req, 'invoiceId'),
+          validBody<RecurringInvoiceFromInvoiceParams>(req),
+          sourceApp(req)
+        )
+      )
   },
   async quotesList(req: Request, res: Response) {
     res.json(

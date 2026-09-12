@@ -1,13 +1,6 @@
 'use client'
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from 'react'
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 import {
@@ -36,11 +29,19 @@ import {
   zeroMinorAmountInput,
 } from '@/lib/format'
 import type { DocumentCustomerOption } from '@/types/customer'
+import type { InvoiceStatus, InvoiceUpdateInput } from '@/types/invoice'
 import { toDocumentCustomerOption } from '@/lib/customers/document-recipient'
 
 type SelectOption = { label: string; value: string }
 type CurrencyOption = SelectOption & { decimalPlaces: number }
 type DocumentKind = 'invoice' | 'quote'
+
+export interface InvoiceDocumentInitial {
+  invoiceId: string
+  status: InvoiceStatus
+  values: InvoiceUpdateInput
+  lines: DocumentLineDraft[]
+}
 
 function todayInputValue() {
   return new Date().toISOString().slice(0, 10)
@@ -52,15 +53,7 @@ function futureInputValue(days: number) {
   return date.toISOString().slice(0, 10)
 }
 
-export function DocumentCreateForm({
-  kind,
-  items,
-  priceLists = [],
-  salespeople = [],
-  currencies,
-  defaultCurrency,
-  returnUrl,
-}: {
+interface DocumentCreateFormProps {
   kind: DocumentKind
   items: DocumentItemOption[]
   priceLists?: SelectOption[]
@@ -68,7 +61,36 @@ export function DocumentCreateForm({
   currencies: CurrencyOption[]
   defaultCurrency: string
   returnUrl: string
-}) {
+  mode?: 'create' | 'edit'
+  initialDocument?: InvoiceDocumentInitial
+  onSubmit?: (
+    params: InvoiceUpdateInput
+  ) => Promise<{ data: unknown; error: { message: string } | null }>
+}
+
+export function DocumentCreateForm(props: DocumentCreateFormProps) {
+  if (props.mode === 'edit') {
+    if (!props.initialDocument)
+      throw new Error('An edit document requires initial values.')
+    return (
+      <InvoiceEditMode
+        initialDocument={props.initialDocument}
+        onSubmit={props.onSubmit}
+      />
+    )
+  }
+  return <DocumentCreateMode {...props} />
+}
+
+function DocumentCreateMode({
+  kind,
+  items,
+  priceLists = [],
+  salespeople = [],
+  currencies,
+  defaultCurrency,
+  returnUrl,
+}: DocumentCreateFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -591,6 +613,258 @@ export function DocumentCreateForm({
         </Button>
       </div>
     </form>
+  )
+}
+
+function InvoiceEditMode({
+  initialDocument,
+  onSubmit,
+}: {
+  initialDocument: InvoiceDocumentInitial
+  onSubmit?: (
+    params: InvoiceUpdateInput
+  ) => Promise<{ data: unknown; error: { message: string } | null }>
+}) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+  const [issueDate, setIssueDate] = useState(
+    toEditDate(initialDocument.values.issueAt)
+  )
+  const [dueDate, setDueDate] = useState(
+    toEditDate(initialDocument.values.dueAt)
+  )
+  const [referenceNumber, setReferenceNumber] = useState(
+    initialDocument.values.referenceNumber ?? ''
+  )
+  const [orderNumber, setOrderNumber] = useState(
+    initialDocument.values.orderNumber ?? ''
+  )
+  const [subject, setSubject] = useState(initialDocument.values.subject ?? '')
+  const [notes, setNotes] = useState(initialDocument.values.notes ?? '')
+  const [terms, setTerms] = useState(initialDocument.values.terms ?? '')
+  const [lines, setLines] = useState(initialDocument.lines)
+  const [totals, setTotals] = useState<DocumentTotalsSnapshot | null>(null)
+  const restricted = initialDocument.status !== 'DRAFT'
+
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const dueAt = dateInputToUnix(dueDate)
+    const issueAt = dateInputToUnix(issueDate)
+    if (
+      (dueDate && dueAt === null) ||
+      (!restricted && issueDate && issueAt === null)
+    ) {
+      setError('Enter valid invoice dates.')
+      return
+    }
+    const preparedLines = restricted
+      ? []
+      : lines.map((line) => prepareDocumentLine(line, 2, false))
+    if (
+      !restricted &&
+      (totals?.status !== 'ready' ||
+        preparedLines.some((line) => line === null))
+    ) {
+      setError(
+        'Every line needs a description, positive quantity, and valid amounts.'
+      )
+      return
+    }
+    const payload: InvoiceUpdateInput = {
+      dueAt,
+      notes: notes.trim() || null,
+      terms: terms.trim() || null,
+      referenceNumber: referenceNumber.trim() || null,
+      ...(!restricted
+        ? {
+            issueAt,
+            orderNumber: orderNumber.trim() || null,
+            subject: subject.trim() || null,
+            lines: preparedLines.filter((line) => line !== null),
+          }
+        : {}),
+    }
+    setError(null)
+    startTransition(async () => {
+      const result = onSubmit
+        ? await onSubmit(payload)
+        : await client.invoices.update(initialDocument.invoiceId, payload)
+      if (result.error) {
+        setError(result.error.message)
+        return
+      }
+      router.push(`/invoices/${initialDocument.invoiceId}`)
+      router.refresh()
+    })
+  }
+
+  return (
+    <form onSubmit={submit} className="mx-auto max-w-6xl space-y-6">
+      <section className="876-card grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
+        {!restricted ? (
+          <EditDateField
+            id="billing-invoice-edit-date"
+            label="Invoice date"
+            value={issueDate}
+            onChange={setIssueDate}
+            disabled={isPending}
+          />
+        ) : null}
+        <EditDateField
+          id="billing-invoice-edit-due-date"
+          label="Due date"
+          value={dueDate}
+          onChange={setDueDate}
+          disabled={isPending}
+        />
+        {!restricted ? (
+          <EditTextField
+            id="billing-invoice-edit-order-number"
+            label="Order number"
+            value={orderNumber}
+            onChange={setOrderNumber}
+            maxLength={120}
+            disabled={isPending}
+          />
+        ) : null}
+        <EditTextField
+          id="billing-invoice-edit-reference"
+          label="Reference"
+          value={referenceNumber}
+          onChange={setReferenceNumber}
+          maxLength={120}
+          disabled={isPending}
+        />
+        {!restricted ? (
+          <EditTextField
+            id="billing-invoice-edit-subject"
+            label="Subject"
+            value={subject}
+            onChange={setSubject}
+            maxLength={300}
+            disabled={isPending}
+          />
+        ) : null}
+      </section>
+      {!restricted ? (
+        <section className="876-card space-y-4 p-5 sm:p-6">
+          <div>
+            <h2 className="text-base font-semibold">Line items</h2>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Edit the products and services included in this invoice.
+            </p>
+          </div>
+          <DocumentLineItemsEditor
+            lines={lines}
+            onChange={setLines}
+            onTotalsChange={setTotals}
+            formatAmount={formatMinorUnits}
+            enforceItemStock
+          />
+        </section>
+      ) : null}
+      <section className="876-card grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
+        <div className="space-y-2">
+          <Label htmlFor="billing-invoice-edit-notes">Customer note</Label>
+          <Textarea
+            id="billing-invoice-edit-notes"
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            disabled={isPending}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="billing-invoice-edit-terms">
+            Terms and conditions
+          </Label>
+          <Textarea
+            id="billing-invoice-edit-terms"
+            value={terms}
+            onChange={(event) => setTerms(event.target.value)}
+            disabled={isPending}
+          />
+        </div>
+      </section>
+      {error ? (
+        <p role="alert" className="text-destructive text-sm">
+          {error}
+        </p>
+      ) : null}
+      <div className="flex justify-end gap-2 pb-6">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.push(`/invoices/${initialDocument.invoiceId}`)}
+          disabled={isPending}
+        >
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isPending}>
+          {isPending ? 'Saving…' : 'Save invoice'}
+        </Button>
+      </div>
+    </form>
+  )
+}
+
+function toEditDate(value: number | null | undefined) {
+  return value ? new Date(value * 1_000).toISOString().slice(0, 10) : ''
+}
+
+function EditDateField({
+  id,
+  label,
+  value,
+  onChange,
+  disabled,
+}: {
+  id: string
+  label: string
+  value: string
+  onChange: (value: string) => void
+  disabled: boolean
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={disabled}
+      />
+    </div>
+  )
+}
+
+function EditTextField({
+  id,
+  label,
+  value,
+  onChange,
+  maxLength,
+  disabled,
+}: {
+  id: string
+  label: string
+  value: string
+  onChange: (value: string) => void
+  maxLength: number
+  disabled: boolean
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        maxLength={maxLength}
+        disabled={disabled}
+      />
+    </div>
   )
 }
 

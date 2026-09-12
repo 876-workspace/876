@@ -25,6 +25,14 @@ export interface RecurringInvoiceCreateParams {
   discountAmount?: string
   lines: DocumentLineCreateParams[]
 }
+export interface RecurringInvoiceFromInvoiceParams {
+  profileName: string
+  frequency: RecurringInvoiceFrequency
+  startAt: number
+  endAt?: number | null
+  maxCycles?: number | null
+  generationMode: RecurringInvoiceGenerationMode
+}
 export type RecurringInvoiceUpdateParams = Partial<RecurringInvoiceCreateParams>
 export type RecurringInvoice = {
   object: 'recurring-invoice'

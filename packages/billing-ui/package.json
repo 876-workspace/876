@@ -51,10 +51,6 @@
       "types": "./src/document/document-line-payload.ts",
       "default": "./src/document/document-line-payload.ts"
     },
-    "./invoice-lifecycle-actions": {
-      "types": "./src/invoice-lifecycle-actions.tsx",
-      "default": "./src/invoice-lifecycle-actions.tsx"
-    },
     "./quote-lifecycle-actions": {
       "types": "./src/quote-lifecycle-actions.tsx",
       "default": "./src/quote-lifecycle-actions.tsx"
@@ -262,6 +258,22 @@
     "./panels/item-sales-summary-panel": {
       "types": "./src/panels/item-sales-summary-panel.tsx",
       "default": "./src/panels/item-sales-summary-panel.tsx"
+    },
+    "./panels/invoice-document-panel": {
+      "types": "./src/panels/invoice-document-panel.tsx",
+      "default": "./src/panels/invoice-document-panel.tsx"
+    },
+    "./panels/document-toolbar": {
+      "types": "./src/panels/document-toolbar.tsx",
+      "default": "./src/panels/document-toolbar.tsx"
+    },
+    "./document/invoice-document-data": {
+      "types": "./src/document/invoice-document-data.ts",
+      "default": "./src/document/invoice-document-data.ts"
+    },
+    "./panels/document-share-controls": {
+      "types": "./src/panels/document-share-controls.tsx",
+      "default": "./src/panels/document-share-controls.tsx"
     }
   },
   "scripts": {

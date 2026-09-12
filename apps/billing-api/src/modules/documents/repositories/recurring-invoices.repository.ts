@@ -9,6 +9,7 @@ import { generateId } from '@/platform/ids'
 import type { ServiceResult } from '../schemas/api'
 import type {
   RecurringInvoiceCreateParams,
+  RecurringInvoiceFromInvoiceParams,
   RecurringInvoiceStatus,
   RecurringInvoiceUpdateParams,
 } from '../schemas/recurring-invoice'
@@ -206,6 +207,52 @@ export async function createRecurringInvoice(
     include: { lines: true },
   })
   return ok(row)
+}
+
+/**
+ * Starts a profile from an existing invoice. The document fields come from the
+ * invoice's own line snapshots and header; only the schedule is supplied by the
+ * caller. Creation goes through the same path as a directly created profile, so
+ * currency, customer and line validation are identical.
+ */
+export async function createRecurringInvoiceFromInvoice(
+  tenantId: string,
+  invoiceId: string,
+  schedule: RecurringInvoiceFromInvoiceParams,
+  sourceAppId?: string
+): ServiceResult<RecurringInvoiceRow> {
+  const invoice = await prisma.invoice.findFirst({
+    where: {
+      id: invoiceId,
+      tenantId,
+      ...(sourceAppId ? { sourceAppId } : {}),
+    },
+    include: { lines: { orderBy: { position: 'asc' } } },
+  })
+  if (!invoice) return err('Invoice not found.', 404)
+
+  return createRecurringInvoice(tenantId, {
+    ...schedule,
+    customerId: invoice.customerId,
+    currency: invoice.currency,
+    paymentTermId: invoice.paymentTermId,
+    salespersonId: invoice.salespersonId,
+    priceListId: invoice.priceListId,
+    taxBehavior: invoice.taxBehavior,
+    notes: invoice.notes,
+    terms: invoice.terms,
+    discountAmount: invoice.discountAmount,
+    lines: invoice.lines.map((line) => ({
+      itemId: line.itemId,
+      variantId: line.variantId,
+      priceId: line.priceId,
+      description: line.description,
+      quantity: line.quantity,
+      unitAmount: line.unitAmount,
+      taxAmount: line.taxAmount,
+      discountAmount: line.discountAmount,
+    })),
+  })
 }
 
 export function listRecurringInvoices(

@@ -449,7 +449,7 @@ and docs when `agy` isn't a better fit. Prefer **DeepSeek V4** models:
 
 ```bash
 opencode run -m deepseek/deepseek-v4-pro --variant <low|medium|high> \
-  --dangerously-skip-permissions -q "<task prompt>" < /dev/null
+  --auto "<task prompt>" < /dev/null
 ```
 
 - `deepseek/deepseek-v4-pro` for anything needing real reasoning (a
@@ -458,8 +458,11 @@ opencode run -m deepseek/deepseek-v4-pro --variant <low|medium|high> \
 - `--variant` sets reasoning depth (`low`/`medium`/`high`) — use `medium` for
   most mechanical work, `high` only if the mechanical change has edge cases
   (overloads, shadowed names) worth reasoning about.
-- `-q` / `--quiet` suppresses the spinner — always use it for scripted/CLI
-  driving so output stays parseable.
+- `--auto` auto-approves permissions that are not explicitly denied — use it
+  for unattended/scripted runs. `--dangerously-skip-permissions` and `-q` /
+  `--quiet` do not exist on this CLI; an invalid flag makes opencode print its
+  help text and exit 0 with no files changed, so a "successful" run with no
+  diff should be checked for a flag error before being trusted.
 - Always redirect `< /dev/null` so opencode never blocks on stdin.
 - The stealth free model `opencode/big-pickle` (GLM-4.6, 200k context) is an
   acceptable substitute for DeepSeek V4 on the same trivial/docs tier when

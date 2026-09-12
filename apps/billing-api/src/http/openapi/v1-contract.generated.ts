@@ -773,6 +773,16 @@ export const v1OperationMetadata = {
     summary: 'Write off an invoice balance',
     tags: ['Invoices'],
   },
+  'POST /invoices/{invoiceId}/clone': {
+    operationId: 'billing-billing_post_invoices_invoiceId_clone',
+    summary: 'Clone an invoice',
+    tags: ['Invoices'],
+  },
+  'POST /invoices/{invoiceId}/make-recurring': {
+    operationId: 'billing-billing_post_invoices_invoiceId_make_recurring',
+    summary: 'Create a Recurring Invoice from an invoice',
+    tags: ['Invoices'],
+  },
   'GET /credit-notes': {
     operationId: 'billing-billing_get_credit_notes',
     summary: 'Billing GET /credit-notes',
@@ -846,6 +856,17 @@ export const v1OperationMetadata = {
   'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/write-off':
     {
       summary: 'Write off an organization Billing invoice balance',
+      tags: ['Invoices'],
+    },
+  'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/clone':
+    {
+      summary: 'Clone an organization Billing invoice',
+      tags: ['Invoices'],
+    },
+  'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/make-recurring':
+    {
+      summary:
+        'Create a Recurring Invoice from an organization Billing invoice',
       tags: ['Invoices'],
     },
   'GET /integrations/organizations/{organizationId}/quotes': {
@@ -18219,6 +18240,176 @@ export const v1OperationContracts = {
       },
     },
   },
+  'POST /invoices/{invoiceId}/clone': {
+    tags: ['Invoices'],
+    summary: 'Clone an invoice',
+    operationId: 'billing-billing_post_invoices_invoiceId_clone',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'invoiceId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '201': {
+        description: 'Invoice cloned',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /invoices/{invoiceId}/make-recurring': {
+    tags: ['Invoices'],
+    summary: 'Create a Recurring Invoice from an invoice',
+    operationId: 'billing-billing_post_invoices_invoiceId_make_recurring',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'invoiceId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '201': {
+        description: 'Recurring Invoice created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'recurring-invoice',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: {},
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
   'GET /credit-notes': {
     description: 'Ported from `src/app/api/billing/credit-notes/route.ts`.',
     operationId: 'billing-billing_get_credit_notes',
@@ -19383,6 +19574,207 @@ export const v1OperationContracts = {
                       object: {
                         type: 'string',
                         const: 'invoice',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/clone':
+    {
+      tags: ['Invoices'],
+      summary: 'Clone an organization Billing invoice',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'invoiceId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '201': {
+          description: 'Invoice cloned',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'invoice',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                    },
+                    required: ['object', 'id'],
+                    additionalProperties: {},
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/make-recurring':
+    {
+      tags: ['Invoices'],
+      summary:
+        'Create a Recurring Invoice from an organization Billing invoice',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'invoiceId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '201': {
+          description: 'Recurring Invoice created',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'recurring-invoice',
                       },
                       id: {
                         type: 'string',

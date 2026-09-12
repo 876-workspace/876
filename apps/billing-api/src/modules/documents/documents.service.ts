@@ -214,6 +214,14 @@ export const documentsService = {
     }
   },
 
+  async cloneInvoice(tenantId: string, id: string, sourceAppId?: string) {
+    if (sourceAppId) await ownedInvoice(tenantId, id, sourceAppId)
+    return {
+      object: 'invoice',
+      ...(await unwrap(await invoices.clone(tenantId, id), 'invoice')),
+    }
+  },
+
   async finalizeInvoice(
     tenantId: string,
     id: string,

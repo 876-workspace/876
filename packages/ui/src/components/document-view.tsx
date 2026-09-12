@@ -8,7 +8,10 @@ export const DocumentView = React.forwardRef<
   <article
     ref={ref}
     className={cn(
-      '876-card bg-card text-card-foreground mx-auto max-w-5xl overflow-hidden shadow-sm print:border-0 print:bg-white print:text-black print:shadow-none',
+      // 51rem is US Letter at 96dpi. The document is a page, not a panel: it
+      // keeps paper proportions on screen so the reader sees what prints,
+      // and drops the cap when it actually prints.
+      '876-card bg-card text-card-foreground mx-auto w-full max-w-[51rem] overflow-hidden shadow-sm print:max-w-none print:border-0 print:bg-white print:text-black print:shadow-none',
       className
     )}
     {...props}

@@ -57,6 +57,7 @@ export function QuoteActions({
       canDelete={canWrite}
       canConvert={canWrite}
       editHref={`/quotes/${quoteId}/edit`}
+      sharePath={`/quotes/${quoteId}`}
       convertedInvoiceHref={
         convertedInvoiceId ? `/invoices/${convertedInvoiceId}` : undefined
       }

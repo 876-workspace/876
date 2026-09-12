@@ -3,6 +3,7 @@ import { documentList } from './documents.serializers'
 import { serializeRecurringInvoice } from './recurring-invoices.serializers'
 import {
   createRecurringInvoice,
+  createRecurringInvoiceFromInvoice,
   deleteRecurringInvoice,
   listRecurringInvoiceChildren,
   listRecurringInvoices,
@@ -13,6 +14,7 @@ import {
 import { err } from './repositories/result'
 import type {
   RecurringInvoiceCreateParams,
+  RecurringInvoiceFromInvoiceParams,
   RecurringInvoiceStatus,
   RecurringInvoiceUpdateParams,
 } from './schemas/recurring-invoice'
@@ -54,6 +56,24 @@ export const recurringInvoicesService = {
   async create(tenantId: string, body: RecurringInvoiceCreateParams) {
     return serializeRecurringInvoice(
       await unwrap(await createRecurringInvoice(tenantId, body), KIND)
+    )
+  },
+  async createFromInvoice(
+    tenantId: string,
+    invoiceId: string,
+    schedule: RecurringInvoiceFromInvoiceParams,
+    sourceAppId?: string
+  ) {
+    return serializeRecurringInvoice(
+      await unwrap(
+        await createRecurringInvoiceFromInvoice(
+          tenantId,
+          invoiceId,
+          schedule,
+          sourceAppId
+        ),
+        KIND
+      )
     )
   },
   async update(
