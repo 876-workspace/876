@@ -86,14 +86,18 @@ export const bankBranchSchema = z
     name: z.string(),
     transit_number: z.string(),
     routing_number: z.string().nullable(),
-    address_id: z.string(),
+    address_id: z.string().nullable(),
     contact_number: z.string().nullable(),
     operating_hours: z.string().nullable(),
-    address: directoryAddressSchema,
+    address: directoryAddressSchema.nullable(),
     created_at: z.number().int(),
     updated_at: z.number().int(),
   })
-  .meta({ id: 'BankBranch', description: 'A branch of a bank.' })
+  .meta({
+    id: 'BankBranch',
+    description:
+      'A bank branch. Routing reference data may exist before a trusted physical location is available.',
+  })
 
 export type BankBranch = z.infer<typeof bankBranchSchema>
 
