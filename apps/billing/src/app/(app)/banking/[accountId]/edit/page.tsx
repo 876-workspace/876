@@ -12,6 +12,7 @@ import {
 import { BankAccountForm } from '@/features/banking/components/bank-account-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
+import { getBilling } from '@/lib/services/billing'
 
 type Props = { params: Promise<{ accountId: string }> }
 
@@ -20,13 +21,22 @@ export const metadata: Metadata = {
 }
 
 export default async function EditBankAccountPage({ params }: Props) {
-  const context = await requirePagePermission('banking:write')
-  const { accountId } = await params
-  const [account, currencies] = await Promise.all([
+  const [context, billing, { accountId }] = await Promise.all([
+    requirePagePermission('banking:write'),
+    getBilling(),
+    params,
+  ])
+  const [account, currencies, banks] = await Promise.all([
     service.bankAccounts.retrieve(context.tenant.id, accountId),
     service.currencies.list(context.tenant.id),
+    billing.bankDirectory.listBanks('JM'),
   ])
   if (!account) notFound()
+
+  const branches = account.directoryBankId
+    ? await billing.bankDirectory.listBranches(account.directoryBankId)
+    : null
+  const directoryError = banks.error ?? branches?.error ?? null
 
   return (
     <Page>
@@ -47,6 +57,10 @@ export default async function EditBankAccountPage({ params }: Props) {
           value: currency.code,
           label: `${currency.name} (${currency.code})`,
         }))}
+        initialBanks={banks.data?.data ?? []}
+        initialBranches={branches?.data?.data ?? []}
+        initialDirectoryError={directoryError?.message ?? null}
+        countryCode="JM"
       />
     </Page>
   )
