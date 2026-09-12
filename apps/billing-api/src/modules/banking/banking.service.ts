@@ -3,6 +3,10 @@ import { hasEnabledCurrency } from '@/modules/currencies'
 import { generateId } from '@/platform/ids'
 import { nowUnixSeconds } from '@/platform/timestamps'
 import {
+  CoreDirectoryUnavailableError,
+  HttpCoreDirectoryGateway,
+} from '@/providers/core-directory'
+import {
   createBankAccountRow,
   createBankTransactionRow,
   deleteBankAccountRow,
@@ -25,6 +29,8 @@ import {
   serializeBankAccount,
   serializeBankTransaction,
 } from './banking.serializers'
+
+const coreDirectory = new HttpCoreDirectoryGateway()
 
 function listing<T>(data: T[], url: string) {
   return {
@@ -67,6 +73,14 @@ function invalidCurrency() {
   return invalid('Enable the account currency before using it.')
 }
 
+function directoryUnavailable() {
+  return new AppHttpError({
+    code: 'banking/directory-unavailable',
+    message: 'The bank directory is temporarily unavailable. Try again.',
+    httpStatus: 503,
+  })
+}
+
 function hasAccountHistory(
   counts: {
     payments: number
@@ -85,6 +99,31 @@ function hasAccountHistory(
 
 function hasOwn(body: object, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(body, key)
+}
+
+async function validateDirectoryReferences(
+  directoryBankId: string | null,
+  directoryBranchId: string | null
+): Promise<void> {
+  if (directoryBranchId && !directoryBankId)
+    throw invalid('A directory branch requires a directory bank.')
+  if (!directoryBankId) return
+
+  try {
+    const bank = await coreDirectory.bank(directoryBankId)
+    if (!bank) throw invalid('The selected bank no longer exists in the directory.')
+
+    if (!directoryBranchId) return
+    const branch = await coreDirectory.branch(directoryBranchId)
+    if (!branch)
+      throw invalid('The selected bank branch no longer exists in the directory.')
+    if (branch.bankId !== directoryBankId)
+      throw invalid('The selected branch does not belong to the selected bank.')
+  } catch (error) {
+    if (error instanceof CoreDirectoryUnavailableError)
+      throw directoryUnavailable()
+    throw error
+  }
 }
 
 export async function listBankAccounts(tenantId: string) {
@@ -107,8 +146,11 @@ export async function createBankAccount(
 ) {
   if (!(await hasEnabledCurrency(tenantId, body.currency)))
     throw invalidCurrency()
-  if (body.directoryBranchId && !body.directoryBankId)
-    throw invalid('A directory branch requires a directory bank.')
+
+  await validateDirectoryReferences(
+    body.directoryBankId ?? null,
+    body.directoryBranchId ?? null
+  )
 
   try {
     const row = await createBankAccountRow(
@@ -155,9 +197,6 @@ export async function updateBankAccount(
     ? (body.directoryBranchId ?? null)
     : current.directoryBranchId
 
-  if (nextDirectoryBranchId && !nextDirectoryBankId)
-    throw invalid('A directory branch requires a directory bank.')
-
   if (
     hasOwn(body, 'directoryBankId') &&
     body.directoryBankId !== current.directoryBankId &&
@@ -166,6 +205,15 @@ export async function updateBankAccount(
   )
     throw invalid(
       'Changing the directory bank requires selecting or clearing the directory branch.'
+    )
+
+  if (
+    hasOwn(body, 'directoryBankId') ||
+    hasOwn(body, 'directoryBranchId')
+  )
+    await validateDirectoryReferences(
+      nextDirectoryBankId,
+      nextDirectoryBranchId
     )
 
   const row = await updateBankAccountRow(tenantId, id, body, nowUnixSeconds())
