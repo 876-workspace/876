@@ -2,9 +2,9 @@
  * Financial directory contracts — banks, their branches and accounts, credit
  * unions and their branches.
  *
- * Ported from `domains/directory/schemas/financial.py`. Wire fields stay
- * `snake_case`; request bodies are strict, matching Pydantic's default rejection
- * of unknown fields on these models.
+ * Wire fields stay `snake_case`. Banks are country-scoped reference data: local
+ * institution and routing codes are meaningful inside a country's clearing
+ * system, not as globally unique identifiers.
  */
 
 import { z } from 'zod'
@@ -15,13 +15,18 @@ import {
   directoryAddressUpdateSchema,
 } from './directory.schemas'
 
+const countryCodeSchema = z.string().trim().length(2).toUpperCase()
+
 export const bankSchema = z
   .object({
     object: z.literal('bank'),
     id: z.string(),
+    country_code: countryCodeSchema,
     name: z.string(),
     short_name: z.string().nullable(),
     bank_code: z.string(),
+    clearing_system: z.string().nullable(),
+    institution_type: z.string(),
     swift_code: z.string().nullable(),
     logo_url: z.string().nullable(),
     head_office: z.string().nullable(),
@@ -29,30 +34,39 @@ export const bankSchema = z
     created_at: z.number().int(),
     updated_at: z.number().int(),
   })
-  .meta({ id: 'Bank', description: 'A bank in the financial directory.' })
+  .meta({
+    id: 'Bank',
+    description: 'A country-scoped bank in the financial directory.',
+  })
 
 export type Bank = z.infer<typeof bankSchema>
 
 export const bankCreateSchema = z.strictObject({
-  name: z.string().min(1),
-  short_name: z.string().nullish(),
-  bank_code: z.string().min(1),
-  swift_code: z.string().nullish(),
-  logo_url: z.string().nullish(),
-  head_office: z.string().nullish(),
-  website: z.string().nullish(),
+  country_code: countryCodeSchema.default('JM'),
+  name: z.string().trim().min(1),
+  short_name: z.string().trim().min(1).nullish(),
+  bank_code: z.string().trim().min(1),
+  clearing_system: z.string().trim().min(1).nullish(),
+  institution_type: z.string().trim().min(1).default('commercial_bank'),
+  swift_code: z.string().trim().min(1).nullish(),
+  logo_url: z.string().trim().min(1).nullish(),
+  head_office: z.string().trim().min(1).nullish(),
+  website: z.string().trim().min(1).nullish(),
 })
 
 export type BankCreate = z.infer<typeof bankCreateSchema>
 
 export const bankUpdateSchema = z.strictObject({
-  name: z.string().nullish(),
-  short_name: z.string().nullish(),
-  bank_code: z.string().nullish(),
-  swift_code: z.string().nullish(),
-  logo_url: z.string().nullish(),
-  head_office: z.string().nullish(),
-  website: z.string().nullish(),
+  country_code: countryCodeSchema.optional(),
+  name: z.string().trim().min(1).optional(),
+  short_name: z.string().trim().min(1).nullable().optional(),
+  bank_code: z.string().trim().min(1).optional(),
+  clearing_system: z.string().trim().min(1).nullable().optional(),
+  institution_type: z.string().trim().min(1).optional(),
+  swift_code: z.string().trim().min(1).nullable().optional(),
+  logo_url: z.string().trim().min(1).nullable().optional(),
+  head_office: z.string().trim().min(1).nullable().optional(),
+  website: z.string().trim().min(1).nullable().optional(),
 })
 
 export type BankUpdate = z.infer<typeof bankUpdateSchema>
