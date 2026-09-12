@@ -13,9 +13,16 @@ import {
   directoryAddressCreateSchema,
   directoryAddressSchema,
   directoryAddressUpdateSchema,
+  listDirectoryQuerySchema,
 } from './directory.schemas'
 
 const countryCodeSchema = z.string().trim().length(2).toUpperCase()
+
+export const bankListQuerySchema = listDirectoryQuerySchema.extend({
+  country_code: countryCodeSchema.optional(),
+})
+
+export type BankListQuery = z.infer<typeof bankListQuerySchema>
 
 export const bankSchema = z
   .object({
@@ -144,12 +151,12 @@ export const bankAccountCreateSchema = z.strictObject({
 export type BankAccountCreate = z.infer<typeof bankAccountCreateSchema>
 
 export const bankAccountUpdateSchema = z.strictObject({
-  account_holder: z.string().nullish(),
-  bank_id: z.string().nullish(),
-  branch_id: z.string().nullish(),
-  account_number: z.string().nullish(),
-  account_type: z.string().nullish(),
-  currency: z.string().length(3).nullish(),
+  account_holder: z.string().min(1).optional(),
+  bank_id: z.string().min(1).optional(),
+  branch_id: z.string().min(1).nullable().optional(),
+  account_number: z.string().min(1).optional(),
+  account_type: z.string().min(1).optional(),
+  currency: z.string().length(3).optional(),
 })
 
 export type BankAccountUpdate = z.infer<typeof bankAccountUpdateSchema>
