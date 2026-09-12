@@ -1,21 +1,39 @@
-/// A tenant-owned financial account used to track manual money movement.
+/// A tenant-owned financial account used to track canonical booked money
+/// movement and reconcile it against external statement evidence.
 /// One account has exactly one currency; cross-currency conversion is outside
 /// this foundation.
 model BankAccount {
-  id          String          @id
-  tenantId    String          @map("tenant_id")
-  name        String          @db.VarChar(120)
-  accountType BankAccountType @map("account_type")
-  currency    String          @db.Char(3)
-  description String?         @db.Text
-  isActive    Boolean         @default(true) @map("is_active")
-  createdAt   Int             @map("created_at")
-  updatedAt   Int             @map("updated_at")
+  id                   String          @id
+  tenantId             String          @map("tenant_id")
+  name                 String          @db.VarChar(120)
+  accountType          BankAccountType @map("account_type")
+  currency             String          @db.Char(3)
+  description          String?         @db.Text
+  institutionName      String?         @map("institution_name") @db.VarChar(160)
+  accountHolderName    String?         @map("account_holder_name") @db.VarChar(160)
+  accountNumberLast4   String?         @map("account_number_last4") @db.VarChar(4)
+  openingBalance       BigInt          @default(0) @map("opening_balance")
+  openingBalanceAt     Int?            @map("opening_balance_at")
+  bankBalance          BigInt?         @map("bank_balance")
+  bankBalanceAt        Int?            @map("bank_balance_at")
+  lastStatementBalance BigInt?         @map("last_statement_balance")
+  lastStatementAt      Int?            @map("last_statement_at")
+  isActive             Boolean         @default(true) @map("is_active")
+  createdAt            Int             @map("created_at")
+  updatedAt            Int             @map("updated_at")
 
-  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_accounts_tenant_id_fkey")
-  transactions BankTransaction[]
-  payments     Payment[]
-  refunds      Refund[]
+  tenant           Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_accounts_tenant_id_fkey")
+  transactions     BankTransaction[]
+  payments         Payment[]
+  refunds          Refund[]
+  statementImports BankStatementImport[]
+  statementLines   BankStatementLine[]
+  ruleAssignments  BankRuleAccount[]
+  reconciliations  BankReconciliation[]
+  transfersFrom    BankTransfer[]           @relation("BankTransferFromAccount")
+  transfersTo      BankTransfer[]           @relation("BankTransferToAccount")
+  depositsFrom     BankDeposit[]            @relation("BankDepositSourceAccount")
+  depositsTo       BankDeposit[]            @relation("BankDepositDestinationAccount")
 
   @@unique([tenantId, id], map: "billing_bank_accounts_tenant_id_id_key")
   @@unique([tenantId, name], map: "billing_bank_accounts_tenant_id_name_key")
