@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import {
@@ -15,6 +16,10 @@ import { service, type LegacyBillingRecord } from '@/lib/service'
 import { getPaymentFormData } from '../../_lib/form-data'
 
 type Props = { params: Promise<{ paymentId: string }> }
+
+export const metadata: Metadata = {
+  title: 'Edit Payment',
+}
 
 export default async function EditPaymentPage({ params }: Props) {
   const context = await requirePagePermission('payments:write')
