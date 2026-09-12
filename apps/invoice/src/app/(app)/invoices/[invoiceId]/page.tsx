@@ -106,7 +106,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
               totalAmount={formatMoney(invoice.totalAmount, invoice.currency)}
             />
           </div>
-          <div className="px-2 pb-8 sm:px-4 print:p-0">
+          <div className="px-2 pb-8 pt-4 sm:px-4 print:p-0">
             <InvoiceDocumentPanel
               {...invoiceDocumentData(invoice, formatDate, formatMoney)}
               seller={seller}
