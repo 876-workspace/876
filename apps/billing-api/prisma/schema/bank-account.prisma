@@ -2,6 +2,10 @@
 /// movement and reconcile it against external statement evidence.
 /// One account has exactly one currency; cross-currency conversion is outside
 /// this foundation.
+///
+/// `directoryBankId` / `directoryBranchId` are opaque Core directory IDs. They
+/// intentionally have no Prisma relation because Core and Billing are separate
+/// bounded contexts and databases.
 model BankAccount {
   id                   String          @id
   tenantId             String          @map("tenant_id")
@@ -9,6 +13,8 @@ model BankAccount {
   accountType          BankAccountType @map("account_type")
   currency             String          @db.Char(3)
   description          String?         @db.Text
+  directoryBankId      String?         @map("directory_bank_id") @db.VarChar(255)
+  directoryBranchId    String?         @map("directory_branch_id") @db.VarChar(255)
   institutionName      String?         @map("institution_name") @db.VarChar(160)
   accountHolderName    String?         @map("account_holder_name") @db.VarChar(160)
   accountNumberLast4   String?         @map("account_number_last4") @db.VarChar(4)
@@ -38,5 +44,7 @@ model BankAccount {
   @@unique([tenantId, id], map: "billing_bank_accounts_tenant_id_id_key")
   @@unique([tenantId, name], map: "billing_bank_accounts_tenant_id_name_key")
   @@index([tenantId, isActive], map: "billing_bank_accounts_tenant_id_is_active_idx")
+  @@index([directoryBankId], map: "billing_bank_accounts_directory_bank_id_idx")
+  @@index([directoryBranchId], map: "billing_bank_accounts_directory_branch_id_idx")
   @@map("billing_bank_accounts")
 }
