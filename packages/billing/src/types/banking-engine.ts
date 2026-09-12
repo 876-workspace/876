@@ -42,6 +42,87 @@ export interface BankStatementImportCreateParams {
   lines: BankStatementLineInput[]
 }
 
+export type StatementDateFormat =
+  | 'yyyy-mm-dd'
+  | 'dd/mm/yyyy'
+  | 'mm/dd/yyyy'
+  | 'dd-mm-yyyy'
+  | 'mm-dd-yyyy'
+
+export interface StatementNumberFormat {
+  decimalSeparator?: '.' | ','
+  thousandsSeparator?: ',' | '.' | 'space' | 'none'
+}
+
+interface StatementFileMappingBase {
+  dateColumn: string
+  dateFormat: StatementDateFormat
+  descriptionColumn?: string | null
+  payeeColumn?: string | null
+  referenceColumn?: string | null
+  externalIdColumn?: string | null
+  balanceColumn?: string | null
+  numberFormat?: StatementNumberFormat
+}
+
+export type StatementFileMapping =
+  | (StatementFileMappingBase & {
+      amountMode: 'signed'
+      amountColumn: string
+      /** Direction represented by a positive value in the source statement. */
+      positiveDirection?: StatementLineType
+    })
+  | (StatementFileMappingBase & {
+      amountMode: 'debit-credit'
+      debitColumn: string
+      creditColumn: string
+    })
+
+export interface StatementFilePreviewParams {
+  format: 'csv' | 'tsv'
+  content: string
+  currency: string
+  mapping: StatementFileMapping
+}
+
+export interface StatementFileImportParams extends StatementFilePreviewParams {
+  /** Opaque 876 Storage id when the original file has already been persisted. */
+  sourceFileId?: string | null
+  sourceName?: string | null
+}
+
+export interface StatementPreviewLine {
+  sourceRowNumber: number
+  externalId: string | null
+  postedAt: number
+  type: StatementLineType
+  amount: string
+  currency: string
+  description: string | null
+  payee: string | null
+  reference: string | null
+  runningBalance: string | null
+}
+
+export interface StatementPreviewError {
+  rowNumber: number
+  field: string
+  message: string
+}
+
+export interface BankStatementPreview {
+  object: 'bank-statement-preview'
+  accountId: string
+  format: 'csv' | 'tsv'
+  currency: string
+  headers: string[]
+  totalRows: number
+  validRows: number
+  invalidRows: number
+  lines: StatementPreviewLine[]
+  errors: StatementPreviewError[]
+}
+
 export interface BankStatementImport {
   object: 'bank-statement-import'
   id: string
