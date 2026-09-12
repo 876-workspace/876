@@ -77,12 +77,12 @@ export type BankBranchRow = {
   name: string
   transitNumber: string
   routingNumber: string | null
-  addressId: string
+  addressId: string | null
   contactNumber: string | null
   operatingHours: string | null
   createdAt: bigint
   updatedAt: bigint
-  directoryAddress: DirectoryAddressRow
+  directoryAddress: DirectoryAddressRow | null
 }
 
 export const BANK_BRANCH_SELECT = {
@@ -110,7 +110,9 @@ export function serializeBankBranch(row: BankBranchRow): BankBranch {
     address_id: row.addressId,
     contact_number: row.contactNumber,
     operating_hours: row.operatingHours,
-    address: serializeDirectoryAddress(row.directoryAddress),
+    address: row.directoryAddress
+      ? serializeDirectoryAddress(row.directoryAddress)
+      : null,
     created_at: fromDbUnixSeconds(row.createdAt),
     updated_at: fromDbUnixSeconds(row.updatedAt),
   }
