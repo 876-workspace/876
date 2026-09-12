@@ -44,17 +44,6 @@ export const listDirectoryQuerySchema = paginationQuerySchema.extend({
 
 export type ListDirectoryQuery = z.infer<typeof listDirectoryQuerySchema>
 
-/**
- * Bank discovery is country-aware without adding bank-specific concerns to all
- * directory resources. This supports account setup flows such as JM -> bank ->
- * branch while leaving schools, ministries, and other directory lists unchanged.
- */
-export const bankListQuerySchema = listDirectoryQuerySchema.extend({
-  country_code: z.string().trim().length(2).toUpperCase().optional(),
-})
-
-export type BankListQuery = z.infer<typeof bankListQuerySchema>
-
 /** The read query for a single record, which is also privilege-gated. */
 export const retrieveDirectoryQuerySchema = z.object({
   include_deleted: booleanQueryParam,
