@@ -10,7 +10,7 @@ import {
   createAccountingProvidersRouter,
   createInternalAccountingProvidersRouter,
 } from '@/modules/accounting-providers'
-import { createBankingRouter } from '@/modules/banking'
+import { createBankingEngineRouter, createBankingRouter } from '@/modules/banking'
 import {
   createBillingEngineRouter,
   createInternalBillingEngineRouter,
@@ -26,27 +26,30 @@ import { createDiscountsRouter } from '@/modules/discounts'
 import { createInternalDocumentsRouter } from '@/modules/documents/documents.internal-routes'
 import { createDocumentsRouter } from '@/modules/documents/documents.routes'
 import { createQuoteLifecycleRouter } from '@/modules/documents/quote-lifecycle.routes'
-import { createSalesReceiptsRouter } from '@/modules/documents/sales-receipts.routes'
 import { createRecurringInvoicesRouter } from '@/modules/documents/recurring-invoices.routes'
+import { createSalesReceiptsRouter } from '@/modules/documents/sales-receipts.routes'
 import {
   activeConnectionAuthorization,
   createFinanceConnectionsRouter,
   createIntegrationBankAccountsRouter,
 } from '@/modules/finance-connections'
 import { createHealthRouter } from '@/modules/health'
-import { createPaymentProvidersRouter } from '@/modules/payment-providers'
 import { createPaymentIntentsRouter } from '@/modules/payment-intents'
 import { createPaymentMethodsRouter } from '@/modules/payment-methods'
+import { createPaymentProvidersRouter } from '@/modules/payment-providers'
 import { createPaymentsRouter } from '@/modules/payments/payments.routes'
-import { createInternalReportingRouter, createReportingRouter } from '@/modules/reporting'
+import {
+  createInternalReportingRouter,
+  createReportingRouter,
+} from '@/modules/reporting'
 import { createSubscriptionsRouter } from '@/modules/subscriptions'
+import { createTaxRouter } from '@/modules/tax'
 import {
   createIntegrationOrganizationRouter,
   createInternalTenantsRouter,
   createTenantsRouter,
   tenantAuthorizationByOrganizationId,
 } from '@/modules/tenants'
-import { createTaxRouter } from '@/modules/tax'
 import { createVendorsRouter } from '@/modules/vendors'
 import { HttpIdentityGateway } from '@/providers/identity'
 
@@ -71,6 +74,7 @@ export function buildRoutes(): Router {
   root.use('/api/v1', createAccountingProvidersRouter(resolveGuards))
   root.use('/api/v1', createCommercialRouter(resolveGuards))
   root.use('/api/v1', createBankingRouter(resolveGuards))
+  root.use('/api/v1', createBankingEngineRouter(resolveGuards))
   root.use('/api/v1', createCatalogRouter(resolveGuards))
   root.use('/api/v1', createCurrenciesRouter(resolveGuards))
   root.use('/api/v1', createCustomersRouter(resolveGuards))
