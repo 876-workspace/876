@@ -1,9 +1,12 @@
 import type { Request, Response } from 'express'
+import type { SourceApp } from '../../types/request.js'
 
 import { sendCrmError, sendCrmList, sendCrmResult } from '../../http/result.js'
 import * as service from './requests.service.js'
 import {
   createRequestBodySchema,
+  createRequestForBillingCustomerBodySchema,
+  billingCustomerRequestParamsSchema,
   deleteRequestBodySchema,
   listRequestsQuerySchema,
   listAcrossOrganizationsRequestsQuerySchema,
@@ -47,7 +50,45 @@ export async function retrieveRequest(req: Request, res: Response) {
 export async function createRequest(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
   const input = createRequestBodySchema.parse(req.body)
-  const result = await service.create(organizationId, input)
+  const sourceApp = res.locals.crmServiceAppSlug as SourceApp | undefined
+  const result = await service.create(organizationId, { ...input, sourceApp })
+  return sendCrmResult(res, result, 201)
+}
+
+export async function listRequestsForBillingCustomer(
+  req: Request,
+  res: Response
+) {
+  const { organizationId, billingCustomerId } =
+    billingCustomerRequestParamsSchema.parse(req.params)
+  const filters = listRequestsQuerySchema
+    .omit({ customerId: true })
+    .parse(req.query)
+  const result = await service.listForBillingCustomer(
+    organizationId,
+    billingCustomerId,
+    filters
+  )
+  return sendCrmList(
+    res,
+    result,
+    `/v1/organizations/${organizationId}/billing-customers/${billingCustomerId}/requests`
+  )
+}
+
+export async function createRequestForBillingCustomer(
+  req: Request,
+  res: Response
+) {
+  const { organizationId, billingCustomerId } =
+    billingCustomerRequestParamsSchema.parse(req.params)
+  const input = createRequestForBillingCustomerBodySchema.parse(req.body)
+  const sourceApp = res.locals.crmServiceAppSlug as SourceApp | undefined
+  const result = await service.createForBillingCustomer(
+    organizationId,
+    billingCustomerId,
+    { ...input, sourceApp }
+  )
   return sendCrmResult(res, result, 201)
 }
 

@@ -27,7 +27,22 @@ export interface ListRequestsFilter {
   ownerId?: string | null
   priorityId?: string
   requesterUserId?: string | null
+  relatedResourceType?: RelatedResourceType
+  relatedResourceId?: string
 }
+
+export type RelatedResourceType =
+  'invoice' | 'payment' | 'quote' | 'credit-note'
+
+export type RelatedResourceSnapshot = {
+  number?: string
+  amount?: string
+  currency?: string
+  status?: string
+}
+
+export type SourceApp =
+  '876-invoice' | '876-billing' | '876-crm' | '876-console'
 
 /** Request-form provenance persisted with a request; not part of the public CRM SDK contract. */
 export interface RequestIntakeContext {

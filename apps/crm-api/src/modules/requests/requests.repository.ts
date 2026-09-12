@@ -23,6 +23,15 @@ type CreateParams = {
   requesterUserId?: string | null
   requesterContactId?: string | null
   createdBy: string
+  relatedResourceType?: 'invoice' | 'payment' | 'quote' | 'credit-note' | null
+  relatedResourceId?: string | null
+  relatedResourceSnapshot?: {
+    number?: string
+    amount?: string
+    currency?: string
+    status?: string
+  } | null
+  sourceApp?: string | null
 }
 
 const requestInclude = { priority: true } as const
@@ -65,6 +74,10 @@ function buildListWhere(tenantId?: string, filters?: ListRequestsFilter) {
         ? null
         : filters.requesterUserId
   if (filters?.priorityId) where.priorityId = filters.priorityId
+  if (filters?.relatedResourceType)
+    where.relatedResourceType = filters.relatedResourceType
+  if (filters?.relatedResourceId)
+    where.relatedResourceId = filters.relatedResourceId
 
   return where
 }
@@ -132,6 +145,10 @@ async function insertRequest(
       requesterUserId: params.requesterUserId ?? null,
       requesterContactId: params.requesterContactId ?? null,
       createdBy: params.createdBy,
+      relatedResourceType: params.relatedResourceType ?? null,
+      relatedResourceId: params.relatedResourceId ?? null,
+      relatedResourceSnapshot: params.relatedResourceSnapshot ?? undefined,
+      sourceApp: params.sourceApp ?? null,
     },
     include: requestInclude,
   })
