@@ -1,9 +1,14 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { Skeleton } from '@876/ui/skeleton'
 
 import { resolveItem } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
+
+export const metadata: Metadata = {
+  title: 'Transactions',
+}
 
 export default function ItemTransactionsPage({
   params,
