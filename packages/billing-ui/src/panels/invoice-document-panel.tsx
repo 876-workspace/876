@@ -92,6 +92,13 @@ export function InvoiceDocumentPanel({
   footer,
 }: InvoiceDocumentPanelProps) {
   const address = recipient.address
+  // Driven by this invoice's own snapshotted lines, so a finalized document
+  // always renders the same columns however the org's tax or discount setup
+  // changes later.
+  const showDiscount = invoice.lines.some((line) =>
+    Boolean(line.discountAmount)
+  )
+  const showTax = invoice.lines.some((line) => Boolean(line.taxAmount))
   return (
     <DocumentView className="relative">
       <DocumentStatusRibbon status={invoice.status} />
@@ -165,14 +172,30 @@ export function InvoiceDocumentPanel({
       </DocumentDetailsGrid>
 
       <DocumentLines>
-        <table className="w-full min-w-[680px] text-sm">
+        <table
+          className={cn(
+            'w-full text-sm',
+            // Only as wide as the columns this invoice actually uses. A fixed
+            // 680px floor forced a horizontal scrollbar in the detail column
+            // even when two of the six columns held nothing but em dashes.
+            showDiscount && showTax
+              ? 'min-w-[680px]'
+              : showDiscount || showTax
+                ? 'min-w-[580px]'
+                : 'min-w-[480px]'
+          )}
+        >
           <thead>
             <tr className="border-border bg-muted/40 text-muted-foreground border-y print:border-neutral-200 print:bg-neutral-50 print:text-neutral-700">
               <th className="px-3 py-3 text-left font-medium">Description</th>
               <th className="px-3 py-3 text-right font-medium">Qty</th>
               <th className="px-3 py-3 text-right font-medium">Rate</th>
-              <th className="px-3 py-3 text-right font-medium">Discount</th>
-              <th className="px-3 py-3 text-right font-medium">Tax</th>
+              {showDiscount ? (
+                <th className="px-3 py-3 text-right font-medium">Discount</th>
+              ) : null}
+              {showTax ? (
+                <th className="px-3 py-3 text-right font-medium">Tax</th>
+              ) : null}
               <th className="px-3 py-3 text-right font-medium">Amount</th>
             </tr>
           </thead>
@@ -196,12 +219,16 @@ export function InvoiceDocumentPanel({
                 <td className="px-3 py-4 text-right tabular-nums">
                   {line.unitAmount}
                 </td>
-                <td className="px-3 py-4 text-right tabular-nums">
-                  {line.discountAmount ? `−${line.discountAmount}` : '—'}
-                </td>
-                <td className="px-3 py-4 text-right tabular-nums">
-                  {line.taxAmount ? line.taxAmount : '—'}
-                </td>
+                {showDiscount ? (
+                  <td className="px-3 py-4 text-right tabular-nums">
+                    {line.discountAmount ? `−${line.discountAmount}` : '—'}
+                  </td>
+                ) : null}
+                {showTax ? (
+                  <td className="px-3 py-4 text-right tabular-nums">
+                    {line.taxAmount ? line.taxAmount : '—'}
+                  </td>
+                ) : null}
                 <td className="px-3 py-4 text-right font-medium tabular-nums">
                   {line.totalAmount}
                 </td>
