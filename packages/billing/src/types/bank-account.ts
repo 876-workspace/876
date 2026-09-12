@@ -6,6 +6,10 @@ export interface BankAccountCreateParams {
   accountType: BankAccountType
   currency: string
   description?: string | null
+  /** Opaque Core financial-directory bank id. */
+  directoryBankId?: string | null
+  /** Opaque Core financial-directory branch id. */
+  directoryBranchId?: string | null
   institutionName?: string | null
   accountHolderName?: string | null
   accountNumberLast4?: string | null
@@ -20,6 +24,8 @@ export interface BankAccountUpdateParams {
   accountType?: BankAccountType
   currency?: string
   description?: string | null
+  directoryBankId?: string | null
+  directoryBranchId?: string | null
   institutionName?: string | null
   accountHolderName?: string | null
   accountNumberLast4?: string | null
@@ -34,6 +40,10 @@ export interface BankAccount {
   accountType: BankAccountType
   currency: string
   description: string | null
+  /** Opaque Core directory id; intentionally not a Billing database relation. */
+  directoryBankId: string | null
+  /** Opaque Core branch id; intentionally not a Billing database relation. */
+  directoryBranchId: string | null
   institutionName: string | null
   accountHolderName: string | null
   accountNumberLast4: string | null
