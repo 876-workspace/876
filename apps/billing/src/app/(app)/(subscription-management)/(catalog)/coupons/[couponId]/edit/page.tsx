@@ -1,8 +1,13 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { resolveCoupon } from '@/app/(app)/_lib/detail-data'
 import { CouponEditForm } from '@/features/coupons/components/coupon-edit-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
+
+export const metadata: Metadata = {
+  title: 'Edit Coupon',
+}
 
 export default async function EditCouponPage({
   params,
