@@ -13,24 +13,23 @@ import {
 
 export function InvoiceActions({
   invoiceId,
-  customerId,
   status,
   canWrite,
   canRecordPayment,
+  recordPaymentHref,
   documentNumber,
   totalAmount,
 }: {
   invoiceId: string
-  customerId: string
   status: InvoiceStatus
   canWrite: boolean
   canRecordPayment: boolean
+  recordPaymentHref: string
   documentNumber: string
   totalAmount: string
 }) {
   const router = useRouter()
   const editability = getInvoiceEditability(status)
-  const paymentParams = new URLSearchParams({ customerId, invoiceId })
 
   return (
     <DocumentToolbar
@@ -38,11 +37,7 @@ export function InvoiceActions({
       sharePath={`/invoices/${invoiceId}`}
       document={{ number: documentNumber, totalAmount }}
       editHref={canWrite ? `/invoices/${invoiceId}/edit` : undefined}
-      recordPaymentHref={
-        canRecordPayment
-          ? `/payments/new?${paymentParams.toString()}`
-          : undefined
-      }
+      recordPaymentHref={canRecordPayment ? recordPaymentHref : undefined}
       canEdit={canWrite && editability.editable}
       canDelete={canWrite && editability.deletable}
       onFinalize={
