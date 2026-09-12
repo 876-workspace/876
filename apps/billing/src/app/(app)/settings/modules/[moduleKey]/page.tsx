@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { Badge } from '@876/ui/badge'
@@ -14,6 +15,19 @@ import { BILLING_MODULE_CATALOG, isBillingModuleKey } from '@/lib/modules'
 import { getBilling } from '@/lib/services/billing'
 
 type Props = { params: Promise<{ moduleKey: string }> }
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { moduleKey } = await params
+  const moduleDefinition = BILLING_MODULE_CATALOG.find(
+    (module) => module.key === moduleKey
+  )
+
+  return {
+    title: moduleDefinition
+      ? `${moduleDefinition.label} Settings`
+      : 'Module Settings',
+  }
+}
 
 export default async function ModuleSettingsPage({ params }: Props) {
   const { moduleKey } = await params
