@@ -42,19 +42,22 @@
 - [x] Invalid file rows block import; no partial persistence.
 - [x] Storage file ID/mapping provenance retained without raw-content persistence.
 - [x] Banking SDK runtime schemas added.
-- [x] Banking SDK resource bundle added and client registration started.
-- [x] Plan refreshed for local orchestrator handoff.
+- [x] Banking SDK resource bundle added and registered on `create876Client`.
+- [x] Banking type barrel exports added.
+- [x] Bank account/transaction create/update SDK parsing corrected to preserve full API resources.
+- [x] Focused statement parser tests added.
+- [x] Focused Banking SDK resource tests added.
+- [x] Plan + review handoff refreshed for local orchestrator.
 
 ## In progress now
 
-- [ ] Finish `@876/billing` package exports for Banking resources/types/schemas.
-- [ ] Add focused Banking SDK tests.
-- [ ] Add statement parser tests.
-- [ ] Reconcile any API/SDK schema mismatches found by local typecheck/contract checks.
+- [ ] Run local `@876/billing` typecheck/tests and repair any barrel/resource schema mismatches.
+- [ ] Run Billing API tests/typecheck and repair parser/route typing issues.
+- [ ] Reconcile any API/SDK schema mismatches found by local contract checks.
 
 ## Next
 
-- [ ] Core country-filtered bank listing if it fits directory conventions cleanly.
+- [ ] Wire existing bank-specific `bankListQuerySchema` into `/directory/banks` so `country_code` is live without broadening every directory query.
 - [ ] Core tests for country-scoped bank uniqueness and branch ownership.
 - [ ] Versioned Jamaica bank/branch catalog + idempotent seed path.
 - [ ] Dedicated Core-directory validation client/host boundary for Billing account setup.
