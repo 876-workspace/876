@@ -1,9 +1,15 @@
 import { Suspense, type ReactNode } from 'react'
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { UsersListData } from './_components/users-list-data'
 import { UsersListSkeleton } from './_components/users-list-skeleton'
 import { UsersShell } from './_components/users-shell'
+
+export const metadata: Metadata = {
+  title: 'Users',
+}
+
 export default async function UsersLayout({
   children,
 }: {
