@@ -170,13 +170,13 @@ model BankStatementLine {
   import  BankStatementImport @relation(fields: [tenantId, importId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_statement_lines_import_fkey")
   // Composite SET NULL would also null required tenantId. The service clears or
   // blocks these links deliberately before deleting the referenced evidence.
-  recognizedRule BankRule?           @relation(fields: [tenantId, recognizedRuleId], references: [tenantId, id], onDelete: NoAction, onUpdate: Cascade, map: "billing_bank_statement_lines_rule_fkey")
-  duplicateOf    BankStatementLine?  @relation("BankStatementDuplicates", fields: [tenantId, duplicateOfId], references: [tenantId, id], onDelete: NoAction, onUpdate: Cascade, map: "billing_bank_statement_lines_duplicate_fkey")
+  recognizedRule BankRule?          @relation(fields: [tenantId, recognizedRuleId], references: [tenantId, id], onDelete: NoAction, onUpdate: Cascade, map: "billing_bank_statement_lines_rule_fkey")
+  duplicateOf    BankStatementLine? @relation("BankStatementDuplicates", fields: [tenantId, duplicateOfId], references: [tenantId, id], onDelete: NoAction, onUpdate: Cascade, map: "billing_bank_statement_lines_duplicate_fkey")
   duplicates     BankStatementLine[] @relation("BankStatementDuplicates")
   matches        BankStatementMatch[]
 
   @@unique([tenantId, id], map: "billing_bank_statement_lines_tenant_id_id_key")
-  @@unique([tenantId, accountId, externalId], map: "billing_bank_statement_lines_external_key")
+  @@index([tenantId, accountId, externalId], map: "billing_bank_statement_lines_external_idx")
   @@index([tenantId, accountId, status, postedAt], map: "billing_bank_statement_lines_account_status_date_idx")
   @@index([tenantId, accountId, fingerprint], map: "billing_bank_statement_lines_fingerprint_idx")
   @@index([tenantId, importId], map: "billing_bank_statement_lines_import_idx")
@@ -235,6 +235,7 @@ model BankRule {
   createdAt      Int                    @map("created_at")
   updatedAt      Int                    @map("updated_at")
 
+  tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_rules_tenant_id_fkey")
   conditions      BankRuleCondition[]
   accounts        BankRuleAccount[]
   recognizedLines BankStatementLine[]
