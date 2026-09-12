@@ -110,6 +110,10 @@ export interface StatementPreviewError {
   message: string
 }
 
+/** Public aliases follow the Banking resource naming convention. */
+export type BankStatementPreviewLine = StatementPreviewLine
+export type BankStatementPreviewError = StatementPreviewError
+
 export interface BankStatementPreview {
   object: 'bank-statement-preview'
   accountId: string
