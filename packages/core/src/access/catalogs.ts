@@ -244,6 +244,11 @@ export const billingPermissionCatalog: AppPermissionCatalog =
       // attach or detach a customer's card. Billing's own plane separates these
       // as `payment_methods:*`; the canonical key is kebab-case per naming.md.
       crud('payment-methods', 'Payment methods'),
+      {
+        key: 'requests',
+        label: 'Requests',
+        actions: ['view', 'create', 'edit'],
+      },
       { key: 'settings', label: 'Settings', actions: ['view', 'edit'] },
     ]),
   })
@@ -258,6 +263,11 @@ export const invoicePermissionCatalog: AppPermissionCatalog =
       crudModule(FINANCE_MODULES.invoices, ['export']),
       crudModule(FINANCE_MODULES.quotes, ['export']),
       crudModule(FINANCE_MODULES.payments),
+      {
+        key: 'requests',
+        label: 'Requests',
+        actions: ['view', 'create', 'edit'],
+      },
       crud('tasks', 'Tasks', ['assign', 'respond']),
       crud('reminders', 'Reminders'),
       crud('events', 'Events', ['invite', 'respond']),

@@ -1,17 +1,10 @@
 import type { Metadata } from 'next'
 
-import { CustomerTimelinePanel } from '@876/billing-ui/panels/customer-timeline-panel'
-
 export const metadata: Metadata = {
   title: 'Requests',
 }
 
+/** The persistent segment layout owns the list; this index route has no detail card. */
 export default function CustomerRequestsPage() {
-  return (
-    <CustomerTimelinePanel
-      title="Requests"
-      emptyMessage="No requests have been recorded for this customer yet."
-      state={{ status: 'empty' }}
-    />
-  )
+  return null
 }

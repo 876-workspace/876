@@ -79,4 +79,5 @@ export interface DeleteCustomerInput {
 export interface ListCustomersFilter {
   customerOrganizationId?: string
   customerUserId?: string
+  billingCustomerId?: string
 }

@@ -51,5 +51,6 @@ export function buildServiceRuntime(options: ServiceRuntimeOptions) {
   }
 }
 
-export type Runtime = ReturnType<typeof buildRuntime>
+export type InternalRuntime = ReturnType<typeof buildRuntime>
 export type ServiceRuntime = ReturnType<typeof buildServiceRuntime>
+export type Runtime = InternalRuntime | ServiceRuntime
