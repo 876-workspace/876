@@ -174,6 +174,16 @@ export const matchCandidateSchema = z.object({
   confidence: z.enum(['exact', 'strong', 'possible']),
 })
 
+export const statementCategorizeBodySchema = z.strictObject({
+  action: z.enum(['manual-deposit', 'manual-withdrawal']),
+})
+
+export const statementCategorizeResultSchema = z.object({
+  statementLine: statementLineSchema,
+  match: statementMatchSchema,
+  bankTransactionId: z.string(),
+})
+
 export const bankTransferCreateBodySchema = z.strictObject({
   fromAccountId: z.string().min(1),
   toAccountId: z.string().min(1),
@@ -200,16 +210,18 @@ export const bankTransferSchema = z.object({
   updatedAt: z.number().int(),
 })
 
-export const reconciliationCreateBodySchema = z.strictObject({
-  startAt: z.number().int().nonnegative(),
-  endAt: z.number().int().nonnegative(),
-  openingBalance: signedMinorAmountSchema,
-  closingBalance: signedMinorAmountSchema,
-  bankTransactionIds: z.array(z.string().min(1)).max(1000).default([]),
-}).refine((value) => value.startAt <= value.endAt, {
-  message: 'The reconciliation start must not be after the end.',
-  path: ['endAt'],
-})
+export const reconciliationCreateBodySchema = z
+  .strictObject({
+    startAt: z.number().int().nonnegative(),
+    endAt: z.number().int().nonnegative(),
+    openingBalance: signedMinorAmountSchema,
+    closingBalance: signedMinorAmountSchema,
+    bankTransactionIds: z.array(z.string().min(1)).max(1000).default([]),
+  })
+  .refine((value) => value.startAt <= value.endAt, {
+    message: 'The reconciliation start must not be after the end.',
+    path: ['endAt'],
+  })
 
 export const reconciliationSchema = z.object({
   object: z.literal('bank-reconciliation'),
@@ -246,6 +258,11 @@ export const bankRuleConditionInputSchema = z.strictObject({
   value: z.string().trim().min(1).max(255),
 })
 
+const bankRuleActionSchema = z.strictObject({
+  type: z.enum(['manual-deposit', 'manual-withdrawal', 'review']),
+  note: z.string().trim().min(1).max(255).nullable().optional(),
+})
+
 export const bankRuleCreateBodySchema = z.strictObject({
   name: z.string().trim().min(1).max(120),
   priority: z.number().int().min(0).max(10000).default(0),
@@ -254,14 +271,20 @@ export const bankRuleCreateBodySchema = z.strictObject({
   automationMode: z.enum(['recognize', 'auto-categorize']).default('recognize'),
   accountIds: z.array(z.string().min(1)).max(100).default([]),
   conditions: z.array(bankRuleConditionInputSchema).min(1).max(20),
-  action: z.strictObject({
-    type: z.enum(['manual-deposit', 'manual-withdrawal', 'review']),
-    note: z.string().trim().min(1).max(255).nullable().optional(),
-  }),
+  action: bankRuleActionSchema,
 })
 
-export const bankRuleUpdateBodySchema = bankRuleCreateBodySchema
-  .partial()
+export const bankRuleUpdateBodySchema = z
+  .strictObject({
+    name: z.string().trim().min(1).max(120).optional(),
+    priority: z.number().int().min(0).max(10000).optional(),
+    enabled: z.boolean().optional(),
+    matchMode: z.enum(['all', 'any']).optional(),
+    automationMode: z.enum(['recognize', 'auto-categorize']).optional(),
+    accountIds: z.array(z.string().min(1)).max(100).optional(),
+    conditions: z.array(bankRuleConditionInputSchema).min(1).max(20).optional(),
+    action: bankRuleActionSchema.optional(),
+  })
   .refine((body) => Object.keys(body).length > 0, 'Nothing to update.')
 
 export const bankRuleSchema = z.object({
@@ -274,12 +297,15 @@ export const bankRuleSchema = z.object({
   automationMode: z.enum(['recognize', 'auto-categorize']),
   accountIds: z.array(z.string()),
   conditions: z.array(bankRuleConditionInputSchema.extend({ id: z.string() })),
-  action: z.object({
-    type: z.enum(['manual-deposit', 'manual-withdrawal', 'review']),
-    note: z.string().nullable().optional(),
-  }),
+  action: bankRuleActionSchema,
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
+})
+
+export const deletedBankRuleSchema = z.object({
+  object: z.literal('bank-rule'),
+  id: z.string(),
+  deleted: z.literal(true),
 })
 
 export const bankRuleParamsSchema = z.object({
@@ -291,6 +317,9 @@ export type StatementImportCreateBody = z.infer<
 >
 export type StatementLineInput = z.infer<typeof statementLineInputSchema>
 export type StatementMatchBody = z.infer<typeof statementMatchBodySchema>
+export type StatementCategorizeBody = z.infer<
+  typeof statementCategorizeBodySchema
+>
 export type BankTransferCreateBody = z.infer<typeof bankTransferCreateBodySchema>
 export type ReconciliationCreateBody = z.infer<
   typeof reconciliationCreateBodySchema
