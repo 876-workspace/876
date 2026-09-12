@@ -12,6 +12,16 @@ export async function enabledCurrencyExists(
   return currency !== null
 }
 
+export function findEnabledCurrencyRow(tenantId: string, currencyCode: string) {
+  return prisma.tenantCurrency.findFirst({
+    where: { tenantId, currencyCode, isEnabled: true },
+    select: {
+      currencyCode: true,
+      currency: { select: { decimalPlaces: true } },
+    },
+  })
+}
+
 export function listCurrencyRows(tenantId: string) {
   return prisma.tenantCurrency.findMany({
     where: { tenantId, isEnabled: true },
@@ -123,60 +133,52 @@ export async function setDefaultCurrencyRow(
       },
       update: { isDefault: true, isEnabled: true, updatedAt: now },
     })
-    const tenant = await transaction.tenant.updateMany({
+    await transaction.tenant.update({
       where: { id: tenantId },
       data: { defaultCurrency: currencyCode, updatedAt: now },
     })
-    return tenant.count > 0
+    return true
   })
 }
 
 export async function updateCurrencyRow(data: {
   tenantId: string
   code: string
-  name: string
+  name?: string
   symbol: string | null
-  decimalPlaces: number
+  decimalPlaces?: number
   now: number
 }): Promise<boolean> {
-  return prisma.$transaction(async (transaction) => {
-    const link = await transaction.tenantCurrency.findUnique({
-      where: {
-        tenantId_currencyCode: {
-          tenantId: data.tenantId,
-          currencyCode: data.code,
-        },
-      },
-      select: { currencyCode: true },
-    })
-    if (!link) return false
-    const result = await transaction.currency.updateMany({
-      where: { code: data.code },
-      data: {
-        name: data.name,
-        symbol: data.symbol,
-        decimalPlaces: data.decimalPlaces,
-        updatedAt: data.now,
-      },
-    })
-    return result.count > 0
+  const enabled = await prisma.tenantCurrency.findFirst({
+    where: { tenantId: data.tenantId, currencyCode: data.code, isEnabled: true },
+    select: { currencyCode: true },
   })
+  if (!enabled) return false
+  await prisma.currency.update({
+    where: { code: data.code },
+    data: {
+      name: data.name,
+      symbol: data.symbol,
+      decimalPlaces: data.decimalPlaces,
+      updatedAt: data.now,
+    },
+  })
+  return true
 }
 
 export async function removeCurrencyRow(
   tenantId: string,
   currencyCode: string
-): Promise<'deleted' | 'default' | 'missing'> {
-  return prisma.$transaction(async (transaction) => {
-    const link = await transaction.tenantCurrency.findUnique({
-      where: { tenantId_currencyCode: { tenantId, currencyCode } },
-      select: { isDefault: true },
-    })
-    if (!link) return 'missing'
-    if (link.isDefault) return 'default'
-    await transaction.tenantCurrency.delete({
-      where: { tenantId_currencyCode: { tenantId, currencyCode } },
-    })
-    return 'deleted'
+): Promise<'removed' | 'missing' | 'default'> {
+  const tenantCurrency = await prisma.tenantCurrency.findFirst({
+    where: { tenantId, currencyCode, isEnabled: true },
+    select: { isDefault: true },
   })
+  if (!tenantCurrency) return 'missing'
+  if (tenantCurrency.isDefault) return 'default'
+  await prisma.tenantCurrency.update({
+    where: { tenantId_currencyCode: { tenantId, currencyCode } },
+    data: { isEnabled: false },
+  })
+  return 'removed'
 }
