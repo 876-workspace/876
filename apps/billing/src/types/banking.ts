@@ -32,10 +32,12 @@ const positiveMinorAmountSchema = minorAmountSchema.refine(
 )
 
 const directoryIdSchema = z.string().trim().min(1).nullable().optional()
-const accountLast4Schema = z
+// Mirrors the Billing API: banks print spaces and dashes, the stored value is
+// the normalized 4–34 character number. `null` clears it on update.
+const accountNumberSchema = z
   .string()
-  .trim()
-  .regex(/^[A-Za-z0-9]{1,4}$/)
+  .transform((value) => value.replace(/[\s-]/g, '').toUpperCase())
+  .pipe(z.string().regex(/^[A-Z0-9]{4,34}$/, 'Enter a valid account number.'))
   .nullable()
   .optional()
 
@@ -48,7 +50,7 @@ export const BankAccountCreateSchema = z.strictObject({
   directoryBranchId: directoryIdSchema,
   institutionName: z.string().trim().min(1).max(160).nullable().optional(),
   accountHolderName: z.string().trim().min(1).max(160).nullable().optional(),
-  accountNumberLast4: accountLast4Schema,
+  accountNumber: accountNumberSchema,
 })
 
 export const BankAccountUpdateSchema = z
@@ -61,7 +63,7 @@ export const BankAccountUpdateSchema = z
     directoryBranchId: directoryIdSchema,
     institutionName: z.string().trim().min(1).max(160).nullable().optional(),
     accountHolderName: z.string().trim().min(1).max(160).nullable().optional(),
-    accountNumberLast4: accountLast4Schema,
+    accountNumber: accountNumberSchema,
     isActive: z.boolean().optional(),
   })
   .refine((value) => Object.keys(value).length > 0, 'Nothing to update.')
@@ -123,6 +125,13 @@ export interface BankAccountUpdated {
 export interface BankTransactionUpdated {
   object: 'bank_transaction'
   id: string
+}
+
+export interface BankAccountNumberResource {
+  object: 'bank_account_number'
+  accountId: string
+  accountNumber: string
+  accountNumberLast4: string
 }
 
 export interface BankAccountDeleted {

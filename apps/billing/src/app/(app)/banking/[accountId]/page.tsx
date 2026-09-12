@@ -13,6 +13,7 @@ import {
 
 import { StatementWorkspace } from '@/features/banking/components/statement-workspace'
 import { BankIdentity } from '@/features/banking/components/bank-identity'
+import { AccountNumberReveal } from '@/features/banking/components/account-number-reveal'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'
@@ -92,6 +93,12 @@ export default async function BankAccountPage({ params }: Props) {
                 routingNumber={branch?.routingNumber ?? null}
                 accountNumberLast4={account.accountNumberLast4 ?? null}
               />
+              {canManage && account.accountNumberLast4 ? (
+                <AccountNumberReveal
+                  accountId={account.id}
+                  accountNumberLast4={account.accountNumberLast4}
+                />
+              ) : null}
             </span>
           ) : (
             [

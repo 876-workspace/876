@@ -2,6 +2,7 @@ import type {
   BankAccountResource,
   BankAccountCreateInput,
   BankAccountDeleted,
+  BankAccountNumberResource,
   BankAccountUpdateInput,
 } from '@/types/banking'
 
@@ -26,4 +27,15 @@ const deleteAccount = (accountId: string) =>
     method: 'DELETE',
   })
 
-export const bankAccounts = { create, update, delete: deleteAccount }
+// The full number is sealed at rest and only returned on explicit request.
+const retrieveAccountNumber = (accountId: string) =>
+  request<BankAccountNumberResource>(
+    `${COLLECTION}/${encodeURIComponent(accountId)}/account-number`
+  )
+
+export const bankAccounts = {
+  create,
+  update,
+  delete: deleteAccount,
+  accountNumber: { retrieve: retrieveAccountNumber },
+}

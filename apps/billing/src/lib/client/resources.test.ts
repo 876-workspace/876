@@ -82,6 +82,11 @@ const cases: RequestCase[] = [
     init: { method: 'DELETE' },
   },
   {
+    name: 'retrieves a bank account number on request',
+    act: () => bankAccounts.accountNumber.retrieve('ba /1'),
+    url: '/api/banking/accounts/ba%20%2F1/account-number',
+  },
+  {
     name: 'creates a bank transaction',
     act: () => bankTransactions.create('ba /1', EMPTY),
     url: '/api/banking/accounts/ba%20%2F1/transactions',

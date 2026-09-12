@@ -87,9 +87,9 @@ export function BankAccountForm({
   const [accountHolderName, setAccountHolderName] = useState(
     initial?.accountHolderName ?? ''
   )
-  const [accountNumberLast4, setAccountNumberLast4] = useState(
-    initial?.accountNumberLast4 ?? ''
-  )
+  // The stored number is never sent to the browser. Blank on edit keeps it;
+  // a new value replaces it.
+  const [accountNumber, setAccountNumber] = useState('')
   const skipPrimedBranchLoad = useRef(
     Boolean(initial?.directoryBankId && initialBranches.length)
   )
@@ -164,8 +164,11 @@ export function BankAccountForm({
       setError('Select the branch for this bank account.')
       return
     }
-    if (accountNumberLast4 && !/^[A-Za-z0-9]{1,4}$/.test(accountNumberLast4)) {
-      setError('Enter only the last four letters or digits of the account number.')
+    if (
+      accountNumber.trim() &&
+      !/^[A-Z0-9]{4,34}$/.test(accountNumber.replace(/[\s-]/g, '').toUpperCase())
+    ) {
+      setError('Enter the full account number using letters and digits.')
       return
     }
 
@@ -181,14 +184,18 @@ export function BankAccountForm({
         directoryBranchId: linksBank ? directoryBranchId || null : null,
         institutionName: linksBank ? bankName : null,
         accountHolderName: accountHolderName.trim() || null,
-        accountNumberLast4: accountNumberLast4.trim() || null,
       }
+      const enteredNumber = accountNumber.trim()
       const result = initial
         ? await client.bankAccounts.update(initial.id, {
             ...params,
+            ...(enteredNumber ? { accountNumber: enteredNumber } : {}),
             isActive,
           })
-        : await client.bankAccounts.create(params)
+        : await client.bankAccounts.create({
+            ...params,
+            accountNumber: enteredNumber || null,
+          })
       if (result.error || !result.data) {
         setError(result.error?.message ?? 'Failed to save the bank account.')
         return
@@ -320,14 +327,20 @@ export function BankAccountForm({
             placeholder="Organization or account holder"
           />
         </Field>
-        <Field label="Account number (last 4 only)" htmlFor="bank-account-last4">
+        <Field label="Account number" htmlFor="bank-account-number">
           <Input
-            id="bank-account-last4"
-            value={accountNumberLast4}
-            onChange={(event) => setAccountNumberLast4(event.target.value)}
-            maxLength={4}
+            id="bank-account-number"
+            value={accountNumber}
+            onChange={(event) => setAccountNumber(event.target.value)}
+            maxLength={40}
+            inputMode="text"
             autoComplete="off"
-            placeholder="1234"
+            spellCheck={false}
+            placeholder={
+              initial?.accountNumberLast4
+                ? `••••${initial.accountNumberLast4} on file — enter to replace`
+                : '060 455 1234'
+            }
           />
         </Field>
         {initial ? (
