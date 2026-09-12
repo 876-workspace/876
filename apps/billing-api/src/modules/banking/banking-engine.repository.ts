@@ -45,6 +45,7 @@ export function findEngineAccount(tenantId: string, accountId: string) {
       accountType: true,
       openingBalance: true,
       isActive: true,
+      isSystem: true,
     },
   })
 }
@@ -87,13 +88,7 @@ export function createStatementImportRow(
       source: body.source.toUpperCase() as 'FILE' | 'EMAIL' | 'FEED' | 'API',
       format: body.format
         ? (body.format.replace('-', '_').toUpperCase() as
-            | 'CSV'
-            | 'TSV'
-            | 'OFX'
-            | 'QIF'
-            | 'CAMT_053'
-            | 'CAMT_054'
-            | 'MT940')
+            'CSV' | 'TSV' | 'OFX' | 'QIF' | 'CAMT_053' | 'CAMT_054' | 'MT940')
         : null,
       sourceFileId: body.sourceFileId ?? null,
       sourceName: body.sourceName ?? null,
@@ -288,7 +283,9 @@ export async function createStatementMatchRow(
         )
         if (item.amount > transaction.amount - matched) return null
       }
-      if (items.reduce((total, item) => total + item.amount, 0n) !== line.amount)
+      if (
+        items.reduce((total, item) => total + item.amount, 0n) !== line.amount
+      )
         return null
 
       const updated = await tx.bankStatementLine.updateMany({
@@ -438,7 +435,6 @@ export async function createManualCategorizationRows(
           items: {
             create: {
               id: matchItemId,
-              tenantId,
               bankTransactionId,
               amount: line.amount,
               createdAt: now,
@@ -520,6 +516,149 @@ export function createTransferRows(
   })
 }
 
+export function listDepositRows(tenantId: string, accountId?: string) {
+  return prisma.bankDeposit.findMany({
+    where: accountId
+      ? {
+          tenantId,
+          OR: [
+            { sourceAccountId: accountId },
+            { destinationAccountId: accountId },
+          ],
+        }
+      : { tenantId },
+    include: { items: true },
+    orderBy: [{ depositedAt: 'desc' }, { createdAt: 'desc' }],
+    take: 100,
+  })
+}
+
+export function findDepositRow(tenantId: string, id: string) {
+  return prisma.bankDeposit.findFirst({
+    where: { tenantId, id },
+    include: { items: true },
+  })
+}
+
+export function createDepositRows(
+  tenantId: string,
+  ids: { deposit: string; debit: string; credit: string; items: string[] },
+  body: {
+    sourceAccountId: string
+    destinationAccountId: string
+    transactionIds: string[]
+    amount: bigint
+    currency: string
+    depositedAt: number
+    description?: string | null
+    reference?: string | null
+  },
+  now: number
+) {
+  return prisma.$transaction(
+    async (tx) => {
+      const sourceRows = await tx.bankTransaction.findMany({
+        where: {
+          tenantId,
+          accountId: body.sourceAccountId,
+          id: { in: body.transactionIds },
+          type: 'CREDIT',
+          depositSourceItems: { none: { deposit: { status: 'POSTED' } } },
+        },
+      })
+      if (sourceRows.length !== body.transactionIds.length)
+        throw new Error('deposit-items-invalid')
+      const actual = sourceRows.reduce((sum, row) => sum + row.amount, 0n)
+      if (actual !== body.amount) throw new Error('deposit-amount-invalid')
+      const deposit = await tx.bankDeposit.create({
+        data: {
+          id: ids.deposit,
+          tenantId,
+          sourceAccountId: body.sourceAccountId,
+          destinationAccountId: body.destinationAccountId,
+          amount: body.amount,
+          currency: body.currency,
+          depositedAt: body.depositedAt,
+          description: body.description ?? null,
+          reference: body.reference ?? null,
+          status: 'POSTED',
+          createdAt: now,
+          updatedAt: now,
+        },
+      })
+      await tx.bankDepositItem.createMany({
+        data: sourceRows.map((row, index) => ({
+          id: ids.items[index]!,
+          tenantId,
+          depositId: ids.deposit,
+          sourceTransactionId: row.id,
+          amount: row.amount,
+          createdAt: now,
+        })),
+      })
+      await tx.bankTransaction.createMany({
+        data: [
+          {
+            id: ids.debit,
+            tenantId,
+            accountId: body.sourceAccountId,
+            depositId: ids.deposit,
+            type: 'DEBIT',
+            amount: body.amount,
+            date: body.depositedAt,
+            description: body.description ?? 'Bank deposit',
+            reference: body.reference ?? ids.deposit,
+            status: 'CATEGORIZED',
+            createdAt: now,
+            updatedAt: now,
+          },
+          {
+            id: ids.credit,
+            tenantId,
+            accountId: body.destinationAccountId,
+            depositId: ids.deposit,
+            type: 'CREDIT',
+            amount: body.amount,
+            date: body.depositedAt,
+            description: body.description ?? 'Bank deposit',
+            reference: body.reference ?? ids.deposit,
+            status: 'CATEGORIZED',
+            createdAt: now,
+            updatedAt: now,
+          },
+        ],
+      })
+      return deposit
+    },
+    { isolationLevel: 'Serializable' }
+  )
+}
+
+export function reverseDepositRow(tenantId: string, id: string, now: number) {
+  return prisma.$transaction(
+    async (tx) => {
+      const deposit = await tx.bankDeposit.findFirst({
+        where: { tenantId, id },
+      })
+      if (!deposit) return null
+      if (deposit.status !== 'POSTED') return 'reversed' as const
+      await tx.bankDeposit.update({
+        where: { id },
+        data: { status: 'REVERSED', reversedAt: now, updatedAt: now },
+      })
+      await tx.bankTransaction.updateMany({
+        where: { tenantId, depositId: id },
+        data: { status: 'EXCLUDED', updatedAt: now },
+      })
+      return tx.bankDeposit.findFirst({
+        where: { tenantId, id },
+        include: { items: true },
+      })
+    },
+    { isolationLevel: 'Serializable' }
+  )
+}
+
 export function listReconciliationRows(tenantId: string, accountId: string) {
   return prisma.bankReconciliation.findMany({
     where: { tenantId, accountId },
@@ -542,7 +681,12 @@ export function findReconciliationTransactionRows(
   ids: string[]
 ) {
   return prisma.bankTransaction.findMany({
-    where: { tenantId, accountId, id: { in: ids }, status: { not: 'EXCLUDED' } },
+    where: {
+      tenantId,
+      accountId,
+      id: { in: ids },
+      status: { not: 'EXCLUDED' },
+    },
     include: {
       reconciliationItems: {
         where: { reconciliation: { status: 'COMPLETED' } },
@@ -608,7 +752,12 @@ export function completeReconciliationRow(
       status: { in: ['DRAFT', 'REOPENED'] },
       difference: 0,
     },
-    data: { status: 'COMPLETED', completedBy, completedAt: now, updatedAt: now },
+    data: {
+      status: 'COMPLETED',
+      completedBy,
+      completedAt: now,
+      updatedAt: now,
+    },
   })
 }
 
@@ -673,32 +822,28 @@ export function findBankRuleRow(tenantId: string, id: string) {
 }
 
 function conditionData(
-  tenantId: string,
-  ruleId: string,
   conditions: BankRuleCreateBody['conditions'],
   ids: string[],
   now: number
 ) {
-  return conditions.map((condition, index) => ({
-    id: ids[index],
-    tenantId,
-    ruleId,
-    field: condition.field.replace('-', '_').toUpperCase() as
-      | 'DESCRIPTION'
-      | 'PAYEE'
-      | 'REFERENCE'
-      | 'AMOUNT'
-      | 'TYPE',
-    operator: condition.operator.replaceAll('-', '_').toUpperCase() as
-      | 'EQUALS'
-      | 'CONTAINS'
-      | 'STARTS_WITH'
-      | 'ENDS_WITH'
-      | 'GREATER_THAN'
-      | 'LESS_THAN',
-    value: condition.value,
-    createdAt: now,
-  }))
+  return conditions.map((condition, index) => {
+    const id = ids[index]
+    if (!id) throw new Error('Missing bank rule condition ID.')
+    return {
+      id,
+      field: condition.field.replace('-', '_').toUpperCase() as
+        'DESCRIPTION' | 'PAYEE' | 'REFERENCE' | 'AMOUNT' | 'TYPE',
+      operator: condition.operator.replaceAll('-', '_').toUpperCase() as
+        | 'EQUALS'
+        | 'CONTAINS'
+        | 'STARTS_WITH'
+        | 'ENDS_WITH'
+        | 'GREATER_THAN'
+        | 'LESS_THAN',
+      value: condition.value,
+      createdAt: now,
+    }
+  })
 }
 
 export function createBankRuleRow(
@@ -718,17 +863,16 @@ export function createBankRuleRow(
       enabled: body.enabled,
       matchMode: body.matchMode.toUpperCase() as 'ALL' | 'ANY',
       automationMode: body.automationMode.replace('-', '_').toUpperCase() as
-        | 'RECOGNIZE'
-        | 'AUTO_CATEGORIZE',
+        'RECOGNIZE' | 'AUTO_CATEGORIZE',
       action: body.action as Prisma.InputJsonValue,
       createdBy,
       createdAt: now,
       updatedAt: now,
       conditions: {
-        create: conditionData(tenantId, id, body.conditions, conditionIds, now),
+        create: conditionData(body.conditions, conditionIds, now),
       },
       accounts: {
-        create: body.accountIds.map((accountId) => ({ tenantId, accountId })),
+        create: body.accountIds.map((accountId) => ({ accountId })),
       },
     },
     include: ruleInclude,
@@ -752,7 +896,9 @@ export async function updateBankRuleRow(
     if (body.conditions) {
       await tx.bankRuleCondition.deleteMany({ where: { tenantId, ruleId: id } })
       await tx.bankRuleCondition.createMany({
-        data: conditionData(tenantId, id, body.conditions, conditionIds, now),
+        data: conditionData(body.conditions, conditionIds, now).map(
+          (condition) => ({ ...condition, tenantId, ruleId: id })
+        ),
       })
     }
     if (body.accountIds) {
@@ -778,8 +924,7 @@ export async function updateBankRuleRow(
           : undefined,
         automationMode: body.automationMode
           ? (body.automationMode.replace('-', '_').toUpperCase() as
-              | 'RECOGNIZE'
-              | 'AUTO_CATEGORIZE')
+              'RECOGNIZE' | 'AUTO_CATEGORIZE')
           : undefined,
         action: body.action as Prisma.InputJsonValue | undefined,
         updatedAt: now,

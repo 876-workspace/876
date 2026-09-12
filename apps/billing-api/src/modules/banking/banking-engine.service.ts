@@ -1,7 +1,10 @@
 import { listObject } from '@/http/envelope'
 import { AppHttpError } from '@/http/errors'
 import { generateId } from '@/platform/ids'
-import { isUniqueConstraintError } from '@/platform/prisma-errors'
+import {
+  isRetryableTransactionError,
+  isUniqueConstraintError,
+} from '@/platform/prisma-errors'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
 import {
@@ -15,6 +18,7 @@ import type {
   BankRuleCreateBody,
   BankRuleUpdateBody,
   BankTransferCreateBody,
+  BankDepositCreateBody,
   ReconciliationCreateBody,
   StatementImportCreateBody,
   StatementMatchBody,
@@ -22,6 +26,7 @@ import type {
 import {
   serializeBankRule,
   serializeBankTransfer,
+  serializeBankDeposit,
   serializeReconciliation,
   serializeStatementImport,
   serializeStatementImportWithLines,
@@ -84,7 +89,9 @@ export async function createStatementImport(
     drafted.map(({ fingerprint }) => fingerprint)
   )
   const byExternalId = new Map(
-    existing.flatMap((row) => (row.externalId ? [[row.externalId, row.id]] : []))
+    existing.flatMap((row) =>
+      row.externalId ? [[row.externalId, row.id]] : []
+    )
   )
   const byFingerprint = new Map(
     existing.map((row) => [row.fingerprint, row.id] as const)
@@ -141,7 +148,9 @@ export async function createStatementImport(
 async function recognizeImportedLines(
   tenantId: string,
   accountId: string,
-  lines: Awaited<ReturnType<typeof repository.createStatementImportRow>>['lines'],
+  lines: Awaited<
+    ReturnType<typeof repository.createStatementImportRow>
+  >['lines'],
   actorId: string | null,
   now: number
 ) {
@@ -202,10 +211,7 @@ export async function retrieveStatementImport(
   return serializeStatementImportWithLines(row)
 }
 
-export async function undoStatementImport(
-  tenantId: string,
-  importId: string
-) {
+export async function undoStatementImport(tenantId: string, importId: string) {
   const result = await repository.undoStatementImportRow(
     tenantId,
     importId,
@@ -222,10 +228,7 @@ export async function undoStatementImport(
   return serializeStatementImport(result.row)
 }
 
-export async function listStatementLines(
-  tenantId: string,
-  accountId: string
-) {
+export async function listStatementLines(tenantId: string, accountId: string) {
   await requireAccount(tenantId, accountId)
   const rows = await repository.listStatementLineRows(tenantId, accountId)
 
@@ -312,12 +315,15 @@ export async function matchStatementLine(
     ids
   )
   if (transactions.length !== ids.length)
-    throw invalid('One or more bank transactions were not found on this account.')
+    throw invalid(
+      'One or more bank transactions were not found on this account.'
+    )
 
   const transactionsById = new Map(transactions.map((row) => [row.id, row]))
   for (const item of body.items) {
     const transaction = transactionsById.get(item.bankTransactionId)
-    if (!transaction) throw invalid('A selected bank transaction was not found.')
+    if (!transaction)
+      throw invalid('A selected bank transaction was not found.')
     if (transaction.type !== line.type)
       throw invalid('Matched transactions must use the statement direction.')
 
@@ -326,7 +332,9 @@ export async function matchStatementLine(
       0n
     )
     if (item.amount > transaction.amount - matched)
-      throw invalid('A match cannot exceed the transaction amount still available.')
+      throw invalid(
+        'A match cannot exceed the transaction amount still available.'
+      )
   }
 
   const total = body.items.reduce((sum, item) => sum + item.amount, 0n)
@@ -446,6 +454,92 @@ export async function listBankTransfers(tenantId: string) {
   })
 }
 
+export async function listBankDeposits(tenantId: string, accountId?: string) {
+  if (accountId) await requireAccount(tenantId, accountId)
+  const rows = await repository.listDepositRows(tenantId, accountId)
+  return listObject({
+    data: rows.map(serializeBankDeposit),
+    hasMore: false,
+    totalCount: rows.length,
+    url: '/api/v1/banking/deposits',
+  })
+}
+
+export async function retrieveBankDeposit(tenantId: string, id: string) {
+  const row = await repository.findDepositRow(tenantId, id)
+  if (!row) throw missing('bank-deposit')
+  return serializeBankDeposit(row)
+}
+
+export async function createBankDeposit(
+  tenantId: string,
+  body: BankDepositCreateBody
+) {
+  if (body.sourceAccountId === body.destinationAccountId)
+    throw invalid('A deposit requires two different accounts.')
+  const [source, destination] = await Promise.all([
+    requireAccount(tenantId, body.sourceAccountId),
+    requireAccount(tenantId, body.destinationAccountId),
+  ])
+  if (!source.isActive || !destination.isActive)
+    throw conflict('Both deposit accounts must be active.')
+  if (
+    !source.isSystem ||
+    !['UNDEPOSITED_FUNDS', 'PETTY_CASH'].includes(source.accountType)
+  )
+    throw invalid(
+      'Deposits must originate from Undeposited Funds or Petty Cash.'
+    )
+  if (!['CHECKING', 'SAVINGS'].includes(destination.accountType))
+    throw invalid('Deposits must be made to a checking or savings account.')
+  if (
+    source.currency !== body.currency ||
+    destination.currency !== body.currency
+  )
+    throw invalid('Both deposit accounts must use the deposit currency.')
+  try {
+    const row = await repository.createDepositRows(
+      tenantId,
+      {
+        deposit: generateId('BankDeposit'),
+        debit: generateId('BankTransaction'),
+        credit: generateId('BankTransaction'),
+        items: body.transactionIds.map(() => generateId('BankDepositItem')),
+      },
+      body,
+      nowUnixSeconds()
+    )
+    return serializeBankDeposit({
+      ...row,
+      items: body.transactionIds.map((sourceTransactionId) => ({
+        sourceTransactionId,
+      })),
+    })
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      (error.message === 'deposit-items-invalid' ||
+        error.message === 'deposit-amount-invalid')
+    )
+      throw invalid(
+        'Deposit items must be undeposited incoming transactions and their total must equal the deposit amount.'
+      )
+    if (isRetryableTransactionError(error))
+      throw conflict(
+        'One or more selected transactions were deposited concurrently. Refresh and try again.'
+      )
+    throw error
+  }
+}
+
+export async function voidBankDeposit(tenantId: string, id: string) {
+  const row = await repository.reverseDepositRow(tenantId, id, nowUnixSeconds())
+  if (!row) throw missing('bank-deposit')
+  if (row === 'reversed')
+    throw conflict('This deposit has already been voided.')
+  return serializeBankDeposit(row)
+}
+
 export async function createBankTransfer(
   tenantId: string,
   body: BankTransferCreateBody
@@ -474,10 +568,7 @@ export async function createBankTransfer(
   )
 }
 
-export async function listReconciliations(
-  tenantId: string,
-  accountId: string
-) {
+export async function listReconciliations(tenantId: string, accountId: string) {
   await requireAccount(tenantId, accountId)
   const rows = await repository.listReconciliationRows(tenantId, accountId)
 
@@ -505,7 +596,9 @@ export async function createReconciliation(
   await requireAccount(tenantId, accountId)
   const ids = body.bankTransactionIds
   if (new Set(ids).size !== ids.length)
-    throw invalid('Each bank transaction can be reconciled only once per draft.')
+    throw invalid(
+      'Each bank transaction can be reconciled only once per draft.'
+    )
 
   const transactions = await repository.findReconciliationTransactionRows(
     tenantId,
@@ -523,7 +616,11 @@ export async function createReconciliation(
     throw invalid(
       'Every reconciled transaction must fall within the statement period.'
     )
-  if (transactions.some((transaction) => transaction.reconciliationItems.length > 0))
+  if (
+    transactions.some(
+      (transaction) => transaction.reconciliationItems.length > 0
+    )
+  )
     throw conflict(
       'One or more transactions are already in a completed reconciliation.'
     )
@@ -531,7 +628,9 @@ export async function createReconciliation(
   const movement = transactions.reduce(
     (total, transaction) =>
       total +
-      (transaction.type === 'CREDIT' ? transaction.amount : -transaction.amount),
+      (transaction.type === 'CREDIT'
+        ? transaction.amount
+        : -transaction.amount),
     0n
   )
   const clearedBalance = body.openingBalance + movement
@@ -648,7 +747,9 @@ function validateRuleAutomation(body: {
     body.automationMode === 'auto-categorize' &&
     (!body.action || body.action.type === 'review')
   )
-    throw invalid('Auto-categorize rules require a supported accounting action.')
+    throw invalid(
+      'Auto-categorize rules require a supported accounting action.'
+    )
 }
 
 export async function createBankRule(

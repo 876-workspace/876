@@ -11,3 +11,4 @@ export {
   RefundMutationError,
   type CreditNoteRefundParams,
 } from './repositories/refunds/shared'
+export { loadPaymentTargets } from './repositories/payments/shared'

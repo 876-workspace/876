@@ -16,6 +16,7 @@ import type {
   BankRuleCreateBody,
   BankRuleUpdateBody,
   BankTransferCreateBody,
+  BankDepositCreateBody,
   ReconciliationCreateBody,
   StatementCategorizeBody,
   StatementImportCreateBody,
@@ -52,26 +53,30 @@ export const bankingEngineController = {
 
   async importStatementFile(req: Request, res: Response) {
     const { accountId } = validParams<{ accountId: string }>(req)
-    res.status(201).json(
-      await importStatementFile(
-        tenantId(req),
-        accountId,
-        validBody<StatementFileImportBody>(req),
-        actorId(req)
+    res
+      .status(201)
+      .json(
+        await importStatementFile(
+          tenantId(req),
+          accountId,
+          validBody<StatementFileImportBody>(req),
+          actorId(req)
+        )
       )
-    )
   },
 
   async createStatementImport(req: Request, res: Response) {
     const { accountId } = validParams<{ accountId: string }>(req)
-    res.status(201).json(
-      await service.createStatementImport(
-        tenantId(req),
-        accountId,
-        validBody<StatementImportCreateBody>(req),
-        actorId(req)
+    res
+      .status(201)
+      .json(
+        await service.createStatementImport(
+          tenantId(req),
+          accountId,
+          validBody<StatementImportCreateBody>(req),
+          actorId(req)
+        )
       )
-    )
   },
 
   async retrieveStatementImport(req: Request, res: Response) {
@@ -101,14 +106,16 @@ export const bankingEngineController = {
 
   async matchStatementLine(req: Request, res: Response) {
     const { lineId } = validParams<{ lineId: string }>(req)
-    res.status(201).json(
-      await service.matchStatementLine(
-        tenantId(req),
-        lineId,
-        validBody<StatementMatchBody>(req),
-        actorId(req)
+    res
+      .status(201)
+      .json(
+        await service.matchStatementLine(
+          tenantId(req),
+          lineId,
+          validBody<StatementMatchBody>(req),
+          actorId(req)
+        )
       )
-    )
   },
 
   async unmatchStatementLine(req: Request, res: Response) {
@@ -121,14 +128,16 @@ export const bankingEngineController = {
   async categorizeStatementLine(req: Request, res: Response) {
     const { lineId } = validParams<{ lineId: string }>(req)
     const body = validBody<StatementCategorizeBody>(req)
-    res.status(201).json(
-      await service.categorizeManualStatementLine(
-        tenantId(req),
-        lineId,
-        body.action,
-        actorId(req)
+    res
+      .status(201)
+      .json(
+        await service.categorizeManualStatementLine(
+          tenantId(req),
+          lineId,
+          body.action,
+          actorId(req)
+        )
       )
-    )
   },
 
   async excludeStatementLine(req: Request, res: Response) {
@@ -144,14 +153,37 @@ export const bankingEngineController = {
   async listTransfers(req: Request, res: Response) {
     res.json(await service.listBankTransfers(tenantId(req)))
   },
+  async listDeposits(req: Request, res: Response) {
+    res.json(await service.listBankDeposits(tenantId(req)))
+  },
+  async retrieveDeposit(req: Request, res: Response) {
+    const { depositId } = validParams<{ depositId: string }>(req)
+    res.json(await service.retrieveBankDeposit(tenantId(req), depositId))
+  },
+  async createDeposit(req: Request, res: Response) {
+    res
+      .status(201)
+      .json(
+        await service.createBankDeposit(
+          tenantId(req),
+          validBody<BankDepositCreateBody>(req)
+        )
+      )
+  },
+  async voidDeposit(req: Request, res: Response) {
+    const { depositId } = validParams<{ depositId: string }>(req)
+    res.json(await service.voidBankDeposit(tenantId(req), depositId))
+  },
 
   async createTransfer(req: Request, res: Response) {
-    res.status(201).json(
-      await service.createBankTransfer(
-        tenantId(req),
-        validBody<BankTransferCreateBody>(req)
+    res
+      .status(201)
+      .json(
+        await service.createBankTransfer(
+          tenantId(req),
+          validBody<BankTransferCreateBody>(req)
+        )
       )
-    )
   },
 
   async listReconciliations(req: Request, res: Response) {
@@ -161,14 +193,16 @@ export const bankingEngineController = {
 
   async createReconciliation(req: Request, res: Response) {
     const { accountId } = validParams<{ accountId: string }>(req)
-    res.status(201).json(
-      await service.createReconciliation(
-        tenantId(req),
-        accountId,
-        validBody<ReconciliationCreateBody>(req),
-        actorId(req)
+    res
+      .status(201)
+      .json(
+        await service.createReconciliation(
+          tenantId(req),
+          accountId,
+          validBody<ReconciliationCreateBody>(req),
+          actorId(req)
+        )
       )
-    )
   },
 
   async retrieveReconciliation(req: Request, res: Response) {
@@ -205,13 +239,15 @@ export const bankingEngineController = {
   },
 
   async createRule(req: Request, res: Response) {
-    res.status(201).json(
-      await service.createBankRule(
-        tenantId(req),
-        validBody<BankRuleCreateBody>(req),
-        actorId(req)
+    res
+      .status(201)
+      .json(
+        await service.createBankRule(
+          tenantId(req),
+          validBody<BankRuleCreateBody>(req),
+          actorId(req)
+        )
       )
-    )
   },
 
   async retrieveRule(req: Request, res: Response) {

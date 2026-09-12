@@ -312,6 +312,42 @@ export const bankRuleParamsSchema = z.object({
   ruleId: z.string().min(1),
 })
 
+export const bankDepositCreateBodySchema = z
+  .strictObject({
+    sourceAccountId: z.string().min(1),
+    destinationAccountId: z.string().min(1),
+    transactionIds: z.array(z.string().min(1)).min(1).max(100),
+    amount: positiveMinorAmountSchema,
+    currency: z.string().trim().length(3).toUpperCase(),
+    depositedAt: z.number().int().positive(),
+    description: z.string().trim().min(1).nullable().optional(),
+    reference: z.string().trim().min(1).max(120).nullable().optional(),
+  })
+  .refine(
+    (body) => new Set(body.transactionIds).size === body.transactionIds.length,
+    'A transaction may appear only once.'
+  )
+
+export const bankDepositSchema = z.object({
+  object: z.literal('bank-deposit'),
+  id: z.string(),
+  sourceAccountId: z.string(),
+  destinationAccountId: z.string(),
+  amount: z.string(),
+  currency: z.string(),
+  depositedAt: z.number().int(),
+  description: z.string().nullable(),
+  reference: z.string().nullable(),
+  status: z.enum(['posted', 'reversed']),
+  reversedAt: z.number().int().nullable(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
+  transactionIds: z.array(z.string()),
+})
+export const bankDepositParamsSchema = z.object({
+  depositId: z.string().min(1),
+})
+
 export type StatementImportCreateBody = z.infer<
   typeof statementImportCreateBodySchema
 >
@@ -320,9 +356,12 @@ export type StatementMatchBody = z.infer<typeof statementMatchBodySchema>
 export type StatementCategorizeBody = z.infer<
   typeof statementCategorizeBodySchema
 >
-export type BankTransferCreateBody = z.infer<typeof bankTransferCreateBodySchema>
+export type BankTransferCreateBody = z.infer<
+  typeof bankTransferCreateBodySchema
+>
 export type ReconciliationCreateBody = z.infer<
   typeof reconciliationCreateBodySchema
 >
 export type BankRuleCreateBody = z.infer<typeof bankRuleCreateBodySchema>
 export type BankRuleUpdateBody = z.infer<typeof bankRuleUpdateBodySchema>
+export type BankDepositCreateBody = z.infer<typeof bankDepositCreateBodySchema>

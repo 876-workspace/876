@@ -11,6 +11,7 @@ import {
   createBankTransactionRow,
   deleteBankAccountRow,
   deleteBankTransactionRow,
+  ensureSystemBankAccounts,
   findBankAccountActivityRow,
   findBankAccountRow,
   findBankTransactionRow,
@@ -127,10 +128,15 @@ async function validateDirectoryReferences(
 }
 
 export async function listBankAccounts(tenantId: string) {
+  await ensureSystemAccounts(tenantId)
   return listing(
     (await listBankAccountRows(tenantId)).map(serializeBankAccount),
     '/api/v1/banking/accounts'
   )
+}
+
+export async function ensureSystemAccounts(tenantId: string) {
+  await ensureSystemBankAccounts(tenantId, nowUnixSeconds())
 }
 
 export async function retrieveBankAccount(tenantId: string, id: string) {
@@ -182,6 +188,10 @@ export async function updateBankAccount(
 ) {
   const current = await findBankAccountActivityRow(tenantId, id)
   if (!current) throw missing('account')
+  if (
+    current.isSystem &&
+    (body.isActive === false || body.accountType !== undefined || body.name !== undefined)
+  ) throw state('System cash accounts cannot be renamed, deactivated, or retyped.')
 
   if (body.currency && body.currency !== current.currency) {
     if (hasAccountHistory(current._count))
@@ -225,6 +235,8 @@ export async function updateBankAccount(
 export async function deleteBankAccount(tenantId: string, id: string) {
   const current = await findBankAccountActivityRow(tenantId, id)
   if (!current) throw missing('account')
+  if (current.isSystem)
+    throw state('System cash accounts cannot be deleted.')
   if (hasAccountHistory(current._count))
     throw state(
       'Archive this account instead because it has financial or statement history.'

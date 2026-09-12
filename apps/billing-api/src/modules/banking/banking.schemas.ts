@@ -27,6 +27,7 @@ export const bankAccountSchema = z.object({
   openingBalance: z.string(),
   openingBalanceAt: z.number().int().nullable(),
   isActive: z.boolean(),
+  isSystem: z.boolean(),
   balance: z.string(),
   booksBalance: z.string(),
   bankBalance: z.string().nullable(),

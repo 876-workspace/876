@@ -25,6 +25,7 @@ model BankAccount {
   lastStatementBalance BigInt?         @map("last_statement_balance")
   lastStatementAt      Int?            @map("last_statement_at")
   isActive             Boolean         @default(true) @map("is_active")
+  isSystem             Boolean         @default(false) @map("is_system")
   createdAt            Int             @map("created_at")
   updatedAt            Int             @map("updated_at")
 

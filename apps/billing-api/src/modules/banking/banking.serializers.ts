@@ -18,6 +18,7 @@ export function serializeBankAccount(row: BankAccount & { balance: bigint }) {
     openingBalance: row.openingBalance.toString(),
     openingBalanceAt: row.openingBalanceAt,
     isActive: row.isActive,
+    isSystem: row.isSystem,
     balance: booksBalance,
     booksBalance,
     bankBalance: row.bankBalance?.toString() ?? null,

@@ -8,6 +8,7 @@ import type {
   BankStatementMatch,
   BankStatementMatchItem,
   BankTransfer,
+  BankDeposit,
 } from '@/db'
 
 const importSource = {
@@ -56,6 +57,7 @@ const transferStatus = {
   POSTED: 'posted',
   REVERSED: 'reversed',
 } as const
+const depositStatus = { POSTED: 'posted', REVERSED: 'reversed' } as const
 const ruleField = {
   DESCRIPTION: 'description',
   PAYEE: 'payee',
@@ -164,6 +166,27 @@ export function serializeBankTransfer(row: BankTransfer) {
     reversedAt: row.reversedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+  }
+}
+
+export function serializeBankDeposit(
+  row: BankDeposit & { items: Array<{ sourceTransactionId: string }> }
+) {
+  return {
+    object: 'bank-deposit' as const,
+    id: row.id,
+    sourceAccountId: row.sourceAccountId,
+    destinationAccountId: row.destinationAccountId,
+    amount: row.amount.toString(),
+    currency: row.currency,
+    depositedAt: row.depositedAt,
+    description: row.description,
+    reference: row.reference,
+    status: depositStatus[row.status],
+    reversedAt: row.reversedAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    transactionIds: row.items.map((item) => item.sourceTransactionId),
   }
 }
 

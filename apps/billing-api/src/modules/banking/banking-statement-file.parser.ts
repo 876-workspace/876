@@ -302,12 +302,13 @@ export function previewDelimitedStatement(options: {
   mapping: StatementFileMapping
 }): PreviewResult {
   const rows = parseDelimited(options.content, options.format === 'csv' ? ',' : '\t')
-  if (rows.length < 2)
+  const headerRow = rows[0]
+  if (!headerRow || rows.length < 2)
     throw new StatementFileParseError(
       'The statement must contain a header row and at least one transaction row.'
     )
 
-  const headers = headersFrom(rows[0])
+  const headers = headersFrom(headerRow)
   const dataRows = rows.slice(1)
   const lines: StatementPreviewLine[] = []
   const errors: StatementPreviewError[] = []

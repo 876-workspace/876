@@ -19,6 +19,9 @@ import {
   bankRuleUpdateBodySchema,
   bankTransferCreateBodySchema,
   bankTransferSchema,
+  bankDepositCreateBodySchema,
+  bankDepositParamsSchema,
+  bankDepositSchema,
   deletedBankRuleSchema,
   matchCandidateSchema,
   reconciliationCreateBodySchema,
@@ -44,6 +47,65 @@ const clientErrors = { '4XX': invalid }
 
 export function createBankingEngineRouter(resolveGuards: GuardResolver) {
   const api = createApiRouter({ tag: 'Billing', resolveGuards })
+  api.get({
+    path: '/banking/deposits',
+    ...bankingEngineDocs.listDeposits,
+    operationId: 'billing-banking_list_deposits',
+    security: { kind: 'tenant', permission: 'banking:read' },
+    responses: {
+      200: {
+        description: 'Successful Response',
+        schema: successEnvelopeSchema(listObjectSchema(bankDepositSchema)),
+      },
+      ...clientErrors,
+    },
+    handler: bankingEngineController.listDeposits,
+  })
+  api.post({
+    path: '/banking/deposits',
+    ...bankingEngineDocs.createDeposit,
+    operationId: 'billing-banking_create_deposit',
+    security: { kind: 'tenant', permission: 'banking:write' },
+    request: { body: bankDepositCreateBodySchema },
+    responses: {
+      201: {
+        description: 'Successful Response',
+        schema: successEnvelopeSchema(bankDepositSchema),
+      },
+      ...clientErrors,
+    },
+    handler: bankingEngineController.createDeposit,
+  })
+  api.get({
+    path: '/banking/deposits/:depositId',
+    ...bankingEngineDocs.retrieveDeposit,
+    operationId: 'billing-banking_retrieve_deposit',
+    security: { kind: 'tenant', permission: 'banking:read' },
+    request: { params: bankDepositParamsSchema },
+    responses: {
+      200: {
+        description: 'Successful Response',
+        schema: successEnvelopeSchema(bankDepositSchema),
+      },
+      ...clientErrors,
+    },
+    handler: bankingEngineController.retrieveDeposit,
+  })
+  api.post({
+    path: '/banking/deposits/:depositId/void',
+    ...bankingEngineDocs.voidDeposit,
+    operationId: 'billing-banking_void_deposit',
+    security: { kind: 'tenant', permission: 'banking:write' },
+    request: { params: bankDepositParamsSchema },
+    responses: {
+      200: {
+        description: 'Successful Response',
+        schema: successEnvelopeSchema(bankDepositSchema),
+      },
+      ...clientErrors,
+    },
+    handler: bankingEngineController.voidDeposit,
+  })
 
   api.get({
     path: '/banking/accounts/:accountId/statement-imports',

@@ -35,6 +35,70 @@ export async function listBankAccountRows(tenantId: string) {
   }))
 }
 
+export async function ensureSystemBankAccounts(tenantId: string, now: number) {
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { defaultCurrency: true },
+  })
+  if (!tenant) return
+  for (const definition of [
+    {
+      accountType: 'UNDEPOSITED_FUNDS' as const,
+      baseName: 'Undeposited Funds',
+      id: `system_${tenantId}_undeposited_funds`,
+    },
+    {
+      accountType: 'PETTY_CASH' as const,
+      baseName: 'Petty Cash',
+      id: `system_${tenantId}_petty_cash`,
+    },
+  ]) {
+    const existing = await prisma.bankAccount.findFirst({
+      where: { tenantId, accountType: definition.accountType, isSystem: true },
+      select: { id: true },
+    })
+    if (existing) continue
+
+    for (let suffix = 0; suffix <= 1_000_000; suffix += 1) {
+      const name =
+        suffix === 0
+          ? definition.baseName
+          : suffix === 1
+            ? `${definition.baseName} (System)`
+            : `${definition.baseName} (System ${suffix})`
+      const nameTaken = await prisma.bankAccount.findFirst({
+        where: { tenantId, name },
+        select: { id: true },
+      })
+      if (nameTaken) continue
+
+      // `isSystem` engages the partial tenant/type index. `skipDuplicates`
+      // therefore resolves a concurrent first request without treating a
+      // tenant-created holding account as the system account.
+      await prisma.bankAccount.createMany({
+        data: {
+          id: definition.id,
+          tenantId,
+          name,
+          accountType: definition.accountType,
+          currency: tenant.defaultCurrency,
+          openingBalance: 0n,
+          isActive: true,
+          isSystem: true,
+          createdAt: now,
+          updatedAt: now,
+        },
+        skipDuplicates: true,
+      })
+      const ensured = await prisma.bankAccount.findFirst({
+        where: { tenantId, accountType: definition.accountType, isSystem: true },
+        select: { id: true },
+      })
+      if (ensured) break
+    }
+  }
+}
+
 export async function findBankAccountRow(tenantId: string, id: string) {
   const [account, totals] = await Promise.all([
     prisma.bankAccount.findFirst({ where: { tenantId, id } }),
@@ -72,6 +136,8 @@ export function createBankAccountRow(
       accountType: body.accountType,
       currency: body.currency,
       description: body.description ?? null,
+      directoryBankId: body.directoryBankId ?? null,
+      directoryBranchId: body.directoryBranchId ?? null,
       institutionName: body.institutionName ?? null,
       accountHolderName: body.accountHolderName ?? null,
       accountNumberLast4: body.accountNumberLast4 ?? null,
