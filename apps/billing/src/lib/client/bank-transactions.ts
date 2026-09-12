@@ -1,22 +1,21 @@
 import type {
-  BankTransactionCreated,
+  BankTransactionResource,
   BankTransactionCreateInput,
   BankTransactionDeleted,
-  BankTransactionUpdated,
   BankTransactionUpdateInput,
 } from '@/types/banking'
 
 import { request } from './request'
 
 function transactionPath(accountId: string, transactionId?: string) {
-  const accountPath = `/api/v1/banking/accounts/${encodeURIComponent(accountId)}/transactions`
+  const accountPath = `/api/banking/accounts/${encodeURIComponent(accountId)}/transactions`
   return transactionId
     ? `${accountPath}/${encodeURIComponent(transactionId)}`
     : accountPath
 }
 
 export const create = (accountId: string, params: BankTransactionCreateInput) =>
-  request<BankTransactionCreated>(transactionPath(accountId), {
+  request<BankTransactionResource>(transactionPath(accountId), {
     method: 'POST',
     body: JSON.stringify(params),
   })
@@ -26,7 +25,7 @@ export const update = (
   transactionId: string,
   params: BankTransactionUpdateInput
 ) =>
-  request<BankTransactionUpdated>(transactionPath(accountId, transactionId), {
+  request<BankTransactionResource>(transactionPath(accountId, transactionId), {
     method: 'PATCH',
     body: JSON.stringify(params),
   })
