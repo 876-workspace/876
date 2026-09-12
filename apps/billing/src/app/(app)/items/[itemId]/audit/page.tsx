@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { Skeleton } from '@876/ui/skeleton'
@@ -6,6 +7,10 @@ import { resolveItem } from '@/app/(app)/_lib/detail-data'
 import { DetailField } from '@/components/patterns/detail/detail-field'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate } from '@/lib/format'
+
+export const metadata: Metadata = {
+  title: 'Audit',
+}
 
 export default function ItemAuditPage({
   params,
