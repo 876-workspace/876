@@ -1,14 +1,12 @@
 import { Request } from '../request'
 import type { Runtime } from '../runtime'
 import {
-  BankAccountCreatedSchema,
   BankAccountDeletedSchema,
   BankAccountListSchema,
   BankAccountSchema,
 } from '../schemas'
 import type {
   BankAccount,
-  BankAccountCreated,
   BankAccountCreateParams,
   BankAccountDeleted,
   BankAccountUpdateParams,
@@ -31,7 +29,7 @@ export function createBankAccountsResource(runtime: Runtime) {
       )
     },
     create(params: BankAccountCreateParams, options?: RequestOptions) {
-      return Request<BankAccountCreated>(
+      return Request<BankAccount>(
         runtime,
         {
           method: 'POST',
@@ -39,7 +37,7 @@ export function createBankAccountsResource(runtime: Runtime) {
           body: params,
           signal: options?.signal,
         },
-        BankAccountCreatedSchema
+        BankAccountSchema
       )
     },
     retrieve(accountId: string, options?: RequestOptions) {
@@ -58,7 +56,7 @@ export function createBankAccountsResource(runtime: Runtime) {
       params: BankAccountUpdateParams,
       options?: RequestOptions
     ) {
-      return Request<BankAccountCreated>(
+      return Request<BankAccount>(
         runtime,
         {
           method: 'PATCH',
@@ -66,7 +64,7 @@ export function createBankAccountsResource(runtime: Runtime) {
           body: params,
           signal: options?.signal,
         },
-        BankAccountCreatedSchema
+        BankAccountSchema
       )
     },
     delete(accountId: string, options?: RequestOptions) {
