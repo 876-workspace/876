@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { Badge } from '@876/ui/badge'
@@ -5,6 +6,10 @@ import { Badge } from '@876/ui/badge'
 import { AddonAssociationManager } from '@/features/catalog/components/addon-association-manager'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
+
+export const metadata: Metadata = {
+  title: 'Plans',
+}
 
 export default async function AddonPlansPage({
   params,
