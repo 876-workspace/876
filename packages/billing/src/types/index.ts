@@ -118,6 +118,7 @@ export type {
   RecurringInvoiceGenerationMode,
   RecurringInvoiceFrequency,
   RecurringInvoiceCreateParams,
+  RecurringInvoiceFromInvoiceParams,
   RecurringInvoiceUpdateParams,
   RecurringInvoiceList,
   RecurringInvoiceListParams,

@@ -5,10 +5,12 @@ import type { Prisma } from '@/db'
 import type { InvoiceCreateParams } from '../schemas/invoice'
 import type {
   RecurringInvoiceCreateParams,
+  RecurringInvoiceFromInvoiceParams,
   RecurringInvoiceUpdateParams,
 } from '../schemas/recurring-invoice'
 import {
   createRecurringInvoice,
+  createRecurringInvoiceFromInvoice,
   deleteRecurringInvoice,
   generateDueRecurringInvoice,
   recordRecurringInvoiceFailure,
@@ -44,7 +46,7 @@ const mocks = vi.hoisted(() => {
       },
       customer: { findFirst: vi.fn() },
       paymentTerm: { findFirst: vi.fn() },
-      invoice: { update: vi.fn() },
+      invoice: { findFirst: vi.fn(), update: vi.fn() },
       invoicePreference: { findUnique: vi.fn() },
       documentPreference: { findUnique: vi.fn() },
       tenant: { findUnique: vi.fn() },
@@ -249,6 +251,53 @@ function invoiceParams(): InvoiceCreateParams {
         unitAmount: 4_500_000n,
       },
     ],
+  }
+}
+
+const SOURCE_INVOICE = 'inv_4Qm8Zs2V'
+
+function sourceInvoice(overrides: Record<string, unknown> = {}) {
+  return {
+    id: SOURCE_INVOICE,
+    tenantId: TENANT,
+    customerId: CUSTOMER,
+    currency: 'JMD',
+    paymentTermId: 'pt_net_30',
+    salespersonId: 'sp_1Fv3Kd8R',
+    priceListId: 'pl_6Hj2Ls4T',
+    taxBehavior: 'INCLUSIVE',
+    notes: 'Invoice note',
+    terms: 'Invoice terms',
+    discountAmount: 25_000n,
+    lines: [
+      {
+        id: 'invl_1',
+        itemId: 'item_1',
+        variantId: null,
+        priceId: 'price_1',
+        description: LINE_DESCRIPTION,
+        quantity: 1,
+        unitAmount: 4_500_000n,
+        taxAmount: 675_000n,
+        discountAmount: 125_000n,
+        position: 0,
+      },
+    ],
+    ...overrides,
+  }
+}
+
+function fromInvoiceSchedule(
+  overrides: Partial<RecurringInvoiceFromInvoiceParams> = {}
+): RecurringInvoiceFromInvoiceParams {
+  return {
+    profileName: 'Harbour View quarterly retainer',
+    frequency: { intervalUnit: 'month', intervalCount: 3 },
+    startAt: SEP_15,
+    endAt: null,
+    maxCycles: 12,
+    generationMode: 'draft',
+    ...overrides,
   }
 }
 
@@ -500,6 +549,198 @@ describe('createRecurringInvoice', () => {
       code: 'validation/invalid-request',
     })
     expect(mocks.prisma.recurringInvoice.create).not.toHaveBeenCalled()
+  })
+})
+
+describe('createRecurringInvoiceFromInvoice', () => {
+  it('maps the invoice document fields onto the new profile', async () => {
+    // ARRANGE — only the schedule comes from the caller.
+    mocks.prisma.invoice.findFirst.mockResolvedValue(sourceInvoice())
+
+    // ACT
+    const result = await createRecurringInvoiceFromInvoice(
+      TENANT,
+      SOURCE_INVOICE,
+      fromInvoiceSchedule()
+    )
+
+    // ASSERT
+    expect(result.error).toBeNull()
+    expect(mocks.prisma.recurringInvoice.create).toHaveBeenCalledTimes(1)
+    const [args] = mocks.prisma.recurringInvoice.create.mock.calls[0] as [
+      { data: Record<string, unknown> },
+    ]
+    expect(args.data).toMatchObject({
+      customerId: CUSTOMER,
+      currency: 'JMD',
+      paymentTermId: 'pt_net_30',
+      salespersonId: 'sp_1Fv3Kd8R',
+      priceListId: 'pl_6Hj2Ls4T',
+      taxBehavior: 'INCLUSIVE',
+      notes: 'Invoice note',
+      terms: 'Invoice terms',
+      discountAmount: 25_000n,
+    })
+
+    // AFTER — vi.clearAllMocks runs in the shared beforeEach.
+  })
+
+  it('uses the caller schedule for every recurrence field', async () => {
+    // ARRANGE
+    mocks.prisma.invoice.findFirst.mockResolvedValue(sourceInvoice())
+
+    // ACT
+    await createRecurringInvoiceFromInvoice(
+      TENANT,
+      SOURCE_INVOICE,
+      fromInvoiceSchedule()
+    )
+
+    // ASSERT
+    const [args] = mocks.prisma.recurringInvoice.create.mock.calls[0] as [
+      { data: Record<string, unknown> },
+    ]
+    expect(args.data).toMatchObject({
+      profileName: 'Harbour View quarterly retainer',
+      intervalUnit: 'MONTH',
+      intervalCount: 3,
+      startAt: SEP_15,
+      endAt: null,
+      maxCycles: 12,
+      generationMode: 'DRAFT',
+      status: 'ACTIVE',
+      generatedCount: 0,
+      tenantId: TENANT,
+    })
+
+    // AFTER — vi.clearAllMocks runs in the shared beforeEach.
+  })
+
+  it('stores the invoice line snapshots on the profile', async () => {
+    // ARRANGE
+    mocks.prisma.invoice.findFirst.mockResolvedValue(sourceInvoice())
+
+    // ACT
+    await createRecurringInvoiceFromInvoice(
+      TENANT,
+      SOURCE_INVOICE,
+      fromInvoiceSchedule()
+    )
+
+    // ASSERT
+    const [args] = mocks.prisma.recurringInvoice.create.mock.calls[0] as [
+      { data: { lines: { create: Array<Record<string, unknown>> } } },
+    ]
+    expect(args.data.lines.create).toEqual([
+      {
+        id: 'rinvl_test_2',
+        itemId: 'item_1',
+        variantId: null,
+        priceId: 'price_1',
+        description: LINE_DESCRIPTION,
+        quantity: 1,
+        unitAmount: 4_500_000n,
+        taxAmount: 675_000n,
+        discountAmount: 125_000n,
+        position: 0,
+        createdAt: NOW,
+        updatedAt: NOW,
+      },
+    ])
+
+    // AFTER — vi.clearAllMocks runs in the shared beforeEach.
+  })
+
+  it('reads the source invoice through the tenant scope', async () => {
+    // ARRANGE
+    mocks.prisma.invoice.findFirst.mockResolvedValue(sourceInvoice())
+
+    // ACT
+    await createRecurringInvoiceFromInvoice(
+      TENANT,
+      SOURCE_INVOICE,
+      fromInvoiceSchedule()
+    )
+
+    // ASSERT
+    expect(mocks.prisma.invoice.findFirst).toHaveBeenCalledWith({
+      where: { id: SOURCE_INVOICE, tenantId: TENANT },
+      include: { lines: { orderBy: { position: 'asc' } } },
+    })
+
+    // AFTER — vi.clearAllMocks runs in the shared beforeEach.
+  })
+
+  it('reports an invoice the tenant does not own without writing a profile', async () => {
+    // ARRANGE — the tenant-scoped lookup finds nothing.
+    mocks.prisma.invoice.findFirst.mockResolvedValue(null)
+
+    // ACT
+    const result = await createRecurringInvoiceFromInvoice(
+      'ten_other',
+      SOURCE_INVOICE,
+      fromInvoiceSchedule()
+    )
+
+    // ASSERT
+    expect(result).toEqual({
+      data: null,
+      error: 'Invoice not found.',
+      status: 404,
+    })
+    expect(mocks.prisma.recurringInvoice.create).not.toHaveBeenCalled()
+
+    // AFTER — vi.clearAllMocks runs in the shared beforeEach.
+  })
+
+  it('rejects a schedule whose end date precedes its start date', async () => {
+    // ARRANGE
+    mocks.prisma.invoice.findFirst.mockResolvedValue(sourceInvoice())
+
+    // ACT
+    const result = await createRecurringInvoiceFromInvoice(
+      TENANT,
+      SOURCE_INVOICE,
+      fromInvoiceSchedule({ startAt: SEP_15, endAt: SEP_15 - 1 })
+    )
+
+    // ASSERT
+    expect(result).toEqual({
+      data: null,
+      error: 'endAt must not be before startAt.',
+      status: 422,
+      code: 'validation/invalid-request',
+    })
+    expect(mocks.prisma.recurringInvoice.create).not.toHaveBeenCalled()
+
+    // AFTER — vi.clearAllMocks runs in the shared beforeEach.
+  })
+
+  it('rejects invoice lines that fail the shared line builder', async () => {
+    // ARRANGE — the same builder a directly created profile runs.
+    mocks.prisma.invoice.findFirst.mockResolvedValue(sourceInvoice())
+    mocks.buildDocumentLines.mockResolvedValue({
+      data: null,
+      error: 'Each line needs a description.',
+    })
+
+    // ACT
+    const result = await createRecurringInvoiceFromInvoice(
+      TENANT,
+      SOURCE_INVOICE,
+      fromInvoiceSchedule()
+    )
+
+    // ASSERT
+    expect(result).toEqual({
+      data: null,
+      error: 'Each line needs a description.',
+      status: 422,
+      code: 'billing/recurring-invoice-invalid-lines',
+    })
+    expect(mocks.prisma.recurringInvoice.create).not.toHaveBeenCalled()
+
+    // AFTER — vi.clearAllMocks runs in the shared beforeEach.
   })
 })
 

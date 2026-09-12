@@ -17,6 +17,7 @@ import {
   InvoiceWriteOffSchema,
 } from './schemas/invoice'
 import { InvoicePreferenceUpdateSchema } from './schemas/invoice-preference'
+import { RecurringInvoiceFromInvoiceSchema } from './schemas/recurring-invoice'
 import {
   IntegrationQuoteCreateSchema,
   QuoteCreateSchema,
@@ -30,6 +31,9 @@ const orgInvoice = org.extend({ invoiceId: z.string().min(1) })
 const orgQuote = org.extend({ quoteId: z.string().min(1) })
 const resource = (name: string) =>
   z.object({ object: z.literal(name), id: z.string() }).passthrough()
+const recurringInvoice = z
+  .object({ object: z.literal('recurring-invoice'), id: z.string() })
+  .passthrough()
 const list = (name: string) =>
   z.strictObject({
     object: z.literal('list'),
@@ -357,6 +361,41 @@ export function createDocumentsRouter(resolveGuards: GuardResolver) {
     },
     handler: controller.invoicesWriteOff,
   })
+  api.post({
+    path: '/invoices/:invoiceId/clone',
+    summary: 'Clone an invoice',
+    operationId: 'billing-billing_post_invoices_invoiceId_clone',
+    security: write,
+    request: { params: id('invoiceId'), body: z.strictObject({}).default({}) },
+    documentBody: false,
+    responses: {
+      201: {
+        description: 'Invoice cloned',
+        schema: successEnvelopeSchema(resource('invoice')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.invoicesClone,
+  })
+  api.post({
+    path: '/invoices/:invoiceId/make-recurring',
+    summary: 'Create a Recurring Invoice from an invoice',
+    operationId: 'billing-billing_post_invoices_invoiceId_make_recurring',
+    security: write,
+    request: {
+      params: id('invoiceId'),
+      body: RecurringInvoiceFromInvoiceSchema,
+    },
+    documentBody: false,
+    responses: {
+      201: {
+        description: 'Recurring Invoice created',
+        schema: successEnvelopeSchema(recurringInvoice),
+      },
+      ...clientErrors,
+    },
+    handler: controller.invoicesMakeRecurring,
+  })
   api.get({
     path: '/credit-notes',
     summary: 'List credit notes',
@@ -604,6 +643,42 @@ export function createDocumentsRouter(resolveGuards: GuardResolver) {
       ...clientErrors,
     },
     handler: controller.invoicesIntegrationWriteOff,
+  })
+  api.post({
+    path: `${base}/:invoiceId/clone`,
+    summary: 'Clone an organization Billing invoice',
+    security: integrationWrite,
+    request: {
+      params: orgInvoice,
+      body: z.strictObject({}).default({}),
+    },
+    documentBody: false,
+    responses: {
+      201: {
+        description: 'Invoice cloned',
+        schema: successEnvelopeSchema(resource('invoice')),
+      },
+      ...clientErrors,
+    },
+    handler: controller.invoicesIntegrationClone,
+  })
+  api.post({
+    path: `${base}/:invoiceId/make-recurring`,
+    summary: 'Create a Recurring Invoice from an organization Billing invoice',
+    security: integrationWrite,
+    request: {
+      params: orgInvoice,
+      body: RecurringInvoiceFromInvoiceSchema,
+    },
+    documentBody: false,
+    responses: {
+      201: {
+        description: 'Recurring Invoice created',
+        schema: successEnvelopeSchema(recurringInvoice),
+      },
+      ...clientErrors,
+    },
+    handler: controller.invoicesIntegrationMakeRecurring,
   })
   const quoteBase = '/integrations/organizations/:organizationId/quotes'
   const quoteIntegrationRead = {

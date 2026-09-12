@@ -55,7 +55,11 @@ export type PlatformMembership = {
   updated_at: number
 }
 
-/** An organization row, narrowed to the fields product apps consume. */
+/**
+ * An organization row, narrowed to the fields product apps consume. The
+ * address and contact fields are carried because a printed sales document
+ * needs the issuer's own details, not just its name.
+ */
 export type PlatformOrganization = {
   object: 'organization'
   id: string
@@ -66,6 +70,11 @@ export type PlatformOrganization = {
   logo_url: string | null
   timezone: string | null
   language: string | null
+  address_line1: string | null
+  address_line2: string | null
+  city: string | null
+  primary_email: string | null
+  primary_phone: string | null
   country_code: string | null
   currency_code: string | null
   created_at: number

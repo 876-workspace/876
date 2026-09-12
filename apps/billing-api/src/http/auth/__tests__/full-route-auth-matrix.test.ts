@@ -55,9 +55,12 @@ describe('frozen v1 route authentication matrix', () => {
     // operations were added across the tenant and integration surfaces.
     // 315 -> 333: reporting projections (sales/cash/aging/item/customer/
     // subscription summaries, item detail, and report preferences) were added
-    // to both tenant and integration surfaces.
-    expect(operations).toHaveLength(333)
-    expect(protectedPublicOperations()).toHaveLength(332)
+    // to both tenant and integration surfaces. 333 -> 337: invoice clone and
+    // invoice make-recurring were added to both the tenant and integration
+    // surfaces, so an invoice can be duplicated or turned into a recurring
+    // profile without rebuilding its lines client-side.
+    expect(operations).toHaveLength(337)
+    expect(protectedPublicOperations()).toHaveLength(336)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })
