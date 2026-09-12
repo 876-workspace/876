@@ -1,5 +1,6 @@
 import { workspace } from '@/lib/services/workspace'
 import { Suspense } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { WidgetHost } from '@876/widgets'
@@ -21,6 +22,15 @@ import { WidgetCatalogIcon } from '@/features/widgets/components/widget-catalog-
 
 import { resolveApp } from '../_data'
 
+type Props = { params: Promise<{ slug: string }> }
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const app = await resolveApp(slug)
+  if (!app) return { title: 'Widgets' }
+  return { title: `${app.name} Widgets` }
+}
+
 /**
  * A read-only lens, deliberately. "What does this app expose?" is a real
  * question and worth a tab, but a widget is managed in one place — its own
@@ -28,11 +38,7 @@ import { resolveApp } from '../_data'
  * Editing here as well is what produced two divergent toggle UIs for the same
  * flags, and an admin who could not tell which one they had just changed.
  */
-export default function AppWidgetsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default function AppWidgetsPage({ params }: Props) {
   return (
     <div className="space-y-5">
       <h2 className="text-lg font-medium">Widgets</h2>
@@ -51,11 +57,7 @@ export default function AppWidgetsPage({
   )
 }
 
-async function AppWidgetsData({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+async function AppWidgetsData({ params }: Props) {
   const { slug } = await params
   const app = await resolveApp(slug)
   if (!app) notFound()
