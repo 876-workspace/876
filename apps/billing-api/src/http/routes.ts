@@ -10,7 +10,11 @@ import {
   createAccountingProvidersRouter,
   createInternalAccountingProvidersRouter,
 } from '@/modules/accounting-providers'
-import { createBankingEngineRouter, createBankingRouter } from '@/modules/banking'
+import {
+  createBankingEngineRouter,
+  createBankingRouter,
+  createBankingStatementFileRouter,
+} from '@/modules/banking'
 import {
   createBillingEngineRouter,
   createInternalBillingEngineRouter,
@@ -75,6 +79,7 @@ export function buildRoutes(): Router {
   root.use('/api/v1', createCommercialRouter(resolveGuards))
   root.use('/api/v1', createBankingRouter(resolveGuards))
   root.use('/api/v1', createBankingEngineRouter(resolveGuards))
+  root.use('/api/v1', createBankingStatementFileRouter(resolveGuards))
   root.use('/api/v1', createCatalogRouter(resolveGuards))
   root.use('/api/v1', createCurrenciesRouter(resolveGuards))
   root.use('/api/v1', createCustomersRouter(resolveGuards))
