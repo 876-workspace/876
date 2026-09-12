@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+
 import {
   PermissionMatrix,
   matrixModulesFromCatalog,
@@ -6,6 +8,11 @@ import { appPermissionCatalogs } from '@876/core/access/catalogs'
 import { AppError } from '@876/ui/app-error'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { loadMemberAppMemberships } from '../../_data'
+
+export const metadata: Metadata = {
+  title: 'Permissions',
+}
+
 export default async function MemberPermissionsPage({
   params,
 }: {
