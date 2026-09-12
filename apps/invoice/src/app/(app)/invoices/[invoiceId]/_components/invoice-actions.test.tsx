@@ -30,6 +30,8 @@ function renderActions(status: Parameters<typeof InvoiceActions>[0]['status']) {
       status={status}
       canWrite
       canRecordPayment
+      documentNumber="INV-000123"
+      totalAmount="$1,234.00"
     />
   )
 }
@@ -50,7 +52,9 @@ describe('InvoiceActions', () => {
 
   it('links an open invoice to the payments received workflow', () => {
     renderActions('OPEN')
-    expect(screen.getByRole('link', { name: 'Record payment' })).toHaveAttribute(
+    expect(
+      screen.getByRole('link', { name: 'Record payment' })
+    ).toHaveAttribute(
       'href',
       '/payments/new?customerId=cus_123&invoiceId=inv_123'
     )
@@ -59,7 +63,19 @@ describe('InvoiceActions', () => {
   it('hides mutations and payment entry for a void invoice', () => {
     renderActions('VOID')
     expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Record payment' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Record payment' })
+    ).not.toBeInTheDocument()
     expect(screen.queryByLabelText('More actions')).not.toBeInTheDocument()
+  })
+
+  it('offers no invoice preferences item, which this app has no page for', async () => {
+    const user = userEvent.setup()
+    renderActions('DRAFT')
+    await user.click(screen.getByLabelText('More actions'))
+    await screen.findByRole('menuitem', { name: 'Delete' })
+    expect(
+      screen.queryByRole('menuitem', { name: 'Invoice preferences' })
+    ).not.toBeInTheDocument()
   })
 })

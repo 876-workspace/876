@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 
-import { InvoiceLifecycleActions } from '@876/billing-ui/invoice-lifecycle-actions'
+import { DocumentToolbar } from '@876/billing-ui/panels/document-toolbar'
 
 import { client } from '@/lib/client'
 
@@ -17,12 +17,16 @@ export function InvoiceActions({
   status,
   canWrite,
   canRecordPayment,
+  documentNumber,
+  totalAmount,
 }: {
   invoiceId: string
   customerId: string
   status: InvoiceStatus
   canWrite: boolean
   canRecordPayment: boolean
+  documentNumber: string
+  totalAmount: string
 }) {
   const router = useRouter()
   const editability = getInvoiceEditability(status)
@@ -31,11 +35,15 @@ export function InvoiceActions({
   if (!canWrite && !canRecordPayment) return null
 
   return (
-    <InvoiceLifecycleActions
+    <DocumentToolbar
       status={status}
+      sharePath={`/invoices/${invoiceId}`}
+      document={{ number: documentNumber, totalAmount }}
       editHref={canWrite ? `/invoices/${invoiceId}/edit` : undefined}
       recordPaymentHref={
-        canRecordPayment ? `/payments/new?${paymentParams.toString()}` : undefined
+        canRecordPayment
+          ? `/payments/new?${paymentParams.toString()}`
+          : undefined
       }
       canEdit={canWrite && editability.editable}
       canDelete={canWrite && editability.deletable}

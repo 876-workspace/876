@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 
-import { InvoiceLifecycleActions } from '@876/billing-ui/invoice-lifecycle-actions'
+import { DocumentToolbar } from '@876/billing-ui/panels/document-toolbar'
 
 import { client } from '@/lib/client'
 import type { InvoiceStatus } from '@/types/invoice'
@@ -13,28 +13,41 @@ export function InvoiceActions({
   invoiceId,
   customerId,
   status,
+  canWrite,
   canRecordPayment,
+  documentNumber,
+  totalAmount,
 }: {
   invoiceId: string
   customerId: string
   status: InvoiceStatus
+  canWrite: boolean
   canRecordPayment: boolean
+  documentNumber: string
+  totalAmount: string
 }) {
   const router = useRouter()
   const editability = getInvoiceEditability(status)
   const paymentParams = new URLSearchParams({ customerId, invoiceId })
 
   return (
-    <InvoiceLifecycleActions
+    <DocumentToolbar
       status={status}
+      sharePath={`/invoices/${invoiceId}`}
+      document={{ number: documentNumber, totalAmount }}
       editHref={`/invoices/${invoiceId}/edit`}
       recordPaymentHref={
-        canRecordPayment ? `/payments/new?${paymentParams.toString()}` : undefined
+        canRecordPayment
+          ? `/payments/new?${paymentParams.toString()}`
+          : undefined
       }
-      canEdit={editability.editable}
-      canDelete={editability.deletable}
+      preferencesHref={
+        canWrite ? '/subscriptions/invoice-preferences' : undefined
+      }
+      canEdit={canWrite && editability.editable}
+      canDelete={canWrite && editability.deletable}
       onFinalize={
-        status === 'DRAFT'
+        canWrite && status === 'DRAFT'
           ? async () => {
               const result = await client.invoices.finalize(invoiceId, {
                 autoApplyCredits: true,
@@ -46,6 +59,7 @@ export function InvoiceActions({
           : undefined
       }
       onSend={
+        canWrite &&
         status !== 'DRAFT' &&
         status !== 'VOID' &&
         status !== 'UNCOLLECTIBLE'
@@ -58,7 +72,7 @@ export function InvoiceActions({
           : undefined
       }
       onVoid={
-        status === 'OPEN' || status === 'SENT'
+        canWrite && (status === 'OPEN' || status === 'SENT')
           ? async (reason) => {
               const result = await client.invoices.void(invoiceId, { reason })
               if (result.error) return { error: result.error.message }
@@ -68,12 +82,15 @@ export function InvoiceActions({
           : undefined
       }
       onWriteOff={
-        status === 'OPEN' ||
-        status === 'SENT' ||
-        status === 'PARTIALLY_PAID' ||
-        status === 'OVERDUE'
+        canWrite &&
+        (status === 'OPEN' ||
+          status === 'SENT' ||
+          status === 'PARTIALLY_PAID' ||
+          status === 'OVERDUE')
           ? async (reason) => {
-              const result = await client.invoices.writeOff(invoiceId, { reason })
+              const result = await client.invoices.writeOff(invoiceId, {
+                reason,
+              })
               if (result.error) return { error: result.error.message }
               router.refresh()
               return { error: null }
@@ -81,7 +98,7 @@ export function InvoiceActions({
           : undefined
       }
       onDelete={
-        editability.deletable
+        canWrite && editability.deletable
           ? async () => {
               const result = await client.invoices.delete(invoiceId)
               if (result.error) return { error: result.error.message }

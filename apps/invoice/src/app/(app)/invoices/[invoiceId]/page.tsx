@@ -1,8 +1,10 @@
 import { notFound, redirect } from 'next/navigation'
-import { Badge } from '@876/ui/badge'
 import { DetailCard, DetailCardBody } from '@876/ui/detail-card'
 import { InvoiceDocumentPanel } from '@876/billing-ui/panels/invoice-document-panel'
-import { invoiceDocumentData } from '@876/billing-ui/document/invoice-document-data'
+import {
+  invoiceDocumentData,
+  invoiceSeller,
+} from '@876/billing-ui/document/invoice-document-data'
 import Link from 'next/link'
 import { WorkWidgetContextSetter } from '@876/widgets/react'
 
@@ -11,8 +13,8 @@ import { canAccess } from '@/lib/auth/access-context'
 import { requireAppPermission } from '@/lib/auth/guards'
 import { createInvoiceWorkContext } from '@/lib/auth/work-widget-context'
 import { getBilling } from '@/lib/services/billing'
+import { getPlatformClient } from '@/lib/services/platform'
 import { formatDate, formatMoney } from '@/lib/format'
-import { documentStatusVariant } from '@/lib/status'
 
 import { InvoiceActions } from './_components/invoice-actions'
 import { InvoiceOriginLink } from './_components/invoice-origin-link'
@@ -30,8 +32,14 @@ export default async function InvoiceDetailPage({ params }: Props) {
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
 
-  const billing = await getBilling(context.orgId)
-  const result = await billing.invoices.retrieve(invoiceId)
+  const [billing, platform] = await Promise.all([
+    getBilling(context.orgId),
+    getPlatformClient(),
+  ])
+  const [result, organization] = await Promise.all([
+    billing.invoices.retrieve(invoiceId),
+    platform.organizations.retrieve({ id: context.orgId }),
+  ])
   if (result.error?.code === 'invoice/not-found') notFound()
   if (result.error) {
     return (
@@ -60,6 +68,12 @@ export default async function InvoiceDetailPage({ params }: Props) {
       )
   }
 
+  // Branding is a preference, not a dependency: an organization whose row
+  // cannot be read still gets its invoice document, without the letterhead.
+  const seller = organization.data
+    ? invoiceSeller(organization.data, context.orgName)
+    : { name: context.orgName, countryLabel: null }
+
   return (
     <>
       <WorkWidgetContextSetter
@@ -70,25 +84,24 @@ export default async function InvoiceDetailPage({ params }: Props) {
         aria-label={`Invoice details: ${number}`}
         className="min-h-0 print:h-auto print:overflow-visible print:border-0 print:shadow-none"
       >
-        <header className="flex flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-6 print:hidden">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold">{number}</h1>
-            <Badge variant={documentStatusVariant(status)}>
-              {status.toLowerCase().replaceAll('_', ' ')}
-            </Badge>
-          </div>
-          <InvoiceActions
-            invoiceId={invoice.id}
-            customerId={customerId}
-            status={status}
-            canWrite={canWrite}
-            canRecordPayment={canRecordPayment}
-          />
+        <header className="px-5 py-5 sm:px-6 print:hidden">
+          <h1 className="text-xl font-semibold">{number}</h1>
         </header>
         <DetailCardBody className="min-h-0 p-0 sm:p-0 print:overflow-visible print:p-0">
+          <div className="mx-auto w-full max-w-5xl px-5 pt-5 sm:px-6">
+            <InvoiceActions
+              invoiceId={invoice.id}
+              customerId={customerId}
+              status={status}
+              canWrite={canWrite}
+              canRecordPayment={canRecordPayment}
+              documentNumber={invoice.number}
+              totalAmount={formatMoney(invoice.totalAmount, invoice.currency)}
+            />
+          </div>
           <InvoiceDocumentPanel
             {...invoiceDocumentData(invoice, formatDate, formatMoney)}
-            seller={{ name: context.orgName, countryLabel: '' }}
+            seller={seller}
             footer={
               <>
                 <p>
