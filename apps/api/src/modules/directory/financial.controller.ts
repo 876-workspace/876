@@ -21,6 +21,7 @@ import type {
   BankBranchCreate,
   BankBranchUpdate,
   BankCreate,
+  BankListQuery,
   BankUpdate,
   CreditUnionBranchCreate,
   CreditUnionBranchUpdate,
@@ -40,7 +41,7 @@ function actor(req: Request): string | null {
 // --- Banks ---
 
 export async function listBanks(req: Request, res: Response): Promise<void> {
-  const query = validQuery<ListDirectoryQuery>(req)
+  const query = validQuery<BankListQuery>(req)
 
   res.status(200).json(await service.listBanks(query, isInternal(req)))
 }
