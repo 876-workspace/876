@@ -30,6 +30,8 @@ function permissionLabel(value: string): string {
 
 type Props = { params: Promise<{ id: string }> }
 
+export const metadata = { title: 'Team Member' }
+
 export default async function TeamMemberOverviewPage({ params }: Props) {
   const { id } = await params
   const session = await requireSession(`/settings/users/${id}`)
