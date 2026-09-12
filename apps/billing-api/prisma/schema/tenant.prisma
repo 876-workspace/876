@@ -66,6 +66,7 @@ model Tenant {
   taxRates                        TaxRate[]
   bankAccounts                    BankAccount[]
   bankTransactions                BankTransaction[]
+  bankRules                       BankRule[]
   paymentModes                    PaymentMode[]
   payments                        Payment[]
   paymentAllocations              PaymentAllocation[]
