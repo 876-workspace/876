@@ -19,6 +19,8 @@ export const bankAccountSchema = z.object({
   accountType: bankAccountTypeSchema,
   currency: z.string(),
   description: z.string().nullable(),
+  directoryBankId: z.string().nullable(),
+  directoryBranchId: z.string().nullable(),
   institutionName: z.string().nullable(),
   accountHolderName: z.string().nullable(),
   accountNumberLast4: z.string().nullable(),
@@ -34,28 +36,41 @@ export const bankAccountSchema = z.object({
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
 })
-export const bankAccountCreateBodySchema = z.strictObject({
-  name: z.string().trim().min(1).max(120),
-  accountType: bankAccountTypeSchema,
-  currency: z.string().trim().length(3).toUpperCase(),
-  description: z.string().trim().min(1).nullable().optional(),
-  institutionName: z.string().trim().min(1).max(160).nullable().optional(),
-  accountHolderName: z.string().trim().min(1).max(160).nullable().optional(),
-  accountNumberLast4: z
-    .string()
-    .trim()
-    .regex(/^[A-Za-z0-9]{1,4}$/)
-    .nullable()
-    .optional(),
-  openingBalance: minorAmountSchema.optional(),
-  openingBalanceAt: z.number().int().nonnegative().nullable().optional(),
-})
+export const bankAccountCreateBodySchema = z
+  .strictObject({
+    name: z.string().trim().min(1).max(120),
+    accountType: bankAccountTypeSchema,
+    currency: z.string().trim().length(3).toUpperCase(),
+    description: z.string().trim().min(1).nullable().optional(),
+    directoryBankId: z.string().trim().min(1).max(255).nullable().optional(),
+    directoryBranchId: z.string().trim().min(1).max(255).nullable().optional(),
+    institutionName: z.string().trim().min(1).max(160).nullable().optional(),
+    accountHolderName: z.string().trim().min(1).max(160).nullable().optional(),
+    accountNumberLast4: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z0-9]{1,4}$/)
+      .nullable()
+      .optional(),
+    openingBalance: minorAmountSchema.optional(),
+    openingBalanceAt: z.number().int().nonnegative().nullable().optional(),
+  })
+  .superRefine((body, context) => {
+    if (body.directoryBranchId && !body.directoryBankId)
+      context.addIssue({
+        code: 'custom',
+        message: 'A directory branch requires a directory bank.',
+        path: ['directoryBankId'],
+      })
+  })
 export const bankAccountUpdateBodySchema = z
   .strictObject({
     name: z.string().trim().min(1).max(120).optional(),
     accountType: bankAccountTypeSchema.optional(),
     currency: z.string().trim().length(3).toUpperCase().optional(),
     description: z.string().trim().min(1).nullable().optional(),
+    directoryBankId: z.string().trim().min(1).max(255).nullable().optional(),
+    directoryBranchId: z.string().trim().min(1).max(255).nullable().optional(),
     institutionName: z.string().trim().min(1).max(160).nullable().optional(),
     accountHolderName: z.string().trim().min(1).max(160).nullable().optional(),
     accountNumberLast4: z
