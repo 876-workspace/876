@@ -13,6 +13,8 @@ import { PLATFORM_REQUESTS_HREF } from '@/features/crm/request-paths'
 import { requireSession } from '@/lib/auth/guards'
 import { getPlatformOrganization } from '@/lib/platform-org'
 
+export const metadata = { title: 'New Request' }
+
 export default function NewRequestPage() {
   return (
     <Page className="mx-auto w-full max-w-[1400px]">
