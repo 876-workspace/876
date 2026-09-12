@@ -1,5 +1,9 @@
 import type { InvoiceDetail } from '@876/billing'
-import type { InvoiceDocumentPanelProps } from '../panels/invoice-document-panel'
+import type { PlatformOrganization } from '@876/core/platform'
+import type {
+  InvoiceDocumentPanelProps,
+  InvoiceDocumentSeller,
+} from '../panels/invoice-document-panel'
 
 type Amounts =
   | 'subtotalAmount'
@@ -98,6 +102,54 @@ export function invoiceDocumentData(
         totalAmount: money(line.totalAmount),
       })),
     },
+  }
+}
+
+/**
+ * The issuing organization's block on a printed document. Both hosts resolve
+ * their organization row and pass it here, so the seller side of the document
+ * cannot drift between Billing and Invoice.
+ */
+export function invoiceSeller(
+  organization: Pick<
+    PlatformOrganization,
+    | 'name'
+    | 'logo_url'
+    | 'country_code'
+    | 'address_line1'
+    | 'address_line2'
+    | 'city'
+    | 'primary_email'
+    | 'primary_phone'
+  >,
+  fallbackName: string
+): InvoiceDocumentSeller {
+  const country = countryName(organization.country_code)
+  return {
+    name: organization.name ?? fallbackName,
+    countryLabel: country,
+    logoUrl: organization.logo_url,
+    email: organization.primary_email,
+    phone: organization.primary_phone,
+    address: {
+      line1: organization.address_line1,
+      line2: organization.address_line2,
+      city: organization.city,
+      countryLabel: country,
+    },
+  }
+}
+
+/** ISO 3166-1 alpha-2 to a display name, falling back to the code itself. */
+function countryName(countryCode: string | null): string | null {
+  if (!countryCode) return null
+  try {
+    return (
+      new Intl.DisplayNames(['en'], { type: 'region' }).of(countryCode) ??
+      countryCode
+    )
+  } catch {
+    return countryCode
   }
 }
 

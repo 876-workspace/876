@@ -16,9 +16,30 @@ import {
   DocumentTotalRow,
   DocumentFooter,
 } from '@876/ui/document-view'
+import { cn } from '@876/ui/lib/utils'
+
+import {
+  documentStatusVariant,
+  type DocumentStatusVariant,
+} from '../document-status'
+
+export interface InvoiceDocumentSeller {
+  name: string
+  countryLabel: string | null
+  /** The organization's uploaded logo. The name alone renders when absent. */
+  logoUrl?: string | null
+  email?: string | null
+  phone?: string | null
+  address?: {
+    line1: string | null
+    line2: string | null
+    city: string | null
+    countryLabel: string | null
+  } | null
+}
 
 export interface InvoiceDocumentPanelProps {
-  seller: { name: string; countryLabel: string }
+  seller: InvoiceDocumentSeller
   invoice: {
     number: string
     status: string
@@ -72,23 +93,34 @@ export function InvoiceDocumentPanel({
 }: InvoiceDocumentPanelProps) {
   const address = recipient.address
   return (
-    <DocumentView>
-      <DocumentHeader>
+    <DocumentView className="relative">
+      <DocumentStatusRibbon status={invoice.status} />
+      <DocumentHeader className="pt-16">
         <DocumentHeaderTop>
           <div>
+            {seller.logoUrl ? (
+              <img
+                src={seller.logoUrl}
+                alt=""
+                className="mb-4 h-12 w-auto max-w-48 object-contain object-left print:h-10"
+              />
+            ) : null}
             <p className="text-xl font-semibold">{seller.name}</p>
-            <p className="text-muted-foreground mt-1 text-sm print:text-neutral-600">
-              {seller.countryLabel}
-            </p>
+            <SellerDetails seller={seller} />
           </div>
           <DocumentTitle>
             <p className="text-3xl font-semibold tracking-tight">INVOICE</p>
             <p className="mt-2 font-medium tabular-nums">#{invoice.number}</p>
-            <p className="text-muted-foreground mt-1 text-sm capitalize print:text-neutral-600">
-              {invoice.status.toLowerCase().replaceAll('_', ' ')}
-            </p>
+            <div className="mt-5">
+              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase print:text-neutral-600">
+                Balance due
+              </p>
+              <p className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">
+                {invoice.amountDue}
+              </p>
+            </div>
             {invoice.subject ? (
-              <p className="mt-2 max-w-sm text-sm font-medium text-pretty">
+              <p className="mt-3 max-w-sm text-sm font-medium text-pretty">
                 {invoice.subject}
               </p>
             ) : null}
@@ -243,5 +275,70 @@ export function InvoiceDocumentPanel({
 
       <DocumentFooter>{footer}</DocumentFooter>
     </DocumentView>
+  )
+}
+
+function SellerDetails({ seller }: { seller: InvoiceDocumentSeller }) {
+  const address = seller.address
+  // The country falls back to the seller's own label, so an organization with
+  // no address on file still shows where it trades from.
+  const cityLine = [address?.city, address?.countryLabel ?? seller.countryLabel]
+    .filter(Boolean)
+    .join(', ')
+  if (
+    !address?.line1 &&
+    !address?.line2 &&
+    !cityLine &&
+    !seller.phone &&
+    !seller.email
+  )
+    return null
+
+  return (
+    <div className="text-muted-foreground mt-1 text-sm leading-6 print:text-neutral-600">
+      {address?.line1 ? <p>{address.line1}</p> : null}
+      {address?.line2 ? <p>{address.line2}</p> : null}
+      {cityLine ? <p>{cityLine}</p> : null}
+      {seller.phone ? <p>{seller.phone}</p> : null}
+      {seller.email ? <p>{seller.email}</p> : null}
+    </div>
+  )
+}
+
+/**
+ * Solid status colours for the corner ribbon. Keyed by the shared document
+ * variant, so the ribbon can never disagree with the status badge elsewhere.
+ */
+const RIBBON_BACKGROUND: Record<DocumentStatusVariant, string> = {
+  default: 'bg-muted-foreground',
+  secondary: 'bg-muted-foreground',
+  outline: 'bg-muted-foreground',
+  info: 'bg-info',
+  success: 'bg-success',
+  warning: 'bg-warning',
+  destructive: 'bg-destructive',
+}
+
+/**
+ * The diagonal status ribbon in the document's top-left corner. It replaces a
+ * second status line inside the header, and the header carries `pt-16` so the
+ * ribbon's band cannot reach the seller logo or name beneath it.
+ */
+function DocumentStatusRibbon({ status }: { status: string }) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute top-0 left-0 size-24 overflow-hidden print:[-webkit-print-color-adjust:exact] print:[print-color-adjust:exact]"
+      data-document-ribbon={status}
+    >
+      <span
+        className={cn(
+          'absolute top-5 -left-10 w-36 -rotate-45 py-1 text-center text-[0.625rem] font-semibold tracking-wider text-white uppercase',
+          RIBBON_BACKGROUND[documentStatusVariant(status)]
+        )}
+      >
+        {status.toLowerCase().replaceAll('_', ' ')}
+      </span>
+    </div>
   )
 }
