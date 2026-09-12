@@ -5,6 +5,14 @@ import { accountingProviders } from './accounting-providers'
 import { addons } from './addons'
 import { auth } from './auth'
 import { bankAccounts } from './bank-accounts'
+import { bankDirectory } from './bank-directory'
+import {
+  bankDeposits,
+  bankReconciliations,
+  bankRules,
+  bankStatementImports,
+  bankStatementLines,
+} from './banking-engine'
 import { bankTransactions } from './bank-transactions'
 import { creditNotes } from './credit-notes'
 import { currencies } from './currencies'
@@ -58,38 +66,70 @@ const cases: RequestCase[] = [
   {
     name: 'creates a bank account',
     act: () => bankAccounts.create(EMPTY),
-    url: '/api/v1/banking/accounts',
+    url: '/api/banking/accounts',
     init: { method: 'POST', body: '{}' },
   },
   {
     name: 'updates a bank account',
     act: () => bankAccounts.update('ba /1', EMPTY),
-    url: '/api/v1/banking/accounts/ba%20%2F1',
+    url: '/api/banking/accounts/ba%20%2F1',
     init: { method: 'PATCH', body: '{}' },
   },
   {
     name: 'deletes a bank account',
     act: () => bankAccounts.delete('ba /1'),
-    url: '/api/v1/banking/accounts/ba%20%2F1',
+    url: '/api/banking/accounts/ba%20%2F1',
     init: { method: 'DELETE' },
   },
   {
     name: 'creates a bank transaction',
     act: () => bankTransactions.create('ba /1', EMPTY),
-    url: '/api/v1/banking/accounts/ba%20%2F1/transactions',
+    url: '/api/banking/accounts/ba%20%2F1/transactions',
     init: { method: 'POST', body: '{}' },
   },
   {
     name: 'updates a bank transaction',
     act: () => bankTransactions.update('ba /1', 'btxn /1', EMPTY),
-    url: '/api/v1/banking/accounts/ba%20%2F1/transactions/btxn%20%2F1',
+    url: '/api/banking/accounts/ba%20%2F1/transactions/btxn%20%2F1',
     init: { method: 'PATCH', body: '{}' },
   },
   {
     name: 'deletes a bank transaction',
     act: () => bankTransactions.delete('ba /1', 'btxn /1'),
-    url: '/api/v1/banking/accounts/ba%20%2F1/transactions/btxn%20%2F1',
+    url: '/api/banking/accounts/ba%20%2F1/transactions/btxn%20%2F1',
     init: { method: 'DELETE' },
+  },
+  {
+    name: 'lists directory banks with a batch ids selector',
+    act: () => bankDirectory.listBanks('JM', ['bank_ncb', 'bank_scb']),
+    url: '/api/banking/directory/banks?countryCode=JM&ids=bank_ncb%2Cbank_scb',
+  },
+  {
+    name: 'lists directory branches across banks with a batch ids selector',
+    act: () => bankDirectory.listBranchesByIds(['bkbr_1', 'bkbr_2']),
+    url: '/api/banking/directory/branches?ids=bkbr_1%2Cbkbr_2',
+  },
+  {
+    name: 'lists bank deposits',
+    act: () => bankDeposits.list(),
+    url: '/api/banking/deposits',
+  },
+  {
+    name: 'creates a bank deposit',
+    act: () => bankDeposits.create(EMPTY),
+    url: '/api/banking/deposits',
+    init: { method: 'POST', body: '{}' },
+  },
+  {
+    name: 'retrieves a bank deposit',
+    act: () => bankDeposits.retrieve('bdep /1'),
+    url: '/api/banking/deposits/bdep%20%2F1',
+  },
+  {
+    name: 'voids a bank deposit',
+    act: () => bankDeposits.void('bdep /1'),
+    url: '/api/banking/deposits/bdep%20%2F1/void',
+    init: { method: 'POST' },
   },
   {
     name: 'creates a credit note',
@@ -599,6 +639,12 @@ describe('Billing browser resource clients', () => {
       addons,
       auth,
       bankAccounts,
+      bankDeposits,
+      bankDirectory,
+      bankReconciliations,
+      bankRules,
+      bankStatementImports,
+      bankStatementLines,
       bankTransactions,
       creditNotes,
       currencies,

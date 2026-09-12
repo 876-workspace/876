@@ -12,6 +12,7 @@ import {
 } from '@876/ui/detail-card'
 
 import { StatementWorkspace } from '@/features/banking/components/statement-workspace'
+import { BankIdentity } from '@/features/banking/components/bank-identity'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'
@@ -29,16 +30,42 @@ export default async function BankAccountPage({ params }: Props) {
     getBilling(),
     params,
   ])
-  const [account, transactions, statementLines] = await Promise.all([
+  const [account, transactions, statementLines, deposits] = await Promise.all([
     service.bankAccounts.retrieve(context.tenant.id, accountId),
     service.bankTransactions.list(context.tenant.id, accountId),
     billing.bankStatementLines.list(accountId),
+    billing.bankDeposits.list(),
   ])
   if (!account) notFound()
+
+  // One batch call per kind reuses the list's resolution path for a single
+  // record; directory failure degrades to the stored institution name.
+  const [banks, branches] = await Promise.all([
+    account.directoryBankId
+      ? billing.bankDirectory.listBanks('JM', {
+          ids: [account.directoryBankId],
+        })
+      : null,
+    account.directoryBranchId
+      ? billing.bankDirectory.listBranchesByIds([account.directoryBranchId])
+      : null,
+  ])
+  const bank = account.directoryBankId
+    ? (banks?.data?.data ?? []).find(
+        (entry) => entry.id === account.directoryBankId
+      )
+    : undefined
+  const branch = account.directoryBranchId
+    ? (branches?.data?.data ?? []).find(
+        (entry) => entry.id === account.directoryBranchId
+      )
+    : undefined
+  const bankName = bank?.name ?? account.institutionName ?? null
 
   const canManage = context.permissions.includes('banking:write')
   const booksBalance = account.booksBalance ?? account.balance
   const bankBalance = account.bankBalance ?? null
+  const accountTypeLabel = account.accountType.toLowerCase().replaceAll('_', ' ')
 
   return (
     <DetailCard aria-label={`Bank account: ${account.name}`}>
@@ -49,16 +76,36 @@ export default async function BankAccountPage({ params }: Props) {
             {account.isActive ? 'Active' : 'Archived'}
           </Badge>
         }
-        subtitle={[
-          account.accountType.toLowerCase().replaceAll('_', ' '),
-          account.currency,
-          account.institutionName ?? null,
-          account.accountNumberLast4
-            ? `•••• ${account.accountNumberLast4}`
-            : null,
-        ]
-          .filter(Boolean)
-          .join(' · ')}
+        subtitle={
+          bankName ? (
+            <span className="flex flex-col gap-1.5">
+              <span>
+                {[accountTypeLabel, account.currency].join(' · ')}
+              </span>
+              <BankIdentity
+                size="sm"
+                bankName={bankName}
+                shortName={bank?.shortName ?? null}
+                logoUrl={bank?.logoUrl ?? null}
+                branchName={branch?.name ?? null}
+                transitNumber={branch?.transitNumber ?? null}
+                routingNumber={branch?.routingNumber ?? null}
+                accountNumberLast4={account.accountNumberLast4 ?? null}
+              />
+            </span>
+          ) : (
+            [
+              accountTypeLabel,
+              account.currency,
+              account.institutionName ?? null,
+              account.accountNumberLast4
+                ? `•••• ${account.accountNumberLast4}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')
+          )
+        }
         actions={
           canManage ? (
             <>
@@ -72,16 +119,35 @@ export default async function BankAccountPage({ params }: Props) {
                   </Link>
                   <Link
                     href={`/banking/${account.id}/reconcile`}
-                    className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                    className={buttonVariants({
+                      variant: 'outline',
+                      size: 'sm',
+                    })}
                   >
                     Reconcile
                   </Link>
                   <Link
                     href={`/banking/${account.id}/transactions/new`}
-                    className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                    className={buttonVariants({
+                      variant: 'outline',
+                      size: 'sm',
+                    })}
                   >
                     Add transaction
                   </Link>
+                  {['UNDEPOSITED_FUNDS', 'PETTY_CASH'].includes(
+                    account.accountType
+                  ) ? (
+                    <Link
+                      href={`/banking/${account.id}/deposits/new`}
+                      className={buttonVariants({
+                        variant: 'info',
+                        size: 'sm',
+                      })}
+                    >
+                      Record deposit
+                    </Link>
+                  ) : null}
                 </>
               ) : null}
               <Link
@@ -127,6 +193,26 @@ export default async function BankAccountPage({ params }: Props) {
             initialError={statementLines.error?.message ?? null}
           />
         </div>
+
+        {['UNDEPOSITED_FUNDS', 'PETTY_CASH'].includes(account.accountType) ? (
+          <section className="876-card mb-6 overflow-hidden">
+            <div className="border-border border-b px-5 py-4">
+              <h2 className="font-semibold">Deposits</h2>
+            </div>
+            {(deposits.data?.data ?? [])
+              .filter((deposit) => deposit.sourceAccountId === account.id)
+              .map((deposit) => (
+                <div
+                  key={deposit.id}
+                  className="border-border border-b px-5 py-3 text-sm"
+                >
+                  {formatDate(deposit.depositedAt)} ·{' '}
+                  {formatMoney(deposit.amount, account.currency)} ·{' '}
+                  {deposit.status}
+                </div>
+              ))}
+          </section>
+        ) : null}
 
         <section className="876-card overflow-hidden">
           <div className="border-border border-b px-5 py-4">

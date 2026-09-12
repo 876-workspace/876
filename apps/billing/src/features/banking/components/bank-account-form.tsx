@@ -100,12 +100,13 @@ export function BankAccountForm({
     () => initialBanks.find((bank) => bank.id === directoryBankId) ?? null,
     [initialBanks, directoryBankId]
   )
+  const selectedBranch = useMemo(
+    () => branches.find((branch) => branch.id === directoryBranchId) ?? null,
+    [branches, directoryBranchId]
+  )
 
   useEffect(() => {
-    if (!linksBank || !directoryBankId) {
-      setBranches([])
-      return
-    }
+    if (!linksBank || !directoryBankId) return
 
     if (
       skipPrimedBranchLoad.current &&
@@ -286,6 +287,14 @@ export function BankAccountForm({
                   </NativeSelectOption>
                 ))}
               </NativeSelect>
+              {selectedBranch ? (
+                <p className="text-muted-foreground text-xs tabular-nums">
+                  Transit {selectedBranch.transitNumber}
+                  {selectedBranch.routingNumber
+                    ? ` · Routing ${selectedBranch.routingNumber}`
+                    : null}
+                </p>
+              ) : null}
             </Field>
           </>
         ) : null}

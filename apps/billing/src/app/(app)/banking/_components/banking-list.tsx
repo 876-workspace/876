@@ -13,6 +13,8 @@ import {
   ListPaneItem,
 } from '@876/ui/list-pane'
 
+import { BankIdentity, formatAccountNumber } from '@/features/banking/components/bank-identity'
+
 export type BankAccountRow = {
   id: string
   name: string
@@ -20,6 +22,14 @@ export type BankAccountRow = {
   currency: string
   balance: string
   isActive: boolean
+  bank: {
+    name: string
+    shortName: string | null
+    logoUrl: string | null
+    branchName: string | null
+    transitNumber: string | null
+    accountNumberLast4: string | null
+  } | null
 }
 
 /**
@@ -63,7 +73,7 @@ export function BankingList({ accounts }: { accounts: BankAccountRow[] }) {
                 selected={account.id === selectedId}
                 label={`View bank account ${account.name}`}
                 title={account.name}
-                subtitle={`${account.accountTypeLabel} · ${account.currency}`}
+                subtitle={paneSubtitle(account)}
                 trailing={
                   account.isActive ? (
                     <span className="tabular-nums">{account.balance}</span>
@@ -131,6 +141,18 @@ export function BankingList({ accounts }: { accounts: BankAccountRow[] }) {
                 </Badge>
               </div>
               <p className="mt-6 font-semibold">{account.name}</p>
+              {account.bank ? (
+                <div className="mt-2">
+                  <BankIdentity
+                    bankName={account.bank.name}
+                    shortName={account.bank.shortName}
+                    logoUrl={account.bank.logoUrl}
+                    branchName={account.bank.branchName}
+                    transitNumber={account.bank.transitNumber}
+                    accountNumberLast4={account.bank.accountNumberLast4}
+                  />
+                </div>
+              ) : null}
               <p className="text-muted-foreground mt-1 text-xs">
                 {account.accountTypeLabel} · {account.currency}
               </p>
@@ -146,6 +168,16 @@ export function BankingList({ accounts }: { accounts: BankAccountRow[] }) {
       )}
     </>
   )
+}
+
+function paneSubtitle(account: BankAccountRow): string {
+  const base = `${account.accountTypeLabel} · ${account.currency}`
+  if (!account.bank) return base
+  const reference = formatAccountNumber(
+    account.bank.transitNumber,
+    account.bank.accountNumberLast4
+  )
+  return reference === '—' ? base : `${base} · ${reference}`
 }
 
 function SummaryCard({

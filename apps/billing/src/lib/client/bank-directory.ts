@@ -9,6 +9,7 @@ export interface BankDirectoryBank {
   bankCode: string
   clearingSystem: string | null
   institutionType: string
+  logoUrl: string | null
 }
 
 export interface BankDirectoryBranch {
@@ -29,16 +30,27 @@ type List<T> = {
 }
 
 export const bankDirectory = {
-  listBanks(countryCode = 'JM') {
+  listBanks(countryCode = 'JM', ids?: string[]) {
     const query = new URLSearchParams({ countryCode })
+    if (ids?.length) query.set('ids', ids.join(','))
     return request<List<BankDirectoryBank>>(
-      `/api/v1/banking/directory/banks?${query.toString()}`
+      `/api/banking/directory/banks?${query.toString()}`
     )
   },
 
-  listBranches(bankId: string) {
+  listBranches(bankId: string, ids?: string[]) {
+    const query = ids?.length
+      ? `?ids=${encodeURIComponent(ids.join(','))}`
+      : ''
     return request<List<BankDirectoryBranch>>(
-      `/api/v1/banking/directory/banks/${encodeURIComponent(bankId)}/branches`
+      `/api/banking/directory/banks/${encodeURIComponent(bankId)}/branches${query}`
+    )
+  },
+
+  listBranchesByIds(ids: string[]) {
+    const query = new URLSearchParams({ ids: ids.join(',') })
+    return request<List<BankDirectoryBranch>>(
+      `/api/banking/directory/branches?${query.toString()}`
     )
   },
 }
