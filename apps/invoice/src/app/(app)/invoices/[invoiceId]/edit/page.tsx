@@ -21,7 +21,7 @@ export default async function EditInvoicePage({
   params: Promise<{ invoiceId: string }>
 }) {
   const { invoiceId } = await params
-  await requireAppPermission('invoices.write')
+  await requireAppPermission('invoices.edit')
   const context = await getInvoiceContext()
   if (!context) redirect('/no-access')
   const billing = await getBilling(context.orgId)

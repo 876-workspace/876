@@ -60,7 +60,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
   }
 
   const invoice = result.data
-  const canWrite = canAccess(access, 'invoices.write')
+  const canWrite = canAccess(access, 'invoices.edit')
   const canRecordPayment = canAccess(access, 'payments.create')
   const recordPaymentHref = `/invoices/${encodeURIComponent(invoice.id)}/payments/new`
 

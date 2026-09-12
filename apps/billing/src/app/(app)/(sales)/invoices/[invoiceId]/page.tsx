@@ -72,7 +72,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
     : { name: context.tenant.name, countryLabel: null }
 
   return (
-    <Page className="print:p-0">
+    <Page className="pt-0 print:p-0">
       <header className="border-border flex h-14 items-center justify-between gap-3 border-b print:hidden">
         <h1 className="876-page-title text-balance">{invoice.number}</h1>
         <Link
