@@ -31,6 +31,7 @@
 - [x] Core directory schemas/serializers/repository/service updated.
 - [x] Country-scoped duplicate bank-code checks.
 - [x] Core bank/branch ownership validation for directory bank accounts.
+- [x] Core service regression tests authored for country-scoped bank codes and branch ownership.
 - [x] Billing opaque `directoryBankId` / `directoryBranchId` persistence + migration.
 - [x] Billing API/SDK bank-account contracts expose Core directory IDs.
 - [x] Raw CSV/TSV parser + explicit mapping contract.
@@ -45,12 +46,13 @@
 - [x] Banking SDK resource bundle added and registered on `create876Client`.
 - [x] Banking type barrel exports added.
 - [x] Bank account/transaction create/update SDK parsing corrected to preserve full API resources.
-- [x] Focused statement parser tests added.
-- [x] Focused Banking SDK resource tests added.
+- [x] Focused statement parser tests authored.
+- [x] Focused Banking SDK resource tests authored.
 - [x] Plan + review handoff refreshed for local orchestrator.
 
 ## In progress now
 
+- [ ] Run Core API tests/typecheck and update older financial-directory fixtures for the country-aware Bank response if required.
 - [ ] Run local `@876/billing` typecheck/tests and repair any barrel/resource schema mismatches.
 - [ ] Run Billing API tests/typecheck and repair parser/route typing issues.
 - [ ] Reconcile any API/SDK schema mismatches found by local contract checks.
@@ -58,7 +60,6 @@
 ## Next
 
 - [ ] Wire existing bank-specific `bankListQuerySchema` into `/directory/banks` so `country_code` is live without broadening every directory query.
-- [ ] Core tests for country-scoped bank uniqueness and branch ownership.
 - [ ] Versioned Jamaica bank/branch catalog + idempotent seed path.
 - [ ] Dedicated Core-directory validation client/host boundary for Billing account setup.
 - [ ] Billing account setup UI: country -> bank -> branch -> account.
