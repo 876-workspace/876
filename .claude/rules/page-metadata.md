@@ -61,7 +61,16 @@ Use concise noun/action titles that match the screen:
 - record subview: `Activity`, `Transactions`, `Statement`, `Audit`, `Access`, `Permissions`
 - unavailable/access state: `Access Required`, `Unavailable`, `Onboarding`
 
-The app suffix comes from the root template. Do not mix separator conventions (`-`, `•`, `|`) inside page metadata to reproduce app branding manually.
+The app suffix comes from the root template. Do not reproduce app branding manually inside a page title — never write `| 876 Console` yourself.
+
+Console's operator record subviews are the one sanctioned contextual pattern, because an operator routinely has several records of the same kind open at once and a bare `Audit` tab is unusable:
+
+```text
+<record> • <subview> - <section>      Acme Freight • Billing - Organizations
+<record> - <section>                  Couriers - Settings
+```
+
+The `•` separates the record from what you are looking at; the `-` names the section it lives in. Use it only where a record identity genuinely disambiguates the tab, keep both separators in that fixed order, and never introduce a third convention.
 
 When contextual identity materially helps users distinguish tabs, prefer a safe business identifier:
 
