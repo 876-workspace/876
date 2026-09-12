@@ -28,6 +28,8 @@ export function createCustomersResource(runtime: Runtime) {
         search.set('customerOrganizationId', options.customerOrganizationId)
       if (options.customerUserId)
         search.set('customerUserId', options.customerUserId)
+      if (options.billingCustomerId)
+        search.set('billingCustomerId', options.billingCustomerId)
       const qs = search.toString()
 
       return request(

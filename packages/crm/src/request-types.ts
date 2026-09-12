@@ -21,6 +21,29 @@ export const requestChannelSchema = z.enum([
   'AGENT',
 ])
 
+export const relatedResourceTypeSchema = z.enum([
+  'invoice',
+  'payment',
+  'quote',
+  'credit-note',
+])
+
+export const relatedResourceSnapshotSchema = z
+  .object({
+    number: z.string().optional(),
+    amount: z.string().optional(),
+    currency: z.string().optional(),
+    status: z.string().optional(),
+  })
+  .strict()
+
+export const sourceAppSchema = z.enum([
+  '876-invoice',
+  '876-billing',
+  '876-crm',
+  '876-console',
+])
+
 export const crmRequestSchema = z.object({
   object: z.literal('request'),
   id: z.string(),
@@ -40,6 +63,10 @@ export const crmRequestSchema = z.object({
   requesterUserId: z.string().nullable(),
   requesterContactId: z.string().nullable(),
   createdBy: z.string(),
+  relatedResourceType: relatedResourceTypeSchema.nullable().optional(),
+  relatedResourceId: z.string().nullable().optional(),
+  relatedResourceSnapshot: relatedResourceSnapshotSchema.nullable().optional(),
+  sourceApp: sourceAppSchema.nullable().optional(),
   resolvedAt: z.number().int().nullable(),
   closedAt: z.number().int().nullable(),
   createdAt: z.number().int(),
@@ -68,6 +95,11 @@ export const crossOrganizationRequestListSchema = z.object({
 
 export type RequestStatus = z.infer<typeof requestStatusSchema>
 export type RequestChannel = z.infer<typeof requestChannelSchema>
+export type RelatedResourceType = z.infer<typeof relatedResourceTypeSchema>
+export type RelatedResourceSnapshot = z.infer<
+  typeof relatedResourceSnapshotSchema
+>
+export type SourceApp = z.infer<typeof sourceAppSchema>
 export type CrmRequest = z.infer<typeof crmRequestSchema>
 export type RequestList = z.infer<typeof requestListSchema>
 export type CrossOrganizationRequest = z.infer<
@@ -88,6 +120,8 @@ export interface ListRequestsQuery {
   /** `'unassigned'` selects requests raised for the organization as a whole. */
   requesterUserId?: string
   priorityId?: string
+  relatedResourceType?: RelatedResourceType
+  relatedResourceId?: string
 }
 
 export interface ListCrossOrganizationRequestsQuery {
@@ -111,8 +145,18 @@ export interface CreateRequestInput {
   assigneeId?: string | null
   requesterUserId?: string | null
   requesterContactId?: string | null
+  relatedResourceType?: RelatedResourceType | null
+  relatedResourceId?: string | null
+  relatedResourceSnapshot?: RelatedResourceSnapshot | null
+  /** Set only by CRM API after authenticating a first-party service caller. */
+  sourceApp?: SourceApp | null
   createdBy: string
 }
+
+export type CreateRequestForBillingCustomerInput = Omit<
+  CreateRequestInput,
+  'customerId'
+>
 
 export interface UpdateRequestInput {
   subject?: string

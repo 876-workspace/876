@@ -82,6 +82,8 @@ export async function request<T>(
   init: ClientRequestInit,
   dataSchema: z.ZodType<T>
 ): Promise<Result<T>> {
+  if ('serviceApp' in runtime) return serviceRequest(runtime, init, dataSchema)
+
   if (!runtime.internalKey)
     return { data: null, error: crmClientError('crm/not-configured') }
 
