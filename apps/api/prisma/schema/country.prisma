@@ -8,6 +8,7 @@ model Country {
   defaultCurrencyCode String?        @map("default_currency_code") @db.VarChar(3)
   isEnabled           Boolean        @default(true) @map("is_enabled")
   addresses           Address[]
+  banks               Bank[]
   orgLocations        OrgLocation[]
   organizations       Organization[]
   regions             Region[]
