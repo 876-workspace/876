@@ -1,29 +1,29 @@
 import type {
-  BankAccountCreated,
+  BankAccountResource,
   BankAccountCreateInput,
   BankAccountDeleted,
-  BankAccountUpdated,
   BankAccountUpdateInput,
 } from '@/types/banking'
 
 import { request } from './request'
 
+const COLLECTION = '/api/banking/accounts'
+
 export const create = (params: BankAccountCreateInput) =>
-  request<BankAccountCreated>('/api/v1/banking/accounts', {
+  request<BankAccountResource>(COLLECTION, {
     method: 'POST',
     body: JSON.stringify(params),
   })
 
 export const update = (accountId: string, params: BankAccountUpdateInput) =>
-  request<BankAccountUpdated>(
-    `/api/v1/banking/accounts/${encodeURIComponent(accountId)}`,
-    { method: 'PATCH', body: JSON.stringify(params) }
-  )
+  request<BankAccountResource>(`${COLLECTION}/${encodeURIComponent(accountId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(params),
+  })
 
 const deleteAccount = (accountId: string) =>
-  request<BankAccountDeleted>(
-    `/api/v1/banking/accounts/${encodeURIComponent(accountId)}`,
-    { method: 'DELETE' }
-  )
+  request<BankAccountDeleted>(`${COLLECTION}/${encodeURIComponent(accountId)}`, {
+    method: 'DELETE',
+  })
 
 export const bankAccounts = { create, update, delete: deleteAccount }
