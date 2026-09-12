@@ -1,6 +1,8 @@
 import type { BankAccount, BankTransaction } from '@/db'
 
 export function serializeBankAccount(row: BankAccount & { balance: bigint }) {
+  const booksBalance = row.balance.toString()
+
   return {
     object: 'bank_account' as const,
     id: row.id,
@@ -8,12 +10,23 @@ export function serializeBankAccount(row: BankAccount & { balance: bigint }) {
     accountType: row.accountType,
     currency: row.currency,
     description: row.description,
+    institutionName: row.institutionName,
+    accountHolderName: row.accountHolderName,
+    accountNumberLast4: row.accountNumberLast4,
+    openingBalance: row.openingBalance.toString(),
+    openingBalanceAt: row.openingBalanceAt,
     isActive: row.isActive,
-    balance: row.balance.toString(),
+    balance: booksBalance,
+    booksBalance,
+    bankBalance: row.bankBalance?.toString() ?? null,
+    bankBalanceAt: row.bankBalanceAt,
+    lastStatementBalance: row.lastStatementBalance?.toString() ?? null,
+    lastStatementAt: row.lastStatementAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }
 }
+
 export function serializeBankTransaction(row: BankTransaction) {
   return {
     object: 'bank_transaction' as const,
