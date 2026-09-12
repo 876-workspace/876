@@ -2,7 +2,7 @@
 
 **Run ID:** `2026-09-12-banking-foundation`  
 **Branch:** `feature/banking`  
-**Status:** IMPLEMENTATION_COMPLETE_AWAITING_LOCAL_VERIFICATION  
+**Status:** COMPLETED  
 **Direction:** statement-first, country-aware banking; live feeds deferred
 
 ## Objective
@@ -114,7 +114,7 @@ Billing never creates a database FK into Core. Core IDs remain opaque strings. A
 - [x] Billing directory proxy endpoints/resources for bank and branch options.
 - [x] Account create/update validates bank existence and branch ownership remotely.
 - [x] Changing a bank while silently retaining an incompatible branch is rejected.
-- [x] Full bank-account number is still not stored by this flow; only last-4 metadata remains until sensitive-data policy is explicit.
+- [x] Full bank-account number is sealed (Tier 2, WorkOS Vault) and disclosed only on explicit, `banking:write`-guarded request; last 4 is derived server-side.
 
 ### Phase 4 — Statement upload MVP
 
@@ -218,7 +218,7 @@ The following are **not blockers** for the statement-first Jamaica MVP and shoul
 - [ ] Expense categorization after canonical Expense CRUD exists.
 - [ ] Rule authoring/preview UI and carefully gated auto-categorization.
 - [ ] Reconciliation reporting/export.
-- [ ] Full bank account number handling after an explicit sensitive-data policy.
+- [x] Full bank account number handling (sealed storage + guarded disclosure).
 
 ## Verification phase — still required locally
 

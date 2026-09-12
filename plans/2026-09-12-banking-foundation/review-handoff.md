@@ -84,7 +84,7 @@ Keep external statement evidence separate from canonical booked cash. Matching l
 
 ## Deliberately deferred, not merge blockers for this run
 
-Live feeds, PDF/OCR, additional deterministic statement formats, saved mapping profiles, Storage upload of the original statement binary, trusted geocoded branch enrichment, other-country catalogs/selector UI, additional canonical-owner categorization actions, rule authoring UI, reconciliation export/reporting, and full bank-account-number storage remain follow-up work.
+Live feeds, PDF/OCR, additional deterministic statement formats, saved mapping profiles, Storage upload of the original statement binary, trusted geocoded branch enrichment, other-country catalogs/selector UI, additional canonical-owner categorization actions, rule authoring UI, reconciliation export/reporting remain follow-up work. Full account-number storage is now implemented (sealed, guarded disclosure).
 
 ## Verification honesty
 

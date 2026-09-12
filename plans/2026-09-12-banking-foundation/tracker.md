@@ -2,7 +2,7 @@
 
 **Branch:** `feature/banking`  
 **Source of truth:** `plans/2026-09-12-banking-foundation/plan.md`  
-**Status:** IMPLEMENTATION_COMPLETE_AWAITING_LOCAL_VERIFICATION
+**Status:** COMPLETED — verified locally, PR open
 
 ## Current direction
 
@@ -125,7 +125,7 @@ These are not blockers for the statement-first Jamaica MVP:
 - [ ] Expense categorization until canonical Expense CRUD exists.
 - [ ] Rule authoring/preview UI and any auto-categorization rollout.
 - [ ] Reconciliation reporting/export.
-- [ ] Full bank account number storage/display until sensitive-data policy is explicit.
+- [x] Full bank account number sealed through WorkOS Vault (`account_number_ciphertext`), last 4 derived, disclosed only via `GET /banking/accounts/:id/account-number` (`banking:write`, logged).
 - [ ] Additional country catalogs and a multi-country selector once those catalogs exist.
 
 ## Local verification order
