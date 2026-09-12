@@ -1,5 +1,10 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
+
+import { buttonVariants } from '@876/ui/button'
+import { cn } from '@876/ui/lib/utils'
+import { XIcon } from '@876/ui/icons'
 
 import { DetailField } from '@/components/patterns/detail/detail-field'
 import { MetricCard } from '@/components/patterns/metric-card'
@@ -37,6 +42,16 @@ export default async function QuoteDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      <header className="flex items-start justify-between gap-3">
+        <h1 className="876-page-title text-balance">{quote.number}</h1>
+        <Link
+          href="/quotes"
+          aria-label="Close quote details"
+          className={cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }))}
+        >
+          <XIcon className="size-4" />
+        </Link>
+      </header>
       <QuoteActions
         quoteId={quote.id}
         status={quote.status}

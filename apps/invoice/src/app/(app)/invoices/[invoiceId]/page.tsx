@@ -1,5 +1,9 @@
 import { notFound, redirect } from 'next/navigation'
-import { DetailCard, DetailCardBody } from '@876/ui/detail-card'
+import {
+  DetailCard,
+  DetailCardBody,
+  DetailCardHeader,
+} from '@876/ui/detail-card'
 import { InvoiceDocumentPanel } from '@876/billing-ui/panels/invoice-document-panel'
 import {
   invoiceDocumentData,
@@ -84,9 +88,12 @@ export default async function InvoiceDetailPage({ params }: Props) {
         aria-label={`Invoice details: ${number}`}
         className="min-h-0 print:h-auto print:overflow-visible print:border-0 print:shadow-none"
       >
-        <header className="px-5 py-5 sm:px-6 print:hidden">
-          <h1 className="text-xl font-semibold">{number}</h1>
-        </header>
+        <DetailCardHeader
+          title={number}
+          closeHref="/invoices"
+          closeLabel="Close invoice details"
+          className="print:hidden"
+        />
         <DetailCardBody className="min-h-0 p-0 sm:p-0 print:overflow-visible print:p-0">
           <div className="mx-auto w-full max-w-5xl px-5 pt-5 sm:px-6">
             <InvoiceActions
