@@ -1,5 +1,6 @@
 import { buildRuntime } from './runtime'
 import { createBankAccountsResource } from './resources/bank-accounts'
+import { createBankDirectoryResource } from './resources/bank-directory'
 import { createBankTransactionsResource } from './resources/bank-transactions'
 import { createBankingEngineResources } from './resources/banking-engine'
 import { createCatalogResources } from './resources/catalog'
@@ -39,6 +40,7 @@ export function create876Client(options: ClientOptions = {}) {
 
   return {
     bankAccounts: createBankAccountsResource(runtime),
+    bankDirectory: createBankDirectoryResource(runtime),
     bankTransactions: createBankTransactionsResource(runtime),
     ...banking,
     addons: catalog.addons,
