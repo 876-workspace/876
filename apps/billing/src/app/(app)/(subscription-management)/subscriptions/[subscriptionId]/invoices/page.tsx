@@ -4,6 +4,8 @@ import { InvoicesTable } from '@/features/documents/components/invoices-table'
 import { resolveSubscription } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 
+export const metadata = { title: 'Invoices' }
+
 export default async function SubscriptionInvoicesPage({
   params,
 }: {
