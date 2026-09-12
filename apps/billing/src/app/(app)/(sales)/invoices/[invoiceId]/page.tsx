@@ -93,39 +93,41 @@ export default async function InvoiceDetailPage({ params }: Props) {
         />
       </div>
 
-      <InvoiceDocumentPanel
-        {...invoiceDocumentData(invoice, formatDate, formatMoney)}
-        seller={seller}
-        footer={
-          <>
-            <p>
-              {invoice.billingReason === 'MANUAL'
-                ? 'Manual invoice'
-                : invoice.billingReason.toLowerCase().replaceAll('_', ' ')}
-              {invoice.subscriptionId
-                ? ` · Subscription ${invoice.subscriptionId}`
-                : ''}
-            </p>
-            {invoice.lateFeeAssessment ? (
-              <p className="mt-1">
-                Late fee for{' '}
-                <Link
-                  href={`/invoices/${invoice.lateFeeAssessment.sourceInvoice.id}`}
-                  className="underline underline-offset-2"
-                >
-                  {invoice.lateFeeAssessment.sourceInvoice.number}
-                </Link>
+      <div className="px-2 pb-8 sm:px-4 print:p-0">
+        <InvoiceDocumentPanel
+          {...invoiceDocumentData(invoice, formatDate, formatMoney)}
+          seller={seller}
+          footer={
+            <>
+              <p>
+                {invoice.billingReason === 'MANUAL'
+                  ? 'Manual invoice'
+                  : invoice.billingReason.toLowerCase().replaceAll('_', ' ')}
+                {invoice.subscriptionId
+                  ? ` · Subscription ${invoice.subscriptionId}`
+                  : ''}
               </p>
-            ) : null}
-            {recurringInvoiceId && originProfileName ? (
-              <InvoiceOriginLink
-                profileId={recurringInvoiceId}
-                profileName={originProfileName}
-              />
-            ) : null}
-          </>
-        }
-      />
+              {invoice.lateFeeAssessment ? (
+                <p className="mt-1">
+                  Late fee for{' '}
+                  <Link
+                    href={`/invoices/${invoice.lateFeeAssessment.sourceInvoice.id}`}
+                    className="underline underline-offset-2"
+                  >
+                    {invoice.lateFeeAssessment.sourceInvoice.number}
+                  </Link>
+                </p>
+              ) : null}
+              {recurringInvoiceId && originProfileName ? (
+                <InvoiceOriginLink
+                  profileId={recurringInvoiceId}
+                  profileName={originProfileName}
+                />
+              ) : null}
+            </>
+          }
+        />
+      </div>
     </Page>
   )
 }
