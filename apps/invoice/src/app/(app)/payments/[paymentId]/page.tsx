@@ -7,6 +7,7 @@ import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { getBilling } from '@/lib/services/billing'
+import { RelatedRequestsClient } from '../../_components/related-requests-client'
 
 type Props = { params: Promise<{ paymentId: string }> }
 
@@ -91,6 +92,18 @@ export default async function PaymentDetailPage({ params }: Props) {
           : undefined
       }
       refundHref={canRefund ? `/payments/${payment.id}/refund` : undefined}
-    />
+    >
+      <RelatedRequestsClient
+        customerId={payment.customer.id}
+        resourceType="payment"
+        resourceId={payment.id}
+        snapshot={{
+          number: payment.number,
+          amount: String(payment.amount),
+          currency: payment.currency,
+          status: payment.status,
+        }}
+      />
+    </PaymentDetailCard>
   )
 }

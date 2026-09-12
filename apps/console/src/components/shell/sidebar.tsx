@@ -93,7 +93,7 @@ export function Sidebar({
       }}
     >
       <SidebarHeader className="border-sidebar-border border-b px-3 pt-3 pb-3 group-data-[collapsible=icon]:px-2">
-        <ConsoleHome />
+        <HomeLink />
         <SlotRegion slots={slots} region="top" expanded={expanded} />
       </SidebarHeader>
 
@@ -135,7 +135,7 @@ export function Sidebar({
 }
 
 /** The Console mark. It titles the rail in every context, never the context. */
-function ConsoleHome() {
+function HomeLink() {
   return (
     <Link
       href="/"

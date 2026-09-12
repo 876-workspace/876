@@ -205,6 +205,33 @@ describe('app access seed catalog', () => {
     ).toBe(false)
   })
 
+  it.each([
+    [
+      '876-invoice',
+      'super-admin',
+      ['requests.view', 'requests.create', 'requests.edit'],
+    ],
+    ['876-invoice', 'staff', ['requests.view']],
+    [
+      '876-billing',
+      'super-admin',
+      ['requests.view', 'requests.create', 'requests.edit'],
+    ],
+    ['876-billing', 'staff', ['requests.view']],
+  ] as const)(
+    '%s %s retains the intended request grant',
+    (appSlug, roleKey, permissions) => {
+      const role = app(appSlug).roles.find(
+        (candidate) => candidate.key === roleKey
+      )
+      expect(
+        role?.permissions.filter((permission) =>
+          permission.startsWith('requests.')
+        )
+      ).toEqual(permissions)
+    }
+  )
+
   it.each(APP_ACCESS_SEED_DEFINITIONS)(
     '$appSlug super admin receives the complete declared catalog',
     (definition) => {

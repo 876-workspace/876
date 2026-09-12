@@ -31,9 +31,37 @@
       "types": "./src/request-events.tsx",
       "default": "./src/request-events.tsx"
     },
+    "./request-tasks": {
+      "types": "./src/request-tasks.tsx",
+      "default": "./src/request-tasks.tsx"
+    },
     "./support-widget": {
       "types": "./src/support-widget.tsx",
       "default": "./src/support-widget.tsx"
+    },
+    "./customer-requests-panel": {
+      "types": "./src/customer-requests-panel.tsx",
+      "default": "./src/customer-requests-panel.tsx"
+    },
+    "./request-composer": {
+      "types": "./src/request-composer.tsx",
+      "default": "./src/request-composer.tsx"
+    },
+    "./request-list-detail-shell": {
+      "types": "./src/request-list-detail-shell.tsx",
+      "default": "./src/request-list-detail-shell.tsx"
+    },
+    "./request-detail-card": {
+      "types": "./src/request-detail-card.tsx",
+      "default": "./src/request-detail-card.tsx"
+    },
+    "./request-record": {
+      "types": "./src/request-record.tsx",
+      "default": "./src/request-record.tsx"
+    },
+    "./related-requests-panel": {
+      "types": "./src/related-requests-panel.tsx",
+      "default": "./src/related-requests-panel.tsx"
     }
   },
   "scripts": {

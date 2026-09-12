@@ -16,6 +16,10 @@ import { Skeleton } from '@876/ui/skeleton'
 
 import { CopyButton } from './copy-button'
 import { RequestChannelIcon } from './request-source-icon'
+import {
+  RelatedResourceMetadata,
+  SourceAppMetadata,
+} from '../request-attribution'
 import { categoryColorClass } from '../category-color'
 import { resolveCustomerIdentity } from '../customer-identity'
 import { formatChannel } from '../request-format'
@@ -247,6 +251,16 @@ export async function RequestAside({
             <span className="text-foreground">
               {formatDateTime(request.createdAt)}
             </span>
+          </DetailRow>
+          <DetailRow label="Source app">
+            <SourceAppMetadata sourceApp={request.sourceApp} />
+          </DetailRow>
+          <DetailRow label="Related record">
+            <RelatedResourceMetadata
+              type={request.relatedResourceType}
+              id={request.relatedResourceId}
+              snapshot={request.relatedResourceSnapshot}
+            />
           </DetailRow>
           <div className="border-t pt-3">
             <DetailRow label="Request ID">

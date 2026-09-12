@@ -6,6 +6,7 @@ import { createPrioritiesRouter } from '../modules/priorities/index.js'
 import { createRequestFormsRouter } from '../modules/request-forms/request-forms.routes.js'
 import {
   createOperatorRequestsRouter,
+  createBillingCustomerRequestsRouter,
   createRequestsRouter,
 } from '../modules/requests/requests.routes.js'
 import { createSupportRouter } from '../modules/support/index.js'
@@ -17,6 +18,10 @@ export function buildRoutes() {
   router.use('/v1/tenants', createTenantsRouter())
   router.use('/v1/requests', createOperatorRequestsRouter())
   router.use('/v1/service/support', createSupportRouter())
+  router.use(
+    '/v1/organizations/:organizationId/billing-customers/:billingCustomerId/requests',
+    createBillingCustomerRequestsRouter()
+  )
   router.use(
     '/v1/organizations/:organizationId/customers',
     createCustomersRouter()

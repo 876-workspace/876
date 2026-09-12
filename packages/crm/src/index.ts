@@ -16,19 +16,26 @@ export {
   crossOrganizationRequestListSchema,
   crossOrganizationRequestSchema,
   requestChannelSchema,
+  relatedResourceSnapshotSchema,
+  relatedResourceTypeSchema,
   requestListSchema,
   requestStatusSchema,
+  sourceAppSchema,
 } from './request-types'
 export type {
   CreateRequestInput,
+  CreateRequestForBillingCustomerInput,
   CrmRequest,
   CrossOrganizationRequest,
   CrossOrganizationRequestList,
   ListCrossOrganizationRequestsQuery,
   ListRequestsQuery,
   RequestChannel,
+  RelatedResourceSnapshot,
+  RelatedResourceType,
   RequestList,
   RequestStatus,
+  SourceApp,
   UpdateRequestInput,
 } from './request-types'
 export {

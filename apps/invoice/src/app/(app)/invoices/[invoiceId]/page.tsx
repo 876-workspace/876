@@ -24,6 +24,7 @@ import { formatDate, formatMoney } from '@/lib/format'
 
 import { InvoiceActions } from './_components/invoice-actions'
 import { InvoiceOriginLink } from './_components/invoice-origin-link'
+import { RelatedRequestsClient } from '../../_components/related-requests-client'
 
 type Props = { params: Promise<{ invoiceId: string }> }
 
@@ -64,7 +65,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
   const canRecordPayment = canAccess(access, 'payments.create')
   const recordPaymentHref = `/invoices/${encodeURIComponent(invoice.id)}/payments/new`
 
-  const { number, customerId, status, recurringInvoiceId } = invoice
+  const { number, status, recurringInvoiceId } = invoice
   let originProfileName: string | null = null
   if (recurringInvoiceId) {
     const origin = await billing.recurringInvoices.retrieve(recurringInvoiceId)
@@ -187,6 +188,17 @@ export default async function InvoiceDetailPage({ params }: Props) {
                   ) : null}
                 </>
               }
+            />
+            <RelatedRequestsClient
+              customerId={invoice.customerId}
+              resourceType="invoice"
+              resourceId={invoice.id}
+              snapshot={{
+                number: invoice.number,
+                amount: String(invoice.totalAmount),
+                currency: invoice.currency,
+                status: invoice.status,
+              }}
             />
           </div>
         </DetailCardBody>

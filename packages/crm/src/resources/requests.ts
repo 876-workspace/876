@@ -5,6 +5,7 @@ import {
   crmRequestSchema,
   requestListSchema,
   type CreateRequestInput,
+  type CreateRequestForBillingCustomerInput,
   type ListRequestsQuery,
   type UpdateRequestInput,
 } from '../request-types'
@@ -13,6 +14,13 @@ import { deletedSchema, type DeleteInput, type RequestOptions } from '../types'
 
 function root(organizationId: string) {
   return `/v1/organizations/${encodeURIComponent(organizationId)}/requests`
+}
+
+function billingCustomerRoot(
+  organizationId: string,
+  billingCustomerId: string
+) {
+  return `/v1/organizations/${encodeURIComponent(organizationId)}/billing-customers/${encodeURIComponent(billingCustomerId)}/requests`
 }
 
 function toQueryString(params?: ListRequestsQuery): string {
@@ -28,6 +36,10 @@ function toQueryString(params?: ListRequestsQuery): string {
   if (params.requesterUserId)
     search.set('requesterUserId', params.requesterUserId)
   if (params.priorityId) search.set('priorityId', params.priorityId)
+  if (params.relatedResourceType)
+    search.set('relatedResourceType', params.relatedResourceType)
+  if (params.relatedResourceId)
+    search.set('relatedResourceId', params.relatedResourceId)
   const qs = search.toString()
   return qs ? `?${qs}` : ''
 }
@@ -70,6 +82,39 @@ export function createRequestsResource(runtime: Runtime) {
         {
           method: 'POST',
           path: root(organizationId),
+          body: input,
+          signal: options.signal,
+        },
+        crmRequestSchema
+      )
+    },
+    listForBillingCustomer(
+      organizationId: string,
+      billingCustomerId: string,
+      options: Omit<ListRequestsQuery, 'customerId'> & RequestOptions = {}
+    ) {
+      const qs = toQueryString(options)
+      return request(
+        runtime,
+        {
+          method: 'GET',
+          path: `${billingCustomerRoot(organizationId, billingCustomerId)}${qs}`,
+          signal: options.signal,
+        },
+        requestListSchema
+      )
+    },
+    createForBillingCustomer(
+      organizationId: string,
+      billingCustomerId: string,
+      input: CreateRequestForBillingCustomerInput,
+      options: RequestOptions = {}
+    ) {
+      return request(
+        runtime,
+        {
+          method: 'POST',
+          path: billingCustomerRoot(organizationId, billingCustomerId),
           body: input,
           signal: options.signal,
         },

@@ -10,14 +10,14 @@ let serviceClient: CrmServiceClient | undefined
 function getServiceClient() {
   if (serviceClient) return serviceClient
 
-  const internalKey = process.env.CRM_INTERNAL_KEY?.trim()
-  if (!internalKey) throw new Error('CRM_INTERNAL_KEY is required')
+  const serviceApp = process.env.CRM_SERVICE_APP?.trim()
+  const serviceKey = process.env.CRM_SERVICE_KEY?.trim()
+  const baseUrl = process.env.CRM_API_URL?.trim()
+  if (!serviceApp) throw new Error('CRM_SERVICE_APP is required')
+  if (!serviceKey) throw new Error('CRM_SERVICE_KEY is required')
+  if (!baseUrl) throw new Error('CRM_API_URL is required')
 
-  const baseUrl =
-    process.env.CRM_API_URL?.trim() ||
-    process.env.NEXT_PUBLIC_CRM_API_URL?.trim() ||
-    'http://localhost:4010'
-  serviceClient = create876CrmServiceClient({ baseUrl, internalKey })
+  serviceClient = create876CrmServiceClient({ baseUrl, serviceApp, serviceKey })
 
   return serviceClient
 }

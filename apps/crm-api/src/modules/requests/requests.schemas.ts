@@ -13,6 +13,11 @@ export const requestParamsSchema = organizationParamsSchema.extend({
   id: z.string().trim().min(1),
 })
 
+export const billingCustomerRequestParamsSchema =
+  organizationParamsSchema.extend({
+    billingCustomerId: z.string().trim().min(1).max(160),
+  })
+
 export const listRequestsQuerySchema = z.strictObject({
   status: requestStatusSchema.optional(),
   teamId: z.string().trim().optional(),
@@ -23,7 +28,20 @@ export const listRequestsQuerySchema = z.strictObject({
   ownerId: z.string().trim().optional(),
   requesterUserId: z.string().trim().optional(),
   priorityId: z.string().trim().optional(),
+  relatedResourceType: z
+    .enum(['invoice', 'payment', 'quote', 'credit-note'])
+    .optional(),
+  relatedResourceId: z.string().trim().min(1).max(160).optional(),
 })
+
+const relatedResourceSnapshotSchema = z
+  .object({
+    number: z.string().trim().max(160).optional(),
+    amount: z.string().trim().max(160).optional(),
+    currency: z.string().trim().max(16).optional(),
+    status: z.string().trim().max(80).optional(),
+  })
+  .strict()
 
 export const listAcrossOrganizationsRequestsQuerySchema = z.strictObject({
   status: requestStatusSchema.optional(),
@@ -31,7 +49,7 @@ export const listAcrossOrganizationsRequestsQuerySchema = z.strictObject({
   starting_after: z.string().trim().min(1).optional(),
 })
 
-export const createRequestBodySchema = z.strictObject({
+const createRequestBodyFieldsSchema = z.strictObject({
   customerId: z.string().trim().min(1),
   subject: z.string().trim().min(1).max(240),
   description: optionalRichContentSchema(20_000),
@@ -44,8 +62,19 @@ export const createRequestBodySchema = z.strictObject({
   assigneeId: z.string().trim().max(160).nullable().optional(),
   requesterUserId: z.string().trim().max(160).nullable().optional(),
   requesterContactId: z.string().trim().max(160).nullable().optional(),
+  relatedResourceType: z
+    .enum(['invoice', 'payment', 'quote', 'credit-note'])
+    .nullable()
+    .optional(),
+  relatedResourceId: z.string().trim().max(160).nullable().optional(),
+  relatedResourceSnapshot: relatedResourceSnapshotSchema.nullable().optional(),
   createdBy: z.string().trim().min(1),
 })
+
+export const createRequestBodySchema = createRequestBodyFieldsSchema
+
+export const createRequestForBillingCustomerBodySchema =
+  createRequestBodyFieldsSchema.omit({ customerId: true })
 
 export const updateRequestBodySchema = z
   .strictObject({

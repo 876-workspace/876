@@ -12,5 +12,5 @@ export default async function CustomerRequestsPage({ params }: Props) {
   const customer = await getCustomerRow(customerId)
   if (!customer) notFound()
 
-  return <CustomerRequestsTab customer={customer} />
+  return <CustomerRequestsTab customerId={customer.profileId} />
 }

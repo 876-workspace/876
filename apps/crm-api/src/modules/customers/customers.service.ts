@@ -80,6 +80,7 @@ export async function list(
 
   const result = await finance().customers.list(organizationId, {
     limit: 100,
+    ...(filter.billingCustomerId ? { ids: [filter.billingCustomerId] } : {}),
     ...(filter.customerOrganizationId
       ? { organizationId: filter.customerOrganizationId }
       : {}),
@@ -101,6 +102,19 @@ export async function list(
     ),
     hasMore: result.data.has_more,
   }
+}
+
+/**
+ * Resolves the CRM profile for one registry customer through the same registry
+ * lookup and ensure-many path used by the billingCustomerId list filter.
+ */
+export async function resolveForBillingCustomer(
+  organizationId: string,
+  billingCustomerId: string
+) {
+  const result = await list(organizationId, { billingCustomerId })
+  if (isError(result)) return result
+  return result.customers[0]?.profile ?? null
 }
 
 export async function retrieve(organizationId: string, id: string) {

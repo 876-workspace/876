@@ -39,6 +39,10 @@ function serialize(
     requesterUserId: request.requesterUserId,
     requesterContactId: request.requesterContactId,
     createdBy: request.createdBy,
+    relatedResourceType: request.relatedResourceType,
+    relatedResourceId: request.relatedResourceId,
+    relatedResourceSnapshot: request.relatedResourceSnapshot,
+    sourceApp: request.sourceApp,
     resolvedAt: request.resolvedAt
       ? Math.floor(request.resolvedAt.getTime() / 1000)
       : null,
@@ -207,6 +211,36 @@ export async function create(
       ...validated.effective,
     })
   )
+}
+
+export async function listForBillingCustomer(
+  organizationId: string,
+  billingCustomerId: string,
+  filters?: Omit<ListRequestsFilter, 'customerId'>
+) {
+  const customers = await import('../customers/index.js')
+  const customer = await customers.resolveForBillingCustomer(
+    organizationId,
+    billingCustomerId
+  )
+  if (isError(customer)) return customer
+  if (!customer) return []
+  return list(organizationId, { ...filters, customerId: customer.id })
+}
+
+export async function createForBillingCustomer(
+  organizationId: string,
+  billingCustomerId: string,
+  input: Omit<CreateRequestInput, 'customerId'>
+) {
+  const customers = await import('../customers/index.js')
+  const customer = await customers.resolveForBillingCustomer(
+    organizationId,
+    billingCustomerId
+  )
+  if (isError(customer)) return customer
+  if (!customer) return getError('crm/customer-not-found')
+  return create(organizationId, { ...input, customerId: customer.id })
 }
 
 export async function createFromIntake(

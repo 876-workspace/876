@@ -561,4 +561,5 @@ export type Deleted = z.infer<typeof deletedSchema>
 export interface ListCustomersQuery {
   customerOrganizationId?: string
   customerUserId?: string
+  billingCustomerId?: string
 }
