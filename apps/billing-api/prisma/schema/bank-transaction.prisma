@@ -1,27 +1,39 @@
-
-/// A credit or debit recorded against a financial account. Payment-generated
+/// A credit or debit recorded against a financial account. This is canonical
+/// booked cash evidence, not an imported bank statement line. Payment-generated
 /// credits keep a direct one-to-one link to their source payment.
 model BankTransaction {
   id          String                @id
   tenantId    String                @map("tenant_id")
   accountId   String                @map("account_id")
   paymentId   String?               @map("payment_id")
+  transferId  String?               @map("transfer_id")
+  depositId   String?               @map("deposit_id")
   type        BankTransactionType
   amount      BigInt
   date        Int
   description String?               @db.Text
+  /// Legacy public workflow field. New bank-statement workflow state lives on
+  /// BankStatementLine.status and this field is retained for compatibility.
   status      BankTransactionStatus @default(UNCATEGORIZED)
   reference   String?               @db.VarChar(120)
   createdAt   Int                   @map("created_at")
   updatedAt   Int                   @map("updated_at")
 
-  tenant  Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_transactions_tenant_id_fkey")
-  account BankAccount @relation(fields: [tenantId, accountId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_transactions_account_fkey")
-  payment Payment?    @relation(fields: [tenantId, paymentId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_transactions_payment_fkey")
+  tenant              Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_transactions_tenant_id_fkey")
+  account             BankAccount              @relation(fields: [tenantId, accountId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_transactions_account_fkey")
+  payment             Payment?                 @relation(fields: [tenantId, paymentId], references: [tenantId, id], onDelete: Cascade, onUpdate: Cascade, map: "billing_bank_transactions_payment_fkey")
+  transfer            BankTransfer?            @relation(fields: [tenantId, transferId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_bank_transactions_transfer_fkey")
+  deposit             BankDeposit?             @relation(fields: [tenantId, depositId], references: [tenantId, id], onDelete: Restrict, onUpdate: Cascade, map: "billing_bank_transactions_deposit_fkey")
+  statementMatchItems BankStatementMatchItem[]
+  reconciliationItems BankReconciliationItem[]
+  depositSourceItems  BankDepositItem[]         @relation("BankDepositSourceTransactions")
 
+  @@unique([tenantId, id], map: "billing_bank_transactions_tenant_id_id_key")
   @@unique([tenantId, paymentId], map: "billing_bank_transactions_tenant_id_payment_id_key")
   @@index([tenantId, accountId, date], map: "billing_bank_transactions_tenant_account_date_idx")
   @@index([tenantId, date], map: "billing_bank_transactions_tenant_id_date_idx")
+  @@index([tenantId, transferId], map: "billing_bank_transactions_transfer_idx")
+  @@index([tenantId, depositId], map: "billing_bank_transactions_deposit_idx")
   @@index([accountId], map: "billing_bank_transactions_account_id_idx")
   @@index([paymentId], map: "billing_bank_transactions_payment_id_idx")
   @@map("billing_bank_transactions")
