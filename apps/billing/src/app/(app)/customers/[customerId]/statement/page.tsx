@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import {
   CustomerStatementPanel,
@@ -7,6 +8,10 @@ import {
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { getBilling } from '@/lib/services/billing'
+
+export const metadata: Metadata = {
+  title: 'Statement',
+}
 
 export default function CustomerStatementPage({
   params,
