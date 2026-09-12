@@ -1,25 +1,25 @@
 import { Router } from 'express'
 
-import { requireInternal } from '../../http/internal-auth.js'
+import { requireInternalOrServiceApp } from '../../http/service-auth.js'
 import * as controller from './request-forms.controller.js'
 
 export function createRequestFormsRouter() {
   const router = Router({ mergeParams: true })
 
-  router.get('/', requireInternal, controller.listRequestForms)
-  router.post('/', requireInternal, controller.createRequestForm)
-  router.get('/:id', requireInternal, controller.retrieveRequestForm)
-  router.patch('/:id', requireInternal, controller.updateRequestForm)
-  router.delete('/:id', requireInternal, controller.deleteRequestForm)
-  router.post('/:id/submissions', requireInternal, controller.submitRequestForm)
+  router.get('/', requireInternalOrServiceApp, controller.listRequestForms)
+  router.post('/', requireInternalOrServiceApp, controller.createRequestForm)
+  router.get('/:id', requireInternalOrServiceApp, controller.retrieveRequestForm)
+  router.patch('/:id', requireInternalOrServiceApp, controller.updateRequestForm)
+  router.delete('/:id', requireInternalOrServiceApp, controller.deleteRequestForm)
+  router.post('/:id/submissions', requireInternalOrServiceApp, controller.submitRequestForm)
   router.get(
     '/:id/submissions',
-    requireInternal,
+    requireInternalOrServiceApp,
     controller.listRequestFormSubmissions
   )
   router.get(
     '/:id/requests',
-    requireInternal,
+    requireInternalOrServiceApp,
     controller.listFormCustomerRequests
   )
 

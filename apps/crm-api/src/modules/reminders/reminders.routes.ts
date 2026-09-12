@@ -1,15 +1,15 @@
 import { Router } from 'express'
 
-import { requireInternal } from '../../http/internal-auth.js'
+import { requireInternalOrServiceApp } from '../../http/service-auth.js'
 import * as controller from './reminders.controller.js'
 
 export function createRemindersRouter() {
   const router = Router({ mergeParams: true })
 
-  router.get('/', requireInternal, controller.listReminders)
-  router.post('/', requireInternal, controller.createReminder)
-  router.patch('/:reminderId', requireInternal, controller.updateReminder)
-  router.delete('/:reminderId', requireInternal, controller.deleteReminder)
+  router.get('/', requireInternalOrServiceApp, controller.listReminders)
+  router.post('/', requireInternalOrServiceApp, controller.createReminder)
+  router.patch('/:reminderId', requireInternalOrServiceApp, controller.updateReminder)
+  router.delete('/:reminderId', requireInternalOrServiceApp, controller.deleteReminder)
 
   return router
 }
