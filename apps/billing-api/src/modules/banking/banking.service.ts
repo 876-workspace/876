@@ -55,12 +55,16 @@ function state(message: string) {
   })
 }
 
-function invalidCurrency() {
+function invalid(message: string) {
   return new AppHttpError({
     code: 'validation/invalid-request',
-    message: 'Enable the account currency before using it.',
+    message,
     httpStatus: 422,
   })
+}
+
+function invalidCurrency() {
+  return invalid('Enable the account currency before using it.')
 }
 
 function hasAccountHistory(
@@ -77,6 +81,10 @@ function hasAccountHistory(
       counts.statementImports ||
       counts.reconciliations
   )
+}
+
+function hasOwn(body: object, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(body, key)
 }
 
 export async function listBankAccounts(tenantId: string) {
@@ -99,6 +107,8 @@ export async function createBankAccount(
 ) {
   if (!(await hasEnabledCurrency(tenantId, body.currency)))
     throw invalidCurrency()
+  if (body.directoryBranchId && !body.directoryBankId)
+    throw invalid('A directory branch requires a directory bank.')
 
   try {
     const row = await createBankAccountRow(
@@ -130,12 +140,33 @@ export async function updateBankAccount(
 ) {
   const current = await findBankAccountActivityRow(tenantId, id)
   if (!current) throw missing('account')
+
   if (body.currency && body.currency !== current.currency) {
     if (hasAccountHistory(current._count))
       throw state('An account with financial or statement history cannot change currency.')
     if (!(await hasEnabledCurrency(tenantId, body.currency)))
       throw invalidCurrency()
   }
+
+  const nextDirectoryBankId = hasOwn(body, 'directoryBankId')
+    ? (body.directoryBankId ?? null)
+    : current.directoryBankId
+  const nextDirectoryBranchId = hasOwn(body, 'directoryBranchId')
+    ? (body.directoryBranchId ?? null)
+    : current.directoryBranchId
+
+  if (nextDirectoryBranchId && !nextDirectoryBankId)
+    throw invalid('A directory branch requires a directory bank.')
+
+  if (
+    hasOwn(body, 'directoryBankId') &&
+    body.directoryBankId !== current.directoryBankId &&
+    current.directoryBranchId &&
+    !hasOwn(body, 'directoryBranchId')
+  )
+    throw invalid(
+      'Changing the directory bank requires selecting or clearing the directory branch.'
+    )
 
   const row = await updateBankAccountRow(tenantId, id, body, nowUnixSeconds())
   if (!row) throw missing('account')
