@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 import type {
@@ -18,6 +18,8 @@ import { formatMoney } from '@/lib/format'
 
 type AmountMode = 'signed' | 'debit-credit'
 type Format = 'csv' | 'tsv'
+type DecimalSeparator = '.' | ','
+type ThousandsSeparator = ',' | '.' | 'space' | 'none'
 
 const DATE_FORMATS: Array<{ value: StatementDateFormat; label: string }> = [
   { value: 'yyyy-mm-dd', label: 'YYYY-MM-DD' },
@@ -33,9 +35,7 @@ function normalized(value: string): string {
 
 function guess(headers: string[], candidates: string[]): string {
   const wanted = candidates.map(normalized)
-  return (
-    headers.find((header) => wanted.includes(normalized(header))) ?? ''
-  )
+  return headers.find((header) => wanted.includes(normalized(header))) ?? ''
 }
 
 function parseHeader(content: string, format: Format): string[] {
@@ -91,6 +91,7 @@ export function StatementImportForm({
   const [descriptionColumn, setDescriptionColumn] = useState('')
   const [payeeColumn, setPayeeColumn] = useState('')
   const [referenceColumn, setReferenceColumn] = useState('')
+  const [externalIdColumn, setExternalIdColumn] = useState('')
   const [balanceColumn, setBalanceColumn] = useState('')
   const [amountMode, setAmountMode] = useState<AmountMode>('signed')
   const [amountColumn, setAmountColumn] = useState('')
@@ -99,6 +100,10 @@ export function StatementImportForm({
   const [positiveDirection, setPositiveDirection] = useState<'credit' | 'debit'>(
     'credit'
   )
+  const [decimalSeparator, setDecimalSeparator] =
+    useState<DecimalSeparator>('.')
+  const [thousandsSeparator, setThousandsSeparator] =
+    useState<ThousandsSeparator>(',')
   const [preview, setPreview] = useState<BankStatementPreview | null>(null)
 
   const mapping = useMemo<StatementFileMapping | null>(() => {
@@ -109,8 +114,9 @@ export function StatementImportForm({
       descriptionColumn: descriptionColumn || null,
       payeeColumn: payeeColumn || null,
       referenceColumn: referenceColumn || null,
+      externalIdColumn: externalIdColumn || null,
       balanceColumn: balanceColumn || null,
-      numberFormat: { decimalSeparator: '.' as const, thousandsSeparator: ',' as const },
+      numberFormat: { decimalSeparator, thousandsSeparator },
     }
     if (amountMode === 'signed') {
       if (!amountColumn) return null
@@ -136,14 +142,22 @@ export function StatementImportForm({
     dateColumn,
     dateFormat,
     debitColumn,
+    decimalSeparator,
     descriptionColumn,
+    externalIdColumn,
     payeeColumn,
     positiveDirection,
     referenceColumn,
+    thousandsSeparator,
   ])
 
-  async function chooseFile(file: File | null) {
+  // A preview certifies exactly one file + mapping. Any edit invalidates it so
+  // import can never silently use a mapping the user did not preview.
+  useEffect(() => {
     setPreview(null)
+  }, [content, format, mapping])
+
+  async function chooseFile(file: File | null) {
     setError(null)
     if (!file) {
       setContent('')
@@ -167,10 +181,27 @@ export function StatementImportForm({
     )
     setPayeeColumn(guess(nextHeaders, ['payee', 'merchant', 'beneficiary']))
     setReferenceColumn(
-      guess(nextHeaders, ['reference', 'ref', 'transaction id', 'transaction number'])
+      guess(nextHeaders, [
+        'reference',
+        'ref',
+        'transaction reference',
+        'cheque number',
+      ])
+    )
+    setExternalIdColumn(
+      guess(nextHeaders, [
+        'transaction id',
+        'transaction number',
+        'id',
+        'external id',
+      ])
     )
     setBalanceColumn(guess(nextHeaders, ['balance', 'running balance']))
-    const guessedDebit = guess(nextHeaders, ['debit', 'withdrawal', 'withdrawals'])
+    const guessedDebit = guess(nextHeaders, [
+      'debit',
+      'withdrawal',
+      'withdrawals',
+    ])
     const guessedCredit = guess(nextHeaders, ['credit', 'deposit', 'deposits'])
     if (guessedDebit && guessedCredit) {
       setAmountMode('debit-credit')
@@ -183,6 +214,18 @@ export function StatementImportForm({
       setDebitColumn('')
       setCreditColumn('')
     }
+  }
+
+  function changeDecimalSeparator(next: DecimalSeparator) {
+    setDecimalSeparator(next)
+    if (thousandsSeparator === next)
+      setThousandsSeparator(next === '.' ? ',' : '.')
+  }
+
+  function changeThousandsSeparator(next: ThousandsSeparator) {
+    setThousandsSeparator(next)
+    if (next === decimalSeparator)
+      setDecimalSeparator(decimalSeparator === '.' ? ',' : '.')
   }
 
   function runPreview() {
@@ -252,7 +295,7 @@ export function StatementImportForm({
           <div className="sm:col-span-2">
             <h2 className="font-semibold">Map statement columns</h2>
             <p className="text-muted-foreground mt-1 text-sm">
-              Map the bank's columns to 876 Banking. You can adjust this until
+              Map the bank&apos;s columns to 876 Banking. You can adjust this until
               the preview is correct.
             </p>
           </div>
@@ -277,13 +320,38 @@ export function StatementImportForm({
               ))}
             </NativeSelect>
           </Field>
+          <Field label="Decimal separator">
+            <NativeSelect
+              value={decimalSeparator}
+              onChange={(event) =>
+                changeDecimalSeparator(event.target.value as DecimalSeparator)
+              }
+            >
+              <NativeSelectOption value=".">Period (1,234.56)</NativeSelectOption>
+              <NativeSelectOption value=",">Comma (1.234,56)</NativeSelectOption>
+            </NativeSelect>
+          </Field>
+          <Field label="Thousands separator">
+            <NativeSelect
+              value={thousandsSeparator}
+              onChange={(event) =>
+                changeThousandsSeparator(
+                  event.target.value as ThousandsSeparator
+                )
+              }
+            >
+              <NativeSelectOption value=",">Comma</NativeSelectOption>
+              <NativeSelectOption value=".">Period</NativeSelectOption>
+              <NativeSelectOption value="space">Space</NativeSelectOption>
+              <NativeSelectOption value="none">None</NativeSelectOption>
+            </NativeSelect>
+          </Field>
           <Field label="Amount layout">
             <NativeSelect
               value={amountMode}
-              onChange={(event) => {
+              onChange={(event) =>
                 setAmountMode(event.target.value as AmountMode)
-                setPreview(null)
-              }}
+              }
             >
               <NativeSelectOption value="signed">Single amount column</NativeSelectOption>
               <NativeSelectOption value="debit-credit">
@@ -309,8 +377,12 @@ export function StatementImportForm({
                     )
                   }
                 >
-                  <NativeSelectOption value="credit">Money in / credit</NativeSelectOption>
-                  <NativeSelectOption value="debit">Money out / debit</NativeSelectOption>
+                  <NativeSelectOption value="credit">
+                    Money in / credit
+                  </NativeSelectOption>
+                  <NativeSelectOption value="debit">
+                    Money out / debit
+                  </NativeSelectOption>
                 </NativeSelect>
               </Field>
             </>
@@ -351,13 +423,23 @@ export function StatementImportForm({
             onChange={setReferenceColumn}
           />
           <ColumnSelect
+            label="Bank transaction ID"
+            value={externalIdColumn}
+            headers={headers}
+            onChange={setExternalIdColumn}
+          />
+          <ColumnSelect
             label="Running balance"
             value={balanceColumn}
             headers={headers}
             onChange={setBalanceColumn}
           />
           <div className="sm:col-span-2">
-            <Button type="button" onClick={runPreview} disabled={isPending || !mapping}>
+            <Button
+              type="button"
+              onClick={runPreview}
+              disabled={isPending || !mapping}
+            >
               {isPending ? 'Previewing…' : 'Preview statement'}
             </Button>
           </div>
@@ -377,7 +459,11 @@ export function StatementImportForm({
             <Button
               type="button"
               onClick={importStatement}
-              disabled={isPending || preview.invalidRows > 0 || preview.validRows === 0}
+              disabled={
+                isPending ||
+                preview.invalidRows > 0 ||
+                preview.validRows === 0
+              }
             >
               {isPending ? 'Importing…' : 'Import statement'}
             </Button>
@@ -464,7 +550,13 @@ function ColumnSelect({
   )
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
