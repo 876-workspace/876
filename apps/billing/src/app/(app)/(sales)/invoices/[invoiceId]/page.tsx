@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-import { ArrowLeft } from '@876/ui/icons'
+import { buttonVariants } from '@876/ui/button'
+import { cn } from '@876/ui/lib/utils'
+import { XIcon } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 import { InvoiceDocumentPanel } from '@876/billing-ui/panels/invoice-document-panel'
 import {
@@ -68,15 +70,15 @@ export default async function InvoiceDetailPage({ params }: Props) {
 
   return (
     <Page className="print:p-0">
-      <header className="mx-auto mb-3 flex max-w-5xl flex-col gap-2 print:hidden">
+      <header className="mx-auto mb-3 flex max-w-5xl items-start justify-between gap-3 print:hidden">
+        <h1 className="876-page-title text-balance">{invoice.number}</h1>
         <Link
           href="/invoices"
-          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm font-medium"
+          aria-label="Close invoice details"
+          className={cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }))}
         >
-          <ArrowLeft className="size-4" />
-          Invoices
+          <XIcon className="size-4" />
         </Link>
-        <h1 className="876-page-title text-balance">{invoice.number}</h1>
       </header>
 
       <div className="mx-auto mb-3 w-full max-w-5xl">
