@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { Badge } from '@876/ui/badge'
@@ -11,6 +12,19 @@ import { getBilling } from '@/lib/services/billing'
 import { ReportPreferencesForm } from '@/features/settings/components/report-preferences-form'
 
 type Props = { params: Promise<{ moduleKey: string }> }
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { moduleKey } = await params
+  const moduleDefinition = INVOICE_MODULE_CATALOG.find(
+    (module) => module.key === moduleKey
+  )
+
+  return {
+    title: moduleDefinition
+      ? `${moduleDefinition.label} Settings`
+      : 'Module Settings',
+  }
+}
 
 export default async function ModuleSettingsPage({ params }: Props) {
   const { moduleKey } = await params
