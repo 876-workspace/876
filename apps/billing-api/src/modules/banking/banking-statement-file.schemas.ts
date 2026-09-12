@@ -10,10 +10,23 @@ export const statementDateFormatSchema = z.enum([
   'mm-dd-yyyy',
 ])
 
-export const statementNumberFormatSchema = z.strictObject({
-  decimalSeparator: z.enum(['.', ',']).default('.'),
-  thousandsSeparator: z.enum([',', '.', 'space', 'none']).default(','),
-})
+export const statementNumberFormatSchema = z
+  .strictObject({
+    decimalSeparator: z.enum(['.', ',']).default('.'),
+    thousandsSeparator: z.enum([',', '.', 'space', 'none']).default(','),
+  })
+  .superRefine((value, context) => {
+    if (
+      value.thousandsSeparator !== 'none' &&
+      value.thousandsSeparator !== 'space' &&
+      value.thousandsSeparator === value.decimalSeparator
+    )
+      context.addIssue({
+        code: 'custom',
+        message: 'Decimal and thousands separators must be different.',
+        path: ['thousandsSeparator'],
+      })
+  })
 
 const sharedMappingShape = {
   dateColumn: columnNameSchema,
@@ -57,6 +70,12 @@ export const statementFilePreviewBodySchema = z.strictObject({
   mapping: statementFileMappingSchema,
 })
 
+export const statementFileImportBodySchema = statementFilePreviewBodySchema.extend({
+  /** Opaque 876 Storage id when the source file has already been persisted. */
+  sourceFileId: z.string().trim().min(1).max(255).nullable().optional(),
+  sourceName: z.string().trim().min(1).max(255).nullable().optional(),
+})
+
 export const statementPreviewLineSchema = z.object({
   sourceRowNumber: z.number().int().positive(),
   externalId: z.string().nullable(),
@@ -93,5 +112,6 @@ export type StatementFileMapping = z.infer<typeof statementFileMappingSchema>
 export type StatementFilePreviewBody = z.infer<
   typeof statementFilePreviewBodySchema
 >
+export type StatementFileImportBody = z.infer<typeof statementFileImportBodySchema>
 export type StatementPreviewLine = z.infer<typeof statementPreviewLineSchema>
 export type StatementPreviewError = z.infer<typeof statementPreviewErrorSchema>
