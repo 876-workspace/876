@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import {
@@ -13,6 +14,10 @@ import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 
 type Props = { params: Promise<{ accountId: string }> }
+
+export const metadata: Metadata = {
+  title: 'New Transaction',
+}
 
 export default async function NewBankTransactionPage({ params }: Props) {
   const context = await requirePagePermission('banking:write')
