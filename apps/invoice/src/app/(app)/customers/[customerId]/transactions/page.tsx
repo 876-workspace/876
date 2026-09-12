@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
 import { CustomerSalesReceiptsAccordion } from '@876/billing-ui/customer-sales-receipts-accordion'
@@ -9,6 +10,10 @@ import { AppError } from '@876/ui/app-error'
 
 import { getInvoiceContext } from '@/lib/auth/context'
 import { getBilling } from '@/lib/services/billing'
+
+export const metadata: Metadata = {
+  title: 'Transactions',
+}
 
 export default function CustomerTransactionsPage({
   params,
