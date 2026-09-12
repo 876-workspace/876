@@ -18,12 +18,50 @@ export function serializeDocument(object: string, row: unknown) {
   const data = json(row) as Record<string, unknown>
   const singular =
     object === 'credit_note' ? 'credit_note_line' : `${object}_line`
+  const document =
+    object === 'invoice'
+      ? (() => {
+          const invoice = { ...data }
+          Reflect.deleteProperty(invoice, 'allocations')
+          return invoice
+        })()
+      : data
+
   return {
     object,
-    ...data,
+    ...document,
     customer: nested(data.customer, 'customer'),
     ...(Array.isArray(data.lines)
       ? { lines: data.lines.map((line) => nested(line, singular)) }
+      : {}),
+    ...(object === 'invoice' && Array.isArray(data.allocations)
+      ? {
+          paymentAllocations: data.allocations.map((allocation) => {
+            const paymentAllocation = allocation as Record<string, unknown>
+            return {
+              object: 'payment_allocation',
+              ...paymentAllocation,
+              payment: nested(paymentAllocation.payment, 'payment'),
+            }
+          }),
+        }
+      : {}),
+    ...(object === 'invoice' && Array.isArray(data.creditNoteAllocations)
+      ? {
+          creditNoteAllocations: data.creditNoteAllocations.map(
+            (allocation) => {
+              const creditNoteAllocation = allocation as Record<string, unknown>
+              return {
+                object: 'credit_note_allocation',
+                ...creditNoteAllocation,
+                creditNote: nested(
+                  creditNoteAllocation.creditNote,
+                  'credit_note'
+                ),
+              }
+            }
+          ),
+        }
       : {}),
   }
 }

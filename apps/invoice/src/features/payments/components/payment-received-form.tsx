@@ -25,6 +25,7 @@ export function InvoicePaymentReceivedForm({
   initial,
   prefill,
   canDelete = false,
+  returnHref,
 }: {
   customers: PaymentReceivedOption[]
   accounts: PaymentReceivedAccountOption[]
@@ -35,6 +36,7 @@ export function InvoicePaymentReceivedForm({
   initial?: PaymentReceivedInitial
   prefill?: PaymentReceivedPrefill
   canDelete?: boolean
+  returnHref?: string
 }) {
   const router = useRouter()
 
@@ -48,7 +50,7 @@ export function InvoicePaymentReceivedForm({
       }
     }
 
-    router.push(`/payments/${initial?.id ?? result.data.id}`)
+    router.push(returnHref ?? `/payments/${initial?.id ?? result.data.id}`)
     router.refresh()
     return { error: null }
   }
@@ -74,7 +76,7 @@ export function InvoicePaymentReceivedForm({
       prefill={prefill}
       onSubmit={save}
       onDelete={initial && canDelete ? remove : undefined}
-      onCancel={() => router.back()}
+      onCancel={() => (returnHref ? router.push(returnHref) : router.back())}
     />
   )
 }

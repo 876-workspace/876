@@ -43,6 +43,10 @@
       "types": "./src/document-status.ts",
       "default": "./src/document-status.ts"
     },
+    "./invoice-status": {
+      "types": "./src/invoice-status.ts",
+      "default": "./src/invoice-status.ts"
+    },
     "./document/document-line-items-editor": {
       "types": "./src/document/document-line-items-editor.tsx",
       "default": "./src/document/document-line-items-editor.tsx"
@@ -262,6 +266,14 @@
     "./panels/invoice-document-panel": {
       "types": "./src/panels/invoice-document-panel.tsx",
       "default": "./src/panels/invoice-document-panel.tsx"
+    },
+    "./panels/invoice-payments-panel": {
+      "types": "./src/panels/invoice-payments-panel.tsx",
+      "default": "./src/panels/invoice-payments-panel.tsx"
+    },
+    "./panels/invoice-next-action-panel": {
+      "types": "./src/panels/invoice-next-action-panel.tsx",
+      "default": "./src/panels/invoice-next-action-panel.tsx"
     },
     "./panels/document-toolbar": {
       "types": "./src/panels/document-toolbar.tsx",

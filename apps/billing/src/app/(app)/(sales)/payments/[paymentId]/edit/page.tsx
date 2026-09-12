@@ -10,10 +10,9 @@ import {
 } from '@876/ui/page'
 
 import { PaymentForm } from '@/features/payments/components/payment-form'
+import { getPaymentFormData } from '@/features/payments/payment-form-data'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service, type LegacyBillingRecord } from '@/lib/service'
-
-import { getPaymentFormData } from '../../_lib/form-data'
 
 type Props = { params: Promise<{ paymentId: string }> }
 

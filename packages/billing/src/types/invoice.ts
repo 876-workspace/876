@@ -544,6 +544,37 @@ export interface InvoiceDetail {
   }
   lines: InvoiceLine[]
   lateFeeAssessment: { sourceInvoice: { id: string; number: string } } | null
+  paymentAllocations: Array<{
+    object: 'payment_allocation'
+    id: string
+    amount: string
+    createdAt: number
+    updatedAt: number
+    payment: {
+      object: 'payment'
+      id: string
+      number: string
+      paymentDate: number
+      currency: string
+      referenceNumber: string | null
+      status: string
+      paymentMode: { id: string; name: string }
+    }
+  }>
+  creditNoteAllocations: Array<{
+    object: 'credit_note_allocation'
+    id: string
+    amount: string
+    createdAt: number
+    updatedAt: number
+    creditNote: {
+      object: 'credit_note'
+      id: string
+      number: string
+      issueAt: number | null
+      currency: string
+    }
+  }>
 }
 
 export interface InvoiceAddress {

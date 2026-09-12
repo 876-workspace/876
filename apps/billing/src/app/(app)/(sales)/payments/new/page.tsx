@@ -7,9 +7,8 @@ import {
 } from '@876/ui/page'
 
 import { PaymentForm } from '@/features/payments/components/payment-form'
+import { getPaymentFormData } from '@/features/payments/payment-form-data'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-
-import { getPaymentFormData } from '../_lib/form-data'
 
 export const metadata = { title: 'Record Payment Received' }
 

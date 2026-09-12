@@ -34,10 +34,10 @@ function renderActions(
   return render(
     <InvoiceActions
       invoiceId="inv_123"
-      customerId="cus_123"
       status={status}
       canWrite
       canRecordPayment
+      recordPaymentHref="/invoices/inv_123/payments/new"
       documentNumber="INV-000123"
       totalAmount="$1,234.00"
       {...overrides}
@@ -71,10 +71,7 @@ describe('InvoiceActions', () => {
     renderActions('OPEN')
     expect(
       screen.getByRole('link', { name: 'Record payment' })
-    ).toHaveAttribute(
-      'href',
-      '/payments/new?customerId=cus_123&invoiceId=inv_123'
-    )
+    ).toHaveAttribute('href', '/invoices/inv_123/payments/new')
   })
 
   it('omits Delete for a sent invoice', async () => {

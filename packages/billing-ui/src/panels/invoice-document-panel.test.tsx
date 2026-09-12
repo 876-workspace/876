@@ -122,6 +122,59 @@ describe('InvoiceDocumentPanel', () => {
     render(<InvoiceDocumentPanel {...props()} />)
     expect(screen.queryByText('Sep 1 – Sep 30')).not.toBeInTheDocument()
   })
+  it('omits the discount and tax columns when no line uses them', () => {
+    render(<InvoiceDocumentPanel {...props()} />)
+
+    expect(
+      screen.queryByRole('columnheader', { name: 'Discount' })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('columnheader', { name: 'Tax' })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('columnheader', { name: 'Description' })
+    ).toBeInTheDocument()
+  })
+
+  it('renders the tax column when a line carries tax', () => {
+    const base = props()
+    render(
+      <InvoiceDocumentPanel
+        {...base}
+        invoice={{
+          ...base.invoice,
+          lines: [{ ...base.invoice.lines[0], taxAmount: '$1.50' }],
+        }}
+      />
+    )
+
+    expect(
+      screen.getByRole('columnheader', { name: 'Tax' })
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('columnheader', { name: 'Discount' })
+    ).not.toBeInTheDocument()
+    expect(screen.getByText('$1.50')).toBeInTheDocument()
+  })
+
+  it('renders the discount column when a line carries a discount', () => {
+    const base = props()
+    render(
+      <InvoiceDocumentPanel
+        {...base}
+        invoice={{
+          ...base.invoice,
+          lines: [{ ...base.invoice.lines[0], discountAmount: '$2.00' }],
+        }}
+      />
+    )
+
+    expect(
+      screen.getByRole('columnheader', { name: 'Discount' })
+    ).toBeInTheDocument()
+    expect(screen.getByText('−$2.00')).toBeInTheDocument()
+  })
+
   it('renders notes and terms when supplied', () => {
     render(
       <InvoiceDocumentPanel

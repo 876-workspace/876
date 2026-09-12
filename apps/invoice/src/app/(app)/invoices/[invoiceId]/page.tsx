@@ -5,6 +5,8 @@ import {
   DetailCardHeader,
 } from '@876/ui/detail-card'
 import { InvoiceDocumentPanel } from '@876/billing-ui/panels/invoice-document-panel'
+import { InvoiceNextActionPanel } from '@876/billing-ui/panels/invoice-next-action-panel'
+import { InvoicePaymentsPanel } from '@876/billing-ui/panels/invoice-payments-panel'
 import {
   invoiceDocumentData,
   invoiceSeller,
@@ -60,6 +62,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
   const invoice = result.data
   const canWrite = canAccess(access, 'invoices.write')
   const canRecordPayment = canAccess(access, 'payments.create')
+  const recordPaymentHref = `/invoices/${encodeURIComponent(invoice.id)}/payments/new`
 
   const { number, customerId, status, recurringInvoiceId } = invoice
   let originProfileName: string | null = null
@@ -95,18 +98,61 @@ export default async function InvoiceDetailPage({ params }: Props) {
           className="print:hidden"
         />
         <DetailCardBody className="min-h-0 p-0 sm:p-0 print:overflow-visible print:p-0">
-          <div className="w-full px-2 sm:px-3">
+          <div className="w-full px-2 sm:px-4">
             <InvoiceActions
               invoiceId={invoice.id}
-              customerId={customerId}
               status={status}
               canWrite={canWrite}
               canRecordPayment={canRecordPayment}
+              recordPaymentHref={recordPaymentHref}
               documentNumber={invoice.number}
               totalAmount={formatMoney(invoice.totalAmount, invoice.currency)}
             />
           </div>
-          <div className="px-2 pb-8 pt-4 sm:px-4 print:p-0">
+          <div className="px-2 pt-4 pb-8 sm:px-4 print:p-0">
+            {canRecordPayment ? (
+              <div className="mb-6">
+                <InvoiceNextActionPanel
+                  status={invoice.status}
+                  recordPaymentHref={recordPaymentHref}
+                  balance={formatMoney(invoice.amountDue, invoice.currency)}
+                />
+              </div>
+            ) : null}
+            <div className="mb-6">
+              <InvoicePaymentsPanel
+                title="Payments received"
+                state={{
+                  status: 'ready',
+                  data: {
+                    payments: invoice.paymentAllocations.map((allocation) => ({
+                      id: allocation.payment.id,
+                      date: formatDate(allocation.payment.paymentDate),
+                      number: allocation.payment.number,
+                      reference: allocation.payment.referenceNumber,
+                      mode: allocation.payment.paymentMode.name,
+                      amount: formatMoney(
+                        allocation.amount,
+                        allocation.payment.currency
+                      ),
+                      status: allocation.payment.status,
+                    })),
+                    creditNotes: invoice.creditNoteAllocations.map(
+                      (allocation) => ({
+                        id: allocation.creditNote.id,
+                        date: formatDate(allocation.creditNote.issueAt),
+                        number: allocation.creditNote.number,
+                        amount: formatMoney(
+                          allocation.amount,
+                          allocation.creditNote.currency
+                        ),
+                      })
+                    ),
+                  },
+                }}
+                hrefForPayment={(id) => `/payments/${id}`}
+              />
+            </div>
             <InvoiceDocumentPanel
               {...invoiceDocumentData(invoice, formatDate, formatMoney)}
               seller={seller}

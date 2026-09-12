@@ -26,7 +26,7 @@ export const DocumentHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'border-border border-b px-6 py-8 sm:px-10 sm:py-10',
+      'border-border border-b px-6 py-8 sm:px-8 sm:py-10 print:sm:px-10',
       className
     )}
     {...props}
@@ -63,7 +63,10 @@ export const DocumentDetailsGrid = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('grid gap-8 px-6 py-8 sm:grid-cols-2 sm:px-10', className)}
+    className={cn(
+      'grid gap-8 px-6 py-8 sm:grid-cols-2 sm:px-8 print:sm:px-10',
+      className
+    )}
     {...props}
   />
 ))
@@ -113,7 +116,7 @@ export const DocumentLines = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('overflow-x-auto px-6 sm:px-10', className)}
+    className={cn('overflow-x-auto px-6 sm:px-8 print:sm:px-10', className)}
     {...props}
   />
 ))
@@ -126,7 +129,7 @@ export const DocumentSummaryGrid = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'grid gap-8 px-6 py-8 sm:grid-cols-[1fr_22rem] sm:px-10',
+      'grid gap-8 px-6 py-8 sm:grid-cols-[1fr_22rem] sm:px-8 print:sm:px-10',
       className
     )}
     {...props}
@@ -207,7 +210,7 @@ export const DocumentFooter = React.forwardRef<
   <footer
     ref={ref}
     className={cn(
-      'border-border text-muted-foreground border-t px-6 py-5 text-center text-xs sm:px-10 print:border-neutral-200 print:text-neutral-600',
+      'border-border text-muted-foreground border-t px-6 py-5 text-center text-xs sm:px-8 print:border-neutral-200 print:text-neutral-600 print:sm:px-10',
       className
     )}
     {...props}
