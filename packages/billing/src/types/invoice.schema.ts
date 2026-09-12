@@ -176,4 +176,43 @@ export const InvoiceDetailSchema = InvoiceSchema.extend({
   lateFeeAssessment: z
     .object({ sourceInvoice: z.object({ id: z.string(), number: z.string() }) })
     .nullable(),
+  paymentAllocations: z
+    .array(
+      z.object({
+        object: z.literal('payment_allocation'),
+        id: z.string(),
+        amount: z.string().regex(/^-?\d+$/),
+        createdAt: z.number().int(),
+        updatedAt: z.number().int(),
+        payment: z.object({
+          object: z.literal('payment'),
+          id: z.string(),
+          number: z.string(),
+          paymentDate: z.number().int(),
+          currency: z.string(),
+          referenceNumber: z.string().nullable(),
+          status: z.string(),
+          paymentMode: z.object({ id: z.string(), name: z.string() }),
+        }),
+      })
+    )
+    .default([]),
+  creditNoteAllocations: z
+    .array(
+      z.object({
+        object: z.literal('credit_note_allocation'),
+        id: z.string(),
+        amount: z.string().regex(/^-?\d+$/),
+        createdAt: z.number().int(),
+        updatedAt: z.number().int(),
+        creditNote: z.object({
+          object: z.literal('credit_note'),
+          id: z.string(),
+          number: z.string(),
+          issueAt: z.number().int().nullable(),
+          currency: z.string(),
+        }),
+      })
+    )
+    .default([]),
 }) satisfies z.ZodType<InvoiceDetail>
