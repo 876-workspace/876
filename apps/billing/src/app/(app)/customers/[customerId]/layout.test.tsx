@@ -16,7 +16,7 @@ describe('Billing customer detail layout', () => {
     expect(source).toContain("label: 'Subscriptions'")
   })
   it('gives every placeholder tab visible content and a leaf loading skeleton', () => {
-    for (const tab of ['subscriptions', 'requests', 'mails', 'activity']) {
+    for (const tab of ['subscriptions', 'mails', 'activity']) {
       const page = readFileSync(
         new URL(`./${tab}/page.tsx`, import.meta.url),
         'utf8'
@@ -29,5 +29,19 @@ describe('Billing customer detail layout', () => {
       expect(page).not.toContain('return null')
       expect(loading).toContain('CustomerTimelinePanelSkeleton')
     }
+  })
+
+  it('renders requests as a list/detail split owned by the segment layout', () => {
+    const layout = readFileSync(
+      new URL('./requests/layout.tsx', import.meta.url),
+      'utf8'
+    )
+    const page = readFileSync(
+      new URL('./requests/page.tsx', import.meta.url),
+      'utf8'
+    )
+
+    expect(layout).toContain('RequestListDetailShell')
+    expect(page).toContain('return null')
   })
 })

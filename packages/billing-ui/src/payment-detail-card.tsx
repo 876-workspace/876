@@ -12,6 +12,7 @@ import {
   DetailCardSection,
 } from '@876/ui/detail-card'
 import { CreditCardIcon } from '@876/ui/icons'
+import type { ReactNode } from 'react'
 
 import { Link } from './link'
 
@@ -56,6 +57,7 @@ export interface PaymentDetailCardProps {
   closeHref: string
   editHref?: string
   refundHref?: string
+  children?: ReactNode
 }
 
 /** Canonical payment-received detail presentation shared by Billing and Invoice. */
@@ -64,6 +66,7 @@ export function PaymentDetailCard({
   closeHref,
   editHref,
   refundHref,
+  children,
 }: PaymentDetailCardProps) {
   const actions =
     editHref || refundHref ? (
@@ -191,6 +194,7 @@ export function PaymentDetailCard({
             <p className="text-foreground text-sm leading-6">{payment.notes}</p>
           </DetailCardSection>
         ) : null}
+        {children}
       </DetailCardBody>
       <DetailCardIdBar>
         <span className="truncate">{payment.id}</span>

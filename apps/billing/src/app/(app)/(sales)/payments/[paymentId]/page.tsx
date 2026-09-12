@@ -6,6 +6,7 @@ import { PaymentDetailCard } from '@876/billing-ui/payment-detail-card'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { service, type LegacyBillingRecord } from '@/lib/service'
+import { RelatedRequestsClient } from '../../../_components/related-requests-client'
 
 type Props = { params: Promise<{ paymentId: string }> }
 
@@ -76,6 +77,18 @@ export default async function PaymentPage({ params }: Props) {
           : undefined
       }
       refundHref={canRefund ? `/payments/${payment.id}/refund` : undefined}
-    />
+    >
+      <RelatedRequestsClient
+        customerId={payment.customer.id}
+        resourceType="payment"
+        resourceId={payment.id}
+        snapshot={{
+          number: payment.number,
+          amount: String(payment.amount),
+          currency: payment.currency,
+          status: payment.status,
+        }}
+      />
+    </PaymentDetailCard>
   )
 }
