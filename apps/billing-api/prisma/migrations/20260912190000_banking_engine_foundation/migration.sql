@@ -192,11 +192,7 @@ CREATE TABLE "billing_bank_statement_lines" (
   CONSTRAINT "billing_bank_statement_lines_rule_fkey"
     FOREIGN KEY ("tenant_id", "recognized_rule_id")
     REFERENCES "billing_bank_rules"("tenant_id", "id")
-    ON DELETE SET NULL ON UPDATE CASCADE,
-  CONSTRAINT "billing_bank_statement_lines_duplicate_fkey"
-    FOREIGN KEY ("tenant_id", "duplicate_of_id")
-    REFERENCES "billing_bank_statement_lines"("tenant_id", "id")
-    ON DELETE SET NULL ON UPDATE CASCADE,
+    ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT "billing_bank_statement_lines_amount_check" CHECK ("amount" > 0),
   CONSTRAINT "billing_bank_statement_lines_posted_at_check" CHECK ("posted_at" >= 0),
   CONSTRAINT "billing_bank_statement_lines_authorized_at_check"
@@ -208,6 +204,12 @@ CREATE TABLE "billing_bank_statement_lines" (
 );
 CREATE UNIQUE INDEX "billing_bank_statement_lines_tenant_id_id_key"
   ON "billing_bank_statement_lines" ("tenant_id", "id");
+-- The self-reference needs the composite unique key above, so it is added after it.
+ALTER TABLE "billing_bank_statement_lines"
+  ADD CONSTRAINT "billing_bank_statement_lines_duplicate_fkey"
+    FOREIGN KEY ("tenant_id", "duplicate_of_id")
+    REFERENCES "billing_bank_statement_lines"("tenant_id", "id")
+    ON DELETE NO ACTION ON UPDATE CASCADE;
 CREATE UNIQUE INDEX "billing_bank_statement_lines_external_key"
   ON "billing_bank_statement_lines" ("tenant_id", "account_id", "external_id");
 CREATE INDEX "billing_bank_statement_lines_account_status_date_idx"
