@@ -11,6 +11,7 @@ import {
   DetailCardIdBar,
 } from '@876/ui/detail-card'
 
+import { StatementWorkspace } from '@/features/banking/components/statement-workspace'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'
@@ -31,6 +32,8 @@ export default async function BankAccountPage({ params }: Props) {
   if (!account) notFound()
 
   const canManage = context.permissions.includes('banking:write')
+  const booksBalance = account.booksBalance ?? account.balance
+  const bankBalance = account.bankBalance ?? null
 
   return (
     <DetailCard aria-label={`Bank account: ${account.name}`}>
@@ -41,19 +44,40 @@ export default async function BankAccountPage({ params }: Props) {
             {account.isActive ? 'Active' : 'Archived'}
           </Badge>
         }
-        subtitle={`${account.accountType
-          .toLowerCase()
-          .replaceAll('_', ' ')} · ${account.currency}`}
+        subtitle={[
+          account.accountType.toLowerCase().replaceAll('_', ' '),
+          account.currency,
+          account.institutionName ?? null,
+          account.accountNumberLast4
+            ? `•••• ${account.accountNumberLast4}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(' · ')}
         actions={
           canManage ? (
             <>
               {account.isActive ? (
-                <Link
-                  href={`/banking/${account.id}/transactions/new`}
-                  className={buttonVariants({ variant: 'info', size: 'sm' })}
-                >
-                  Add transaction
-                </Link>
+                <>
+                  <Link
+                    href={`/banking/${account.id}/statements/new`}
+                    className={buttonVariants({ variant: 'info', size: 'sm' })}
+                  >
+                    Import statement
+                  </Link>
+                  <Link
+                    href={`/banking/${account.id}/reconcile`}
+                    className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                  >
+                    Reconcile
+                  </Link>
+                  <Link
+                    href={`/banking/${account.id}/transactions/new`}
+                    className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                  >
+                    Add transaction
+                  </Link>
+                </>
               ) : null}
               <Link
                 href={`/banking/${account.id}/edit`}
@@ -69,25 +93,42 @@ export default async function BankAccountPage({ params }: Props) {
       />
 
       <DetailCardBody>
-        <section className="876-card mb-6 grid gap-5 p-5 sm:grid-cols-3">
+        <section className="876-card mb-6 grid gap-5 p-5 sm:grid-cols-4">
           <Metric
-            label="Recorded balance"
-            value={formatMoney(account.balance, account.currency)}
+            label="Books balance"
+            value={formatMoney(booksBalance, account.currency)}
           />
-          <Metric label="Transactions" value={String(transactions.length)} />
+          <Metric
+            label="Bank balance"
+            value={
+              bankBalance === null
+                ? 'Not reported'
+                : formatMoney(bankBalance, account.currency)
+            }
+          />
+          <Metric label="Booked transactions" value={String(transactions.length)} />
           <Metric label="Currency" value={account.currency} />
         </section>
 
+        <div className="mb-6">
+          <StatementWorkspace
+            accountId={account.id}
+            currency={account.currency}
+            canManage={canManage && account.isActive}
+          />
+        </div>
+
         <section className="876-card overflow-hidden">
           <div className="border-border border-b px-5 py-4">
-            <h2 className="font-semibold">Transactions</h2>
+            <h2 className="font-semibold">Recorded cash movements</h2>
             <p className="text-muted-foreground mt-1 text-sm">
-              Manual entries and matched payment deposits, newest first.
+              Canonical booked cash remains separate from imported statement
+              evidence. Matching confirms that the two represent the same money.
             </p>
           </div>
           {transactions.length === 0 ? (
             <p className="text-muted-foreground px-5 py-10 text-center text-sm">
-              No transactions recorded.
+              No booked cash movements recorded.
             </p>
           ) : (
             <div className="divide-border divide-y">
