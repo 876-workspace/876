@@ -1,19 +1,10 @@
 /**
  * Financial directory business rules.
  *
- * Two rules matter more than the CRUD around them:
- *
- * 1. **`include_deleted` is a privilege, not a preference.** The FastAPI routes
- *    compute `include_deleted if principal.internal else False`, so a caller
- *    holding only an app API key never sees a tombstoned row even when it asks.
- *    `resolveIncludeDeleted` is the single place that decision is made, and it
- *    silently forces `false` rather than raising — matching the Python, which
- *    answers the question it can answer instead of refusing.
- *
- * 2. **A duplicate code is a 409, and a soft-deleted row still holds its code.**
- *    The uniqueness check looks with `includeDeleted: true` deliberately: the
- *    database's unique index covers tombstoned rows too, so ignoring them would
- *    turn a clear 409 into a constraint violation surfacing as a 500.
+ * `include_deleted` is a privilege, not a preference. Duplicate institution
+ * codes are checked including tombstones because country-scoped uniqueness is
+ * enforced by the database. A branch selected for an account must belong to
+ * the selected bank.
  */
 
 import { listObject, type ListObject } from '@/http/envelope'
@@ -64,6 +55,19 @@ function duplicate(object: string, message: string): AppHttpError {
   })
 }
 
+function invalidBankAccountReference(message: string): AppHttpError {
+  return new AppHttpError({
+    code: 'bank_account/invalid-reference',
+    message,
+    httpStatus: 422,
+  })
+}
+
+async function requireCountry(countryCode: string): Promise<void> {
+  if (!(await repository.countryExists(countryCode)))
+    throw notFound('country', 'No country exists with the provided code.')
+}
+
 // --- Banks ---
 
 export async function listBanks(
@@ -98,13 +102,26 @@ export async function retrieveBank(
 }
 
 export async function createBank(body: BankCreate): Promise<Bank> {
-  const existing = await repository.findBankByCode(body.bank_code, true)
-  if (existing) throw duplicate('bank', 'A bank with this code already exists.')
+  await requireCountry(body.country_code)
+
+  const existing = await repository.findBankByCode(
+    body.country_code,
+    body.bank_code,
+    true
+  )
+  if (existing)
+    throw duplicate(
+      'bank',
+      'A bank with this code already exists in the selected country.'
+    )
 
   const row = await repository.createBank({
+    countryCode: body.country_code,
     name: body.name,
     shortName: body.short_name ?? null,
     bankCode: body.bank_code,
+    clearingSystem: body.clearing_system ?? null,
+    institutionType: body.institution_type,
     swiftCode: body.swift_code ?? null,
     logoUrl: body.logo_url ?? null,
     headOffice: body.head_office ?? null,
@@ -121,10 +138,25 @@ export async function updateBank(
   const data = sentFields(body)
   if (Object.keys(data).length === 0) throw noFieldsToUpdate()
 
-  if (body.bank_code != null) {
-    const existing = await repository.findBankByCode(body.bank_code, true)
+  const current = await repository.findBankById(bankId, true)
+  if (!current)
+    throw notFound('bank', 'No bank exists with the provided identifier.')
+
+  const countryCode = body.country_code ?? current.countryCode
+  const bankCode = body.bank_code ?? current.bankCode
+  if (body.country_code != null) await requireCountry(countryCode)
+
+  if (body.country_code != null || body.bank_code != null) {
+    const existing = await repository.findBankByCode(
+      countryCode,
+      bankCode,
+      true
+    )
     if (existing && existing.id !== bankId)
-      throw duplicate('bank', 'A bank with this code already exists.')
+      throw duplicate(
+        'bank',
+        'A bank with this code already exists in the selected country.'
+      )
   }
 
   const row = await repository.updateBank(bankId, renameBankFields(data))
@@ -138,8 +170,11 @@ function renameBankFields(
   data: Record<string, unknown>
 ): Record<string, unknown> {
   const map: Record<string, string> = {
+    country_code: 'countryCode',
     short_name: 'shortName',
     bank_code: 'bankCode',
+    clearing_system: 'clearingSystem',
+    institution_type: 'institutionType',
     swift_code: 'swiftCode',
     logo_url: 'logoUrl',
     head_office: 'headOffice',
@@ -327,21 +362,32 @@ export async function retrieveBankAccount(
   return serializeBankAccount(row)
 }
 
-export async function createBankAccount(
-  body: BankAccountCreate
-): Promise<BankAccount> {
-  const bank = await repository.findBankById(body.bank_id)
+async function validateBankBranchPair(
+  bankId: string,
+  branchId: string | null
+): Promise<void> {
+  const bank = await repository.findBankById(bankId)
   if (!bank)
     throw notFound('bank', 'No bank exists with the provided identifier.')
 
-  if (body.branch_id) {
-    const branch = await repository.findBankBranchById(body.branch_id)
-    if (!branch)
-      throw notFound(
-        'bank_branch',
-        'No bank branch exists with the provided identifier.'
-      )
-  }
+  if (!branchId) return
+
+  const branch = await repository.findBankBranchById(branchId)
+  if (!branch)
+    throw notFound(
+      'bank_branch',
+      'No bank branch exists with the provided identifier.'
+    )
+  if (branch.bankId !== bankId)
+    throw invalidBankAccountReference(
+      'The selected branch does not belong to the selected bank.'
+    )
+}
+
+export async function createBankAccount(
+  body: BankAccountCreate
+): Promise<BankAccount> {
+  await validateBankBranchPair(body.bank_id, body.branch_id ?? null)
 
   const row = await repository.createBankAccount({
     accountHolder: body.account_holder,
@@ -361,6 +407,19 @@ export async function updateBankAccount(
 ): Promise<BankAccount> {
   const data = sentFields(body)
   if (Object.keys(data).length === 0) throw noFieldsToUpdate()
+
+  const current = await repository.findBankAccountById(accountId, true)
+  if (!current)
+    throw notFound(
+      'bank_account',
+      'No bank account exists with the provided identifier.'
+    )
+
+  const bankId = body.bank_id ?? current.bankId
+  const branchId = Object.prototype.hasOwnProperty.call(body, 'branch_id')
+    ? (body.branch_id ?? null)
+    : current.branchId
+  await validateBankBranchPair(bankId, branchId)
 
   const map: Record<string, string> = {
     account_holder: 'accountHolder',
