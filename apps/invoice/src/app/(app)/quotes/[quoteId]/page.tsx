@@ -129,7 +129,7 @@ export default async function QuoteDetailPage({ params }: Props) {
           convertedInvoiceId={convertedInvoiceId}
         />
       </div>
-      <DetailCardBody className="space-y-8">
+      <DetailCardBody className="mt-4 space-y-8">
         <DetailCardHeadline
           value={formatMoney(totalAmount, currency)}
           caption="Quote total"
