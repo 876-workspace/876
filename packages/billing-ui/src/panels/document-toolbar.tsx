@@ -54,6 +54,10 @@ import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { RadioGroup, RadioGroupItem } from '@876/ui/radio-group'
 import { Textarea } from '@876/ui/textarea'
 
+import { collectibleStatuses } from '../invoice-status'
+
+export { collectibleStatuses } from '../invoice-status'
+
 export type DocumentToolbarStatus =
   | 'DRAFT'
   | 'OPEN'
@@ -112,13 +116,6 @@ export interface DocumentToolbarProps {
     schedule: DocumentMakeRecurringSchedule
   ) => Promise<DocumentToolbarActionResult>
 }
-
-const collectibleStatuses = new Set<DocumentToolbarStatus>([
-  'OPEN',
-  'SENT',
-  'PARTIALLY_PAID',
-  'OVERDUE',
-])
 
 function canRecordSend(status: DocumentToolbarStatus) {
   return collectibleStatuses.has(status) || status === 'PAID'
