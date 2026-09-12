@@ -44,6 +44,9 @@ const BILLING_KEYS = [
   'purchases.edit',
   'purchases.view',
   'reports.view',
+  'requests.create',
+  'requests.edit',
+  'requests.view',
   'sales.create',
   'sales.delete',
   'sales.edit',
@@ -104,6 +107,9 @@ const INVOICE_KEYS = [
   'reminders.edit',
   'reminders.view',
   'reports.view',
+  'requests.create',
+  'requests.edit',
+  'requests.view',
   'settings.edit',
   'settings.view',
   'tasks.assign',
@@ -148,6 +154,7 @@ describe('billingPermissionCatalog', () => {
       'banking',
       'payments',
       'payment-methods',
+      'requests',
       'settings',
     ])
   })
@@ -213,6 +220,7 @@ describe('invoicePermissionCatalog', () => {
       'invoices',
       'quotes',
       'payments',
+      'requests',
       'tasks',
       'reminders',
       'events',
@@ -314,5 +322,19 @@ describe('appPermissionCatalogs registry', () => {
       '876-projects',
       'console',
     ])
+  })
+})
+
+describe('finance request role grants', () => {
+  it.each([
+    ['876-billing', billingPermissionCatalog],
+    ['876-invoice', invoicePermissionCatalog],
+  ] as const)('%s declares all three request capabilities', (_app, catalog) => {
+    expect(
+      catalog.permissions
+        .filter((permission) => permission.moduleKey === 'requests')
+        .map((permission) => permission.key)
+        .sort()
+    ).toEqual(['requests.create', 'requests.edit', 'requests.view'])
   })
 })
