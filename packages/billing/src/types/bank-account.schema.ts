@@ -39,6 +39,8 @@ export const BankAccountSchema = z.strictObject({
   accountType: BankAccountTypeSchema,
   currency: z.string(),
   description: z.string().nullable(),
+  directoryBankId: z.string().nullable(),
+  directoryBranchId: z.string().nullable(),
   institutionName: z.string().nullable(),
   accountHolderName: z.string().nullable(),
   accountNumberLast4: z.string().nullable(),
