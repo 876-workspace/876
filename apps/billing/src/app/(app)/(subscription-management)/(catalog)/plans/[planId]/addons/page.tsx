@@ -1,9 +1,14 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { Badge } from '@876/ui/badge'
 
 import { resolvePlan } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
+
+export const metadata: Metadata = {
+  title: 'Add-ons',
+}
 
 export default async function PlanAddonsPage({
   params,
