@@ -9,8 +9,12 @@ import {
 } from '@/http/envelope'
 
 import { bankingEngineController } from './banking-engine.controller'
-import { accountStatementParamsSchema } from './banking-engine.schemas'
 import {
+  accountStatementParamsSchema,
+  statementImportWithLinesSchema,
+} from './banking-engine.schemas'
+import {
+  statementFileImportBodySchema,
   statementFilePreviewBodySchema,
   statementFilePreviewSchema,
 } from './banking-statement-file.schemas'
@@ -21,9 +25,9 @@ const invalid: ResponseSpec = {
 }
 
 /**
- * Statement-file normalization is kept separate from statement persistence so
- * users can change column mappings until the preview is correct. The preview
- * performs no accounting or database write.
+ * File normalization is separate from persistence so users can adjust mappings
+ * until preview is correct. The import command re-runs the same parser before
+ * creating statement evidence.
  */
 export function createBankingStatementFileRouter(resolveGuards: GuardResolver) {
   const api = createApiRouter({ tag: 'Billing', resolveGuards })
@@ -47,6 +51,27 @@ export function createBankingStatementFileRouter(resolveGuards: GuardResolver) {
       '4XX': invalid,
     },
     handler: bankingEngineController.previewStatementFile,
+  })
+
+  api.post({
+    path: '/banking/accounts/:accountId/statement-imports/file',
+    operationId: 'billing-banking_import_statement_file',
+    summary: 'Import a validated CSV or TSV bank statement',
+    description:
+      'Re-parses the source statement with the approved mapping and persists normalized external bank evidence only when every row is valid.',
+    security: { kind: 'tenant', permission: 'banking:write' },
+    request: {
+      params: accountStatementParamsSchema,
+      body: statementFileImportBodySchema,
+    },
+    responses: {
+      201: {
+        description: 'Statement imported.',
+        schema: successEnvelopeSchema(statementImportWithLinesSchema),
+      },
+      '4XX': invalid,
+    },
+    handler: bankingEngineController.importStatementFile,
   })
 
   return api.router
