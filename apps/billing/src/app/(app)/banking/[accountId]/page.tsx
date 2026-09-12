@@ -15,6 +15,7 @@ import { StatementWorkspace } from '@/features/banking/components/statement-work
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'
+import { getBilling } from '@/lib/services/billing'
 
 type Props = { params: Promise<{ accountId: string }> }
 
@@ -23,11 +24,15 @@ export const metadata: Metadata = {
 }
 
 export default async function BankAccountPage({ params }: Props) {
-  const context = await requirePagePermission('banking:read')
-  const { accountId } = await params
-  const [account, transactions] = await Promise.all([
+  const [context, billing, { accountId }] = await Promise.all([
+    requirePagePermission('banking:read'),
+    getBilling(),
+    params,
+  ])
+  const [account, transactions, statementLines] = await Promise.all([
     service.bankAccounts.retrieve(context.tenant.id, accountId),
     service.bankTransactions.list(context.tenant.id, accountId),
+    billing.bankStatementLines.list(accountId),
   ])
   if (!account) notFound()
 
@@ -106,7 +111,10 @@ export default async function BankAccountPage({ params }: Props) {
                 : formatMoney(bankBalance, account.currency)
             }
           />
-          <Metric label="Booked transactions" value={String(transactions.length)} />
+          <Metric
+            label="Booked transactions"
+            value={String(transactions.length)}
+          />
           <Metric label="Currency" value={account.currency} />
         </section>
 
@@ -115,6 +123,8 @@ export default async function BankAccountPage({ params }: Props) {
             accountId={account.id}
             currency={account.currency}
             canManage={canManage && account.isActive}
+            initialLines={statementLines.data?.data ?? []}
+            initialError={statementLines.error?.message ?? null}
           />
         </div>
 
