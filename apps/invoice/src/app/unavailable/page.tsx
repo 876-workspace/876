@@ -1,9 +1,14 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import { PlatformUnavailable } from '@/components/platform-unavailable'
 import { getInvoiceContextResult } from '@/lib/auth/context'
 
 import { RecoveryWatcher } from './_components/recovery-watcher'
+
+export const metadata: Metadata = {
+  title: 'Unavailable',
+}
 
 /**
  * Reached by a redirect from the app shell when the platform could not be
