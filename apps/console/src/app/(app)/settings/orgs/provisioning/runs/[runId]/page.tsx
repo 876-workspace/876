@@ -22,6 +22,7 @@ import { formatDateTime } from '@/lib/format'
 import { RetryRunButton } from '../_components/run-actions'
 import { RunStatus } from '../_components/run-status'
 
+export const metadata = { title: 'Provisioning Run' }
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
