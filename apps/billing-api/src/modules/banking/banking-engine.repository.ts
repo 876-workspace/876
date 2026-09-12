@@ -6,7 +6,6 @@ import type {
   BankRuleUpdateBody,
   BankTransferCreateBody,
   StatementImportCreateBody,
-  StatementMatchBody,
 } from './banking-engine.schemas'
 
 export interface PreparedStatementLine {
@@ -24,6 +23,12 @@ export interface PreparedStatementLine {
   reference: string | null
   bankCategory: string | null
   runningBalance: bigint | null
+}
+
+export interface PreparedMatchItem {
+  id: string
+  bankTransactionId: string
+  amount: bigint
 }
 
 const ruleInclude = {
@@ -73,16 +78,13 @@ export function createStatementImportRow(
   now: number
 ) {
   const duplicateCount = lines.filter((line) => line.duplicateOfId).length
+
   return prisma.bankStatementImport.create({
     data: {
       id,
       tenantId,
       accountId,
-      source: body.source.toUpperCase() as
-        | 'FILE'
-        | 'EMAIL'
-        | 'FEED'
-        | 'API',
+      source: body.source.toUpperCase() as 'FILE' | 'EMAIL' | 'FEED' | 'API',
       format: body.format
         ? (body.format.replace('-', '_').toUpperCase() as
             | 'CSV'
@@ -188,9 +190,7 @@ export function listStatementLineRows(tenantId: string, accountId: string) {
 }
 
 export function findStatementLineRow(tenantId: string, lineId: string) {
-  return prisma.bankStatementLine.findFirst({
-    where: { tenantId, id: lineId },
-  })
+  return prisma.bankStatementLine.findFirst({ where: { tenantId, id: lineId } })
 }
 
 export function listMatchCandidateRows(
@@ -246,13 +246,51 @@ export async function createStatementMatchRow(
   tenantId: string,
   lineId: string,
   matchId: string,
-  body: StatementMatchBody,
+  items: PreparedMatchItem[],
   matchedBy: string | null,
   now: number,
   lineStatus: 'MATCHED' | 'CATEGORIZED' = 'MATCHED'
 ) {
   return prisma.$transaction(
     async (tx) => {
+      const line = await tx.bankStatementLine.findFirst({
+        where: {
+          tenantId,
+          id: lineId,
+          status: { in: ['UNCATEGORIZED', 'RECOGNIZED'] },
+        },
+        select: { id: true, accountId: true, type: true, amount: true },
+      })
+      if (!line) return null
+
+      const ids = items.map((item) => item.bankTransactionId)
+      const transactions = await tx.bankTransaction.findMany({
+        where: { tenantId, accountId: line.accountId, id: { in: ids } },
+        include: {
+          statementMatchItems: {
+            where: { match: { status: 'ACTIVE' } },
+            select: { amount: true },
+          },
+        },
+      })
+      if (transactions.length !== ids.length) return null
+
+      const transactionsById = new Map(
+        transactions.map((transaction) => [transaction.id, transaction])
+      )
+      for (const item of items) {
+        const transaction = transactionsById.get(item.bankTransactionId)
+        if (!transaction || transaction.type !== line.type) return null
+
+        const matched = transaction.statementMatchItems.reduce(
+          (total, matchItem) => total + matchItem.amount,
+          0n
+        )
+        if (item.amount > transaction.amount - matched) return null
+      }
+      if (items.reduce((total, item) => total + item.amount, 0n) !== line.amount)
+        return null
+
       const updated = await tx.bankStatementLine.updateMany({
         where: {
           tenantId,
@@ -274,7 +312,7 @@ export async function createStatementMatchRow(
           createdAt: now,
           updatedAt: now,
           items: {
-            create: body.items.map((item) => ({
+            create: items.map((item) => ({
               id: item.id,
               tenantId,
               bankTransactionId: item.bankTransactionId,
@@ -524,7 +562,7 @@ export function createReconciliationRow(data: {
   closingBalance: bigint
   clearedBalance: bigint
   difference: bigint
-  bankTransactions: Array<{ id: string; amount: bigint }>
+  bankTransactions: Array<{ id: string; amount: bigint; itemId: string }>
   createdBy: string | null
   now: number
 }) {
@@ -545,7 +583,7 @@ export function createReconciliationRow(data: {
       updatedAt: data.now,
       items: {
         create: data.bankTransactions.map((transaction) => ({
-          id: transaction.id,
+          id: transaction.itemId,
           tenantId: data.tenantId,
           bankTransactionId: transaction.id,
           amount: transaction.amount,
@@ -564,7 +602,12 @@ export function completeReconciliationRow(
   now: number
 ) {
   return prisma.bankReconciliation.updateMany({
-    where: { tenantId, id, status: { in: ['DRAFT', 'REOPENED'] }, difference: 0 },
+    where: {
+      tenantId,
+      id,
+      status: { in: ['DRAFT', 'REOPENED'] },
+      difference: 0,
+    },
     data: { status: 'COMPLETED', completedBy, completedAt: now, updatedAt: now },
   })
 }
@@ -623,7 +666,10 @@ export function listActiveBankRuleRows(tenantId: string, accountId: string) {
 }
 
 export function findBankRuleRow(tenantId: string, id: string) {
-  return prisma.bankRule.findFirst({ where: { tenantId, id }, include: ruleInclude })
+  return prisma.bankRule.findFirst({
+    where: { tenantId, id },
+    include: ruleInclude,
+  })
 }
 
 function conditionData(
@@ -740,7 +786,10 @@ export async function updateBankRuleRow(
       },
     })
 
-    return tx.bankRule.findFirst({ where: { tenantId, id }, include: ruleInclude })
+    return tx.bankRule.findFirst({
+      where: { tenantId, id },
+      include: ruleInclude,
+    })
   })
 }
 
