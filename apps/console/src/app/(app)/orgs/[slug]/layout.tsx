@@ -14,6 +14,7 @@ import {
   DetailCardMetaItem,
   DetailCardRouteTabs,
 } from '@876/ui/detail-card'
+import { Page, PageBreadcrumb } from '@876/ui/page'
 import { OrgAvatar as OrgLogo } from '@876/ui/org-avatar'
 import { Skeleton } from '@876/ui/skeleton'
 import { formatDate, statusBadgeClass } from '@/lib/format'
@@ -38,14 +39,6 @@ export async function generateMetadata({ params }: Props) {
   return { title: `${org.name ?? org.slug} - Organizations` }
 }
 
-/**
- * The organization detail card. It renders in the layout's detail column
- * beside the persistent organization list.
- *
- * The frame awaits `params` and nothing else. Data streams into Suspense
- * islands sized to match, and every island calls the same request-cached
- * resolvers, so this costs one fetch per resource, not several.
- */
 export default async function OrganizationDetailLayout({
   children,
   params,
@@ -53,24 +46,29 @@ export default async function OrganizationDetailLayout({
   const { slug } = await params
 
   return (
-    <DetailCard aria-label="Organization">
-      <DetailChromeGate>
-        <>
-          <Suspense fallback={<DetailCardHeaderSkeleton />}>
-            <OrgCardHeader slug={slug} />
+    <Page>
+      <PageBreadcrumb href="/orgs" label="Organizations" className="mb-4" />
+      <DetailCard aria-label="Organization">
+        <DetailChromeGate>
+          <>
+            <Suspense fallback={<DetailCardHeaderSkeleton />}>
+              <OrgCardHeader slug={slug} />
+            </Suspense>
+            <Suspense
+              fallback={<DetailCardRouteTabs tabs={orgTabs(slug, [])} />}
+            >
+              <EntitledCardTabs slug={slug} />
+            </Suspense>
+          </>
+        </DetailChromeGate>
+        <DetailCardBody>
+          <Suspense fallback={null}>
+            <DeletedNotice slug={slug} />
           </Suspense>
-          <Suspense fallback={<DetailCardRouteTabs tabs={orgTabs(slug, [])} />}>
-            <EntitledCardTabs slug={slug} />
-          </Suspense>
-        </>
-      </DetailChromeGate>
-      <DetailCardBody>
-        <Suspense fallback={null}>
-          <DeletedNotice slug={slug} />
-        </Suspense>
-        {children}
-      </DetailCardBody>
-    </DetailCard>
+          {children}
+        </DetailCardBody>
+      </DetailCard>
+    </Page>
   )
 }
 
@@ -103,8 +101,6 @@ async function OrgCardHeader({ slug }: { slug: string }) {
       <DetailCardHeader
         title="Organization details are temporarily unavailable"
         subtitle={result.error?.message ?? 'Unknown error'}
-        closeHref="/orgs"
-        closeLabel="Close organization details"
       />
     )
 
@@ -172,8 +168,6 @@ async function OrgCardHeader({ slug }: { slug: string }) {
         </DetailCardMeta>
       }
       actions={<OrgActions org={org} />}
-      closeHref="/orgs"
-      closeLabel="Close organization details"
     />
   )
 }
@@ -185,8 +179,6 @@ function DetailCardHeaderSkeleton() {
       title={<Skeleton className="h-6 w-52 max-w-full" />}
       subtitle={<Skeleton className="h-3.5 w-72 max-w-full" />}
       actions={<Skeleton className="h-8 w-24" />}
-      closeHref="/orgs"
-      closeLabel="Close organization details"
     />
   )
 }

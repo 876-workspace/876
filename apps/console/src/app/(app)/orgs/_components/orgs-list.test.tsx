@@ -8,11 +8,9 @@ import { OrgsList } from './orgs-list'
 
 const mocks = vi.hoisted(() => ({
   pathname: '/orgs',
-  searchParams: new URLSearchParams(),
 }))
 
 vi.mock('next/navigation', () => ({
-  useSearchParams: () => mocks.searchParams,
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
   usePathname: () => mocks.pathname,
 }))
@@ -62,10 +60,9 @@ describe('OrgsList', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.pathname = '/orgs'
-    mocks.searchParams = new URLSearchParams()
   })
 
-  it('renders the full table when no organization is open', () => {
+  it('renders the full table', () => {
     render(
       <OrgsList
         orgs={orgs}
@@ -82,7 +79,7 @@ describe('OrgsList', () => {
     expect(document.querySelector('[data-slot="list-pane"]')).toBeNull()
   })
 
-  it('renders the condensed pane with a selected row when one is open', () => {
+  it('keeps the table rendered when a detail pathname is active', () => {
     mocks.pathname = '/orgs/acme'
     render(
       <OrgsList
@@ -95,70 +92,11 @@ describe('OrgsList', () => {
       />
     )
 
-    expect(screen.queryByTestId('orgs-table')).toBeNull()
-    expect(
-      screen.getByRole('link', { name: 'View organization Acme' })
-    ).toHaveAttribute('aria-current', 'true')
-    expect(
-      screen.getByRole('link', { name: 'View organization Sterling' })
-    ).not.toHaveAttribute('aria-current')
+    expect(screen.getByTestId('orgs-table')).toBeInTheDocument()
+    expect(document.querySelector('[data-slot="list-pane"]')).toBeNull()
   })
 
-  it('omits the status badge from condensed rows', () => {
-    mocks.pathname = '/orgs/acme'
-    render(
-      <OrgsList
-        orgs={orgs}
-        subscriptionsMap={{}}
-        isSearching={false}
-        hasMore={false}
-        firstId={null}
-        lastId={null}
-      />
-    )
-
-    expect(screen.queryByText('active')).toBeNull()
-    expect(screen.queryByText('archived')).toBeNull()
-  })
-
-  it('preserves the list query in pane links', () => {
-    mocks.pathname = '/orgs/acme'
-    mocks.searchParams = new URLSearchParams('status=all')
-    render(
-      <OrgsList
-        orgs={orgs}
-        subscriptionsMap={{}}
-        isSearching={false}
-        hasMore={false}
-        firstId={null}
-        lastId={null}
-      />
-    )
-
-    expect(
-      screen.getByRole('link', { name: 'View organization Acme' })
-    ).toHaveAttribute('href', '/orgs/acme?status=all')
-  })
-
-  it('renders rows supplied by the server for a status-filtered URL', () => {
-    mocks.searchParams = new URLSearchParams('status=archived')
-    render(
-      <OrgsList
-        orgs={orgs}
-        subscriptionsMap={{}}
-        isSearching={false}
-        hasMore={false}
-        firstId={null}
-        lastId={null}
-      />
-    )
-
-    expect(screen.getByText('acme')).toBeInTheDocument()
-    expect(screen.getByText('sterling')).toBeInTheDocument()
-  })
-
-  it('renders rows supplied by the server for a search URL', () => {
-    mocks.searchParams = new URLSearchParams('q=sterling')
+  it('renders the table rows supplied by the server', () => {
     render(
       <OrgsList
         orgs={orgs}
@@ -175,7 +113,6 @@ describe('OrgsList', () => {
   })
 
   it('renders the searching empty state when the query matches nothing', () => {
-    mocks.searchParams = new URLSearchParams('q=nobody')
     render(
       <OrgsList
         orgs={[]}
@@ -188,6 +125,8 @@ describe('OrgsList', () => {
     )
 
     expect(screen.getByText('No results')).toBeInTheDocument()
-    expect(screen.getByText(/matched "nobody"/)).toBeInTheDocument()
+    expect(
+      screen.getByText('No organizations matched this search.')
+    ).toBeInTheDocument()
   })
 })

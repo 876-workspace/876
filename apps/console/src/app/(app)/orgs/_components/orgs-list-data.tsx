@@ -6,12 +6,6 @@ import { workspace } from '@/lib/services/workspace'
 import { isOrgStatus } from '@/lib/org-status'
 import { OrgsList } from './orgs-list'
 
-/**
- * Data half of the list column. Rendered from the layout inside a Suspense
- * boundary, so the toolbar is interactive before this resolves. It belongs in
- * the query-aware parallel route rather than the layout: organization
- * directories are paginated server-side and must refetch on URL query changes.
- */
 export async function OrgsListData({
   after,
   before,
@@ -61,7 +55,7 @@ export async function OrgsListData({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="flex flex-col gap-3">
       {result.error ? (
         <AppError
           title="Some organization data could not be loaded"
