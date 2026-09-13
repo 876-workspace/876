@@ -14,3 +14,12 @@ export const ITEMS_DROPDOWN_ACTIONS = [
     separator: true,
   },
 ]
+
+export type ItemStatusFilter = 'all' | 'active' | 'inactive'
+
+/** An absent or unknown `?status=` value means no filter. */
+export function resolveItemStatusFilter(
+  status: string | null | undefined
+): ItemStatusFilter {
+  return status === 'active' || status === 'inactive' ? status : 'all'
+}

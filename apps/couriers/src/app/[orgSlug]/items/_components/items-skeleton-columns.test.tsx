@@ -5,6 +5,9 @@ import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
+  useSelectedLayoutSegments: () => [],
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/island-logistics/items',
 }))
 
 import { ItemsList } from './items-list'
