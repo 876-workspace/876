@@ -3,7 +3,7 @@
 **Run ID:** `2026-09-13-billing-commercial-engine-expansion`  
 **Branch:** `feature/billing-commercial-engine`  
 **Base:** `main` @ `848ac1c34057513222d8fdace4f9a211e01d9ca7`  
-**Status:** IN_PROGRESS
+**Status:** IN_PROGRESS — host UI and its baseline tests are in place; API/conversion test floors remain incomplete.
 
 ## Overview
 
@@ -286,17 +286,17 @@ These are present on the branch but are not all final until the binding correcti
 - [ ] Add derived invoicing/payment-state tests.
 - [ ] Conversion test floor: **12 counted `it()` cases**.
 
-### Phase 5 — Billing module/access/navigation/host — NOT STARTED
+### Phase 5 — Billing module/access/navigation/host — PARTIAL
 
 - [ ] Add canonical `FINANCE_MODULES.salesOrders` identity and Billing-only settings/module projection.
 - [ ] Add `sales-orders.view` / `sales-orders.edit` permissions and grant them to named Billing roles following current access-catalog conventions.
-- [ ] Add Sales Orders between Quotes and Invoices in Billing navigation, guarded by `sales-orders.view`.
-- [ ] Add route-guard binding coverage.
-- [ ] Add `apps/billing/src/app/(app)/(sales)/sales-orders/` using the Quotes list/detail split pattern.
-- [ ] Add `/new` and `[salesOrderId]/edit` using the shared `DocumentLineItemsEditor`; no duplicate editor.
-- [ ] Route browser mutations through the existing product-owned Billing API route/proxy pattern.
+- [x] Add Sales Orders between Quotes and Invoices in Billing navigation, guarded by the Billing host `sales-orders:read` permission.
+- [x] Add route-guard binding coverage.
+- [x] Add `apps/billing/src/app/(app)/(sales)/sales-orders/` using the Quotes list/detail split pattern.
+- [x] Add `/new` and `[salesOrderId]/edit` using the shared `DocumentLineItemsEditor`; no duplicate editor.
+- [x] Route browser mutations through the existing product-owned Billing API route/proxy pattern.
 - [ ] Keep 876 Invoice unchanged: Sales Orders are Billing-only in this phase.
-- [ ] Host test floor: **10 counted `it()` cases**.
+- [x] Host test floor: **11 counted `it()` cases**.
 
 ### Phase 6 — architecture docs and review — NOT STARTED
 
@@ -314,13 +314,13 @@ These are present on the branch but are not all final until the binding correcti
 
 ## Required test floors
 
-| Phase | Floor | Required coverage |
-| --- | ---: | --- |
-| Persistence | 4 | migration presence/order; serializer maps every enum value |
-| API | 30 | transition arrows + illegal states; draft-only update; tenant isolation; assembled Express auth; server-side status filter; batched derived statuses |
-| SDK | 10 | endpoint paths/params; malformed response rejection across verbs |
-| Conversions | 12 | quote gate/duplicate; snapshot-copy invoice; second invoice blocked; void frees re-invoice; derived payment statuses |
-| Host | 10 | nav binding; guard denial; toolbar during streaming; error keeps shell mounted |
+| Phase       | Floor | Required coverage                                                                                                                                    |
+| ----------- | ----: | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Persistence |     4 | migration presence/order; serializer maps every enum value                                                                                           |
+| API         |    30 | transition arrows + illegal states; draft-only update; tenant isolation; assembled Express auth; server-side status filter; batched derived statuses |
+| SDK         |    10 | endpoint paths/params; malformed response rejection across verbs                                                                                     |
+| Conversions |    12 | quote gate/duplicate; snapshot-copy invoice; second invoice blocked; void frees re-invoice; derived payment statuses                                 |
+| Host        |    10 | nav binding; guard denial; toolbar during streaming; error keeps shell mounted                                                                       |
 
 ## Verification commands for orchestrator
 
