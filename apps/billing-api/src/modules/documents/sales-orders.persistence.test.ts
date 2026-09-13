@@ -54,9 +54,7 @@ describe('Sales Order persistence contract', () => {
     const billingReason = migration.indexOf(
       `ALTER TYPE "BillingInvoiceBillingReason" ADD VALUE 'SALES_ORDER'`
     )
-    const createOrder = migration.indexOf(
-      'CREATE TABLE "billing_sales_orders"'
-    )
+    const createOrder = migration.indexOf('CREATE TABLE "billing_sales_orders"')
     const invoiceColumn = migration.indexOf(
       'ALTER TABLE "billing_invoices"\n  ADD COLUMN "sales_order_id"'
     )
@@ -98,17 +96,31 @@ describe('Sales Order persistence contract', () => {
       paymentStatus: null,
       invoiceId: null,
     })
-    expect(
-      derivedSalesOrderFinancialState({ id: 'inv_open', status: 'OPEN' })
-    ).toMatchObject({ invoicingStatus: 'invoiced', paymentStatus: 'unpaid' })
+    for (const status of ['OPEN', 'SENT', 'OVERDUE'] as const) {
+      expect(
+        derivedSalesOrderFinancialState({ id: `inv_${status}`, status })
+      ).toEqual({
+        invoicingStatus: 'invoiced',
+        paymentStatus: 'unpaid',
+        invoiceId: `inv_${status}`,
+      })
+    }
     expect(
       derivedSalesOrderFinancialState({
         id: 'inv_partial',
         status: 'PARTIALLY_PAID',
       })
-    ).toMatchObject({ paymentStatus: 'partially-paid' })
+    ).toEqual({
+      invoicingStatus: 'invoiced',
+      paymentStatus: 'partially-paid',
+      invoiceId: 'inv_partial',
+    })
     expect(
       derivedSalesOrderFinancialState({ id: 'inv_paid', status: 'PAID' })
-    ).toMatchObject({ paymentStatus: 'paid' })
+    ).toEqual({
+      invoicingStatus: 'invoiced',
+      paymentStatus: 'paid',
+      invoiceId: 'inv_paid',
+    })
   })
 })
