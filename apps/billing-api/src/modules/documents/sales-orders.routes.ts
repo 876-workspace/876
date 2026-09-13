@@ -34,8 +34,8 @@ const clientErrors = {
 
 export function createSalesOrdersRouter(resolveGuards: GuardResolver) {
   const api = createApiRouter({ tag: 'Sales Orders', resolveGuards })
-  const read = { kind: 'tenant' as const, permission: 'sales-orders.view' }
-  const write = { kind: 'tenant' as const, permission: 'sales-orders.edit' }
+  const read = { kind: 'tenant' as const, permission: 'sales-orders:read' }
+  const write = { kind: 'tenant' as const, permission: 'sales-orders:write' }
 
   api.get({
     path: '/sales-orders',
