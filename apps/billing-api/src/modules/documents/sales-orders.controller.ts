@@ -41,7 +41,9 @@ export const salesOrdersController = {
     const result = await service.create(
       tenant(req),
       body,
-      optionalCommandIdempotency(req, { body })
+      optionalCommandIdempotency(req, {
+        body: req.body as Record<string, unknown>,
+      })
     )
     res.status(result.replayed ? 200 : 201).json(result.resource)
   },
