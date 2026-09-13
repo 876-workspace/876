@@ -54,7 +54,12 @@ const SECTIONS = {
     segment: '/features',
     icon: 'features',
   },
-  audit: { key: 'audit', label: 'Audit', segment: '/audit', icon: 'audit' },
+  activity: {
+    key: 'activity',
+    label: 'Activity',
+    segment: '/activity',
+    icon: 'audit',
+  },
   provisioning: {
     key: 'provisioning',
     label: 'Provisioning',
@@ -88,7 +93,7 @@ export function appDetailSections(
       SECTIONS.subscribers,
       SECTIONS.widgets,
       SECTIONS.features,
-      SECTIONS.audit,
+      SECTIONS.activity,
       SECTIONS.provisioning,
       SECTIONS.settings,
     ]

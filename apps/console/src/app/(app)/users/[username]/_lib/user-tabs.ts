@@ -8,6 +8,6 @@ export function userTabs(base: string): RouteTabItem[] {
     { label: 'Requests', href: `${base}/tickets` },
     { label: 'Security', href: `${base}/security` },
     { label: 'Sessions', href: `${base}/sessions` },
-    { label: 'Audit', href: `${base}/audit` },
+    { label: 'Activity', href: `${base}/activity` },
   ]
 }

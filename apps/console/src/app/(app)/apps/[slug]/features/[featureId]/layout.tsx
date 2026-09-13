@@ -57,7 +57,7 @@ export default async function AppFeatureDetailLayout({
     { label: 'Details', href: base, exact: true },
     { label: 'Access', href: `${base}/access` },
     { label: 'Rules & Values', href: `${base}/config` },
-    { label: 'History', href: `${base}/audit` },
+    { label: 'Activity', href: `${base}/activity` },
   ]
 
   return (

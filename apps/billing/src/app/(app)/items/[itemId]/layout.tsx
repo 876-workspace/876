@@ -34,7 +34,7 @@ export default async function ItemDetailLayout({
           { label: 'Overview', href: base, exact: true },
           { label: 'Prices', href: `${base}/prices` },
           { label: 'Transactions', href: `${base}/transactions` },
-          { label: 'Audit', href: `${base}/audit` },
+          { label: 'Activity', href: `${base}/activity` },
         ]}
       />
       <DetailCardBody>{children}</DetailCardBody>

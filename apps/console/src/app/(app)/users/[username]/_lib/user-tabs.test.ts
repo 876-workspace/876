@@ -10,7 +10,7 @@ describe('userTabs', () => {
       { label: 'Requests', href: '/users/raheem/tickets' },
       { label: 'Security', href: '/users/raheem/security' },
       { label: 'Sessions', href: '/users/raheem/sessions' },
-      { label: 'Audit', href: '/users/raheem/audit' },
+      { label: 'Activity', href: '/users/raheem/activity' },
     ])
   })
 

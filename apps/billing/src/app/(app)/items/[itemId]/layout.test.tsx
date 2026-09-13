@@ -95,7 +95,7 @@ describe('ItemDetailLayout', () => {
       { label: 'Overview', href: '/items/item_123', exact: true },
       { label: 'Prices', href: '/items/item_123/prices' },
       { label: 'Transactions', href: '/items/item_123/transactions' },
-      { label: 'Audit', href: '/items/item_123/audit' },
+      { label: 'Activity', href: '/items/item_123/activity' },
     ])
     expect(mocks.getWorkspaceContext).not.toHaveBeenCalled()
   })
@@ -113,7 +113,7 @@ describe('ItemDetailLayout', () => {
       { label: 'Overview', href: '/items/item_abc', exact: true },
       { label: 'Prices', href: '/items/item_abc/prices' },
       { label: 'Transactions', href: '/items/item_abc/transactions' },
-      { label: 'Audit', href: '/items/item_abc/audit' },
+      { label: 'Activity', href: '/items/item_abc/activity' },
     ])
   })
 

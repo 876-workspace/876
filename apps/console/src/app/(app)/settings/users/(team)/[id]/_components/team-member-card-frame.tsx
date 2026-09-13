@@ -50,7 +50,7 @@ export function TeamMemberCardFrame({ member, children }: Props) {
     { label: 'Tickets', href: linkTo(`${base}/tickets`) },
     { label: 'Permissions', href: linkTo(`${base}/permissions`) },
     { label: 'Notes', href: linkTo(`${base}/notes`) },
-    { label: 'Audit', href: linkTo(`${base}/audit`) },
+    { label: 'Activity', href: linkTo(`${base}/activity`) },
   ]
 
   return (

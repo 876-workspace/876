@@ -11,10 +11,10 @@ type Props = { params: Promise<{ username: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params
   const user = await resolveUser(username)
-  if (!user) return { title: 'Audit' }
+  if (!user) return { title: 'Activity' }
   const name =
     [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email
-  return { title: `${name} • Audit - Users` }
+  return { title: `${name} • Activity - Users` }
 }
 
 export default function UserAuditPage({ params }: Props) {
