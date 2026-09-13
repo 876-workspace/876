@@ -1,6 +1,9 @@
 'use client'
 
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Badge } from '@876/ui/badge'
 import { DataTable } from '@876/ui/data-table'
 
 export type DeliveryTableRow = {
@@ -11,9 +14,18 @@ export type DeliveryTableRow = {
   dateTime: string
   packages: string
   status: string
+  orgSlug?: string
 }
 
 import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
+
+export function deliveryStatusVariant(
+  status: string
+): 'success' | 'destructive' | 'secondary' {
+  if (status === 'delivered') return 'success'
+  if (status === 'failed') return 'destructive'
+  return 'secondary'
+}
 
 const columns: ColumnDef<DeliveryTableRow, unknown>[] = [
   {
@@ -28,7 +40,12 @@ const columns: ColumnDef<DeliveryTableRow, unknown>[] = [
       <DataTableColumnHeader column={column} title="Code" />
     ),
     cell: ({ row }) => (
-      <span className="font-medium text-sky-600">{row.original.code}</span>
+      <Link
+        href={`/${row.original.orgSlug}/deliveries/${row.original.id}`}
+        className="font-medium text-sky-600 dark:text-sky-400"
+      >
+        {row.original.code}
+      </Link>
     ),
   },
   {
@@ -55,24 +72,30 @@ const columns: ColumnDef<DeliveryTableRow, unknown>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => (
-      <span className="rounded-full bg-emerald-50 px-2 py-1 text-[0.6875rem] font-medium text-emerald-700">
+      <Badge variant={deliveryStatusVariant(row.original.status)}>
         {row.original.status}
-      </span>
+      </Badge>
     ),
   },
 ]
 
 export function DeliveriesTable({
   deliveries,
+  orgSlug,
 }: {
   deliveries: DeliveryTableRow[]
+  orgSlug: string
 }) {
+  const router = useRouter()
+  const hrefFor = (id: string) => `/${orgSlug}/deliveries/${id}`
+
   return (
     <div className="876-card overflow-hidden">
       <DataTable
         columns={columns}
-        data={deliveries}
+        data={deliveries.map((delivery) => ({ ...delivery, orgSlug }))}
         rowClassName="cursor-pointer"
+        onRowClick={(delivery) => router.push(hrefFor(delivery.id))}
       />
     </div>
   )
