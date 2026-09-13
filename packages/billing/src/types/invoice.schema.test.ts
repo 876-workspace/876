@@ -12,6 +12,7 @@ function invoice() {
     currency: 'JMD',
     billingReason: 'MANUAL',
     subscriptionId: null,
+    salesOrderId: null,
     priceListId: null,
     salespersonId: null,
     customerName: null,

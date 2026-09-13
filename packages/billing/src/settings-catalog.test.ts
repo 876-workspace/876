@@ -22,6 +22,7 @@ const SHARED_KEYS = [
 ] as const
 
 const BILLING_ONLY_KEYS = [
+  'sales-orders',
   'subscriptions',
   'banking',
   'credit-notes',
