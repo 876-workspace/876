@@ -1,5 +1,3 @@
-'use client'
-
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
@@ -18,14 +16,8 @@ const ORG_STATUS_OPTIONS: StatusFilterOption[] = [
 ]
 
 const ORGS_DROPDOWN_ACTIONS = [
-  { label: 'Import', icon: 'import' as const },
-  { label: 'Export', icon: 'export' as const },
-  {
-    label: 'Delete organizations',
-    icon: 'delete' as const,
-    destructive: true,
-    separator: true,
-  },
+  { label: 'Import', icon: 'import' as const, disabled: true },
+  { label: 'Export', icon: 'export' as const, disabled: true },
 ]
 
 export function OrgsToolbar({ status }: { status: string }) {
@@ -41,7 +33,7 @@ export function OrgsToolbar({ status }: { status: string }) {
         />
       }
       primaryLabel="Add"
-      primaryHref="/org/new"
+      primaryHref="/orgs/new"
       primaryVariant="info"
       refresh
       dropdownActions={ORGS_DROPDOWN_ACTIONS}

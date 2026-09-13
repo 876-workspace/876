@@ -1,24 +1,18 @@
-import Link from 'next/link'
-import { ChevronRightIcon } from '@876/ui/icons'
-
 import { CreateOrgForm } from './_components/create-org-form'
-import { Page, PageHeader, PageTitle, PageDescription } from '@876/ui/page'
+import {
+  Page,
+  PageBreadcrumb,
+  PageDescription,
+  PageHeader,
+  PageTitle,
+} from '@876/ui/page'
 
 export const metadata = { title: 'New Organization' }
 
 export default function NewOrganizationPage() {
   return (
     <Page>
-      <nav className="mb-5 flex items-center gap-1.5 text-[0.8125rem]">
-        <Link
-          href="/org"
-          className="text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Organizations
-        </Link>
-        <ChevronRightIcon className="text-muted-foreground size-4" />
-        <span className="font-medium">New Organization</span>
-      </nav>
+      <PageBreadcrumb href="/orgs" label="Organizations" className="mb-4" />
 
       <PageHeader>
         <PageTitle>New Organization</PageTitle>
