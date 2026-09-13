@@ -1,10 +1,9 @@
 import { z } from 'zod'
 
-import { deletedResourceSchema, listSchema } from './common.schema'
+import { listSchema } from './common.schema'
 import type {
-  DeletedSalesOrder,
   SalesOrder,
-  SalesOrderFulfillmentStatus,
+  SalesOrderInvoicingStatus,
   SalesOrderList,
   SalesOrderLine,
   SalesOrderPaymentStatus,
@@ -14,26 +13,21 @@ import type {
 
 const statusSchema = z.enum([
   'draft',
-  'pending',
   'confirmed',
-  'processing',
   'completed',
   'canceled',
 ]) satisfies z.ZodType<SalesOrderStatus>
+
+const invoicingStatusSchema = z.enum([
+  'not-invoiced',
+  'invoiced',
+]) satisfies z.ZodType<SalesOrderInvoicingStatus>
 
 const paymentStatusSchema = z.enum([
   'unpaid',
   'partially-paid',
   'paid',
-  'partially-refunded',
-  'refunded',
 ]) satisfies z.ZodType<SalesOrderPaymentStatus>
-
-const fulfillmentStatusSchema = z.enum([
-  'unfulfilled',
-  'partially-fulfilled',
-  'fulfilled',
-]) satisfies z.ZodType<SalesOrderFulfillmentStatus>
 
 export const SalesOrderLineSchema = z.strictObject({
   object: z.literal('sales-order-line'),
@@ -43,11 +37,16 @@ export const SalesOrderLineSchema = z.strictObject({
   variantName: z.string().nullable(),
   variantSku: z.string().nullable(),
   priceId: z.string().nullable(),
+  taxRateId: z.string().nullable(),
   description: z.string(),
   unit: z.string().nullable(),
+  position: z.number().int().nonnegative(),
   quantity: z.number().int().positive(),
   unitAmount: z.string(),
   taxAmount: z.string(),
+  taxName: z.string().nullable(),
+  taxRate: z.string().nullable(),
+  taxInclusive: z.boolean(),
   discountAmount: z.string(),
   totalAmount: z.string(),
   createdAt: z.number().int(),
@@ -58,16 +57,25 @@ const summaryShape = {
   object: z.literal('sales-order'),
   id: z.string().min(1),
   customerId: z.string().min(1),
+  customerName: z.string().nullable(),
+  customerEmail: z.string().nullable(),
   priceListId: z.string().nullable(),
   priceListName: z.string().nullable(),
+  quoteId: z.string().nullable(),
+  salespersonId: z.string().nullable(),
+  salespersonName: z.string().nullable(),
   number: z.string().min(1),
   status: statusSchema,
-  paymentStatus: paymentStatusSchema,
-  fulfillmentStatus: fulfillmentStatusSchema,
+  invoicingStatus: invoicingStatusSchema,
+  paymentStatus: paymentStatusSchema.nullable(),
+  invoiceId: z.string().nullable(),
   currency: z.string().min(1),
-  orderedAt: z.number().int().nullable(),
+  referenceNumber: z.string().nullable(),
+  taxBehavior: z.enum(['EXCLUSIVE', 'INCLUSIVE']),
+  billingAddressSnapshot: z.json().nullable(),
+  shippingAddressSnapshot: z.json().nullable(),
+  orderedAt: z.number().int(),
   confirmedAt: z.number().int().nullable(),
-  processingAt: z.number().int().nullable(),
   completedAt: z.number().int().nullable(),
   canceledAt: z.number().int().nullable(),
   subtotalAmount: z.string(),
@@ -89,10 +97,6 @@ export const SalesOrderSchema = z.strictObject({
   ...summaryShape,
   lines: z.array(SalesOrderLineSchema),
 }) satisfies z.ZodType<SalesOrder>
-
-export const DeletedSalesOrderSchema = deletedResourceSchema(
-  'sales-order'
-) satisfies z.ZodType<DeletedSalesOrder>
 
 export const SalesOrderListSchema = listSchema(
   SalesOrderSummarySchema
