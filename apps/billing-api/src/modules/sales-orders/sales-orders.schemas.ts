@@ -39,6 +39,10 @@ export const SalesOrderFulfillmentStatusSchema = z.enum([
   'fulfilled',
 ])
 
+export const SalesOrderParamsSchema = z.strictObject({
+  salesOrderId: z.string().min(1),
+})
+
 export const SalesOrderLineInputSchema = z.strictObject({
   itemId: z.string().min(1).nullable().optional(),
   variantId: z.string().min(1).nullable().optional(),
