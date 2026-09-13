@@ -1,4 +1,5 @@
 import type { Prisma } from '@/db'
+import { prisma } from '@/db/client'
 
 type QuoteConversionTarget = 'invoice' | 'sales-receipt' | 'sales-order'
 
@@ -15,6 +16,20 @@ export type QuoteConversionLockResult =
   | { kind: 'available'; quote: LockedQuote }
   | { kind: 'replayed'; resourceId: string }
   | { kind: 'conflict'; message: string }
+
+export function findQuoteConversionSource(tenantId: string, quoteId: string) {
+  return prisma.quote.findFirst({
+    where: { tenantId, id: quoteId },
+    select: { customerId: true, currency: true },
+  })
+}
+
+export function findConvertedSalesOrder(tenantId: string, quoteId: string) {
+  return prisma.salesOrder.findFirst({
+    where: { tenantId, quoteId },
+    select: { id: true },
+  })
+}
 
 /**
  * Serializes all document conversions for one quote. The relation check must

@@ -88,11 +88,8 @@ export async function updateSalesOrderWorkflow(
     ? await buildCommercialLines(tenantId, currency, sourceLines, priceListId)
     : null
   if (prepared?.error)
-    return err(
-      prepared.error,
-      422,
-      'billing/sales-order-invalid-lines'
-    )
+    return err(prepared.error, 422, 'billing/sales-order-invalid-lines')
+  const preparedLines = prepared?.data
 
   const now = nowUnixSeconds()
   const replacingCustomer = params.customerId !== undefined
@@ -117,15 +114,15 @@ export async function updateSalesOrderWorkflow(
             salespersonName: defaults.salesperson?.name ?? null,
           }
         : {}),
-      ...(prepared
+      ...(preparedLines
         ? {
-            priceListId: prepared.data.priceList?.id ?? null,
-            priceListName: prepared.data.priceList?.name ?? null,
-            subtotalAmount: prepared.data.subtotalAmount,
-            taxAmount: prepared.data.taxAmount,
-            discountAmount: prepared.data.discountAmount,
-            totalAmount: prepared.data.totalAmount,
-            lines: prepared.data.lines.map((line) => ({
+            priceListId: preparedLines.priceList?.id ?? null,
+            priceListName: preparedLines.priceList?.name ?? null,
+            subtotalAmount: preparedLines.subtotalAmount,
+            taxAmount: preparedLines.taxAmount,
+            discountAmount: preparedLines.discountAmount,
+            totalAmount: preparedLines.totalAmount,
+            lines: preparedLines.lines.map((line) => ({
               ...line,
               id: generateId('SalesOrderLine'),
             })),
@@ -140,7 +137,9 @@ export async function updateSalesOrderWorkflow(
         : replacingCustomer
           ? { taxBehavior: defaults.taxBehavior }
           : {}),
-      ...(params.orderedAt !== undefined ? { orderedAt: params.orderedAt } : {}),
+      ...(params.orderedAt !== undefined
+        ? { orderedAt: params.orderedAt }
+        : {}),
       ...(params.notes !== undefined ? { notes: params.notes } : {}),
       ...(params.terms !== undefined ? { terms: params.terms } : {}),
       ...(params.metadata !== undefined ? { metadata: params.metadata } : {}),

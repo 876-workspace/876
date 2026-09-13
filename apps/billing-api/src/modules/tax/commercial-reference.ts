@@ -1,4 +1,4 @@
-import { prisma } from '@/db/client'
+import { findActiveCommercialTaxRateRows } from './tax.repository'
 
 export interface CommercialTaxRateReference {
   id: string
@@ -21,10 +21,7 @@ export async function resolveCommercialTaxRates(
   const ids = [...new Set(taxRateIds)]
   if (ids.length === 0) return { data: new Map(), error: null }
 
-  const rows = await prisma.taxRate.findMany({
-    where: { tenantId, id: { in: ids }, isActive: true },
-    select: { id: true, name: true, rate: true, inclusive: true },
-  })
+  const rows = await findActiveCommercialTaxRateRows(tenantId, ids)
   if (rows.length !== ids.length)
     return {
       data: null,

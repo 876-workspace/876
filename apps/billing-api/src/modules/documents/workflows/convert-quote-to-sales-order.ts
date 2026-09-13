@@ -1,6 +1,5 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
-import { prisma } from '@/db/client'
 import { hasEnabledCurrency } from '@/modules/currencies'
 import { generateId } from '@/platform/ids'
 import {
@@ -9,7 +8,11 @@ import {
 } from '@/platform/prisma-errors'
 
 import { nextDocumentNumber } from '../document-numbers.repository'
-import { lockQuoteConversion } from '../repositories/quotes/conversion'
+import {
+  findConvertedSalesOrder,
+  findQuoteConversionSource,
+  lockQuoteConversion,
+} from '../repositories/quotes/conversion'
 import {
   createSalesOrderRow,
   resolveSalesOrderDefaults,
@@ -24,10 +27,7 @@ export async function convertQuoteToSalesOrderWorkflow(
   quoteId: string,
   params: SalesOrderQuoteConversionParams
 ): ServiceResult<{ id: string; replayed?: true }> {
-  const quote = await prisma.quote.findFirst({
-    where: { tenantId, id: quoteId },
-    select: { customerId: true, currency: true },
-  })
+  const quote = await findQuoteConversionSource(tenantId, quoteId)
   if (!quote) return err('The selected quote was not found.', 404)
 
   const defaults = await resolveSalesOrderDefaults(
@@ -74,12 +74,7 @@ export async function convertQuoteToSalesOrderWorkflow(
       })
       if (!lockedQuote) return err('The selected quote was not found.', 404)
 
-      const number = await nextDocumentNumber(
-        tenantId,
-        'SALES_ORDER',
-        now,
-        tx
-      )
+      const number = await nextDocumentNumber(tenantId, 'SALES_ORDER', now, tx)
       const lines = lockedQuote.lines.map((line) => ({
         id: generateId('SalesOrderLine'),
         itemId: line.itemId,
@@ -135,10 +130,7 @@ export async function convertQuoteToSalesOrderWorkflow(
     })
   } catch (error) {
     if (isUniqueConstraintError(error)) {
-      const converted = await prisma.salesOrder.findFirst({
-        where: { tenantId, quoteId },
-        select: { id: true },
-      })
+      const converted = await findConvertedSalesOrder(tenantId, quoteId)
       if (converted) return ok({ id: converted.id, replayed: true })
     }
     if (isRetryableTransactionError(error))
