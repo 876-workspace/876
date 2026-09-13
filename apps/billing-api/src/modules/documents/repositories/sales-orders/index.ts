@@ -1,3 +1,4 @@
+export { lockSalesOrderForInvoice } from './conversion'
 export { resolveSalesOrderDefaults } from './defaults'
 export {
   applySalesOrderTransition,
