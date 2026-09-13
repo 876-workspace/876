@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
   listProfiles: vi.fn(),
   listCustomers: vi.fn(),
+  searchParams: new URLSearchParams(),
 }))
 
 vi.mock('@/lib/auth/manage-context', () => ({
@@ -40,23 +41,20 @@ vi.mock('@/lib/couriers', () => ({
 }))
 vi.mock('next/navigation', () => ({
   usePathname: () => '/island-logistics/customers',
-  useSearchParams: () => new URLSearchParams(),
+  useSelectedLayoutSegments: () => [],
+  useSearchParams: () => mocks.searchParams,
   useRouter: () => ({ refresh: vi.fn() }),
 }))
 
-// The page shell is a sync component whose data lives in an async child behind
-// <Suspense>; rendering the shell would only produce fallbacks. These tests
-// target that data boundary directly, which is the unit they have always
-// exercised: fetch resolution plus table rendering.
-import { CustomersTableData } from './customers-table-data'
+// The layout renders this async data half behind <Suspense>; these tests target
+// that boundary directly: profile fetch, identity resolution, list rendering.
+import { CustomersListData } from './customers-list-data'
 
 const context = {
   orgId: 'org_123',
   orgName: 'Island Logistics',
   tenant: { id: 'tenant_123', name: 'Island Couriers' },
 }
-const params = Promise.resolve({ orgSlug: 'island-logistics' })
-const emptySearchParams = Promise.resolve({})
 
 function listResult<T>(data: T[], hasMore = false) {
   return {
@@ -73,6 +71,7 @@ function listResult<T>(data: T[], hasMore = false) {
 
 describe('Couriers customers page data', () => {
   beforeEach(() => {
+    mocks.searchParams = new URLSearchParams()
     mocks.getManageContext.mockResolvedValue(context)
     mocks.listProfiles.mockResolvedValue([])
   })
@@ -103,9 +102,7 @@ describe('Couriers customers page data', () => {
       ])
     )
 
-    render(
-      await CustomersTableData({ params, searchParams: emptySearchParams })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
     expect(screen.getByText('Blue Mountain Trading')).toBeVisible()
     expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', {
@@ -123,9 +120,7 @@ describe('Couriers customers page data', () => {
   it('does not call the registry at all when no customer is enrolled', async () => {
     mocks.listProfiles.mockResolvedValue([])
 
-    render(
-      await CustomersTableData({ params, searchParams: emptySearchParams })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
     // A party who is a customer of this org in another 876 app must never leak
     // into Couriers, so with no local profiles there is nothing to resolve.
@@ -157,9 +152,7 @@ describe('Couriers customers page data', () => {
       ])
     )
 
-    render(
-      await CustomersTableData({ params, searchParams: emptySearchParams })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
     expect(screen.getByText('Ada Lovelace')).toBeVisible()
     expect(screen.getByText('ada@example.test')).toBeVisible()
@@ -206,9 +199,7 @@ describe('Couriers customers page data', () => {
       ])
     )
 
-    render(
-      await CustomersTableData({ params, searchParams: emptySearchParams })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
     expect(mocks.listCustomers).toHaveBeenCalledWith('org_123', {
       limit: 100,
@@ -244,9 +235,7 @@ describe('Couriers customers page data', () => {
       ])
     )
 
-    render(
-      await CustomersTableData({ params, searchParams: emptySearchParams })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
     expect(screen.getByText('pat@solo.test')).toBeVisible()
   })
@@ -279,9 +268,7 @@ describe('Couriers customers page data', () => {
       ])
     )
 
-    render(
-      await CustomersTableData({ params, searchParams: emptySearchParams })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
     expect(mocks.listCustomers).toHaveBeenCalledWith('org_123', {
       limit: 100,
@@ -301,9 +288,7 @@ describe('Couriers customers page data', () => {
     ])
     mocks.listCustomers.mockResolvedValue(listResult([]))
 
-    render(
-      await CustomersTableData({ params, searchParams: emptySearchParams })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
     // Name and email both fall back to the opaque id when identity is missing.
     expect(screen.getAllByText('cus_missing').length).toBeGreaterThanOrEqual(1)
@@ -336,9 +321,7 @@ describe('Couriers customers page data', () => {
       ])
     )
 
-    render(
-      await CustomersTableData({ params, searchParams: emptySearchParams })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
     expect(screen.getByText('nia@biz.test')).toBeVisible()
     expect(screen.queryByText('ap@biz.test')).toBeNull()
@@ -370,9 +353,7 @@ describe('Couriers customers page data', () => {
       ])
     )
 
-    render(
-      await CustomersTableData({ params, searchParams: emptySearchParams })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
     expect(screen.getByText('ap@biz.test')).toBeVisible()
   })
@@ -403,19 +384,24 @@ describe('Couriers customers page data', () => {
       ])
     )
 
-    render(
-      await CustomersTableData({ params, searchParams: emptySearchParams })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
     expect(screen.getByText('contact@biz.test')).toBeVisible()
   })
 
-  it('threads a suspended filter through to the profile query', async () => {
+  it('loads every profile and applies the suspended filter to the profile status', async () => {
+    mocks.searchParams = new URLSearchParams('status=suspended')
     mocks.listProfiles.mockResolvedValue([
       {
         id: 'profile_1',
         billingCustomerId: 'cus_1',
         status: 'SUSPENDED',
+        isCommercial: false,
+      },
+      {
+        id: 'profile_2',
+        billingCustomerId: 'cus_2',
+        status: 'ACTIVE',
         isCommercial: false,
       },
     ])
@@ -426,42 +412,68 @@ describe('Couriers customers page data', () => {
           name: 'Suspended Person',
           email: 's@example.test',
           customerKind: 'INDIVIDUAL',
+          // The registry status is ACTIVE; the courier profile's status wins.
+          status: 'ACTIVE',
+          primaryContact: null,
+        },
+        {
+          id: 'cus_2',
+          name: 'Active Person',
+          email: 'a@example.test',
+          customerKind: 'INDIVIDUAL',
           status: 'ACTIVE',
           primaryContact: null,
         },
       ])
     )
 
-    render(
-      await CustomersTableData({
-        params,
-        searchParams: Promise.resolve({ status: 'suspended' }),
-      })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
     expect(screen.getByText('Suspended Person')).toBeVisible()
+    expect(screen.queryByText('Active Person')).toBeNull()
+    // The layout cannot see `searchParams`, so the query is never narrowed.
+    expect(mocks.listProfiles).toHaveBeenCalledTimes(1)
     expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', {
       limit: 100,
-      status: 'SUSPENDED',
     })
   })
 
-  it('threads the suspended profile status filter into the local profile query', async () => {
-    mocks.listProfiles.mockResolvedValue([])
+  it('pages through every profile before resolving identity', async () => {
+    mocks.listProfiles
+      .mockResolvedValueOnce(
+        listResult(
+          [
+            {
+              id: 'profile_1',
+              billingCustomerId: 'cus_1',
+              status: 'ACTIVE',
+              isCommercial: false,
+            },
+          ],
+          true
+        )
+      )
+      .mockResolvedValueOnce([
+        {
+          id: 'profile_2',
+          billingCustomerId: 'cus_2',
+          status: 'ACTIVE',
+          isCommercial: false,
+        },
+      ])
+    mocks.listCustomers.mockResolvedValue(listResult([]))
 
-    render(
-      await CustomersTableData({
-        params,
-        searchParams: Promise.resolve({ status: 'suspended' }),
-      })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
-    // The filter applies to the courier profile, not the registry customer.
-    expect(mocks.listProfiles).toHaveBeenCalledWith('tenant_123', {
+    expect(mocks.listProfiles).toHaveBeenCalledTimes(2)
+    expect(mocks.listProfiles).toHaveBeenNthCalledWith(2, 'tenant_123', {
       limit: 100,
-      status: 'SUSPENDED',
+      starting_after: 'profile_1',
     })
-    expect(mocks.listCustomers).not.toHaveBeenCalled()
+    expect(mocks.listCustomers).toHaveBeenCalledWith('org_123', {
+      limit: 100,
+      ids: ['cus_1', 'cus_2'],
+    })
   })
 
   it('renders the table shell with the error when the registry is unavailable', async () => {
@@ -478,9 +490,7 @@ describe('Couriers customers page data', () => {
       error: { message: 'Finance customers are temporarily unavailable.' },
     })
 
-    render(
-      await CustomersTableData({ params, searchParams: emptySearchParams })
-    )
+    render(await CustomersListData({ orgSlug: 'island-logistics' }))
 
     expect(
       screen.getByText('Finance customers are temporarily unavailable.')

@@ -1,5 +1,9 @@
 import { Suspense } from 'react'
-import { Page, PageHeader, PageTitle } from '@876/ui/page'
+import {
+  DetailCard,
+  DetailCardBody,
+  DetailCardHeader,
+} from '@876/ui/detail-card'
 import { Skeleton } from '@876/ui/skeleton'
 import { notFound } from 'next/navigation'
 import { getManageContext } from '@/lib/auth/manage-context'
@@ -18,14 +22,19 @@ export default async function NewCustomerPage({ params }: Props) {
   const { orgSlug } = await params
 
   return (
-    <Page>
-      <PageHeader className="mb-4">
-        <PageTitle>Add customer</PageTitle>
-      </PageHeader>
-      <Suspense fallback={<Skeleton className="h-24 w-full" />}>
-        <NewCustomerAccess orgSlug={orgSlug} />
-      </Suspense>
-    </Page>
+    // Create opens in the detail column, where the new record will appear.
+    <DetailCard aria-label="Add customer">
+      <DetailCardHeader
+        title="Add customer"
+        closeHref={`/${orgSlug}/customers`}
+        closeLabel="Close add customer"
+      />
+      <DetailCardBody>
+        <Suspense fallback={<Skeleton className="h-24 w-full" />}>
+          <NewCustomerAccess orgSlug={orgSlug} />
+        </Suspense>
+      </DetailCardBody>
+    </DetailCard>
   )
 }
 

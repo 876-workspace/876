@@ -1,27 +1,23 @@
+import type { ReactNode } from 'react'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { UsersIcon } from '@876/ui/icons'
 import { couriersOperator } from '@/lib/services/couriers'
 import { billingIntegration } from '@/lib/services/billing'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData, toCustomerView } from '@/lib/couriers'
-import { customerStatusSchema, type CustomerView } from '@/types/customer'
+import type { CustomerView } from '@/types/customer'
 
-import { CustomersTable, type CustomerTableRow } from './customers-table'
+import { CustomersList } from './customers-list'
+import type { CustomerTableRow } from './customers-table'
 
-type Props = {
-  params: Promise<{ orgSlug: string }>
-  searchParams: Promise<{ status?: string }>
-}
-
-export async function CustomersTableData({ params, searchParams }: Props) {
-  const { orgSlug } = await params
-  const { status } = await searchParams
-  const selectedStatus =
-    status === 'active' || status === 'suspended' ? status : 'all'
-  const profileStatus =
-    selectedStatus === 'all'
-      ? undefined
-      : customerStatusSchema.parse(selectedStatus.toUpperCase())
+/**
+ * Data half of the list column, rendered from the layout behind Suspense so
+ * the toolbar is interactive first. It lists this workspace's own courier
+ * profiles and resolves identity for exactly those ids. Every profile is
+ * loaded; the status filter is applied by `CustomersList`, because a layout
+ * receives no `searchParams`.
+ */
+export async function CustomersListData({ orgSlug }: { orgSlug: string }) {
   const emptyState = (
     <Empty className="border-0 py-6">
       <EmptyHeader>
@@ -36,11 +32,13 @@ export async function CustomersTableData({ params, searchParams }: Props) {
   const ctx = await getManageContext(orgSlug)
   if (!ctx?.tenant)
     return (
-      <CustomersTable
-        customers={[]}
-        orgSlug={orgSlug}
-        emptyState={emptyState}
-      />
+      <CustomersListColumn>
+        <CustomersList
+          customers={[]}
+          orgSlug={orgSlug}
+          emptyState={emptyState}
+        />
+      </CustomersListColumn>
     )
 
   const profiles: CustomerView[] = []
@@ -50,7 +48,6 @@ export async function CustomersTableData({ params, searchParams }: Props) {
     try {
       const page = requireCouriersData(
         await couriersOperator.customers.list(ctx.tenant.id, {
-          ...(profileStatus === undefined ? {} : { status: profileStatus }),
           limit: 100,
           ...(startingAfter === undefined
             ? {}
@@ -74,26 +71,28 @@ export async function CustomersTableData({ params, searchParams }: Props) {
   }
   if (customersError) {
     return (
-      <>
-        <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-[0.8125rem]">
+      <CustomersListColumn>
+        <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-4 text-[0.8125rem]">
           {customersError.message}
         </div>
-        <CustomersTable
+        <CustomersList
           customers={[]}
           orgSlug={orgSlug}
           emptyState={emptyState}
         />
-      </>
+      </CustomersListColumn>
     )
   }
 
   if (profiles.length === 0)
     return (
-      <CustomersTable
-        customers={[]}
-        orgSlug={orgSlug}
-        emptyState={emptyState}
-      />
+      <CustomersListColumn>
+        <CustomersList
+          customers={[]}
+          orgSlug={orgSlug}
+          emptyState={emptyState}
+        />
+      </CustomersListColumn>
     )
 
   const billingCustomerIds = profiles.flatMap((profile) =>
@@ -165,18 +164,23 @@ export async function CustomersTableData({ params, searchParams }: Props) {
   })
 
   return (
-    <>
+    <CustomersListColumn>
       {displayRegistryError ? (
-        <div className="border-destructive/30 bg-destructive/5 text-destructive mb-4 rounded-lg border p-4 text-[0.8125rem]">
+        <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border p-4 text-[0.8125rem]">
           {displayRegistryError.message}
         </div>
       ) : null}
 
-      <CustomersTable
+      <CustomersList
         customers={rows}
         orgSlug={orgSlug}
         emptyState={emptyState}
       />
-    </>
+    </CustomersListColumn>
   )
+}
+
+/** The list column owns its own scroll region inside the split view. */
+function CustomersListColumn({ children }: { children: ReactNode }) {
+  return <div className="flex h-full min-h-0 flex-col gap-3">{children}</div>
 }
