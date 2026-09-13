@@ -5,7 +5,7 @@ export type CommerceApiConfig = {
 }
 
 export function getConfig(env = process.env): CommerceApiConfig {
-  const port = Number(env.PORT ?? 4010)
+  const port = Number(env.PORT ?? 4040)
   if (!Number.isInteger(port) || port < 1 || port > 65_535)
     throw new Error('PORT must be a valid TCP port.')
 
