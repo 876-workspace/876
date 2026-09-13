@@ -9,6 +9,7 @@ import {
   sellableKey,
 } from '@/modules/catalog'
 import { resolvePrices } from '@/modules/pricing'
+import { resolveCommercialTaxRates } from '@/modules/tax'
 import type {
   CommercialLineInput,
   CommercialLineSnapshot,
@@ -49,7 +50,7 @@ function lineSellableReference(
 
 /**
  * Resolves immutable commercial-line snapshots through the canonical Catalog,
- * Pricing, and monetary calculation owners.
+ * Pricing, Tax, and monetary calculation owners.
  */
 export async function buildCommercialLines(
   tenantId: string,
@@ -75,6 +76,12 @@ export async function buildCommercialLines(
   if (variantReferences.error !== null)
     return { data: null, error: variantReferences.error }
 
+  const taxRateIds = params.flatMap((line) =>
+    line.taxRateId ? [line.taxRateId] : []
+  )
+  const taxRates = await resolveCommercialTaxRates(tenantId, taxRateIds)
+  if (taxRates.error !== null) return { data: null, error: taxRates.error }
+
   const lineSelections = params.map((line) => {
     const price = line.priceId
       ? (pricing.data.prices.get(priceKey(line.priceId, line.quantity)) ?? null)
@@ -82,6 +89,7 @@ export async function buildCommercialLines(
     return {
       line,
       price,
+      taxRate: line.taxRateId ? (taxRates.data.get(line.taxRateId) ?? null) : null,
       reference: lineSellableReference(line, price, variantReferences.data),
     }
   })
@@ -109,7 +117,7 @@ export async function buildCommercialLines(
   let discountAmount = 0n
 
   for (const selection of lineSelections) {
-    const { line, price, reference } = selection
+    const { line, price, taxRate, reference } = selection
     const sellable: ResolvedSellable | null = reference
       ? (sellables.data.get(sellableKey(reference)) ?? null)
       : null
@@ -161,11 +169,15 @@ export async function buildCommercialLines(
           ? (sellable?.identity.sku ?? null)
           : null,
       priceId: price?.priceId ?? null,
+      taxRateId: taxRate?.id ?? null,
       description,
       unit: sellable?.unit ?? price?.unitName ?? null,
       quantity: line.quantity,
       unitAmount,
       taxAmount: lineTaxAmount,
+      taxName: taxRate?.name ?? null,
+      taxRate: taxRate?.rate ?? null,
+      taxInclusive: taxRate?.inclusive ?? false,
       discountAmount: lineDiscountAmount,
       totalAmount: 0n,
     })
