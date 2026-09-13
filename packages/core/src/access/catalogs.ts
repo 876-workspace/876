@@ -231,6 +231,11 @@ export const billingPermissionCatalog: AppPermissionCatalog =
       crudModule(FINANCE_MODULES.customers),
       crud('catalog', 'Catalog'),
       crud('sales', 'Sales'),
+      {
+        key: FINANCE_MODULES.salesOrders.key,
+        label: FINANCE_MODULES.salesOrders.label,
+        actions: ['view', 'edit'],
+      },
       crudModule(FINANCE_MODULES.subscriptions),
       { key: 'reports', label: 'Reports', actions: ['view'] },
       crud('currencies', 'Currencies'),
