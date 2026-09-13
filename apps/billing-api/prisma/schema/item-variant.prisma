@@ -21,6 +21,7 @@ model ItemVariant {
   quoteLines        QuoteLine[]
   invoiceLines      InvoiceLine[]
   salesReceiptLines SalesReceiptLine[]
+  salesOrderLines   SalesOrderLine[]
   creditNoteLines   CreditNoteLine[]
   stockMovements    ItemStockMovement[]
 
