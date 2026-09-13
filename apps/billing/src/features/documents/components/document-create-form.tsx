@@ -34,7 +34,7 @@ import { toDocumentCustomerOption } from '@/lib/customers/document-recipient'
 
 type SelectOption = { label: string; value: string }
 type CurrencyOption = SelectOption & { decimalPlaces: number }
-type DocumentKind = 'invoice' | 'quote'
+type DocumentKind = 'invoice' | 'quote' | 'sales-order'
 
 export interface InvoiceDocumentInitial {
   invoiceId: string
@@ -112,7 +112,12 @@ function DocumentCreateMode({
   const [totalsSnapshot, setTotalsSnapshot] =
     useState<DocumentTotalsSnapshot | null>(null)
 
-  const title = kind === 'quote' ? 'Quote' : 'Invoice'
+  const title =
+    kind === 'quote'
+      ? 'Quote'
+      : kind === 'sales-order'
+        ? 'Sales Order'
+        : 'Invoice'
   const decimalPlaces =
     currencies.find((option) => option.value === currency)?.decimalPlaces ?? 2
   const editorItems = useMemo(
@@ -301,18 +306,25 @@ function DocumentCreateMode({
       const result =
         kind === 'quote'
           ? await client.quotes.create({ ...common, expiresAt: endAt! })
-          : await client.invoices.create({
-              ...common,
-              salespersonId: salespersonId || null,
-              orderNumber:
-                String(formData.get('orderNumber') ?? '').trim() || null,
-              referenceNumber:
-                String(formData.get('referenceNumber') ?? '').trim() || null,
-              subject: String(formData.get('subject') ?? '').trim() || null,
-              discountAmount: invoiceDiscount!,
-              shippingAmount: shippingAmount!,
-              adjustmentAmount: adjustmentAmount!,
-            })
+          : kind === 'sales-order'
+            ? await client.salesOrders.create({
+                ...common,
+                salespersonId: salespersonId || null,
+                referenceNumber:
+                  String(formData.get('referenceNumber') ?? '').trim() || null,
+              })
+            : await client.invoices.create({
+                ...common,
+                salespersonId: salespersonId || null,
+                orderNumber:
+                  String(formData.get('orderNumber') ?? '').trim() || null,
+                referenceNumber:
+                  String(formData.get('referenceNumber') ?? '').trim() || null,
+                subject: String(formData.get('subject') ?? '').trim() || null,
+                discountAmount: invoiceDiscount!,
+                shippingAmount: shippingAmount!,
+                adjustmentAmount: adjustmentAmount!,
+              })
       if (result.error || !result.data) {
         setError(
           result.error?.message ?? `Failed to create ${title.toLowerCase()}.`
