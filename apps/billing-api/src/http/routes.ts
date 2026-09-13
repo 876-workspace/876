@@ -47,6 +47,7 @@ import {
   createInternalReportingRouter,
   createReportingRouter,
 } from '@/modules/reporting'
+import { createSalesOrdersRouter } from '@/modules/sales-orders'
 import { createSubscriptionsRouter } from '@/modules/subscriptions'
 import { createTaxRouter } from '@/modules/tax'
 import {
@@ -89,6 +90,7 @@ export function buildRoutes(): Router {
   root.use('/api/v1', createDocumentsRouter(resolveGuards))
   root.use('/api/v1', createQuoteLifecycleRouter(resolveGuards))
   root.use('/api/v1', createSalesReceiptsRouter(resolveGuards))
+  root.use('/api/v1', createSalesOrdersRouter(resolveGuards))
   root.use('/api/v1', createRecurringInvoicesRouter(resolveGuards))
   root.use('/api/v1', createTaxRouter(resolveGuards))
   root.use('/api/v1', createPaymentProvidersRouter(resolveGuards))
