@@ -32,6 +32,7 @@ import { createInternalDocumentsRouter } from '@/modules/documents/documents.int
 import { createDocumentsRouter } from '@/modules/documents/documents.routes'
 import { createQuoteLifecycleRouter } from '@/modules/documents/quote-lifecycle.routes'
 import { createRecurringInvoicesRouter } from '@/modules/documents/recurring-invoices.routes'
+import { createSalesOrdersRouter } from '@/modules/documents/sales-orders.routes'
 import { createSalesReceiptsRouter } from '@/modules/documents/sales-receipts.routes'
 import {
   activeConnectionAuthorization,
@@ -47,7 +48,6 @@ import {
   createInternalReportingRouter,
   createReportingRouter,
 } from '@/modules/reporting'
-import { createSalesOrdersRouter } from '@/modules/sales-orders'
 import { createSubscriptionsRouter } from '@/modules/subscriptions'
 import { createTaxRouter } from '@/modules/tax'
 import {
