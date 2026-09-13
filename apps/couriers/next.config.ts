@@ -67,6 +67,7 @@ const nextConfig: NextConfig = {
     '@876/billing',
     '@876/core',
     '@876/couriers',
+    '@876/crm',
     '@876/storage',
     '@876/widgets',
     '@876/workspace',
