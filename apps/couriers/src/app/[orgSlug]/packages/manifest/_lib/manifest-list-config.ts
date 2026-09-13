@@ -1,5 +1,5 @@
 export const MANIFEST_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Manifests' },
+  { value: 'all', label: 'All Manifests', headingLabel: 'All Manifests' },
   { value: 'draft', label: 'Draft', headingLabel: 'Draft Manifests' },
   { value: 'sealed', label: 'Sealed', headingLabel: 'Sealed Manifests' },
   {
@@ -17,14 +17,8 @@ export const MANIFEST_STATUS_OPTIONS = [
 ]
 
 export const MANIFESTS_DROPDOWN_ACTIONS = [
-  { label: 'Import', icon: 'import' as const },
-  { label: 'Export', icon: 'export' as const },
-  {
-    label: 'Delete manifests',
-    icon: 'delete' as const,
-    destructive: true,
-    separator: true,
-  },
+  { label: 'Import', icon: 'import' as const, disabled: true },
+  { label: 'Export', icon: 'export' as const, disabled: true },
 ]
 
 const MANIFEST_STATUS_VALUES = new Set(

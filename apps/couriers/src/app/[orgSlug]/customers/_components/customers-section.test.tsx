@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
@@ -45,6 +46,32 @@ describe('CustomersSection', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: /All/ })
     ).toBeInTheDocument()
+  })
+
+  it('renders the standard status heading and actions menu', async () => {
+    const user = userEvent.setup()
+
+    renderSection()
+    await user.click(screen.getByRole('button', { name: 'More actions' }))
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'All Customers' })
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('menuitem', { name: 'Refresh' })
+    ).toBeVisible()
+    expect(screen.getByRole('menuitem', { name: 'Import' })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    )
+    expect(screen.getByRole('menuitem', { name: 'Export' })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    )
+    expect(screen.getByRole('link', { name: 'Add' })).toHaveAttribute(
+      'href',
+      '/island-logistics/customers/new'
+    )
   })
 
   it('keeps the toolbar and list mounted beside an open customer', () => {

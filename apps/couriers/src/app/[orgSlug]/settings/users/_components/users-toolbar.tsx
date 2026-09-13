@@ -8,7 +8,7 @@ import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { InviteDialog } from './invite-dialog'
 
 const STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All users' },
+  { value: 'all', label: 'All Users', headingLabel: 'All users' },
   { value: 'active', label: 'Active', headingLabel: 'Active users' },
   { value: 'inactive', label: 'Inactive', headingLabel: 'Inactive users' },
 ]
@@ -34,7 +34,7 @@ export function UsersToolbar({ orgSlug, roles, status }: Props) {
             options={STATUS_OPTIONS}
           />
         }
-        primaryLabel="Invite"
+        primaryLabel="Add"
         primaryVariant="info"
         // The loading fallback renders this toolbar for real and interactively,
         // so Invite must stay disabled until roles exist — the dialog has no

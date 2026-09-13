@@ -12,39 +12,10 @@ import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
 const REPORT_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Reports' },
-  { value: 'ready', label: 'Ready', headingLabel: 'Ready Reports' },
-  {
-    value: 'scheduled',
-    label: 'Scheduled',
-    headingLabel: 'Scheduled Reports',
-  },
-  { value: 'archived', label: 'Archived', headingLabel: 'Archived Reports' },
+  { value: 'all', label: 'All Reports', headingLabel: 'All Reports' },
 ]
 
-const REPORT_STATUS_VALUES = new Set(
-  REPORT_STATUS_OPTIONS.map((option) => option.value).filter(
-    (value) => value !== 'all'
-  )
-)
-
-type Props = {
-  searchParams: Promise<{ status?: string }>
-}
-
-export default async function ReportsPage({ searchParams }: Props) {
-  const { status } = await searchParams
-  const selectedStatus =
-    status && REPORT_STATUS_VALUES.has(status) ? status : 'all'
-  const selectedLabel = REPORT_STATUS_OPTIONS.find(
-    (option) => option.value === selectedStatus
-  )?.label
-
-  const emptyMessage =
-    selectedStatus === 'all'
-      ? 'No reports yet.'
-      : `No ${selectedLabel?.toLowerCase() ?? selectedStatus} reports.`
-
+export default function ReportsPage() {
   return (
     <Page>
       <ResourceToolbar
@@ -52,12 +23,12 @@ export default async function ReportsPage({ searchParams }: Props) {
         titleFilter={
           <StatusFilterHeading
             label="Reports"
-            value={selectedStatus}
+            value="all"
             options={REPORT_STATUS_OPTIONS}
           />
         }
         refresh
-        dropdownActions={[{ label: 'Export', icon: 'export' }]}
+        dropdownActions={[{ label: 'Export', icon: 'export', disabled: true }]}
       />
 
       <Empty className="py-14">
@@ -66,7 +37,7 @@ export default async function ReportsPage({ searchParams }: Props) {
             <Squares2X2Icon />
           </EmptyMedia>
           <EmptyTitle>No reports</EmptyTitle>
-          <EmptyDescription>{emptyMessage}</EmptyDescription>
+          <EmptyDescription>No reports yet.</EmptyDescription>
         </EmptyHeader>
       </Empty>
     </Page>
