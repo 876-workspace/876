@@ -54,9 +54,10 @@ const order: SalesOrder = {
   ],
 }
 
+const { lines: _lines, ...orderSummary } = order
 const list: SalesOrderList = {
   object: 'list',
-  data: [{ ...order, lines: undefined } as never],
+  data: [orderSummary],
   has_more: false,
   total_count: 1,
   url: '/api/v1/sales-orders',
