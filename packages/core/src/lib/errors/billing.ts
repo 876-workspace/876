@@ -192,8 +192,8 @@ export const BILLING_ERRORS = {
     message: 'Recurring Invoice not found.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
-  'billing/sales-order-conflict': {
-    message: 'A Sales Order with this number already exists.',
+  'billing/sales-order-already-invoiced': {
+    message: 'This Sales Order already has an active invoice.',
     httpStatus: HttpStatus.CONFLICT,
   },
   'billing/sales-order-currency-disabled': {
