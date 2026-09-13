@@ -16,6 +16,8 @@ const minorAmountSchema = z
 const nullableText = (max: number) =>
   z.string().trim().max(max).nullable().optional()
 
+const metadataSchema = z.record(z.string(), z.json())
+
 export const SalesOrderStatusSchema = z.enum([
   'draft',
   'pending',
@@ -62,7 +64,7 @@ export const SalesOrderCreateSchema = z.strictObject({
   orderedAt: z.number().int().nonnegative().nullable().optional(),
   notes: nullableText(20_000),
   terms: nullableText(20_000),
-  metadata: z.record(z.string(), z.unknown()).nullable().optional(),
+  metadata: metadataSchema.nullable().optional(),
   lines: z.array(SalesOrderLineInputSchema).min(1).max(500),
 })
 
@@ -75,7 +77,7 @@ export const SalesOrderUpdateSchema = z
     orderedAt: z.number().int().nonnegative().nullable().optional(),
     notes: nullableText(20_000),
     terms: nullableText(20_000),
-    metadata: z.record(z.string(), z.unknown()).nullable().optional(),
+    metadata: metadataSchema.nullable().optional(),
     lines: z.array(SalesOrderLineInputSchema).min(1).max(500).optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
