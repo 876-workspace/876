@@ -52,7 +52,7 @@ function DataTableColumnHeader<TData extends RowData, TValue>({
       <Button
         variant="ghost"
         size="sm"
-        className="-ml-3 h-8"
+        className="group/sort -ml-3 h-8"
         onClick={(event) => {
           event.stopPropagation()
           toggleSorting?.(event)
@@ -64,7 +64,12 @@ function DataTableColumnHeader<TData extends RowData, TValue>({
         ) : sorted === 'asc' ? (
           <ChevronUp className="ml-2 size-4" />
         ) : (
-          <ChevronsUpDown className="ml-2 size-4" />
+          // An unsorted column only hints that it can sort on hover or focus;
+          // a chevron pair on every header at rest reads as noise.
+          <ChevronsUpDown
+            aria-hidden
+            className="ml-2 size-4 opacity-0 transition-opacity group-hover/sort:opacity-100 group-focus-visible/sort:opacity-100"
+          />
         )}
       </Button>
     </div>
