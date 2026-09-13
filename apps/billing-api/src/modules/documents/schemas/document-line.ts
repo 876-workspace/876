@@ -7,6 +7,7 @@ export const DocumentLineCreateSchema = z.strictObject({
   itemId: IdSchema.nullable().optional(),
   variantId: IdSchema.nullable().optional(),
   priceId: IdSchema.nullable().optional(),
+  taxRateId: IdSchema.nullable().optional(),
   description: z.string().trim().min(1).max(2000).nullable().optional(),
   quantity: z.number().int().min(1).max(1_000_000).default(1),
   unitAmount: minorAmountSchema.nullable().optional(),
