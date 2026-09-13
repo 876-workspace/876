@@ -379,7 +379,9 @@ function DetailCardSection({
   className,
   children,
   ...props
-}: React.ComponentProps<'section'> & { title?: React.ReactNode }) {
+}: Omit<React.ComponentProps<'section'>, 'title'> & {
+  title?: React.ReactNode
+}) {
   return (
     <section
       data-slot="detail-card-section"

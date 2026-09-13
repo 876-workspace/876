@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { PageBreadcrumb } from '@876/ui/page'
 
 import { resolveUser, resolveUserMcRole, resolveUserProfile } from '../_data'
 import { ConsumerDataEditor } from '@/app/(app)/users/[username]/_components/consumer-data-editor'
@@ -28,22 +27,11 @@ export default async function UserEditPage({ params }: Props) {
     resolveUserProfile(user.id),
     resolveUserMcRole(user.id),
   ])
-  const displayName =
-    [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email
 
+  // The card header already names the record being edited and closes back to
+  // it, so the page is the forms alone.
   return (
-    <div className="mx-auto max-w-4xl space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0">
-          <PageBreadcrumb
-            href={`/users/${username}`}
-            label="Overview"
-            className="mb-4 -ml-2.5"
-          />
-          <h2 className="876-page-title mt-2 truncate">Edit {displayName}</h2>
-        </div>
-      </div>
-
+    <div className="space-y-5">
       <EditUserForm user={user} initialRole={mcRole ?? 'user'} />
       <ConsumerDataEditor user={user} profile={profile} />
     </div>

@@ -36,13 +36,13 @@ export function ContactEdit({ user, contact }: Props) {
         setError(resultError.message)
         return
       }
-      router.push(`/users/${user.username}/contacts`)
+      router.push(`/users/${user.username}`)
       router.refresh()
     })
   }
 
   const handleCancel = () => {
-    router.push(`/users/${user.username}/contacts`)
+    router.push(`/users/${user.username}`)
   }
 
   return (

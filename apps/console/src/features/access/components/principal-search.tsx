@@ -58,12 +58,15 @@ export function PrincipalSearch({
   kind,
   excludeIds,
   onSelect,
+  allExcludedLabel = 'Everyone matching already has an override.',
   disabled = false,
 }: {
   kind: 'user' | 'organization'
   /** Principals that already carry an override, hidden from results. */
   excludeIds: readonly string[]
   onSelect: (principal: Principal) => void
+  /** Shown when every match is excluded. */
+  allExcludedLabel?: string
   disabled?: boolean
 }) {
   const inputId = useId()
@@ -198,9 +201,7 @@ export function PrincipalSearch({
 
           {!busy && !activeError && visible.length === 0 && (
             <p className="text-muted-foreground px-3 py-2.5 text-[0.8125rem]">
-              {matches.length > 0
-                ? 'Everyone matching already has an override.'
-                : 'No matches.'}
+              {matches.length > 0 ? allExcludedLabel : 'No matches.'}
             </p>
           )}
 

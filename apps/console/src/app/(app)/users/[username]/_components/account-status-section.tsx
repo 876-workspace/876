@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import type { AdminUser } from '@876/platform/compat'
 import { Button } from '@876/ui/button'
-import { Shield } from '@876/ui/icons'
+import { DetailCardSection } from '@876/ui/detail-card'
 import { cn } from '@876/core/utils'
 import { users } from '@/lib/client'
 import { statusBadgeClass } from '@/lib/format'
@@ -50,11 +50,7 @@ export function AccountStatusSection({ user }: Props) {
     [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email
 
   return (
-    <div className="876-card p-5">
-      <h2 className="mb-4 flex items-center gap-2 text-[0.8125rem] font-semibold">
-        <Shield className="text-muted-foreground size-4" />
-        Account Status
-      </h2>
+    <DetailCardSection title="Account status">
       <div className="divide-876-surface-border divide-y">
         {/* Ban/Unban Row */}
         <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
@@ -96,9 +92,8 @@ export function AccountStatusSection({ user }: Props) {
               )}
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
-              Suspension sets a flag — it does NOT revoke active sessions. A
-              separate &quot;Force logout&quot; button is available in the
-              Sessions section below.
+              Suspension sets a flag — it does not revoke active sessions. Sign
+              the user out from the Sessions tab.
             </p>
           </div>
           {(user.status === 'active' || user.status === 'suspended') && (
@@ -129,6 +124,6 @@ export function AccountStatusSection({ user }: Props) {
         displayName={displayName}
         banned={user.banned}
       />
-    </div>
+    </DetailCardSection>
   )
 }
