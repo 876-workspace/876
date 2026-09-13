@@ -6,11 +6,18 @@ import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { Label } from '@876/ui/label'
 import { Textarea } from '@876/ui/textarea'
+import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import type { ContactFormInput } from '@/types/user-contacts'
+import {
+  PrincipalSearch,
+  type Principal,
+} from '@/features/access/components/principal-search'
 
 type Props = {
   mode: 'create' | 'edit'
   contact?: AdminConsumerContact
+  /** The user whose contacts these are — never offered as their own contact. */
+  ownerUserId?: string
   isPending: boolean
   error: string | null
   onCancel: () => void
@@ -20,15 +27,16 @@ type Props = {
 export function ContactForm({
   mode,
   contact,
+  ownerUserId,
   isPending,
   error,
   onCancel,
   onSubmit,
 }: Props) {
   const isEdit = mode === 'edit'
-  const [contactUserId, setContactUserId] = useState(
-    isEdit && contact ? contact.contact_user_id : ''
-  )
+  const [selected, setSelected] = useState<Principal | null>(null)
+  const contactUserId =
+    isEdit && contact ? contact.contact_user_id : (selected?.id ?? '')
   const [nickname, setNickname] = useState(
     isEdit && contact ? (contact.nickname ?? '') : ''
   )
@@ -45,14 +53,43 @@ export function ContactForm({
       <div className="space-y-4">
         {!isEdit && (
           <div className="space-y-1.5">
-            <Label htmlFor="contact-user-id">Contact user ID</Label>
-            <Input
-              id="contact-user-id"
-              value={contactUserId}
-              placeholder="user_…"
-              className="font-mono"
-              onChange={(event) => setContactUserId(event.target.value)}
-            />
+            <Label>876 user</Label>
+            {selected ? (
+              <div className="border-876-surface-border flex items-center gap-3 rounded-lg border px-3 py-2">
+                <Avatar size="sm">
+                  {selected.avatarUrl ? (
+                    <AvatarImage src={selected.avatarUrl} alt="" />
+                  ) : null}
+                  <AvatarFallback>
+                    {selected.name[0]?.toUpperCase() ?? '?'}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[0.8125rem] font-medium">
+                    {selected.name}
+                  </span>
+                  <span className="text-muted-foreground block truncate text-xs">
+                    {selected.detail}
+                  </span>
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={isPending}
+                  onClick={() => setSelected(null)}
+                >
+                  Change
+                </Button>
+              </div>
+            ) : (
+              <PrincipalSearch
+                kind="user"
+                excludeIds={ownerUserId ? [ownerUserId] : []}
+                allExcludedLabel="No other matching users."
+                onSelect={setSelected}
+                disabled={isPending}
+              />
+            )}
           </div>
         )}
         <div className="space-y-1.5">

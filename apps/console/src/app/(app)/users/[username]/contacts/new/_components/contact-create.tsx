@@ -24,7 +24,7 @@ export function ContactCreate({ user }: Props) {
   const handleCreate = (input: ContactFormInput) => {
     const contactUserId = input.contactUserId.trim()
     if (!contactUserId) {
-      setError('Contact user ID is required.')
+      setError('Choose an 876 user to save as a contact.')
       return
     }
     setError(null)
@@ -38,13 +38,13 @@ export function ContactCreate({ user }: Props) {
         setError(resultError.message)
         return
       }
-      router.push(`/users/${user.username}/contacts`)
+      router.push(`/users/${user.username}`)
       router.refresh()
     })
   }
 
   const handleCancel = () => {
-    router.push(`/users/${user.username}/contacts`)
+    router.push(`/users/${user.username}`)
   }
 
   return (
@@ -52,12 +52,13 @@ export function ContactCreate({ user }: Props) {
       <div className="border-b px-5 py-4">
         <h2 className="text-lg font-medium">Add contact</h2>
         <p className="text-muted-foreground text-[0.8125rem]">
-          Save another person to this user&apos;s contacts by their user ID.
+          Contacts are other 876 accounts. Search for the person to save.
         </p>
       </div>
       <div className="p-5">
         <ContactForm
           mode="create"
+          ownerUserId={user.id}
           isPending={isPending}
           error={error}
           onCancel={handleCancel}
