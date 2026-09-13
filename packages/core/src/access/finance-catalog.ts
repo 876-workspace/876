@@ -19,9 +19,10 @@ import { FINANCE_MODULES } from '../modules'
  *
  * 876 Billing and 876 Invoice share one finance workspace per organization, so
  * they share these roles. What differs is the **surface** each product may
- * edit: Invoice never shows a subscriptions, banking, purchases, or vendors
- * permission, because Invoice has no such feature. A role may still hold
- * permissions outside the editing surface — see `partitionFinancePermissions`.
+ * edit: Invoice never shows a subscriptions, banking, purchases, vendors, or
+ * Sales Orders permission, because Invoice has no such feature. A role may
+ * still hold permissions outside the editing surface — see
+ * `partitionFinancePermissions`.
  */
 
 /** One permission a finance role may grant. */
@@ -78,6 +79,7 @@ export const FINANCE_PERMISSION_MODULES: readonly FinancePermissionModule[] = [
   readWriteModule(FINANCE_MODULES.customers),
   readWrite('catalog', 'Items & catalog'),
   readWrite('sales', 'Sales documents'),
+  readWriteModule(FINANCE_MODULES.salesOrders),
   readWriteModule(FINANCE_MODULES.payments),
   // Handling a stored instrument is a different sensitivity from recording a
   // receipt: a bookkeeper can reconcile payments without being able to attach
@@ -98,10 +100,10 @@ export const FINANCE_PERMISSION_MODULES: readonly FinancePermissionModule[] = [
 /**
  * The modules 876 Invoice may edit.
  *
- * Invoice sells document workflow; recurring revenue, banking, purchasing and
- * vendor management belong to 876 Billing. Keeping the list explicit rather
- * than subtractive means adding a Billing module never silently leaks into
- * Invoice's role editor.
+ * Invoice sells document workflow; recurring revenue, Sales Orders, banking,
+ * purchasing and vendor management belong to 876 Billing. Keeping the list
+ * explicit rather than subtractive means adding a Billing module never silently
+ * leaks into Invoice's role editor.
  */
 const INVOICE_MODULE_KEYS: readonly string[] = [
   'billing',
