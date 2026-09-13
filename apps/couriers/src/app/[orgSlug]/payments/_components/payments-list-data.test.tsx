@@ -6,6 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
   listPayments: vi.fn(),
+  segments: [] as string[],
+  searchParams: new URLSearchParams(),
 }))
 
 vi.mock('@/lib/auth/manage-context', () => ({
@@ -15,13 +17,14 @@ vi.mock('@/lib/services/billing', () => ({
   billingIntegration: { payments: { list: mocks.listPayments } },
 }))
 vi.mock('next/navigation', () => ({
+  usePathname: () => '/island-logistics/payments',
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  useSelectedLayoutSegments: () => mocks.segments,
+  useSearchParams: () => mocks.searchParams,
 }))
 
-import { PaymentsTableData } from './payments-table-data'
+import { PaymentsListData } from './payments-list-data'
 import { PAYMENTS_SKELETON_COLUMNS } from './payments-skeleton-columns'
-
-const params = Promise.resolve({ orgSlug: 'island-logistics' })
 
 function createPayment(overrides: Record<string, unknown> = {}) {
   return {
@@ -45,19 +48,21 @@ function listResult<T>(data: T[]) {
   }
 }
 
-describe('PaymentsTableData', () => {
+describe('PaymentsListData', () => {
   beforeEach(() => {
     mocks.getManageContext.mockResolvedValue({
       orgId: 'org_123',
       tenant: { id: 'tenant_123' },
     })
+    mocks.segments = []
+    mocks.searchParams = new URLSearchParams()
   })
 
   it('renders finance payments through the shared table with org-scoped links', async () => {
     mocks.listPayments.mockResolvedValue(listResult([createPayment()]))
 
     const { container } = render(
-      await PaymentsTableData({ params, searchParams: Promise.resolve({}) })
+      await PaymentsListData({ orgSlug: 'island-logistics' })
     )
 
     expect(screen.getByRole('link', { name: 'PAY-91' })).toHaveAttribute(
@@ -88,14 +93,11 @@ describe('PaymentsTableData', () => {
         }),
       ])
     )
+    mocks.searchParams = new URLSearchParams('status=refunded')
 
-    render(
-      await PaymentsTableData({
-        params,
-        searchParams: Promise.resolve({ status: 'refunded' }),
-      })
-    )
+    render(await PaymentsListData({ orgSlug: 'island-logistics' }))
 
+    expect(mocks.listPayments).toHaveBeenCalledWith('org_123')
     expect(screen.queryByText('PAY-91')).not.toBeInTheDocument()
     expect(screen.getByText('PAY-92')).toBeVisible()
     expect(screen.getByText('PAY-93')).toBeVisible()
@@ -103,13 +105,9 @@ describe('PaymentsTableData', () => {
 
   it('shows the filtered empty message when nothing matches', async () => {
     mocks.listPayments.mockResolvedValue(listResult([createPayment()]))
+    mocks.searchParams = new URLSearchParams('status=failed')
 
-    render(
-      await PaymentsTableData({
-        params,
-        searchParams: Promise.resolve({ status: 'failed' }),
-      })
-    )
+    render(await PaymentsListData({ orgSlug: 'island-logistics' }))
 
     expect(screen.getByText('No failed payments.')).toBeVisible()
   })
@@ -120,9 +118,7 @@ describe('PaymentsTableData', () => {
       error: { code: 'billing/internal', message: 'Payments could not load.' },
     })
 
-    render(
-      await PaymentsTableData({ params, searchParams: Promise.resolve({}) })
-    )
+    render(await PaymentsListData({ orgSlug: 'island-logistics' }))
 
     expect(screen.getByRole('columnheader', { name: 'Payment' })).toBeVisible()
     expect(screen.getByText('Payments could not load.')).toBeVisible()
@@ -134,9 +130,7 @@ describe('PaymentsTableData', () => {
       error: { code: 'billing/unreachable', message: 'Billing unreachable.' },
     })
 
-    render(
-      await PaymentsTableData({ params, searchParams: Promise.resolve({}) })
-    )
+    render(await PaymentsListData({ orgSlug: 'island-logistics' }))
 
     expect(screen.queryByText('Billing unreachable.')).not.toBeInTheDocument()
     expect(screen.getByText('No payments')).toBeVisible()
@@ -145,9 +139,7 @@ describe('PaymentsTableData', () => {
   it('does not call Billing when the org has no tenant', async () => {
     mocks.getManageContext.mockResolvedValue(null)
 
-    render(
-      await PaymentsTableData({ params, searchParams: Promise.resolve({}) })
-    )
+    render(await PaymentsListData({ orgSlug: 'island-logistics' }))
 
     expect(mocks.listPayments).not.toHaveBeenCalled()
     expect(screen.getByText('No payments')).toBeVisible()

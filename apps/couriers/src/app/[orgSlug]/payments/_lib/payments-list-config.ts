@@ -12,6 +12,17 @@ export const PAYMENT_STATUS_OPTIONS = [
   { value: 'refunded', label: 'Refunded', headingLabel: 'Refunded Payments' },
 ]
 
+export const PAYMENTS_DROPDOWN_ACTIONS = [
+  { label: 'Import', icon: 'import' as const },
+  { label: 'Export', icon: 'export' as const },
+  {
+    label: 'Delete payments',
+    icon: 'delete' as const,
+    destructive: true,
+    separator: true,
+  },
+]
+
 /** URL status value → the Billing payment statuses it selects. */
 const PAYMENT_STATUS_FILTERS: Record<string, BillingPayment['status'][]> = {
   pending: ['PENDING', 'REQUIRES_ACTION', 'AUTHORIZED', 'PROCESSING'],
