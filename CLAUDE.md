@@ -25,15 +25,15 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 
 ## Current Architecture
 
-| Workspace           | Path              | Port | Role                                                                                      |
-| ------------------- | ----------------- | ---- | ----------------------------------------------------------------------------------------- |
-| `@876/app`          | `apps/876`        | 3000 | Consumer app — embedded auth; org/account management; PWA.                                |
-| `@876/enterprise`   | `apps/enterprise` | 3001 | Enterprise org workspace — embedded auth (sign-in + business onboarding); org dashboards. |
-| `@876/console`      | `apps/console`    | 3002 | Internal Console — embedded admin sign-in; platform admin console.                        |
-| `@876/couriers-app` | `apps/couriers`   | 3003 | Couriers SaaS app — multitenant courier management platform.                              |
-| `@876/api`          | `apps/api`        | 4000 | Express backend; owns database/provider server calls + OAuth Authorization Server.        |
+| Workspace           | Path                | Port | Role                                                                                      |
+| ------------------- | ------------------- | ---- | ----------------------------------------------------------------------------------------- |
+| `@876/app`          | `apps/876`          | 3000 | Consumer app — embedded auth; org/account management; PWA.                                |
+| `@876/enterprise`   | `apps/enterprise`   | 3001 | Enterprise org workspace — embedded auth (sign-in + business onboarding); org dashboards. |
+| `@876/console`      | `apps/console`      | 3002 | Internal Console — embedded admin sign-in; platform admin console.                        |
+| `@876/couriers-app` | `apps/couriers`     | 3003 | Couriers SaaS app — multitenant courier management platform.                              |
+| `@876/api`          | `apps/api`          | 4000 | Express backend; owns database/provider server calls + OAuth Authorization Server.        |
 | `@876/commerce-app` | `apps/commerce`     | 3009 | Commerce organization workspace — merchant storefront setup surface.                      |
-| `@876/commerce-api` | `apps/commerce-api` | 4010 | Express Commerce service — health and readiness probes until the first model.             |
+| `@876/commerce-api` | `apps/commerce-api` | 4040 | Express Commerce service — health and readiness probes until the first model.             |
 
 ### Shared packages
 
