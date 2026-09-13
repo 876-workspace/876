@@ -39,6 +39,7 @@ model Tenant {
   addons                          Addon[]
   addonAssociations               PlanAddonAssociation[]
   priceLists                      PriceList[]
+  priceListEntries                PriceListEntry[]
   quotes                          Quote[]
   invoices                        Invoice[]
   recurringInvoices               RecurringInvoice[]

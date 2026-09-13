@@ -100,3 +100,19 @@ export const roleSchema = z
 export const roleAcknowledgementSchema = z
   .object({ object: z.literal('billing_role'), id: z.string() })
   .strict()
+
+export const roleDeletedSchema = z
+  .object({
+    object: z.literal('billing_role'),
+    id: z.string(),
+    deleted: z.literal(true),
+  })
+  .strict()
+
+export const memberAcknowledgementSchema = z
+  .object({ object: z.literal('billing_member'), id: z.string() })
+  .strict()
+
+export type RoleCreateBody = z.infer<typeof roleCreateBodySchema>
+export type RoleUpdateBody = z.infer<typeof roleUpdateBodySchema>
+export type MemberUpdateBody = z.infer<typeof memberUpdateBodySchema>
