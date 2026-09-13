@@ -269,9 +269,11 @@ function DetailCardTab({
       aria-current={active ? 'page' : undefined}
       className={cn(
         'border-b-2 pb-3 text-xs font-medium whitespace-nowrap transition-colors',
+        // The platform's one blue (the list `Add` accent), never green: green
+        // is reserved for status, and a black underline read as unselected.
         active
-          ? 'border-primary text-foreground font-semibold'
-          : 'text-muted-foreground hover:text-foreground border-transparent',
+          ? 'border-876-blue text-876-blue font-semibold'
+          : 'text-muted-foreground hover:text-foreground hover:border-876-surface-border border-transparent',
         className
       )}
     >
