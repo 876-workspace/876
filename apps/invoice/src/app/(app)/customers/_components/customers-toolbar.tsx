@@ -30,7 +30,7 @@ export function CustomersToolbar({
           options={CUSTOMER_STATUS_OPTIONS}
         />
       }
-      primaryLabel="New"
+      primaryLabel="Add"
       primaryIconOnly={!showPrimary}
       primaryHref="/customers/new"
       primaryVariant="info"

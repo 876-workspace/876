@@ -29,7 +29,7 @@ export function SalesReceiptsToolbar({
           options={SALES_RECEIPT_STATUS_OPTIONS}
         />
       }
-      primaryLabel={showPrimary ? 'New' : undefined}
+      primaryLabel={showPrimary ? 'Add' : undefined}
       primaryHref={showPrimary ? '/sales-receipts/new' : undefined}
       primaryVariant="info"
       refresh

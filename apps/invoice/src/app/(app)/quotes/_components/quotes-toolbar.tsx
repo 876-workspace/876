@@ -33,7 +33,7 @@ export function QuotesToolbar({
           options={QUOTE_STATUS_OPTIONS}
         />
       }
-      primaryLabel={showPrimary ? 'New' : undefined}
+      primaryLabel={showPrimary ? 'Add' : undefined}
       primaryHref={showPrimary ? '/quotes/new' : undefined}
       primaryVariant="info"
       refresh
