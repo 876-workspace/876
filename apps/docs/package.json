@@ -1,0 +1,19 @@
+{
+  "name": "@876/docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --port 3008",
+    "build": "astro build",
+    "preview": "astro preview --port 3008",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "astro": "7.3.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "typescript": "5.9.3"
+  }
+}
