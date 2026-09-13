@@ -10,6 +10,7 @@ const SERVICE_APPS = new Set([
   '876-console',
   '876-invoice',
   '876-billing',
+  '876-couriers',
 ])
 
 function unauthorized(res: Response) {

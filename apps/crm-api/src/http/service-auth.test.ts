@@ -42,6 +42,24 @@ describe('requireServiceApp', () => {
     expect(test.json).toHaveBeenCalledTimes(0)
   })
 
+  it('accepts the 876-couriers first-party service credential', () => {
+    process.env.CRM_SERVICE_KEYS = JSON.stringify({
+      '876-couriers': 'couriers-key',
+    })
+    const test = harness({
+      'x-876-service-app': '876-couriers',
+      'x-876-service-key': 'couriers-key',
+    })
+
+    requireServiceApp(test.req, test.res, test.next)
+
+    expect(test.next).toHaveBeenCalledTimes(1)
+    expect(test.next).toHaveBeenCalledWith()
+    expect(test.res.locals).toEqual({ crmServiceAppSlug: '876-couriers' })
+    expect(test.status).toHaveBeenCalledTimes(0)
+    expect(test.json).toHaveBeenCalledTimes(0)
+  })
+
   it('rejects an undeclared app slug without calling the route', () => {
     process.env.CRM_SERVICE_KEYS = JSON.stringify({
       '876-invoice': 'invoice-key',
