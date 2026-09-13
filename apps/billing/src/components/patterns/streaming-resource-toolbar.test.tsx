@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
@@ -21,7 +21,7 @@ vi.mock('next/navigation', () => ({
 import { StreamingResourceToolbar } from './streaming-resource-toolbar'
 
 const OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Test' },
+  { value: 'all', label: 'All Invoices', headingLabel: 'All Invoices' },
   { value: 'active', label: 'Active', headingLabel: 'Active Test' },
 ]
 
@@ -39,7 +39,7 @@ describe('StreamingResourceToolbar', () => {
         options={OPTIONS}
       />
     )
-    // StatusFilterHeading renders headingLabel for active -> Active Test
+    // StatusFilterHeading renders headingLabel for active -> Active Test.
     expect(screen.getByText('Active Test')).toBeTruthy()
   })
 
@@ -51,13 +51,12 @@ describe('StreamingResourceToolbar', () => {
         status="all"
         options={OPTIONS}
         primary={{
-          label: 'New',
           href: '/invoices/new',
           permission: 'sales:write',
         }}
       />
     )
-    expect(screen.getByRole('link', { name: /New/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^Add$/ })).toHaveAttribute(
       'href',
       '/invoices/new'
     )
@@ -71,13 +70,12 @@ describe('StreamingResourceToolbar', () => {
         status="all"
         options={OPTIONS}
         primary={{
-          label: 'New',
           href: '/invoices/new',
           permission: 'sales:write',
         }}
       />
     )
-    expect(screen.queryByRole('link', { name: /New/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /^Add$/ })).toBeNull()
   })
 
   it('always renders refresh affordance', () => {
@@ -98,7 +96,7 @@ describe('StreamingResourceToolbar', () => {
         title="Test"
         status="all"
         options={OPTIONS}
-        primary={{ label: 'Action', href: '/x', permission: 'billing:access' }}
+        primary={{ href: '/x', permission: 'billing:access' }}
       />
     )
     expect(mocks.useBillingPermission).toHaveBeenCalledWith('billing:access')
@@ -116,27 +114,28 @@ describe('StreamingResourceToolbar', () => {
     expect(mocks.useBillingPermission).toHaveBeenCalledWith('billing:access')
   })
 
-  it('gates dropdownAction separately from primary', () => {
-    // first call for primary -> true, second for dropdown -> false
-    mocks.useBillingPermission
-      .mockReturnValueOnce(true)
-      .mockReturnValueOnce(false)
+  it('renders the standard list toolbar actions', () => {
+    mocks.useBillingPermission.mockReturnValue(true)
     render(
       <StreamingResourceToolbar
-        title="T"
+        title="Invoices"
         status="all"
         options={OPTIONS}
-        primary={{ label: 'Primary', href: '/p', permission: 'sales:write' }}
-        dropdownAction={{
-          label: 'Import',
-          href: '/import',
+        primary={{
+          href: '/invoices/new',
           permission: 'sales:write',
         }}
       />
     )
-    expect(screen.getByRole('link', { name: /Primary/ })).toBeTruthy()
-    // dropdown Import should be hidden when permission denied -> no Import in dropdown trigger content initially visible? ResourceToolbar renders dropdown menu hidden; test via props? We check mock called twice
-    expect(mocks.useBillingPermission).toHaveBeenCalledTimes(2)
+    expect(screen.getByText('All Invoices')).toBeTruthy()
+    expect(screen.getByRole('link', { name: /^Add$/ })).toHaveAttribute(
+      'href',
+      '/invoices/new'
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
+    expect(screen.getByText('Refresh')).toBeTruthy()
+    expect(screen.getByText('Import')).toBeTruthy()
+    expect(screen.getByText('Export')).toBeTruthy()
   })
 
   it('passes correct title prop to StatusFilterHeading', () => {
@@ -148,7 +147,7 @@ describe('StreamingResourceToolbar', () => {
         options={OPTIONS}
       />
     )
-    expect(screen.getByText('All Test')).toBeTruthy()
+    expect(screen.getByText('All Invoices')).toBeTruthy()
     // title is used as fallback label when no active option matches
     render(
       <StreamingResourceToolbar
@@ -170,13 +169,86 @@ describe('StreamingResourceToolbar', () => {
     expect(screen.getByText('Empty')).toBeTruthy()
   })
 
-  it('both primary and dropdown gated default to billing:access when undefined', () => {
+  it('uses one fallback permission check when no primary is provided', () => {
     mocks.useBillingPermission.mockReturnValue(false)
     render(
       <StreamingResourceToolbar title="X" status="all" options={OPTIONS} />
     )
-    // two calls both with billing:access
     expect(mocks.useBillingPermission).toHaveBeenCalledWith('billing:access')
-    expect(mocks.useBillingPermission).toHaveBeenCalledTimes(2)
+    expect(mocks.useBillingPermission).toHaveBeenCalledTimes(1)
+  })
+
+  it('normalizes every permitted create action to the bare Add label', () => {
+    mocks.useBillingPermission.mockReturnValue(true)
+    render(
+      <StreamingResourceToolbar
+        title="Subscriptions"
+        status="all"
+        options={OPTIONS}
+        primary={{
+          href: '/subscriptions/new',
+          permission: 'subscriptions:write',
+        }}
+      />
+    )
+    expect(screen.getByRole('link', { name: /^Add$/ })).toHaveAttribute(
+      'href',
+      '/subscriptions/new'
+    )
+  })
+
+  it('keeps the disabled transfer actions visible without an integration', () => {
+    mocks.useBillingPermission.mockReturnValue(true)
+    render(
+      <StreamingResourceToolbar title="Quotes" status="all" options={OPTIONS} />
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
+    expect(screen.getByText('Import').closest('[data-disabled]')).not.toBeNull()
+    expect(screen.getByText('Export').closest('[data-disabled]')).not.toBeNull()
+  })
+
+  it('renders Refresh before the transfer actions', () => {
+    mocks.useBillingPermission.mockReturnValue(true)
+    render(
+      <StreamingResourceToolbar title="Quotes" status="all" options={OPTIONS} />
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
+    const actions = Array.from(
+      document.querySelectorAll('[role="menuitem"]')
+    ).map((item) => item.textContent)
+    expect(actions).toEqual(['Refresh', 'Import', 'Export'])
+  })
+
+  it('renders the status filter heading without a create action', () => {
+    mocks.useBillingPermission.mockReturnValue(true)
+    render(
+      <StreamingResourceToolbar
+        title="Payments Received"
+        status="all"
+        options={[{ value: 'all', label: 'All Payments Received' }]}
+      />
+    )
+    expect(screen.getByText('All Payments Received')).toBeTruthy()
+    expect(screen.queryByRole('link', { name: /^Add$/ })).toBeNull()
+  })
+
+  it('keeps the standard menu available when creation is not permitted', () => {
+    mocks.useBillingPermission.mockReturnValue(false)
+    render(
+      <StreamingResourceToolbar
+        title="Invoices"
+        status="all"
+        options={OPTIONS}
+        primary={{
+          href: '/invoices/new',
+          permission: 'sales:write',
+        }}
+      />
+    )
+    expect(screen.queryByRole('link', { name: /^Add$/ })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
+    expect(screen.getByText('Refresh')).toBeTruthy()
+    expect(screen.getByText('Import')).toBeTruthy()
+    expect(screen.getByText('Export')).toBeTruthy()
   })
 })

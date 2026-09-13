@@ -6,7 +6,7 @@ import { ListDetailSection } from '@876/ui/list-detail-section'
 import { StreamingResourceToolbar } from '@/components/patterns/streaming-resource-toolbar'
 
 const QUOTE_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Quotes' },
+  { value: 'all', label: 'All Quotes', headingLabel: 'All Quotes' },
   { value: 'draft', label: 'Draft', headingLabel: 'Draft Quotes' },
   { value: 'sent', label: 'Sent', headingLabel: 'Sent Quotes' },
   { value: 'accepted', label: 'Accepted', headingLabel: 'Accepted Quotes' },
@@ -44,7 +44,6 @@ export function QuotesSection({
           status={selectedStatus}
           options={QUOTE_STATUS_OPTIONS}
           primary={{
-            label: 'New',
             href: '/quotes/new',
             permission: 'sales:write',
           }}

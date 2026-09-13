@@ -6,7 +6,7 @@ import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { useBillingPermission } from '@/components/providers/permissions-provider'
 
 const CUSTOMER_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Customers' },
+  { value: 'all', label: 'All Customers', headingLabel: 'All Customers' },
   { value: 'active', label: 'Active', headingLabel: 'Active Customers' },
   { value: 'archived', label: 'Archived', headingLabel: 'Archived Customers' },
 ]

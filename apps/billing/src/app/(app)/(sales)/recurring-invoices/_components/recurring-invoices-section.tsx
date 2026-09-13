@@ -29,7 +29,6 @@ export function RecurringInvoicesSection({
           status={resolveRecurringInvoiceStatus(status)}
           options={RECURRING_INVOICE_STATUS_OPTIONS}
           primary={{
-            label: 'New',
             href: '/recurring-invoices/new',
             permission: 'sales:write',
           }}

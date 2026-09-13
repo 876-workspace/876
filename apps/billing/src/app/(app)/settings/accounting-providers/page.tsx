@@ -2,6 +2,7 @@ import { Badge } from '@876/ui/badge'
 import { CircleStackIcon } from '@876/ui/icons'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
 import { ConnectionActions } from './_components/connection-actions'
 import {
@@ -35,9 +36,18 @@ export default async function AccountingProvidersPage() {
       <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <ResourceToolbar
         title="Accounting providers"
+        titleFilter={
+          <StatusFilterHeading
+            label="Accounting providers"
+            value="all"
+            options={[{ value: 'all', label: 'All Accounting Providers' }]}
+          />
+        }
         description="Connect external accounting systems without moving canonical financial ownership out of 876 Billing."
         primaryLabel={canManage ? 'Add' : undefined}
-        primaryHref={canManage ? '/settings/accounting-providers/new' : undefined}
+        primaryHref={
+          canManage ? '/settings/accounting-providers/new' : undefined
+        }
         primaryVariant="info"
         refresh
       />
@@ -98,10 +108,11 @@ export default async function AccountingProvidersPage() {
                         </p>
                         <div className="text-muted-foreground mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
                           <span>
-                            Last sync: {formatTimestamp(connection.lastSyncedAt)}
+                            Last sync:{' '}
+                            {formatTimestamp(connection.lastSyncedAt)}
                           </span>
                           <span>
-                            Last successful: {' '}
+                            Last successful:{' '}
                             {formatTimestamp(connection.lastSuccessfulSyncAt)}
                           </span>
                           {connection.lastErrorCode ? (
@@ -145,7 +156,9 @@ export default async function AccountingProvidersPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-medium">{provider.name}</p>
-                      <Badge variant={provider.isActive ? 'success' : 'secondary'}>
+                      <Badge
+                        variant={provider.isActive ? 'success' : 'secondary'}
+                      >
                         {provider.isActive ? 'Available' : 'Inactive'}
                       </Badge>
                     </div>

@@ -19,7 +19,7 @@ export const metadata = {
 }
 
 const EXPENSE_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Expenses' },
+  { value: 'all', label: 'All Expenses', headingLabel: 'All Expenses' },
 ]
 
 export default async function ExpensesPage() {
@@ -34,8 +34,7 @@ export default async function ExpensesPage() {
             options={EXPENSE_STATUS_OPTIONS}
           />
         }
-        primaryLabel="New"
-        primaryVariant="info"
+        refresh
       />
 
       <Empty className="py-14">

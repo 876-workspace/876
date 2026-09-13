@@ -7,7 +7,7 @@ import { StreamingResourceToolbar } from '@/components/patterns/streaming-resour
 import type { StatusFilterOption } from '@876/ui/status-filter-heading'
 
 const CREDIT_NOTE_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Credit Notes' },
+  { value: 'all', label: 'All Credit Notes', headingLabel: 'All Credit Notes' },
   { value: 'draft', label: 'Draft', headingLabel: 'Draft Credit Notes' },
   { value: 'open', label: 'Open', headingLabel: 'Open Credit Notes' },
   { value: 'closed', label: 'Closed', headingLabel: 'Closed Credit Notes' },
@@ -35,7 +35,6 @@ export function CreditNotesSection({
           status={selectedStatus}
           options={CREDIT_NOTE_STATUS_OPTIONS}
           primary={{
-            label: 'New',
             href: '/credit-notes/new',
             permission: 'sales:write',
           }}

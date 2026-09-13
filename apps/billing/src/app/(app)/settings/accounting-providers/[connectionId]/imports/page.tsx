@@ -10,6 +10,7 @@ import { Button, buttonVariants } from '@876/ui/button'
 import { CircleStackIcon } from '@876/ui/icons'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
 import { AdoptionRow } from './_components/adoption-row'
 import {
@@ -90,6 +91,13 @@ export default async function AccountingProviderImportsPage({
       />
       <ResourceToolbar
         title="Adopt provider records"
+        titleFilter={
+          <StatusFilterHeading
+            label="Adopt provider records"
+            value="all"
+            options={[{ value: 'all', label: 'All Provider Records' }]}
+          />
+        }
         description={
           connection
             ? `Map existing ${connection.providerKey} records to canonical 876 Billing records. Adoption does not overwrite either side.`

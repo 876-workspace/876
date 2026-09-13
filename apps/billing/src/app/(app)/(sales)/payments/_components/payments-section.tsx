@@ -2,13 +2,16 @@
 
 import type { ReactNode } from 'react'
 import { ListDetailSection } from '@876/ui/list-detail-section'
-import { useListDetailRoute } from '@876/ui/list-detail-shell'
 import type { StatusFilterOption } from '@876/ui/status-filter-heading'
 
 import { StreamingResourceToolbar } from '@/components/patterns/streaming-resource-toolbar'
 
 const PAYMENT_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Payments' },
+  {
+    value: 'all',
+    label: 'All Payments Received',
+    headingLabel: 'All Payments',
+  },
 ]
 
 /**
@@ -25,8 +28,6 @@ export function PaymentsSection({
   list: ReactNode
   children: ReactNode
 }) {
-  const { open } = useListDetailRoute(TAKEOVER_SEGMENTS)
-
   return (
     <ListDetailSection
       toolbar={
@@ -34,15 +35,10 @@ export function PaymentsSection({
           title="Payments Received"
           status="all"
           options={PAYMENT_STATUS_OPTIONS}
-          primary={
-            open
-              ? undefined
-              : {
-                  label: 'New',
-                  href: '/payments/new',
-                  permission: 'payments:write',
-                }
-          }
+          primary={{
+            href: '/payments/new',
+            permission: 'payments:write',
+          }}
         />
       }
       list={list}
