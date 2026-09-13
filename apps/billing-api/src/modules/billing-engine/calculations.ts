@@ -1,23 +1,11 @@
 export { calculateCatalogAmount } from '@/commerce/calculations'
 import { addInterval } from '@876/core/timestamps'
-export { addInterval }
+import { calculateTax, parsePercentRate, RATE_SCALE } from '@876/core/money'
+export { addInterval, calculateTax }
 
 export type IntervalUnit = 'DAY' | 'WEEK' | 'MONTH' | 'YEAR'
 export type RenewalPricingPolicy =
   'RETAIN_EXISTING' | 'USE_LATEST' | 'MARKUP' | 'MARKDOWN'
-
-const percentScale = 1_000_000n
-
-function scaledPercent(value: string | null): bigint {
-  if (!value) return 0n
-  const match = value.trim().match(/^([+-]?)(\d+)(?:\.(\d+))?$/)
-  if (!match || match[1] === '-') return 0n
-  const whole = BigInt(match[2]!)
-  const fraction = `${match[3] ?? ''}00000`
-  let result = whole * 10_000n + BigInt(fraction.slice(0, 4))
-  if (Number(fraction[4]) >= 5) result += 1n
-  return result
-}
 
 export function calculateDiscount(options: {
   subtotal: bigint
@@ -35,25 +23,10 @@ export function calculateDiscount(options: {
       : options.subtotal
   }
   const amount =
-    (options.subtotal * scaledPercent(options.percentOff) + percentScale / 2n) /
-    percentScale
+    (options.subtotal * parsePercentRate(options.percentOff) +
+      RATE_SCALE / 2n) /
+    RATE_SCALE
   return amount < options.subtotal ? amount : options.subtotal
-}
-
-export function calculateTax(
-  amount: bigint,
-  rate: string | null,
-  inclusive: boolean
-): bigint {
-  const scaledRate = scaledPercent(rate)
-  if (amount <= 0n || scaledRate <= 0n) return 0n
-  if (inclusive) {
-    const net =
-      (amount * percentScale + (percentScale + scaledRate) / 2n) /
-      (percentScale + scaledRate)
-    return amount - net
-  }
-  return (amount * scaledRate + percentScale / 2n) / percentScale
 }
 
 export function allocateDiscount(
@@ -107,7 +80,7 @@ export function adjustRenewalAmount(
     return amount
   }
   const adjustment =
-    (amount * scaledPercent(percent) + percentScale / 2n) / percentScale
+    (amount * parsePercentRate(percent) + RATE_SCALE / 2n) / RATE_SCALE
   return policy === 'MARKUP'
     ? amount + adjustment
     : amount > adjustment
