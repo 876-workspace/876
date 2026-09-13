@@ -196,6 +196,10 @@ export const BILLING_ERRORS = {
     message: 'A Sales Order with this number already exists.',
     httpStatus: HttpStatus.CONFLICT,
   },
+  'billing/sales-order-currency-disabled': {
+    message: 'Enable the Sales Order currency before using it.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
   'billing/sales-order-customer-not-found': {
     message: 'The selected customer was not found.',
     httpStatus: HttpStatus.NOT_FOUND,
