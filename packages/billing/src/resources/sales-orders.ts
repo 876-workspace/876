@@ -1,12 +1,12 @@
 import { Request } from '../request'
 import type { Runtime } from '../runtime'
+import { InvoiceCreatedSchema } from '../types/invoice.schema'
 import {
-  DeletedSalesOrderSchema,
   SalesOrderListSchema,
   SalesOrderSchema,
 } from '../types/sales-order.schema'
+import type { InvoiceCreated } from '../types/invoice'
 import type {
-  DeletedSalesOrder,
   SalesOrder,
   SalesOrderCreateParams,
   SalesOrderList,
@@ -22,7 +22,7 @@ function resourcePath(salesOrderId: string) {
 function lifecycle(
   runtime: Runtime,
   salesOrderId: string,
-  action: string,
+  action: 'confirm' | 'cancel' | 'complete',
   options?: RequestOptions
 ) {
   return Request<SalesOrder>(
@@ -94,36 +94,28 @@ export function createSalesOrdersResource(runtime: Runtime) {
       )
     },
 
-    delete(salesOrderId: string, options?: RequestOptions) {
-      return Request<DeletedSalesOrder>(
-        runtime,
-        {
-          method: 'DELETE',
-          path: resourcePath(salesOrderId),
-          signal: options?.signal,
-        },
-        DeletedSalesOrderSchema
-      )
-    },
-
-    submit(salesOrderId: string, options?: RequestOptions) {
-      return lifecycle(runtime, salesOrderId, 'submit', options)
-    },
-
     confirm(salesOrderId: string, options?: RequestOptions) {
       return lifecycle(runtime, salesOrderId, 'confirm', options)
     },
 
-    startProcessing(salesOrderId: string, options?: RequestOptions) {
-      return lifecycle(runtime, salesOrderId, 'start-processing', options)
+    cancel(salesOrderId: string, options?: RequestOptions) {
+      return lifecycle(runtime, salesOrderId, 'cancel', options)
     },
 
     complete(salesOrderId: string, options?: RequestOptions) {
       return lifecycle(runtime, salesOrderId, 'complete', options)
     },
 
-    cancel(salesOrderId: string, options?: RequestOptions) {
-      return lifecycle(runtime, salesOrderId, 'cancel', options)
+    convertToInvoice(salesOrderId: string, options?: RequestOptions) {
+      return Request<InvoiceCreated>(
+        runtime,
+        {
+          method: 'POST',
+          path: `${resourcePath(salesOrderId)}/convert-to-invoice`,
+          signal: options?.signal,
+        },
+        InvoiceCreatedSchema
+      )
     },
   }
 }
