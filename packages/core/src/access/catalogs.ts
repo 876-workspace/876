@@ -223,6 +223,14 @@ export const projectsPermissionCatalog: AppPermissionCatalog =
     ]),
   })
 
+export const commercePermissionCatalog: AppPermissionCatalog =
+  defineAppPermissionCatalog({
+    app: '876-commerce',
+    modules: modules([
+      { key: 'settings', label: 'Settings', actions: ['view', 'edit'] },
+    ]),
+  })
+
 export const billingPermissionCatalog: AppPermissionCatalog =
   defineAppPermissionCatalog({
     app: '876-billing',
@@ -291,4 +299,5 @@ export const appPermissionCatalogs: Record<string, AppPermissionCatalog> = {
   '876-crm': crmPermissionCatalog,
   '876-invoice': invoicePermissionCatalog,
   '876-projects': projectsPermissionCatalog,
+  '876-commerce': commercePermissionCatalog,
 }

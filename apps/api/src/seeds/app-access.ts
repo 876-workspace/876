@@ -3,6 +3,7 @@ import {
   billingPermissionCatalog,
   couriersPermissionCatalog,
   crmPermissionCatalog,
+  commercePermissionCatalog,
   invoicePermissionCatalog,
   projectsPermissionCatalog,
 } from '@876/core/access/catalogs'
@@ -63,6 +64,7 @@ function keysFor(
 
 const couriersPermissions = fromCatalog(couriersPermissionCatalog)
 const crmPermissions = fromCatalog(crmPermissionCatalog)
+const commercePermissions = fromCatalog(commercePermissionCatalog)
 const projectsPermissions = fromCatalog(projectsPermissionCatalog)
 
 const billingPermissions = fromCatalog(billingPermissionCatalog)
@@ -143,6 +145,11 @@ export const APP_ACCESS_SEED_DEFINITIONS: readonly AppAccessSeedDefinition[] = [
     appSlug: '876-projects',
     permissions: projectsPermissions,
     roles: standardRoles(projectsPermissions),
+  },
+  {
+    appSlug: '876-commerce',
+    permissions: commercePermissions,
+    roles: standardRoles(commercePermissions),
   },
   {
     appSlug: '876-billing',

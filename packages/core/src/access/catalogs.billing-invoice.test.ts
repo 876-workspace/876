@@ -338,6 +338,7 @@ describe('appPermissionCatalogs registry', () => {
   it('covers every product app that seeds app-access', () => {
     expect(Object.keys(appPermissionCatalogs).sort()).toEqual([
       '876-billing',
+      '876-commerce',
       '876-couriers',
       '876-crm',
       '876-invoice',
