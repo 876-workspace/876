@@ -1,31 +1,22 @@
 import type { JsonValue, List, MinorAmount } from './common'
+import type { TaxBehavior } from './enums'
 
 export type SalesOrderStatus =
   | 'draft'
-  | 'pending'
   | 'confirmed'
-  | 'processing'
   | 'completed'
   | 'canceled'
 
-export type SalesOrderPaymentStatus =
-  | 'unpaid'
-  | 'partially-paid'
-  | 'paid'
-  | 'partially-refunded'
-  | 'refunded'
-
-export type SalesOrderFulfillmentStatus =
-  | 'unfulfilled'
-  | 'partially-fulfilled'
-  | 'fulfilled'
+export type SalesOrderInvoicingStatus = 'not-invoiced' | 'invoiced'
+export type SalesOrderPaymentStatus = 'unpaid' | 'partially-paid' | 'paid'
 
 export interface SalesOrderLineParams {
   itemId?: string | null
   variantId?: string | null
   priceId?: string | null
+  taxRateId?: string | null
   description?: string | null
-  quantity: number
+  quantity?: number
   unitAmount?: MinorAmount | null
   taxAmount?: MinorAmount
   discountAmount?: MinorAmount
@@ -33,10 +24,12 @@ export interface SalesOrderLineParams {
 
 export interface SalesOrderCreateParams {
   customerId: string
-  number?: string
-  currency: string
+  salespersonId?: string | null
   priceListId?: string | null
-  orderedAt?: number | null
+  currency?: string
+  orderedAt?: number
+  referenceNumber?: string | null
+  taxBehavior?: TaxBehavior
   notes?: string | null
   terms?: string | null
   metadata?: Record<string, JsonValue> | null
@@ -45,21 +38,33 @@ export interface SalesOrderCreateParams {
 
 export interface SalesOrderUpdateParams {
   customerId?: string
-  number?: string
-  currency?: string
+  salespersonId?: string | null
   priceListId?: string | null
-  orderedAt?: number | null
+  currency?: string
+  orderedAt?: number
+  referenceNumber?: string | null
+  taxBehavior?: TaxBehavior
   notes?: string | null
   terms?: string | null
   metadata?: Record<string, JsonValue> | null
   lines?: SalesOrderLineParams[]
 }
 
+export interface SalesOrderQuoteConversionParams {
+  salespersonId?: string | null
+  orderedAt?: number
+  referenceNumber?: string | null
+  taxBehavior?: TaxBehavior
+  notes?: string | null
+  terms?: string | null
+}
+
 export interface SalesOrderListParams {
   status?: SalesOrderStatus
-  paymentStatus?: SalesOrderPaymentStatus
-  fulfillmentStatus?: SalesOrderFulfillmentStatus
   customerId?: string
+  starting_after?: string
+  ending_before?: string
+  limit?: number
 }
 
 export interface SalesOrderLine {
@@ -70,11 +75,16 @@ export interface SalesOrderLine {
   variantName: string | null
   variantSku: string | null
   priceId: string | null
+  taxRateId: string | null
   description: string
   unit: string | null
+  position: number
   quantity: number
   unitAmount: string
   taxAmount: string
+  taxName: string | null
+  taxRate: string | null
+  taxInclusive: boolean
   discountAmount: string
   totalAmount: string
   createdAt: number
@@ -85,16 +95,25 @@ export interface SalesOrderSummary {
   object: 'sales-order'
   id: string
   customerId: string
+  customerName: string | null
+  customerEmail: string | null
   priceListId: string | null
   priceListName: string | null
+  quoteId: string | null
+  salespersonId: string | null
+  salespersonName: string | null
   number: string
   status: SalesOrderStatus
-  paymentStatus: SalesOrderPaymentStatus
-  fulfillmentStatus: SalesOrderFulfillmentStatus
+  invoicingStatus: SalesOrderInvoicingStatus
+  paymentStatus: SalesOrderPaymentStatus | null
+  invoiceId: string | null
   currency: string
-  orderedAt: number | null
+  referenceNumber: string | null
+  taxBehavior: TaxBehavior
+  billingAddressSnapshot: JsonValue | null
+  shippingAddressSnapshot: JsonValue | null
+  orderedAt: number
   confirmedAt: number | null
-  processingAt: number | null
   completedAt: number | null
   canceledAt: number | null
   subtotalAmount: string
@@ -110,12 +129,6 @@ export interface SalesOrderSummary {
 
 export interface SalesOrder extends SalesOrderSummary {
   lines: SalesOrderLine[]
-}
-
-export interface DeletedSalesOrder {
-  object: 'sales-order'
-  id: string
-  deleted: true
 }
 
 export type SalesOrderList = List<SalesOrderSummary>
