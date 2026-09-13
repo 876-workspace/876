@@ -221,12 +221,12 @@ export function formatMinorAmount(
   decimalPlaces: number
 ): string {
   const value = BigInt(amount)
-  const negative = value < 0n
+  const negative = value < BigInt(0)
   const absolute = negative ? -value : value
   if (decimalPlaces === 0)
     return `${currency} ${negative ? '-' : ''}${absolute.toString()}`
 
-  const scale = 10n ** BigInt(decimalPlaces)
+  const scale = BigInt(10) ** BigInt(decimalPlaces)
   const whole = absolute / scale
   const fraction = (absolute % scale).toString().padStart(decimalPlaces, '0')
   return `${currency} ${negative ? '-' : ''}${whole}.${fraction}`
