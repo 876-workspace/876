@@ -1,27 +1,15 @@
+import { Suspense } from 'react'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
-
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
-import { PaymentsTable } from './_components/payments-table'
-
-const PAYMENT_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Payments' },
-  { value: 'pending', label: 'Pending', headingLabel: 'Pending Payments' },
-  {
-    value: 'completed',
-    label: 'Completed',
-    headingLabel: 'Completed Payments',
-  },
-  { value: 'failed', label: 'Failed', headingLabel: 'Failed Payments' },
-  { value: 'refunded', label: 'Refunded', headingLabel: 'Refunded Payments' },
-]
-
-const PAYMENT_STATUS_VALUES = new Set(
-  PAYMENT_STATUS_OPTIONS.map((option) => option.value).filter(
-    (value) => value !== 'all'
-  )
-)
+import { PAYMENTS_SKELETON_COLUMNS } from './_components/payments-skeleton-columns'
+import { PaymentsTableData } from './_components/payments-table-data'
+import {
+  PAYMENT_STATUS_OPTIONS,
+  resolvePaymentStatus,
+} from './_lib/payments-list-config'
 
 type Props = {
   params: Promise<{ orgSlug: string }>
@@ -29,18 +17,8 @@ type Props = {
 }
 
 export default async function PaymentsPage({ params, searchParams }: Props) {
-  const { orgSlug } = await params
-  const { status } = await searchParams
-  const selectedStatus =
-    status && PAYMENT_STATUS_VALUES.has(status) ? status : 'all'
-  const selectedLabel = PAYMENT_STATUS_OPTIONS.find(
-    (option) => option.value === selectedStatus
-  )?.label
-
-  const emptyMessage =
-    selectedStatus === 'all'
-      ? 'No payments yet.'
-      : `No ${selectedLabel?.toLowerCase() ?? selectedStatus} payments.`
+  const [{ orgSlug }, { status }] = await Promise.all([params, searchParams])
+  const { selected } = resolvePaymentStatus(status)
 
   return (
     <Page>
@@ -49,7 +27,7 @@ export default async function PaymentsPage({ params, searchParams }: Props) {
         titleFilter={
           <StatusFilterHeading
             label="Payments"
-            value={selectedStatus}
+            value={selected}
             options={PAYMENT_STATUS_OPTIONS}
           />
         }
@@ -68,8 +46,13 @@ export default async function PaymentsPage({ params, searchParams }: Props) {
           },
         ]}
       />
-
-      <PaymentsTable emptyMessage={emptyMessage} />
+      <Suspense
+        fallback={
+          <DataTableSkeleton columns={PAYMENTS_SKELETON_COLUMNS} rows={5} />
+        }
+      >
+        <PaymentsTableData params={params} searchParams={searchParams} />
+      </Suspense>
     </Page>
   )
 }

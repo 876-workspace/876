@@ -63,6 +63,9 @@ describe('Couriers items page data', () => {
           sku: 'DELIVERY-SAME-DAY',
           description: null,
           type: 'SERVICE',
+          unit: null,
+          isTaxable: true,
+          isActive: true,
           sourceAppId: '876-couriers',
           defaultSellingAmount: '125000',
           defaultSellingCurrency: 'JMD',
@@ -73,6 +76,9 @@ describe('Couriers items page data', () => {
           sku: null,
           description: 'Reusable mailer',
           type: 'GOOD',
+          unit: 'each',
+          isTaxable: false,
+          isActive: true,
           sourceAppId: null,
           defaultSellingAmount: null,
           defaultSellingCurrency: null,
@@ -83,10 +89,12 @@ describe('Couriers items page data', () => {
     render(await ItemsTableData({ params, searchParams: emptySearchParams }))
 
     expect(screen.getByText('Same-day delivery')).toBeVisible()
-    expect(screen.getByText('DELIVERY-SAME-DAY')).toBeVisible()
-    expect(screen.getByText('Reusable mailer')).toBeVisible()
-    expect(screen.getByText(/1,250/)).toBeVisible()
-    expect(screen.getAllByText('—').length).toBeGreaterThan(0)
+    expect(screen.getByText('service · DELIVERY-SAME-DAY')).toBeVisible()
+    expect(screen.getByText('good · each')).toBeVisible()
+    expect(screen.getByText(/1,250\.00/)).toBeVisible()
+    expect(
+      screen.getByRole('link', { name: 'Same-day delivery' })
+    ).toHaveAttribute('href', '/island-logistics/items/item_1')
     expect(mocks.listItems).toHaveBeenCalledWith('org_123', {
       active: undefined,
     })
@@ -105,7 +113,7 @@ describe('Couriers items page data', () => {
     expect(mocks.listItems).toHaveBeenCalledWith('org_123', {
       active: false,
     })
-    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Item' })).toBeVisible()
     expect(screen.getByText('No items')).toBeVisible()
     expect(screen.getByText('No inactive items.')).toBeVisible()
   })
@@ -118,7 +126,7 @@ describe('Couriers items page data', () => {
 
     render(await ItemsTableData({ params, searchParams: emptySearchParams }))
 
-    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Item' })).toBeVisible()
     expect(
       screen.getByText('The shared catalog could not be loaded.')
     ).toBeVisible()
@@ -136,7 +144,7 @@ describe('Couriers items page data', () => {
 
     render(await ItemsTableData({ params, searchParams: emptySearchParams }))
 
-    expect(screen.getByRole('columnheader', { name: 'Name' })).toBeVisible()
+    expect(screen.getByRole('columnheader', { name: 'Item' })).toBeVisible()
     expect(screen.getByText('No items')).toBeVisible()
     expect(
       screen.queryByText('The Billing workspace was not found.')

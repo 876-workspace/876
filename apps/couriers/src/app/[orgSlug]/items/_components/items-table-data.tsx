@@ -9,7 +9,7 @@ import { CircleStackIcon } from '@876/ui/icons'
 import { billingIntegration } from '@/lib/services/billing'
 import { getManageContext } from '@/lib/auth/manage-context'
 
-import { ItemsTable } from './items-table'
+import { ItemsList } from './items-list'
 
 type Props = {
   params: Promise<{ orgSlug: string }>
@@ -42,7 +42,8 @@ export async function ItemsTableData({ params, searchParams }: Props) {
   )
 
   const ctx = await getManageContext(orgSlug)
-  if (!ctx?.tenant) return <ItemsTable items={[]} emptyState={emptyState} />
+  if (!ctx?.tenant)
+    return <ItemsList items={[]} orgSlug={orgSlug} emptyState={emptyState} />
 
   const items = await billingIntegration.items.list(ctx.orgId, {
     active: activeFilter,
@@ -55,19 +56,7 @@ export async function ItemsTableData({ params, searchParams }: Props) {
 
   const displayError = items.error && !isMissingWorkspace ? items.error : null
 
-  const rows = items.error
-    ? []
-    : items.data.data.map((item) => ({
-        id: item.id,
-        name: item.name,
-        imageUrl: item.imageUrl,
-        sku: item.sku,
-        priceLabel: formatPrice(
-          item.defaultSellingAmount,
-          item.defaultSellingCurrency
-        ),
-        description: item.description,
-      }))
+  const rows = items.error ? [] : items.data.data
 
   return (
     <>
@@ -77,20 +66,7 @@ export async function ItemsTableData({ params, searchParams }: Props) {
         </div>
       ) : null}
 
-      <ItemsTable items={rows} emptyState={emptyState} />
+      <ItemsList items={rows} orgSlug={orgSlug} emptyState={emptyState} />
     </>
   )
-}
-
-function formatPrice(amount: string | null, currency: string | null): string {
-  if (amount === null || currency === null) return '—'
-  const numeric = Number(amount)
-  if (!Number.isSafeInteger(numeric)) return `${currency} ${amount}`
-
-  const formatter = new Intl.NumberFormat('en-JM', {
-    style: 'currency',
-    currency,
-  })
-  const exponent = formatter.resolvedOptions().maximumFractionDigits ?? 2
-  return formatter.format(numeric / 10 ** exponent)
 }

@@ -1,30 +1,15 @@
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@876/ui/empty'
-import { DocumentTextIcon } from '@876/ui/icons'
+import { Suspense } from 'react'
+import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
-
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
-const INVOICE_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Invoices' },
-  { value: 'draft', label: 'Draft', headingLabel: 'Draft Invoices' },
-  { value: 'sent', label: 'Sent', headingLabel: 'Sent Invoices' },
-  { value: 'overdue', label: 'Overdue', headingLabel: 'Overdue Invoices' },
-  { value: 'paid', label: 'Paid', headingLabel: 'Paid Invoices' },
-  { value: 'void', label: 'Void', headingLabel: 'Void Invoices' },
-]
-
-const INVOICE_STATUS_VALUES = new Set(
-  INVOICE_STATUS_OPTIONS.map((option) => option.value).filter(
-    (value) => value !== 'all'
-  )
-)
+import { INVOICES_SKELETON_COLUMNS } from './_components/invoices-skeleton-columns'
+import { InvoicesTableData } from './_components/invoices-table-data'
+import {
+  INVOICE_STATUS_OPTIONS,
+  resolveInvoiceStatus,
+} from './_lib/invoices-list-config'
 
 type Props = {
   params: Promise<{ orgSlug: string }>
@@ -32,18 +17,8 @@ type Props = {
 }
 
 export default async function InvoicesPage({ params, searchParams }: Props) {
-  const { orgSlug } = await params
-  const { status } = await searchParams
-  const selectedStatus =
-    status && INVOICE_STATUS_VALUES.has(status) ? status : 'all'
-  const selectedLabel = INVOICE_STATUS_OPTIONS.find(
-    (option) => option.value === selectedStatus
-  )?.label
-
-  const emptyMessage =
-    selectedStatus === 'all'
-      ? 'No invoices yet.'
-      : `No ${selectedLabel?.toLowerCase() ?? selectedStatus} invoices.`
+  const [{ orgSlug }, { status }] = await Promise.all([params, searchParams])
+  const { selected } = resolveInvoiceStatus(status)
 
   return (
     <Page>
@@ -52,7 +27,7 @@ export default async function InvoicesPage({ params, searchParams }: Props) {
         titleFilter={
           <StatusFilterHeading
             label="Invoices"
-            value={selectedStatus}
+            value={selected}
             options={INVOICE_STATUS_OPTIONS}
           />
         }
@@ -71,18 +46,13 @@ export default async function InvoicesPage({ params, searchParams }: Props) {
           },
         ]}
       />
-
-      <div className="876-card overflow-hidden">
-        <Empty className="border-0 py-6">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <DocumentTextIcon />
-            </EmptyMedia>
-            <EmptyTitle>No invoices</EmptyTitle>
-            <EmptyDescription>{emptyMessage}</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      </div>
+      <Suspense
+        fallback={
+          <DataTableSkeleton columns={INVOICES_SKELETON_COLUMNS} rows={5} />
+        }
+      >
+        <InvoicesTableData params={params} searchParams={searchParams} />
+      </Suspense>
     </Page>
   )
 }
