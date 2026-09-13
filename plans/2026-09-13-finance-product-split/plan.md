@@ -56,6 +56,24 @@ All three apps keep using `apps/billing-api`. No financial data moves.
 - [ ] C. Books app created, Billing stripped, verified, PR'd
 - [ ] `finance-app-parity.md` rewritten for Invoice ⊂ Books + Billing
 
+## Draft Books/Billing classification (from `packages/billing/src/navigation.ts`, 2026-09-13)
+
+| Current Billing nav entry | Stays in Billing | Moves to Books | Notes |
+| --- | --- | --- | --- |
+| Home | ✓ (subscription metrics) | ✓ (own accounting home) | separate dashboards |
+| Customers, Items | ✓ | ✓ | shared panels, same records |
+| Quotes, Invoices, Payments Received, Credit Notes | ✓ | ✓ | subscription invoicing needs them in Billing |
+| Sales Orders | | ✓ | move after the Sales Orders PR merges |
+| Sales Receipts, Recurring Invoices | | ✓ | Billing's recurring engine is subscriptions |
+| Subscriptions, Products, Plans, Add-ons, Prices, Coupons, Price Lists | ✓ | | Price Lists are also needed by Books sales documents: confirm |
+| Purchases (Vendors, Expenses), Banking, Payroll | | ✓ | |
+| Reports | subscription reports | accounting reports | split report catalog |
+| Settings | subscription/org settings | accounting/banking/tax settings | split settings groups |
+
+Open for the Books brief: module keys and permission catalog for `876-books`,
+provisioning/entitlement for orgs that currently use those Billing features
+(pre-launch, no real data), and whether Books replaces Invoice's upsell path.
+
 ## Handoff
 
 Commerce brief dispatched. The Books split has not started; it waits on the
