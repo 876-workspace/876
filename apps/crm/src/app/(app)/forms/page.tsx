@@ -1,6 +1,7 @@
 import { AppError } from '@876/ui/app-error'
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { Suspense } from 'react'
 
 import {
@@ -24,6 +25,13 @@ export default async function FormsPage() {
     <Page>
       <ResourceToolbar
         title="Forms"
+        titleFilter={
+          <StatusFilterHeading
+            label="Forms"
+            value="all"
+            options={[{ value: 'all', label: 'All Forms' }]}
+          />
+        }
         primaryLabel="Add"
         primaryHref="/forms/new"
         primaryVariant="info"

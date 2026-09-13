@@ -11,7 +11,7 @@ import {
 } from '@876/ui/status-filter-heading'
 
 const REQUEST_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All requests' },
+  { value: 'all', label: 'All Requests' },
   { value: 'OPEN', label: 'Open' },
   { value: 'IN_PROGRESS', label: 'In progress' },
   { value: 'WAITING', label: 'Waiting' },
@@ -52,7 +52,9 @@ export function RequestListDetailShell({
           primaryHref={canCreate ? `${baseHref}/new` : undefined}
           primaryVariant="info"
           refresh
-          dropdownActions={[{ label: 'Export', icon: 'export' }]}
+          dropdownActions={[
+            { label: 'Export', icon: 'export', disabled: true },
+          ]}
         />
       }
       list={list}

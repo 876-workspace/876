@@ -41,7 +41,7 @@ function isRequestStatus(value: string | undefined): value is RequestStatus {
   )
 }
 const REQUEST_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All requests' },
+  { value: 'all', label: 'All Requests' },
   { value: 'OPEN', label: 'Open' },
   { value: 'IN_PROGRESS', label: 'In Progress' },
   { value: 'WAITING', label: 'Waiting' },
