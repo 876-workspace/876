@@ -272,6 +272,14 @@ const quotes = {
     detail(`/quotes/${id(quoteId)}`),
 }
 
+const salesOrders = {
+  ...crud('/sales-orders', 'salesOrderId'),
+  list: (_tenantId: string, status?: string) =>
+    list('/sales-orders', { status }) as Promise<any[]>,
+  retrieve: (_tenantId: string, salesOrderId: string) =>
+    detail(`/sales-orders/${id(salesOrderId)}`),
+}
+
 const creditNotes = {
   ...crud('/credit-notes', 'creditNoteId'),
   list: (_tenantId: string, status?: string) =>
@@ -389,6 +397,7 @@ export const service = {
   quotes,
   refunds: crud('/refunds', 'refundId'),
   roles: crud('/roles', 'roleId'),
+  salesOrders,
   salespeople: {
     list: (_tenantId: string) => {
       void _tenantId

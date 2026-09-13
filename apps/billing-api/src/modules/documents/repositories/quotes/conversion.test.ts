@@ -67,7 +67,7 @@ describe('quote conversion lock', () => {
     expect(String(mocks.queryRaw.mock.calls[0])).toContain('FOR UPDATE')
   })
 
-  it('uses the provided transaction client for the Sales Receipt conversion check', async () => {
+  it('uses the provided transaction client for the conversion relation check', async () => {
     await lockQuoteConversion(tx, 'ten_1', 'quo_1', 'sales-receipt')
 
     expect(mocks.findFirst).toHaveBeenCalledWith({
@@ -77,6 +77,7 @@ describe('quote conversion lock', () => {
         status: true,
         convertedInvoice: { select: { id: true } },
         convertedSalesReceipt: { select: { id: true } },
+        convertedSalesOrder: { select: { id: true } },
       },
     })
   })

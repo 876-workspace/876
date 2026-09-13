@@ -22,6 +22,7 @@ import { createQuotesResource } from './resources/quotes'
 import { createReportsResource } from './resources/reports'
 import { createReportPreferencesResource } from './resources/report-preferences'
 import { createSalesReceiptsResource } from './resources/sales-receipts'
+import { createSalesOrdersResource } from './resources/sales-orders'
 import { createRecurringInvoicesResource } from './resources/recurring-invoices'
 import { createMembersResource } from './resources/members'
 import { createPaymentsResource } from './resources/payments'
@@ -67,6 +68,7 @@ export function create876Client(options: ClientOptions = {}) {
     reportPreferences: createReportPreferencesResource(runtime),
     roles: createRolesResource(runtime),
     salesReceipts: createSalesReceiptsResource(runtime),
+    salesOrders: createSalesOrdersResource(runtime),
     recurringInvoices: createRecurringInvoicesResource(runtime),
     salespeople: createSalespeopleResource(runtime),
     subscriptions: createSubscriptionsResource(runtime),

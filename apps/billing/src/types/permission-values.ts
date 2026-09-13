@@ -7,6 +7,8 @@ export const BILLING_PERMISSION_VALUES = [
   'catalog:write',
   'sales:read',
   'sales:write',
+  'sales-orders:read',
+  'sales-orders:write',
   'subscriptions:read',
   'subscriptions:write',
   'reports:read',

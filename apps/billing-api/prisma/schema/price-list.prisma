@@ -22,6 +22,7 @@ model PriceList {
   invoices          Invoice[]
   recurringInvoices RecurringInvoice[]
   salesReceipts     SalesReceipt[]
+  salesOrders       SalesOrder[]
   subscriptions     Subscription[]
 
   @@unique([tenantId, id], map: "billing_price_lists_tenant_id_id_key")

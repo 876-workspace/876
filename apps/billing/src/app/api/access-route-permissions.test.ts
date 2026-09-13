@@ -20,6 +20,7 @@ vi.mock('@/lib/services/platform', () => ({
 
 import * as membersRoute from './members/[[...path]]/route'
 import * as rolesRoute from './roles/[[...path]]/route'
+import * as salesOrdersRoute from './sales-orders/[[...path]]/route'
 import { POST as invite } from './team/invites/route'
 import { DELETE as revoke } from './team/invites/[inviteId]/route'
 
@@ -103,6 +104,40 @@ describe('Billing mutating route authorization', () => {
         })
       )
     )
+  })
+
+  it('denies a Sales Order create without sales-orders write', async () => {
+    await expectForbidden(
+      await salesOrdersRoute.POST(request('POST'), routeContext)
+    )
+  })
+
+  it('denies a Sales Order update without sales-orders write', async () => {
+    await expectForbidden(
+      await salesOrdersRoute.PATCH(request('PATCH'), routeContext)
+    )
+  })
+
+  it('proxies a permitted Sales Order create exactly once', async () => {
+    mocks.context = { orgId: 'org_1', permissions: ['sales-orders:write'] }
+    const input = request('POST')
+    await salesOrdersRoute.POST(input, routeContext)
+    expect(mocks.proxy).toHaveBeenCalledTimes(1)
+    expect(mocks.proxy).toHaveBeenCalledWith(input, 'sales-orders', ['role_1'])
+  })
+
+  it('proxies a permitted Sales Order lifecycle command exactly once', async () => {
+    mocks.context = { orgId: 'org_1', permissions: ['sales-orders:write'] }
+    const input = request('POST')
+    const lifecycleContext = {
+      params: Promise.resolve({ path: ['so_1', 'confirm'] }),
+    }
+    await salesOrdersRoute.POST(input, lifecycleContext)
+    expect(mocks.proxy).toHaveBeenCalledTimes(1)
+    expect(mocks.proxy).toHaveBeenCalledWith(input, 'sales-orders', [
+      'so_1',
+      'confirm',
+    ])
   })
 
   it('denies invite revocation without members write before the platform client', async () => {

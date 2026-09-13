@@ -509,6 +509,8 @@ export interface InvoiceDetail {
   currency: string
   billingReason: string
   subscriptionId: string | null
+  /** Sales Order that originated this invoice, when converted from one. */
+  salesOrderId: string | null
   recurringInvoiceId?: string | null
   customerName: string | null
   customerEmail: string | null

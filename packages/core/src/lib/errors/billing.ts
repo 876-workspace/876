@@ -192,6 +192,30 @@ export const BILLING_ERRORS = {
     message: 'Recurring Invoice not found.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
+  'billing/sales-order-already-invoiced': {
+    message: 'This Sales Order already has an active invoice.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/sales-order-currency-disabled': {
+    message: 'Enable the Sales Order currency before using it.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
+  'billing/sales-order-customer-not-found': {
+    message: 'The selected customer was not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
+  'billing/sales-order-invalid-lines': {
+    message: 'The Sales Order lines are invalid.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
+  'billing/sales-order-invalid-state': {
+    message: 'This Sales Order cannot be changed from its current status.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/sales-order-not-found': {
+    message: 'The Sales Order was not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
   'billing/workspace-not-found': {
     message: 'The Billing workspace was not found.',
     httpStatus: HttpStatus.NOT_FOUND,

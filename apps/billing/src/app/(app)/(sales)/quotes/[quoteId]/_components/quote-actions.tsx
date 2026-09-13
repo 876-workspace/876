@@ -5,6 +5,7 @@ import {
   type QuoteLifecycleUiAction,
 } from '@876/billing-ui/quote-lifecycle-actions'
 import { useRouter } from 'next/navigation'
+import { Button } from '@876/ui/button'
 
 import { client } from '@/lib/client'
 import type { QuoteStatus } from '@/types/quote'
@@ -50,18 +51,33 @@ export function QuoteActions({
   }
 
   return (
-    <QuoteLifecycleActions
-      status={status}
-      isExpired={isExpired}
-      canWrite={canWrite}
-      canDelete={canWrite}
-      canConvert={canWrite}
-      editHref={`/quotes/${quoteId}/edit`}
-      sharePath={`/quotes/${quoteId}`}
-      convertedInvoiceHref={
-        convertedInvoiceId ? `/invoices/${convertedInvoiceId}` : undefined
-      }
-      onAction={onAction}
-    />
+    <div className="flex flex-wrap gap-2">
+      <QuoteLifecycleActions
+        status={status}
+        isExpired={isExpired}
+        canWrite={canWrite}
+        canDelete={canWrite}
+        canConvert={canWrite}
+        editHref={`/quotes/${quoteId}/edit`}
+        sharePath={`/quotes/${quoteId}`}
+        convertedInvoiceHref={
+          convertedInvoiceId ? `/invoices/${convertedInvoiceId}` : undefined
+        }
+        onAction={onAction}
+      />
+      {canWrite && status === 'ACCEPTED' ? (
+        <Button
+          variant="outline"
+          onClick={async () => {
+            const result = await client.quotes.convertToSalesOrder(quoteId)
+            if (result.error || !result.data) return
+            router.push(`/sales-orders/${result.data.id}`)
+            router.refresh()
+          }}
+        >
+          Convert to sales order
+        </Button>
+      ) : null}
+    </div>
   )
 }

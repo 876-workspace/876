@@ -89,7 +89,11 @@ describe('resolveBillingNavigation', () => {
   })
 
   it('gates Recurring Invoices and Sales Receipts on the invoices feature', () => {
-    const withoutFeature = resolvedEntry(['sales:read'], ['billing-sales'], 'sales')
+    const withoutFeature = resolvedEntry(
+      ['sales:read'],
+      ['billing-sales'],
+      'sales'
+    )
     const withFeature = resolvedEntry(
       ['sales:read'],
       ['billing-sales', 'billing-sales-invoices'],
@@ -241,6 +245,7 @@ describe('resolveBillingNavigation', () => {
       'customers:read',
       'catalog:read',
       'sales:read',
+      'sales-orders:read',
       'payments:read',
       'subscriptions:read',
       'billing:access',

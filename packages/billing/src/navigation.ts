@@ -62,6 +62,13 @@ export const billingNavigation = defineNavigation([
             requires: { feature: 'billing-sales-quotes' },
           },
           {
+            key: 'sales-orders',
+            title: 'Sales Orders',
+            href: '/sales-orders',
+            icon: 'sales',
+            requires: { permission: 'sales-orders:read' },
+          },
+          {
             key: 'sales-invoices',
             title: 'Invoices',
             href: '/invoices',

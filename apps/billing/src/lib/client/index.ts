@@ -36,6 +36,7 @@ import { refunds } from './refunds'
 import { reportPreferences } from './report-preferences'
 import { roles } from './roles'
 import { salesReceipts } from './sales-receipts'
+import { salesOrders } from './sales-orders'
 import { subscriptions } from './subscriptions'
 import { salespeople } from './salespeople'
 import { support } from './support'
@@ -77,6 +78,7 @@ export const client = {
   reportPreferences,
   roles,
   salesReceipts,
+  salesOrders,
   salespeople,
   subscriptions,
   support,

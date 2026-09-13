@@ -9,6 +9,7 @@ import type {
   QuoteUpdated,
   QuoteUpdateInput,
 } from '@/types/quote'
+import type { SalesOrderResource } from '@/types/sales-order'
 
 import { request } from './request'
 
@@ -44,6 +45,12 @@ const convertToInvoice = (quoteId: string) =>
     { method: 'POST', body: JSON.stringify({}) }
   )
 
+const convertToSalesOrder = (quoteId: string) =>
+  request<SalesOrderResource>(
+    `/api/v1/quotes/${encodeURIComponent(quoteId)}/convert-to-sales-order`,
+    { method: 'POST', body: JSON.stringify({}) }
+  )
+
 const getPreferences = () =>
   request<QuotePreference>('/api/v1/quote-preferences', { method: 'GET' })
 
@@ -68,6 +75,7 @@ export const quotes = {
   cancel: (quoteId: string) => transition(quoteId, 'cancel'),
   expire: (quoteId: string) => transition(quoteId, 'expire'),
   convertToInvoice,
+  convertToSalesOrder,
   getPreferences,
   updatePreferences,
   delete: deleteQuote,
