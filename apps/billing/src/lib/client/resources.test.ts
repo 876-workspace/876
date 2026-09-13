@@ -37,6 +37,7 @@ import { refunds } from './refunds'
 import { reportPreferences } from './report-preferences'
 import { roles } from './roles'
 import { salesReceipts } from './sales-receipts'
+import { salesOrders } from './sales-orders'
 import { salespeople } from './salespeople'
 import { subscriptions } from './subscriptions'
 import { support } from './support'
@@ -676,6 +677,7 @@ describe('Billing browser resource clients', () => {
       support,
       roles,
       salesReceipts,
+      salesOrders,
       salespeople,
       taxAuthorities,
       taxRates,
