@@ -26,7 +26,7 @@ export function requestRecordTabs(baseHref: string): RouteTabItem[] {
     { label: 'Tasks', href: `${baseHref}/tasks` },
     { label: 'Reminders', href: `${baseHref}/reminders` },
     { label: 'Schedule', href: `${baseHref}/schedule` },
-    { label: 'Audit', href: `${baseHref}/audit` },
+    { label: 'Activity', href: `${baseHref}/activity` },
   ]
 }
 

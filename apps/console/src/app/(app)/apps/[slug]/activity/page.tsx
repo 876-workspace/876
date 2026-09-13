@@ -8,8 +8,8 @@ type Props = { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const app = await resolveApp(slug)
-  if (!app) return { title: 'Audit' }
-  return { title: `${app.name} Audit` }
+  if (!app) return { title: 'Activity' }
+  return { title: `${app.name} Activity` }
 }
 
 export default async function AppAuditPage({ params }: Props) {

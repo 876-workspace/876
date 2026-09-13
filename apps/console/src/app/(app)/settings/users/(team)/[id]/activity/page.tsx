@@ -12,12 +12,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     resolveMemberGrant(id),
     resolveMemberIdentity(id),
   ])
-  if (!grant) return { title: 'Audit' }
+  if (!grant) return { title: 'Activity' }
   const name =
     [identity?.first_name, identity?.last_name].filter(Boolean).join(' ') ||
     identity?.email ||
     id
-  return { title: `${name} • Audit - Team` }
+  return { title: `${name} • Activity - Team` }
 }
 
 export default async function TeamMemberAuditPage({ params }: Props) {

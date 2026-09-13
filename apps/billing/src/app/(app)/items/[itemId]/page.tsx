@@ -113,8 +113,8 @@ async function ItemOverviewData({ params }: Props) {
             meta: item._count.quoteLines + item._count.invoiceLines,
           },
           {
-            href: `/items/${item.id}/audit`,
-            label: 'Audit',
+            href: `/items/${item.id}/activity`,
+            label: 'Activity',
             description:
               'Review identifiers, stock settings, and the latest update time.',
           },
@@ -180,7 +180,7 @@ function ItemOverviewSkeleton() {
           </p>
         </div>
         <div className="divide-876-surface-border divide-y">
-          {['Prices', 'Transactions', 'Audit'].map((label) => (
+          {['Prices', 'Transactions', 'Activity'].map((label) => (
             <div key={label} className="flex items-center gap-4 px-5 py-3.5">
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium">{label}</span>

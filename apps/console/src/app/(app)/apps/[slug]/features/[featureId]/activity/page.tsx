@@ -25,9 +25,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     resolveFeature(featureId),
   ])
   if (!app || !feature || feature.app_id !== app.id)
-    return { title: 'Feature audit' }
+    return { title: 'Feature activity' }
 
-  return { title: `${feature.name} • Audit - ${app.name} Features` }
+  return { title: `${feature.name} • Activity - ${app.name} Features` }
 }
 
 export default async function AppFeatureAuditPage({ params }: Props) {

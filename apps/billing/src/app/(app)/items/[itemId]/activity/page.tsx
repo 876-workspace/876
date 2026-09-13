@@ -9,7 +9,7 @@ import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { formatDate } from '@/lib/format'
 
 export const metadata: Metadata = {
-  title: 'Audit',
+  title: 'Activity',
 }
 
 export default function ItemAuditPage({
@@ -39,7 +39,7 @@ async function ItemAuditData({
   return (
     <div className="space-y-6">
       <section className="876-card p-5">
-        <h2 className="876-section-title mb-4">Audit trail</h2>
+        <h2 className="876-section-title mb-4">Activity</h2>
         <dl className="divide-876-surface-border divide-y">
           <DetailField label="Created at" value={formatDate(item.createdAt)} />
           <DetailField label="Updated at" value={formatDate(item.updatedAt)} />
@@ -51,9 +51,9 @@ async function ItemAuditData({
 
 function ItemAuditSkeleton() {
   return (
-    <div className="space-y-6" aria-label="Loading item audit trail">
+    <div className="space-y-6" aria-label="Loading item activity">
       <section className="876-card p-5">
-        <h2 className="876-section-title mb-4">Audit trail</h2>
+        <h2 className="876-section-title mb-4">Activity</h2>
         <dl className="divide-876-surface-border divide-y">
           <DetailField
             label="Created at"
