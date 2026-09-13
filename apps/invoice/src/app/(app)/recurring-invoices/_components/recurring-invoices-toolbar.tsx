@@ -8,8 +8,16 @@ import {
 
 const RECURRING_INVOICE_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All', headingLabel: 'All Recurring Invoices' },
-  { value: 'active', label: 'Active', headingLabel: 'Active Recurring Invoices' },
-  { value: 'paused', label: 'Paused', headingLabel: 'Paused Recurring Invoices' },
+  {
+    value: 'active',
+    label: 'Active',
+    headingLabel: 'Active Recurring Invoices',
+  },
+  {
+    value: 'paused',
+    label: 'Paused',
+    headingLabel: 'Paused Recurring Invoices',
+  },
   {
     value: 'stopped',
     label: 'Stopped',
@@ -39,7 +47,7 @@ export function RecurringInvoicesToolbar({
           options={RECURRING_INVOICE_STATUS_OPTIONS}
         />
       }
-      primaryLabel={showPrimary ? 'New' : undefined}
+      primaryLabel={showPrimary ? 'Add' : undefined}
       primaryHref={showPrimary ? '/recurring-invoices/new' : undefined}
       primaryVariant="info"
       refresh

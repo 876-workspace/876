@@ -14,7 +14,7 @@ import {
 import { useCustomerLinks } from '../_lib/use-customer-links'
 
 export const CUSTOMER_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All customers' },
+  { value: 'all', label: 'All Customers' },
   { value: 'active', label: 'Active' },
   { value: 'inactive', label: 'Inactive' },
 ]
@@ -63,14 +63,14 @@ export function CustomersShell({ list, children }: Props) {
                 options={CUSTOMER_STATUS_OPTIONS}
               />
             }
-            /*
-             * The Add action belongs to the list view. While a card is open the
-             * card is the subject, and a second create affordance beside it
-             * competes with the record on screen.
-             */
-            primaryLabel={open ? undefined : 'Add'}
+            primaryLabel="Add"
             primaryHref={linkTo('/customers/new')}
             primaryVariant="info"
+            refresh
+            dropdownActions={[
+              { label: 'Import', icon: 'import', disabled: true },
+              { label: 'Export', icon: 'export', disabled: true },
+            ]}
           />
         }
         list={list}

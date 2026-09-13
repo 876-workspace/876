@@ -27,7 +27,7 @@ export function PaymentsToolbar({
           options={PAYMENT_STATUS_OPTIONS}
         />
       }
-      primaryLabel={showPrimary ? 'New' : undefined}
+      primaryLabel={showPrimary ? 'Add' : undefined}
       primaryHref={showPrimary ? '/payments/new' : undefined}
       primaryVariant="info"
       refresh

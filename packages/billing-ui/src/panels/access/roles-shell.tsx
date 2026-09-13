@@ -12,7 +12,7 @@ import {
 
 export const ROLE_TYPE_PARAM = 'type'
 export const ROLE_TYPE_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Roles' },
+  { value: 'all', label: 'All Roles', headingLabel: 'All Roles' },
   { value: 'system', label: 'System', headingLabel: 'System Roles' },
   { value: 'custom', label: 'Custom', headingLabel: 'Custom Roles' },
 ]
@@ -52,11 +52,15 @@ export function RolesShell({
                 paramKey={ROLE_TYPE_PARAM}
               />
             }
-            primaryLabel={!open ? 'Add' : undefined}
-            primaryHref={!open ? newHref : undefined}
+            primaryLabel="Add"
+            primaryHref={newHref}
             primaryDisabled={!canCreate}
             primaryVariant="info"
             refresh
+            dropdownActions={[
+              { label: 'Import', icon: 'import', disabled: true },
+              { label: 'Export', icon: 'export', disabled: true },
+            ]}
           />
         }
         list={list}

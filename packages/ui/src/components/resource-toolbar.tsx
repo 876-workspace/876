@@ -27,9 +27,14 @@ const ACTION_ICONS = {
   delete: Trash,
 } as const
 
+const STANDARD_TRANSFER_ACTIONS: DropdownAction[] = [
+  { label: 'Import', icon: 'import', disabled: true },
+  { label: 'Export', icon: 'export', disabled: true },
+]
+
 export type DropdownActionIcon = keyof typeof ACTION_ICONS
 
-type DropdownAction = {
+export type DropdownAction = {
   label: string
   icon?: DropdownActionIcon
   onClick?: () => void
@@ -39,6 +44,8 @@ type DropdownAction = {
   separator?: boolean
   /** Render in destructive/red style. */
   destructive?: boolean
+  /** Keep the action visible when its capability is not available yet. */
+  disabled?: boolean
 }
 
 type Props = {
@@ -80,6 +87,14 @@ export function ResourceToolbar({
 }: Props) {
   const router = useRouter()
 
+  const transferActions = refresh
+    ? STANDARD_TRANSFER_ACTIONS.filter(
+        (standardAction) =>
+          !dropdownActions.some((action) => action.icon === standardAction.icon)
+      )
+    : []
+  const actions = [...transferActions, ...dropdownActions]
+
   const primaryButton = primaryLabel ? (
     primaryHref ? (
       <Link
@@ -113,7 +128,7 @@ export function ResourceToolbar({
     )
   ) : null
 
-  const hasDropdown = refresh || dropdownActions.length > 0
+  const hasDropdown = refresh || actions.length > 0
 
   return (
     <div className="mb-5 flex items-center justify-between gap-4">
@@ -144,19 +159,20 @@ export function ResourceToolbar({
                   Refresh
                 </DropdownMenuItem>
               )}
-              {refresh && dropdownActions.length > 0 && (
-                <DropdownMenuSeparator />
-              )}
-              {dropdownActions.map((action) => {
+              {refresh && actions.length > 0 && <DropdownMenuSeparator />}
+              {actions.map((action) => {
                 const Icon = action.icon ? ACTION_ICONS[action.icon] : null
                 return (
                   <React.Fragment key={action.label}>
                     {action.separator && <DropdownMenuSeparator />}
                     <DropdownMenuItem
                       variant={action.destructive ? 'destructive' : 'default'}
+                      disabled={action.disabled}
                       onClick={action.onClick}
                       render={
-                        action.href ? <Link href={action.href} /> : undefined
+                        action.href && !action.disabled ? (
+                          <Link href={action.href} />
+                        ) : undefined
                       }
                     >
                       {Icon && <Icon className="size-4" />}

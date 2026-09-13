@@ -47,6 +47,20 @@ describe('RolesShell', () => {
       '/tenant/roles/new'
     )
   })
+  it('keeps Add available while a role detail is open', () => {
+    navigation.search = new URLSearchParams()
+    navigation.segments = ['role_123']
+    render(
+      <RolesShell title="Roles" newHref="/roles/new" canCreate list={null}>
+        {null}
+      </RolesShell>
+    )
+
+    expect(screen.getByRole('link', { name: /add/i })).toHaveAttribute(
+      'href',
+      '/roles/new'
+    )
+  })
   it('disables creation without hiding the Add affordance', () => {
     navigation.search = new URLSearchParams()
     render(
