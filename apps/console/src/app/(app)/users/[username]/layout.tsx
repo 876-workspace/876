@@ -18,7 +18,7 @@ import {
 import { DetailChromeGate } from '@/components/patterns/detail/detail-chrome-gate'
 import { ChangeImageDialog } from '@/components/patterns/change-image-dialog'
 import { formatDate, statusBadgeClass } from '@/lib/format'
-import { resolveUser, resolveUserAddresses, resolveUserContacts } from './_data'
+import { resolveUser, resolveUserAddresses } from './_data'
 import { userTabs } from './_lib/user-tabs'
 import { UserActions } from './_components/user-actions'
 
@@ -53,16 +53,19 @@ export default async function UserDetailLayout({ children, params }: Props) {
 
   return (
     <DetailCard aria-label="User">
-      <DetailChromeGate>
+      <DetailChromeGate
+        editHref={`${base}/edit`}
+        editChrome={
+          <Suspense fallback={<EditHeaderSkeleton base={base} />}>
+            <UserEditHeader username={username} />
+          </Suspense>
+        }
+      >
         <>
           <Suspense fallback={<DetailCardHeaderSkeleton />}>
             <UserCardHeader username={username} />
           </Suspense>
-          <Suspense
-            fallback={<DetailCardRouteTabs tabs={userTabs(base, false)} />}
-          >
-            <UserCardTabs base={base} username={username} />
-          </Suspense>
+          <DetailCardRouteTabs tabs={userTabs(base)} />
         </>
       </DetailChromeGate>
       <DetailCardBody>
@@ -192,18 +195,42 @@ function DetailCardHeaderSkeleton() {
   )
 }
 
-async function UserCardTabs({
-  base,
-  username,
-}: {
-  base: string
-  username: string
-}) {
+/**
+ * The record header while editing: the record shrinks to one line naming what
+ * is being edited, and closing it returns to the record rather than the list.
+ */
+async function UserEditHeader({ username }: { username: string }) {
   const user = await resolveUser(username)
-  if (!user) return <DetailCardRouteTabs tabs={userTabs(base, false)} />
+  if (!user) notFound()
 
-  const contacts = await resolveUserContacts(user.id)
-  return <DetailCardRouteTabs tabs={userTabs(base, contacts.length > 0)} />
+  const displayName = nameOf(user)
+
+  return (
+    <DetailCardHeader
+      className="items-center py-3"
+      icon={
+        <Avatar className="size-8 text-xs">
+          {user.avatar && <AvatarImage src={user.avatar} alt={displayName} />}
+          <AvatarFallback>{initialsOf(user)}</AvatarFallback>
+        </Avatar>
+      }
+      title={<span className="text-base sm:text-lg">Edit {displayName}</span>}
+      closeHref={`/users/${username}`}
+      closeLabel="Stop editing"
+    />
+  )
+}
+
+function EditHeaderSkeleton({ base }: { base: string }) {
+  return (
+    <DetailCardHeader
+      className="items-center py-3"
+      icon={<Skeleton className="size-8 rounded-full" />}
+      title={<Skeleton className="h-5 w-48" />}
+      closeHref={base}
+      closeLabel="Stop editing"
+    />
+  )
 }
 
 async function UserCountryFlag({ userId }: { userId: string }) {
