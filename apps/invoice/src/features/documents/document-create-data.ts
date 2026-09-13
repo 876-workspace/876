@@ -1,7 +1,13 @@
 import 'server-only'
 
 import type { Customer } from '@876/billing'
-import type { DocumentItemOption } from '@876/billing-ui/document/document-line-items-editor'
+import type {
+  DocumentItemOption,
+  DocumentTaxRateOption,
+} from '@876/billing-ui/document/document-line-items-editor'
+import { toDocumentTaxRateOptions } from '@876/billing-ui/document/document-tax-rate-options'
+
+import { getBilling } from '@/lib/services/billing'
 
 import type { Invoice } from '@/lib/invoice'
 import type { ClientResult } from '@/types/api'
@@ -45,4 +51,18 @@ export async function loadDocumentItems(
         allowOutOfStock: item.allowOutOfStock,
       }))
     : []
+}
+
+/**
+ * The organization's tax rates for the line Tax column. Read through the
+ * signed-in member's Billing session, as the tax settings page does.
+ */
+export async function loadDocumentTaxRates(
+  organizationId: string
+): Promise<ClientResult<DocumentTaxRateOption[]>> {
+  const billing = await getBilling(organizationId)
+  const result = await billing.taxRates.list()
+  if (result.error) return { data: null, error: result.error }
+
+  return { data: toDocumentTaxRateOptions(result.data.data), error: null }
 }

@@ -23,6 +23,8 @@ export interface DocumentCreateParams {
   currency?: string
   issueAt?: number
   dueAt?: number
+  /** Quotes only. */
+  expiresAt?: number
   orderNumber?: string | null
   referenceNumber?: string | null
   subject?: string | null
