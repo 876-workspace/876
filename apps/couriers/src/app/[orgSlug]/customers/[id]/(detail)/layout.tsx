@@ -3,16 +3,16 @@ import { notFound } from 'next/navigation'
 import { Suspense, type ReactNode } from 'react'
 import { Badge } from '@876/ui/badge'
 import { CustomerAvatar } from '@876/ui/customer-avatar'
-import { Calendar, Mail, MapPin, Phone } from '@876/ui/icons'
-import { RouteTabs } from '@876/ui/route-tabs'
 import {
-  DetailHeader,
-  DetailHeaderActions,
-  DetailHeaderMain,
-  DetailHeaderTabs,
-  DetailHeaderTop,
-} from '@876/ui/detail-header'
+  DetailCard,
+  DetailCardBody,
+  DetailCardHeader,
+  DetailCardMeta,
+  DetailCardRouteTabs,
+} from '@876/ui/detail-card'
+import { Calendar, Mail, MapPin, Phone } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
+import { formatDate } from '@876/core/timestamps'
 
 import { CustomerActions } from '../_components/customer-actions'
 import { resolveCustomer, resolveCustomerTitle } from '../_lib/customer-data'
@@ -28,180 +28,107 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const titleName = await resolveCustomerTitle(orgSlug, id)
   if (!titleName) return { title: 'Customer not found' }
 
-  return {
-    title: `${titleName} - Customers`,
-  }
+  return { title: `${titleName} - Customers` }
 }
 
+/**
+ * The customer record card in the detail column. Awaits `params` and nothing
+ * else: the tabs are built from the URL and render at once, while the record
+ * header streams behind its own boundary, where `notFound()` is decided.
+ */
 export default async function CustomerDetailLayout({
   children,
   params,
 }: Props) {
   const { orgSlug, id } = await params
-  const base = `/${orgSlug}/customers/${id}`
+  const closeHref = `/${orgSlug}/customers`
 
   return (
-    <div>
-      <DetailHeader
-        condensedTitle={
-          <Suspense fallback={<CondensedTitleFallback />}>
-            <CondensedTitle orgSlug={orgSlug} id={id} />
-          </Suspense>
-        }
+    <DetailCard aria-label="Customer">
+      <Suspense
+        key={id}
+        fallback={<CustomerHeaderFallback closeHref={closeHref} />}
       >
-        <DetailHeaderTop>
-          <DetailHeaderMain>
-            <Suspense fallback={<IdentityFallback />}>
-              <CustomerIdentity orgSlug={orgSlug} id={id} />
-            </Suspense>
-          </DetailHeaderMain>
-
-          <DetailHeaderActions>
-            <Suspense fallback={<ActionsFallback />}>
-              <CustomerHeaderActions orgSlug={orgSlug} id={id} />
-            </Suspense>
-          </DetailHeaderActions>
-        </DetailHeaderTop>
-
-        <DetailHeaderTabs>
-          <RouteTabs tabs={customerTabs(base)} />
-        </DetailHeaderTabs>
-      </DetailHeader>
-
-      <div className="px-4 py-6 sm:px-6 lg:px-8">{children}</div>
-    </div>
+        <CustomerHeader orgSlug={orgSlug} id={id} closeHref={closeHref} />
+      </Suspense>
+      <DetailCardRouteTabs tabs={customerTabs(`${closeHref}/${id}`)} />
+      <DetailCardBody>{children}</DetailCardBody>
+    </DetailCard>
   )
 }
 
-async function CustomerIdentity({
+async function CustomerHeader({
   orgSlug,
   id,
+  closeHref,
 }: {
   orgSlug: string
   id: string
+  closeHref: string
 }) {
   const customer = await resolveCustomer(orgSlug, id)
   if (!customer) notFound()
 
-  const name = customer.identity?.name || customer.profile.billingCustomerId
-  const isActive = customer.profile.status === 'ACTIVE'
+  const { displayName, identity, mailbox, branch, profile } = customer
+  const isActive = profile.status === 'ACTIVE'
 
   return (
-    <>
-      <CustomerAvatar name={name} size="lg" />
-
-      <div className="min-w-0 flex-1">
-        <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-          <h1 className="876-page-title truncate">{name}</h1>
-          <Badge variant={isActive ? 'success' : 'secondary'}>
-            {isActive ? 'Active' : 'Suspended'}
-          </Badge>
-        </div>
-
-        <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] sm:gap-x-4">
-          {customer.mailbox?.number && (
+    <DetailCardHeader
+      icon={<CustomerAvatar name={displayName} size="lg" />}
+      title={displayName}
+      meta={
+        <Badge variant={isActive ? 'success' : 'secondary'}>
+          {isActive ? 'Active' : 'Suspended'}
+        </Badge>
+      }
+      subtitle={
+        <DetailCardMeta>
+          {mailbox?.number ? (
             <span className="flex items-center gap-1.5">
               <span className="text-foreground/70">Mailbox</span>
-              {customer.mailbox.number}
+              {mailbox.number}
             </span>
-          )}
-          {customer.branch?.name && (
+          ) : null}
+          {branch?.name ? (
             <span className="flex items-center gap-1.5">
               <MapPin className="size-3.5 shrink-0" />
-              {customer.branch.name}
+              {branch.name}
             </span>
-          )}
-          {customer.identity?.email && (
+          ) : null}
+          {identity?.email ? (
             <span className="flex min-w-0 items-center gap-1.5">
               <Mail className="size-3.5 shrink-0" />
-              <span className="max-w-[220px] truncate">
-                {customer.identity.email}
-              </span>
+              <span className="max-w-[220px] truncate">{identity.email}</span>
             </span>
-          )}
-          {customer.identity?.phone && (
+          ) : null}
+          {identity?.phone ? (
             <span className="flex items-center gap-1.5">
               <Phone className="size-3.5 shrink-0" />
-              {customer.identity.phone}
+              {identity.phone}
             </span>
-          )}
+          ) : null}
           <span className="flex shrink-0 items-center gap-1.5">
             <Calendar className="size-3.5 shrink-0" />
-            Joined {formatDate(customer.profile.createdAt)}
+            Customer since {formatDate(profile.firstSeenAt)}
           </span>
-        </div>
-      </div>
-    </>
+        </DetailCardMeta>
+      }
+      actions={<CustomerActions orgSlug={orgSlug} id={id} />}
+      closeHref={closeHref}
+      closeLabel="Close customer details"
+    />
   )
 }
 
-async function CondensedTitle({
-  orgSlug,
-  id,
-}: {
-  orgSlug: string
-  id: string
-}) {
-  const customer = await resolveCustomer(orgSlug, id)
-  if (!customer) return null
-
-  const name = customer.identity?.name || customer.profile.billingCustomerId
-
+function CustomerHeaderFallback({ closeHref }: { closeHref: string }) {
   return (
-    <>
-      <CustomerAvatar name={name} size="sm" />
-      <span className="truncate text-[0.8125rem] font-semibold">{name}</span>
-    </>
+    <DetailCardHeader
+      icon={<Skeleton className="size-14 rounded-full sm:size-16" />}
+      title={<Skeleton className="h-6 w-44" />}
+      subtitle={<Skeleton className="h-3.5 w-72" />}
+      actions={<Skeleton className="h-8 w-28" />}
+      closeHref={closeHref}
+      closeLabel="Close customer details"
+    />
   )
-}
-
-function CustomerHeaderActions({
-  orgSlug,
-  id,
-}: {
-  orgSlug: string
-  id: string
-}) {
-  return <CustomerActions orgSlug={orgSlug} id={id} />
-}
-
-function CondensedTitleFallback() {
-  return (
-    <>
-      <Skeleton className="size-6 shrink-0 rounded-full" />
-      <Skeleton className="h-4 w-36" />
-    </>
-  )
-}
-
-function IdentityFallback() {
-  return (
-    <>
-      <Skeleton className="size-14 shrink-0 rounded-full sm:size-16" />
-      <div className="min-w-0 flex-1">
-        <div className="mb-1.5 flex items-center gap-x-2">
-          <Skeleton className="h-7 w-44 max-w-full" />
-          <Skeleton className="h-5 w-16 rounded-full" />
-        </div>
-        <Skeleton className="h-5 w-72 max-w-full" />
-      </div>
-    </>
-  )
-}
-
-function ActionsFallback() {
-  return (
-    <div className="flex w-full gap-2 sm:w-auto sm:justify-end">
-      <Skeleton className="h-8 w-[4.5rem] rounded-md" />
-      <Skeleton className="h-8 w-8 rounded-md" />
-    </div>
-  )
-}
-
-function formatDate(timestamp: number) {
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date(timestamp * 1000))
 }

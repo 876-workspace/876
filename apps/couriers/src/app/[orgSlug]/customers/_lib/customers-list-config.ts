@@ -18,3 +18,12 @@ export const CUSTOMERS_DROPDOWN_ACTIONS = [
     separator: true,
   },
 ]
+
+export type CustomerStatusFilter = 'all' | 'active' | 'suspended'
+
+/** An absent or unknown `?status=` value means no filter. */
+export function resolveCustomerStatusFilter(
+  status: string | null | undefined
+): CustomerStatusFilter {
+  return status === 'active' || status === 'suspended' ? status : 'all'
+}
