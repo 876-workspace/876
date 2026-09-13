@@ -1,4 +1,5 @@
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { Skeleton } from '@876/ui/skeleton'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
@@ -15,6 +16,13 @@ export default async function BoardPage() {
     <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">
       <ResourceToolbar
         title="Board"
+        titleFilter={
+          <StatusFilterHeading
+            label="Board"
+            value="all"
+            options={[{ value: 'all', label: 'All Board Issues' }]}
+          />
+        }
         primaryLabel="Add"
         primaryHref="/issues/new"
         primaryVariant="info"
