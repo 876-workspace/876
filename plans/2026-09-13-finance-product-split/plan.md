@@ -49,12 +49,41 @@ All three apps keep using `apps/billing-api`. No financial data moves.
 
 ## Checklist
 
-- [ ] A. Commerce skeleton implemented
-- [ ] A. Commerce verified by orchestrator, then committed and PR'd
+- [x] A. Commerce skeleton implemented
+- [x] A. Commerce verified by orchestrator and committed on `feature/commerce-base`; onboarding pass added
 - [ ] B. Sales Orders PR opened
 - [ ] C. Books split brief written
 - [ ] C. Books app created, Billing stripped, verified, PR'd
 - [ ] `finance-app-parity.md` rewritten for Invoice ⊂ Books + Billing
+
+## Draft Books/Billing classification (from `packages/billing/src/navigation.ts`, 2026-09-13)
+
+| Current Billing nav entry                                             | Stays in Billing          | Moves to Books                  | Notes                                                         |
+| --------------------------------------------------------------------- | ------------------------- | ------------------------------- | ------------------------------------------------------------- |
+| Home                                                                  | ✓ (subscription metrics)  | ✓ (own accounting home)         | separate dashboards                                           |
+| Customers, Items                                                      | ✓                         | ✓                               | shared panels, same records                                   |
+| Quotes, Invoices, Payments Received, Credit Notes                     | ✓                         | ✓                               | subscription invoicing needs them in Billing                  |
+| Sales Orders                                                          |                           | ✓                               | move after the Sales Orders PR merges                         |
+| Sales Receipts, Recurring Invoices                                    |                           | ✓                               | Billing's recurring engine is subscriptions                   |
+| Subscriptions, Products, Plans, Add-ons, Prices, Coupons, Price Lists | ✓                         |                                 | Price Lists are also needed by Books sales documents: confirm |
+| Purchases (Vendors, Expenses), Banking, Payroll                       |                           | ✓                               |                                                               |
+| Reports                                                               | subscription reports      | accounting reports              | split report catalog                                          |
+| Settings                                                              | subscription/org settings | accounting/banking/tax settings | split settings groups                                         |
+
+Open for the Books brief: module keys and permission catalog for `876-books`,
+provisioning/entitlement for orgs that currently use those Billing features
+(pre-launch, no real data), and whether Books replaces Invoice's upsell path.
+
+## Production setup (2026-09-13, orchestrator)
+
+- Seeded `876-commerce` (bootstrap, appAccess, internalPlan, defaultPrices) in the shared core DB. App id is `rap_3a29b921ed9a4391aff073c567e7761c`.
+- Minted the `876-commerce production` API key and stored it only as `COMMERCE_API_876_KEY` in Vercel and local `apps/commerce/.env`.
+- Vercel projects: `876-commerce` (`prj_2jUGdi2Z6Hhj88btCgsyHnO0CZI9`) and `876-commerce-api` (`prj_bnpcFua3h55WtHap3smoWwTh4swT`), with SSO protection off and env vars set.
+- Added `https://876-commerce.vercel.app` to prod `CORS_ALLOWED_ORIGINS`, and redeployed 876-api.
+- Registered `https://876-commerce.vercel.app/callback` as a WorkOS redirect URI (the environment of the local `sk_test_` key).
+- Deployed both. `/health`, `/ready` and `/login` answer, and social login returns the app's own `/callback`.
+- No database was created: `commerce-api` has no persistence yet.
+- Pre-existing gap found: prod CORS does not allow billing, invoice, crm or console origins.
 
 ## Handoff
 

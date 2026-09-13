@@ -1,6 +1,6 @@
 # 876 Monorepo
 
-876 is a pnpm/Turborepo workspace for the 876 identity platform — one account that unlocks the consumer app, Enterprise org workspace, internal Console, Couriers, Billing, Invoice, CRM, and Projects, all backed by shared data services and typed packages.
+876 is a pnpm/Turborepo workspace for the 876 identity platform — one account that unlocks the consumer app, Enterprise org workspace, internal Console, Couriers, Billing, Invoice, CRM, Projects, and Commerce, all backed by shared data services and typed packages.
 
 ---
 
@@ -18,11 +18,13 @@
 | `@876/invoice-app`  | `apps/invoice`      | 3006 | 876 Invoice SaaS app — a thin product surface over the shared Billing data plane; owns no datastore.     |
 | `@876/crm-app`      | `apps/crm`          | 3007 | 876 CRM SaaS app — customer profiles linked to shared Billing customers.                                 |
 | `@876/projects-app` | `apps/projects`     | 3008 | 876 Projects app — a Linear-style tracker for projects, issues, and labels.                              |
+| `@876/commerce-app` | `apps/commerce`     | 3009 | 876 Commerce app — a merchant's own online store; base setup (auth, onboarding, shell) only so far.      |
 | `@876/api`          | `apps/api`          | 4000 | Express backend; owns all database access, provider calls, business logic, auth, and API-key validation. |
 | `@876/billing-api`  | `apps/billing-api`  | 4004 | Express Billing financial data plane; owns its PostgreSQL schema and Prisma migrations.                  |
 | `@876/storage-api`  | `apps/storage-api`  | 4005 | FastAPI 876 Storage service — file metadata, upload sessions, and Cloudflare R2 objects.                 |
 | `@876/crm-api`      | `apps/crm-api`      | 4010 | Express CRM data service; owns CRM tenant/profile data and links it to Billing customer records.         |
 | `@876/projects-api` | `apps/projects-api` | 4030 | Express 876 Projects data service; owns the projects/issues datastore and its migrations.                |
+| `@876/commerce-api` | `apps/commerce-api` | 4040 | Express 876 Commerce service; health and readiness only, with no datastore until its first model.        |
 | `@876/work-api`     | `apps/work-api`     | 4020 | Express 876 Work service — the shared productivity plane; owns tasks, reminders, and its own datastore.  |
 
 ## Packages
@@ -34,6 +36,7 @@
 | `@876/billing`   | `packages/billing`   | Versioned client for 876 Billing; tenant-scoped root export plus server-only `/admin` projection tier and `/integration` partner tier.                             |
 | `@876/couriers`  | `packages/couriers`  | Typed client for Couriers API; tenant-scoped client plus server-only `/admin` tier.                                                                                |
 | `@876/crm`       | `packages/crm`       | Bounded CRM client and canonical wire contracts (`@876/crm/contracts`).                                                                                            |
+| `@876/commerce`  | `packages/commerce`  | Bounded 876 Commerce client with `session`, `service`, and `operator` entrypoints; no resources until the Commerce service has its first model.                    |
 | `@876/projects`  | `packages/projects`  | Bounded 876 Projects client with `session`, `service`, and `operator` entrypoints and its wire contracts (`@876/projects/contracts`).                              |
 | `@876/work`      | `packages/work`      | Typed client for the 876 Work service. Root export is contracts + integration scopes; `/integration` is the app-key tier and `/operator` is the internal-key tier. |
 | `@876/storage`   | `packages/storage`   | Typed client (`$storage`) for the 876 Storage service; service-key tier, server-only. Upload sessions and file metadata.                                           |
@@ -51,6 +54,8 @@ CRM stores only CRM-owned tenant and profile fields. Financial customer records 
 876 Invoice is the opposite case: it deliberately owns **no** datastore and no API of its own. It is a product surface gated on the `876-invoice` app subscription whose records live in the shared Billing data plane, reached through `$876.invoices.*`. A Billing workspace existing does not grant access to Invoice, and a `876-billing` subscription is unrelated to it. See `docs/876-invoice.md`.
 
 876 Projects is a bounded context of the same shape: `apps/projects-api` owns projects, issues, labels and comments in its own datastore and references the 876 organization by opaque ID. Console administers it at the **operator** tier and the standalone app calls it at the **service** tier, resolving the organization from the signed-in session. See `docs/architecture/022-876-projects.md` and `docs/876-projects.md`.
+
+The finance and commerce products follow ADR 025 (`docs/architecture/025-finance-and-commerce-product-lineup.md`): Invoice, Books, Billing, Inventory, Commerce and Marketplace are focused products over **one** financial data plane (`apps/billing-api`), with a single subscription engine. 876 Commerce is the merchant's own online store. `apps/commerce-api` will own only storefront, theme, domain, cart and checkout-session state, and creates customers, sales orders and payments through the financial plane. It has no datastore yet.
 
 876 Work is a **shared platform service**, the same shape as Billing's financial data plane but for productivity records: CRM's Tasks and Reminders modules are stored in Work, not in CRM. An organization's Work workspace is prepared at the **operator** tier by `apps/api` (`workspace.work.ensure`), which also mints that app's scoped connection; the product app then reaches Work at the **integration** tier with its own app API key and the four `work.{tasks,reminders}.{read,write}` scopes. No product app holds `WORK_INTERNAL_KEY`. See `docs/architecture/019-work-service-and-productivity-plane.md`.
 
@@ -84,12 +89,14 @@ pnpm dev        # 876 app + Enterprise + Console + API in parallel (Turbopack)
 | Invoice               | http://localhost:3006              |
 | CRM                   | http://localhost:3007              |
 | Projects              | http://localhost:3008              |
+| Commerce              | http://localhost:3009              |
 | API core (spec)       | http://localhost:4000/openapi.json |
 | Billing API (docs)    | http://localhost:4004/docs         |
 | Storage API (docs)    | http://localhost:4005/docs         |
 | CRM API (health)      | http://localhost:4010/health       |
 | Work API (health)     | http://localhost:4020/health       |
 | Projects API (health) | http://localhost:4030/health       |
+| Commerce API (health) | http://localhost:4040/health       |
 
 ---
 
@@ -116,6 +123,8 @@ pnpm dev:crm                         # CRM app + CRM API + Work API + Billing AP
 pnpm dev:crm:api                     # CRM API + Billing API + Work API only
 pnpm dev:projects                    # Projects app + Projects API + core API
 pnpm dev:projects:api                # Projects API only
+pnpm dev:commerce                    # Commerce app + Commerce API + core API
+pnpm dev:commerce:api                # Commerce API only
 pnpm dev:work                        # Work API only
 pnpm dev:widgets                     # Widgets API only
 
@@ -135,6 +144,8 @@ pnpm --filter @876/crm-app typecheck
 pnpm --filter @876/crm-api typecheck
 pnpm --filter @876/projects-app typecheck
 pnpm --filter @876/projects-api typecheck
+pnpm --filter @876/commerce-app typecheck
+pnpm --filter @876/commerce-api typecheck
 pnpm --filter @876/work-api typecheck
 pnpm --filter @876/billing typecheck
 pnpm --filter @876/api typecheck
