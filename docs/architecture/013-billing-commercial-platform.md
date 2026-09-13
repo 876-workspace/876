@@ -52,24 +52,23 @@ Invoice remains one workflow over those domains.
 
 ### Current domains
 
-| Domain | Current responsibility |
-| --- | --- |
-| Catalog | Items, Item Variants, options, media relationships, products/addons/plans where currently owned |
-| Pricing | canonical price selection and price-list resolution |
-| Inventory | lightweight Item/Variant stock quantity, availability policy, stock movements, adjustments |
-| Billing Engine | deterministic monetary calculations |
-| Documents | Quotes, Invoices, Credit Notes and their lifecycle/snapshots |
-| Customers | Billing customer registry and payer relationships |
-| Payments | payment intents/payments/refunds/provider-independent money movement |
-| Tax | tax rules/rates and document tax inputs |
-| Ledger | durable financial movement lines |
-| Commercial | payment terms, salespeople and other commercial configuration |
+| Domain         | Current responsibility                                                                          |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| Catalog        | Items, Item Variants, options, media relationships, products/addons/plans where currently owned |
+| Pricing        | canonical price selection and price-list resolution                                             |
+| Inventory      | lightweight Item/Variant stock quantity, availability policy, stock movements, adjustments      |
+| Billing Engine | deterministic monetary calculations                                                             |
+| Documents      | Quotes, Sales Orders, Invoices, Credit Notes and their lifecycle/snapshots                      |
+| Customers      | Billing customer registry and payer relationships                                               |
+| Payments       | payment intents/payments/refunds/provider-independent money movement                            |
+| Tax            | tax rules/rates and document tax inputs                                                         |
+| Ledger         | durable financial movement lines                                                                |
+| Commercial     | payment terms, salespeople and other commercial configuration                                   |
 
 ### Reserved future bounded domains
 
 These names document insertion points only. They do **not** authorize tables, routes, SDK resources, folders, or UI until a real product requirement exists:
 
-- Orders;
 - Channels;
 - Fulfillment;
 - Purchasing;
@@ -139,8 +138,7 @@ Inventory receives a stock target rather than Invoice-specific Item/Variant argu
 
 ```ts
 type StockTarget =
-  | { type: 'item'; id: string }
-  | { type: 'variant'; id: string }
+  { type: 'item'; id: string } | { type: 'variant'; id: string }
 ```
 
 Today's implementation may still persist quantities on `Item` and `ItemVariant`. That physical storage is transitional and hidden behind Inventory ownership.
@@ -321,7 +319,7 @@ Internal APIs may change aggressively to establish the new ownership boundaries.
 
 This decision does not implement:
 
-- Orders or carts;
+- carts or checkout;
 - warehouses/locations;
 - inventory reservations/transfers;
 - purchase orders;
