@@ -1,17 +1,20 @@
-import Link from 'next/link'
-export default function OnboardingPage() {
-  return (
-    <main className="mx-auto flex min-h-screen max-w-xl items-center px-4">
-      <div className="w-full space-y-3 rounded-xl border p-6">
-        <h1 className="876-page-title">Set up 876 Commerce</h1>
-        <p className="text-muted-foreground text-sm">
-          An organization administrator can enable 876 Commerce for this
-          workspace.
-        </p>
-        <Link href="/login" className="text-sm underline">
-          Change account
-        </Link>
-      </div>
-    </main>
-  )
+import { redirect } from 'next/navigation'
+
+import { getCommerceContextResult } from '@/lib/auth/context'
+
+import { OnboardingForm } from './_components/onboarding-form'
+
+export default async function OnboardingPage() {
+  const result = await getCommerceContextResult()
+  if (result.status === 'signed-out') redirect('/login?returnTo=%2Fonboarding')
+  if (result.status === 'wrong-account') redirect('/wrong-account')
+  if (result.status === 'unavailable') redirect('/unavailable')
+  if (result.status === 'no-organization') return <OnboardingForm />
+
+  if (result.accessStatus === 'active' || result.accessStatus === 'trialing')
+    redirect('/')
+  if (result.accessStatus === 'blocked' || !result.isAdmin)
+    redirect('/no-access?reason=subscription')
+
+  return <OnboardingForm existingOrgName={result.organizationName} />
 }
