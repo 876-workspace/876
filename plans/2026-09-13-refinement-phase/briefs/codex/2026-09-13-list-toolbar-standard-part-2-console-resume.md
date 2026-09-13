@@ -1,0 +1,56 @@
+# RESUME — list toolbar standard part 2 (console)
+
+Your previous run was interrupted after implementing the change and writing
+`plans/2026-09-13-refinement-phase/reports/codex/2026-09-13-list-toolbar-standard-part-2-console.md`,
+but before verification finished. The edits are still in the working tree.
+
+1. Read that report and `git diff` for your scope. Do NOT redo or restart the implementation.
+2. Finish anything the report lists as incomplete within your scope.
+3. Run every verification command in the original brief below, **one package at a time, sequentially** (two other runs are verifying concurrently; do not run packages in parallel). Use `export NODE_OPTIONS=--max-old-space-size=8192`. If `.next/types` errors appear, run `npx next typegen` inside that app first.
+4. Fix failures caused by your scope. For a failure in a file you did not change, check whether it also fails on `origin/main` via `git show origin/main:<path>` reading only — never checkout/stash/reset — and record it as pre-existing if so.
+5. Update your report's Verification section with the actual results.
+
+---
+
+# Brief (Codex gpt-5.6-terra, medium): list toolbar standard — part 2 (`Console`)
+
+Working directory: `/root/projects/876` — the main checkout, branch `feat/list-toolbar-standard-part-2`. **No worktrees.** Two other Codex runs are editing other apps in this same tree right now. Never run `git checkout`, `git stash`, `git reset`, `git clean`, or `git restore`; never edit, revert, or reformat a file outside your scope. Do not commit, branch, push, or open PRs.
+
+## Your scope (only these paths)
+- `apps/console/**` — except `apps/console/src/app/(app)/users/[username]/**` and `apps/console/src/app/(app)/orgs/page.tsx` + `orgs/_components/**` (already done)
+
+Everything else is off limits, including `packages/ui` (the shared toolbar is already done: `ResourceToolbar` has `refresh`, `titleFilter`, `dropdownActions` with `icon: 'import'|'export'|'delete'`, `separator`, `destructive`, and `disabled`). If you truly need a shared change, stop and write it in your report.
+
+## Background
+Part 1 (merged, PR #549) fixed Billing users, Invoice users, CRM customers, billing-ui roles, and the org list. Read `plans/2026-09-13-refinement-phase/reports/codex/2026-09-13-list-toolbar-standard.md` and those files as the reference shape — especially `packages/billing-ui/src/panels/access/roles-shell.tsx` and `apps/console/src/app/(app)/orgs/_components/orgs-toolbar.tsx`.
+
+## Rules to read first (binding)
+`.claude/rules/app-layout.md` §3, §4, §5, §5a, §10; `.claude/rules/ai-code-quality.md`; `.claude/rules/testing.md`; root `CLAUDE.md` "Loading States & Suspense Placement".
+
+## The standard — apply to every LIST page toolbar in scope
+A list page is a page (or split-view section/shell/layout) whose main content is a collection. **Not** create/edit pages (`/new`, `/edit`), detail pages, settings forms, or dashboards — leave those alone.
+
+1. **Status filter heading (item 11):** `titleFilter={<StatusFilterHeading label="<Title>" value={…} options={…} />}` from `@876/ui/status-filter-heading`. First option is `{ value: 'all', label: 'All <Title>' }`.
+   - Lifecycle status exists and the list call accepts a status param → thread it through exactly as §5 shows.
+   - No status param on the list call → do not filter client-side and do not touch a backend/SDK; render the heading with only the `All <Title>` option and list the page under "status gaps" in your report.
+   - Split views read the value with `useSearchParams()` in the client section (§5a).
+   - Delete any per-app copy of a status-filter heading component that your scope still imports, and use the shared one.
+2. **Primary Add (item 10):** bare `Add`, `primaryVariant="info"`, pointing at the existing create route. In split views it must stay rendered while a record is open (icon-only allowed, accessible name kept). Keep genuine permission gating. Do not invent a create route that does not exist — if none exists, omit Add and note it.
+3. **Standard `···` menu (item 14):** `refresh`, then `dropdownActions` Import (`icon: 'import'`) and Export (`icon: 'export'`) with `separator` before them per §4. Wire to existing handlers where they exist; otherwise `disabled: true`. Add Delete (last, `destructive`) only where bulk delete already exists. Fold any hand-built duplicate menu beside the toolbar into `dropdownActions`.
+4. A shared wrapper (e.g. Billing's `streaming-resource-page.tsx` / `streaming-resource-toolbar.tsx`, Console's `finance-workspace-pages.tsx` / `couriers-workspace-pages.tsx`) should be fixed once at the wrapper so every page using it inherits the standard — prefer that over per-page duplication.
+
+## Tests
+- At least one test per app/package you change proving a toolbar renders the status heading, Refresh, Import, Export, and Add — and for each split view you change, that Add survives an open record. Floor: **6 `it()` total** in your scope.
+- Update tests your change breaks; never delete another test to go green. No `eslint-disable`, `@ts-ignore`, `as any`. Do not weaken production props for tests.
+
+## Verify — run in the foreground and fix until green (only your packages)
+```
+export NODE_OPTIONS=--max-old-space-size=8192
+pnpm --filter @876/console typecheck && pnpm --filter @876/console lint && pnpm --filter @876/console test
+node scripts/check-app-structure.mjs
+grep -rn "eslint-disable\|as any\|@ts-ignore" <every file you changed>
+```
+If a typecheck error sits in a file outside your scope, another run is mid-edit: note it, do not fix it.
+
+## Report
+Write `plans/2026-09-13-refinement-phase/reports/codex/2026-09-13-list-toolbar-standard-part-2-console.md`: table of list pages converted (heading / Add / menu); status gaps; pages intentionally skipped and why; counted `it()` added; actual verification results.
