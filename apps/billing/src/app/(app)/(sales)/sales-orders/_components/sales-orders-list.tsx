@@ -25,17 +25,31 @@ export function SalesOrdersList({
   const segments = useDetailSegments()
   const params = useSearchParams()
   const selectedId = segments[0] ?? null
+  const status = params.get('status') ?? 'all'
+  const selectedStatus = [
+    'draft',
+    'confirmed',
+    'completed',
+    'canceled',
+  ].includes(status)
+    ? status
+    : 'all'
+  const rows =
+    selectedStatus === 'all'
+      ? orders
+      : orders.filter((order) => order.status.toLowerCase() === selectedStatus)
+
   if (!selectedId)
-    return <SalesOrdersTable orders={orders} emptyState={emptyState} />
+    return <SalesOrdersTable orders={rows} emptyState={emptyState} />
   const query = params.toString()
   return (
     <ListPane>
       <ListPaneHeader>Sales Orders</ListPaneHeader>
       <ListPaneBody>
-        {orders.length === 0 ? (
+        {rows.length === 0 ? (
           <ListPaneEmpty>No sales orders yet</ListPaneEmpty>
         ) : (
-          orders.map((order) => (
+          rows.map((order) => (
             <ListPaneItem
               key={order.id}
               href={
