@@ -1,12 +1,13 @@
 import type { Prisma } from '@/db'
 
-type QuoteConversionTarget = 'invoice' | 'sales-receipt'
+type QuoteConversionTarget = 'invoice' | 'sales-receipt' | 'sales-order'
 
 type LockedQuote = {
   id: string
   status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'CANCELED' | 'EXPIRED'
   convertedInvoice: { id: string } | null
   convertedSalesReceipt: { id: string } | null
+  convertedSalesOrder: { id: string } | null
 }
 
 export type QuoteConversionLockResult =
@@ -17,7 +18,7 @@ export type QuoteConversionLockResult =
 
 /**
  * Serializes all document conversions for one quote. The relation check must
- * follow the row lock so an invoice and Sales Receipt cannot both win.
+ * follow the row lock so only one conversion target can win.
  */
 export async function lockQuoteConversion(
   tx: Prisma.TransactionClient,
@@ -39,6 +40,7 @@ export async function lockQuoteConversion(
       status: true,
       convertedInvoice: { select: { id: true } },
       convertedSalesReceipt: { select: { id: true } },
+      convertedSalesOrder: { select: { id: true } },
     },
   })
   if (!quote) return { kind: 'not_found' }
@@ -57,6 +59,14 @@ export async function lockQuoteConversion(
     return {
       kind: 'conflict',
       message: 'This quote has already been converted to a Sales Receipt.',
+    }
+  }
+  if (quote.convertedSalesOrder) {
+    if (target === 'sales-order')
+      return { kind: 'replayed', resourceId: quote.convertedSalesOrder.id }
+    return {
+      kind: 'conflict',
+      message: 'This quote has already been converted to a Sales Order.',
     }
   }
 
