@@ -21,8 +21,9 @@ export function InvoicesToolbar({
           options={INVOICE_STATUS_OPTIONS}
         />
       }
-      primaryLabel={showPrimary ? 'Add' : undefined}
-      primaryHref={showPrimary ? '/invoices/new' : undefined}
+      primaryLabel="Add"
+      primaryIconOnly={!showPrimary}
+      primaryHref="/invoices/new"
       primaryVariant="info"
       refresh
     />

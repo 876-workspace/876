@@ -7,7 +7,7 @@ import {
 } from '@876/ui/status-filter-heading'
 
 const PAYMENT_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Payments' },
+  { value: 'all', label: 'All Payments', headingLabel: 'All Payments' },
 ]
 
 export function PaymentsToolbar({
@@ -27,8 +27,9 @@ export function PaymentsToolbar({
           options={PAYMENT_STATUS_OPTIONS}
         />
       }
-      primaryLabel={showPrimary ? 'Add' : undefined}
-      primaryHref={showPrimary ? '/payments/new' : undefined}
+      primaryLabel="Add"
+      primaryIconOnly={!showPrimary}
+      primaryHref="/payments/new"
       primaryVariant="info"
       refresh
     />

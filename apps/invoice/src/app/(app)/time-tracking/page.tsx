@@ -25,9 +25,7 @@ export const metadata = {
 }
 
 const TIME_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Time Entries' },
-  { value: 'logged', label: 'Logged', headingLabel: 'Logged Time' },
-  { value: 'billed', label: 'Billed', headingLabel: 'Billed Time' },
+  { value: 'all', label: 'All Time Entries', headingLabel: 'All Time Entries' },
 ]
 
 export default async function TimeTrackingPage() {
@@ -44,7 +42,7 @@ export default async function TimeTrackingPage() {
             options={TIME_STATUS_OPTIONS}
           />
         }
-        primaryLabel="New"
+        primaryLabel="Add"
         primaryHref="/time-tracking/new"
         primaryVariant="info"
         refresh

@@ -7,7 +7,11 @@ import {
 } from '@876/ui/status-filter-heading'
 
 const RECURRING_INVOICE_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Recurring Invoices' },
+  {
+    value: 'all',
+    label: 'All Recurring Invoices',
+    headingLabel: 'All Recurring Invoices',
+  },
   {
     value: 'active',
     label: 'Active',
@@ -47,8 +51,9 @@ export function RecurringInvoicesToolbar({
           options={RECURRING_INVOICE_STATUS_OPTIONS}
         />
       }
-      primaryLabel={showPrimary ? 'Add' : undefined}
-      primaryHref={showPrimary ? '/recurring-invoices/new' : undefined}
+      primaryLabel="Add"
+      primaryIconOnly={!showPrimary}
+      primaryHref="/recurring-invoices/new"
       primaryVariant="info"
       refresh
     />
