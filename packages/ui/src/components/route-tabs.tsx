@@ -74,8 +74,8 @@ export const RouteTabs = React.forwardRef<HTMLElement, RouteTabsProps>(
                   ? cn(
                       'border-b-2 px-3 py-2.5',
                       isActive
-                        ? 'border-876-accent-fg text-876-accent-fg'
-                        : 'text-muted-foreground hover:text-foreground border-transparent'
+                        ? 'border-876-blue text-876-blue'
+                        : 'text-muted-foreground hover:text-foreground hover:border-876-surface-border border-transparent'
                     )
                   : cn(
                       'rounded-md px-3 py-1.5',
