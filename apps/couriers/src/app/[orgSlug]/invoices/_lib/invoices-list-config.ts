@@ -9,6 +9,17 @@ export const INVOICE_STATUS_OPTIONS = [
   { value: 'void', label: 'Void', headingLabel: 'Void Invoices' },
 ]
 
+export const INVOICES_DROPDOWN_ACTIONS = [
+  { label: 'Import', icon: 'import' as const },
+  { label: 'Export', icon: 'export' as const },
+  {
+    label: 'Delete invoices',
+    icon: 'delete' as const,
+    destructive: true,
+    separator: true,
+  },
+]
+
 /** URL status value → the Billing invoice status the list call filters on. */
 const INVOICE_STATUS_FILTERS: Record<string, BillingInvoiceStatus> = {
   draft: 'DRAFT',
