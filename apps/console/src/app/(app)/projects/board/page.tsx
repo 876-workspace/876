@@ -1,5 +1,6 @@
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { Skeleton } from '@876/ui/skeleton'
 import { Suspense } from 'react'
 
@@ -14,7 +15,17 @@ export const metadata = { title: 'Board' }
 export default function PlatformIssueBoardPage() {
   return (
     <Page>
-      <ResourceToolbar title="Board" refresh />
+      <ResourceToolbar
+        title="Board"
+        titleFilter={
+          <StatusFilterHeading
+            label="Board"
+            value="all"
+            options={[{ value: 'all', label: 'All Board Issues' }]}
+          />
+        }
+        refresh
+      />
       <Suspense fallback={<BoardFallback />}>
         <BoardSection />
       </Suspense>

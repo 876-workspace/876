@@ -43,7 +43,7 @@ const SUBSCRIPTION_STATUSES = [
 ] as const
 
 const SUBSCRIBER_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All' },
+  { value: 'all', label: 'All Subscribers' },
   ...SUBSCRIPTION_STATUSES.map((status) => ({
     value: status,
     label:
@@ -112,6 +112,7 @@ export default async function PlanSubscribersPage({
             options={SUBSCRIBER_STATUS_OPTIONS}
           />
         }
+        refresh
       />
       <Suspense
         fallback={

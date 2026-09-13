@@ -7,7 +7,7 @@ import {
 import { APP_STATUSES } from '@/lib/app-status'
 
 const APP_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Apps' },
+  { value: 'all', label: 'All Apps' },
   ...APP_STATUSES.map((status) => ({
     value: status,
     label: status.charAt(0).toUpperCase() + status.slice(1),
@@ -26,7 +26,7 @@ export function AppsToolbar({ status }: { status: string }) {
           options={APP_STATUS_OPTIONS}
         />
       }
-      primaryLabel="New App"
+      primaryLabel="Add"
       primaryHref="/apps/new"
       primaryVariant="info"
       refresh

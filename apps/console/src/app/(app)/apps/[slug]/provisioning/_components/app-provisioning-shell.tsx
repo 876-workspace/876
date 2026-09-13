@@ -11,7 +11,7 @@ import {
 } from '@876/ui/status-filter-heading'
 
 export const PROFILE_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Profiles' },
+  { value: 'all', label: 'All Profiles' },
   { value: 'active', label: 'Active', headingLabel: 'Active Profiles' },
   { value: 'draft', label: 'Draft', headingLabel: 'Draft Profiles' },
   {

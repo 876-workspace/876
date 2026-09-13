@@ -16,6 +16,7 @@ import {
 } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
 import { FeaturesTable } from './_components/features-table'
 
@@ -47,8 +48,15 @@ export default function FeaturesPage({ searchParams }: Props) {
     <Page>
       <ResourceToolbar
         title="Features"
+        titleFilter={
+          <StatusFilterHeading
+            label="Features"
+            value="all"
+            options={[{ value: 'all', label: 'All Features' }]}
+          />
+        }
         description="Manage PostHog-backed feature flags."
-        primaryLabel="New Feature"
+        primaryLabel="Add"
         primaryHref="/features/new"
         primaryVariant="info"
         refresh

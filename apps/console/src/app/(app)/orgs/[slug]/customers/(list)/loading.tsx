@@ -10,7 +10,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { CUSTOMERS_SKELETON_COLUMNS } from '../_components/customers-skeleton-columns'
 
 const CUSTOMER_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Customers' },
+  { value: 'all', label: 'All Customers' },
   { value: 'active', label: 'Active', headingLabel: 'Active Customers' },
   { value: 'archived', label: 'Archived', headingLabel: 'Archived Customers' },
 ]

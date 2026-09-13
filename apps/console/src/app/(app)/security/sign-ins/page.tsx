@@ -1,5 +1,6 @@
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import {
   Table,
   TableBody,
@@ -17,7 +18,17 @@ export default async function SignInsPage() {
   if (result.error) throw new Error(result.error.message)
   return (
     <Page>
-      <ResourceToolbar title="Sign-ins" refresh />
+      <ResourceToolbar
+        title="Sign-ins"
+        titleFilter={
+          <StatusFilterHeading
+            label="Sign-ins"
+            value="all"
+            options={[{ value: 'all', label: 'All Sign-ins' }]}
+          />
+        }
+        refresh
+      />
       <div className="876-card">
         <Table>
           <TableHeader>

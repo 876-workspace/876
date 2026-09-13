@@ -5,10 +5,10 @@ import '@testing-library/jest-dom/vitest'
 import type React from 'react'
 import { expect, it, vi } from 'vitest'
 
-import { RolesShell } from './roles-shell'
+import { TeamShell } from './team-shell'
 
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/settings/users/roles',
+  usePathname: () => '/settings/users',
   useRouter: () => ({ refresh: vi.fn() }),
   useSearchParams: () => new URLSearchParams(),
 }))
@@ -28,16 +28,16 @@ vi.mock('@876/ui/list-detail-section', () => ({
   ),
 }))
 
-it('keeps the roles Add action visible with an open detail record', () => {
+it('keeps the team Add action visible with an open detail record', () => {
   render(
-    <RolesShell list={<div>Roles</div>}>
-      <div>Role detail</div>
-    </RolesShell>
+    <TeamShell list={<div>Users</div>}>
+      <div>User detail</div>
+    </TeamShell>
   )
 
-  expect(screen.getByText('Role detail')).toBeVisible()
+  expect(screen.getByText('User detail')).toBeVisible()
   expect(screen.getByRole('link', { name: 'Add' })).toHaveAttribute(
     'href',
-    '/settings/users/roles/new'
+    '/settings/users/new'
   )
 })

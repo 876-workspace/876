@@ -7,6 +7,7 @@ import { AppError } from '@876/ui/app-error'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { Skeleton } from '@876/ui/skeleton'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
 import { toBankAccountRows } from '@/features/billing/bank-account-rows'
 import { toCustomerRows } from '@/features/billing/customer-rows'
@@ -29,6 +30,16 @@ import { billing } from '@/lib/services/billing'
 import { resolveOrg } from '@/features/orgs/org-data'
 
 type Props = { params: Promise<{ orgSlug: string }> }
+
+function staticTitleFilter(title: string) {
+  return (
+    <StatusFilterHeading
+      label={title}
+      value="all"
+      options={[{ value: 'all', label: `All ${title}` }]}
+    />
+  )
+}
 
 /**
  * The finance workspace screens Billing and Invoice both render.
@@ -62,7 +73,11 @@ export function createWorkspaceCustomersPage(
   function Page({ params }: Props) {
     return (
       <div className="space-y-4">
-        <ResourceToolbar title="Customers" refresh />
+        <ResourceToolbar
+          title="Customers"
+          titleFilter={staticTitleFilter('Customers')}
+          refresh
+        />
         <Suspense
           fallback={
             <DataTableSkeleton
@@ -121,7 +136,11 @@ export function createWorkspacePaymentsPage(
   function Page({ params }: Props) {
     return (
       <div className="space-y-4">
-        <ResourceToolbar title="Payments" refresh />
+        <ResourceToolbar
+          title="Payments"
+          titleFilter={staticTitleFilter('Payments')}
+          refresh
+        />
         <Suspense
           fallback={
             <DataTableSkeleton
@@ -180,7 +199,11 @@ export function createWorkspaceBankingPage(
   function Page({ params }: Props) {
     return (
       <div className="space-y-4">
-        <ResourceToolbar title="Banking" refresh />
+        <ResourceToolbar
+          title="Banking"
+          titleFilter={staticTitleFilter('Banking')}
+          refresh
+        />
         <Suspense fallback={<Skeleton className="h-64 w-full" />}>
           <BankingData params={params} workspaceKey={workspaceKey} />
         </Suspense>
@@ -232,7 +255,11 @@ export function createWorkspaceInvoicesPage(
   function Page({ params }: Props) {
     return (
       <div className="space-y-4">
-        <ResourceToolbar title="Invoices" refresh />
+        <ResourceToolbar
+          title="Invoices"
+          titleFilter={staticTitleFilter('Invoices')}
+          refresh
+        />
         <Suspense
           fallback={
             <DataTableSkeleton
@@ -311,7 +338,11 @@ export function createWorkspaceItemsPage(
   function Page({ params }: Props) {
     return (
       <div className="space-y-4">
-        <ResourceToolbar title="Items" refresh />
+        <ResourceToolbar
+          title="Items"
+          titleFilter={staticTitleFilter('Items')}
+          refresh
+        />
         <Suspense
           fallback={
             <DataTableSkeleton
