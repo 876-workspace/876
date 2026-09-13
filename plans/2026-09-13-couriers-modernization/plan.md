@@ -18,3 +18,8 @@ Bring `apps/couriers` onto current ecosystem shared components.
 
 ## Verification
 pnpm --filter @876/couriers-app typecheck · lint · test · node scripts/check-app-structure.mjs · pnpm check:transpile
+
+## Final verification (2026-09-13, orchestrator)
+Split views for invoices, payments, items, deliveries, disputes, pre-alerts, manifest landed (opencode muse 1.3 run, stopped before its report; finished by orchestrator).
+Fixes applied on review: couriers tsconfig target ES2020 (billing-ui BigInt), `src/test/resolve-server-tree.ts` so detail-layout tests actually render streamed headers, disambiguated duplicate-text assertions, missing next/navigation mock exports.
+couriers: tsc 0 errors · eslint 0 errors (12 pre-existing warnings) · vitest 105 files / 965 tests pass. billing-ui 550 pass. app-structure OK. Every section ≥20 it().

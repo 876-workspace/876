@@ -16,6 +16,6 @@ Sections, in scope:
 For each: move toolbar + list into the section layout with the split-view shell, add [id]/(detail) routes rendering a DetailCard. The user has decided: where there is no backend retrieve for the record (deliveries, disputes, pre-alerts, manifest), the detail card is an EMPTY card — DetailCardHeader with the id and a close href, DetailCardBody containing short empty sections titled with the eventual shape (e.g. "Details", "Activity") and em dashes. No prose paragraphs, no "will appear here" copy. For invoices/payments use the existing Billing integration client the list data already uses to retrieve the record if a retrieve method exists (grep packages/billing/src/integration/resources); if one exists render its identity/status/amounts with @876/billing-ui panels where props fit; otherwise empty card.
 Keep existing toolbars and StatusFilterHeading mounted; keep status badge in condensed rows. No eslint-disable / as any / @ts-ignore; do not weaken production code for tests.
 
-Minimum tests: 3 it() per section (closed list, open list with selected row, detail card render).
+Minimum tests: 20 it() per section (closed list, open list with selected row, detail card render).
 Verify foreground from apps/couriers: npx tsc --noEmit; npx eslint src; npx vitest run; root: node scripts/check-app-structure.mjs.
 Report: plans/2026-09-13-couriers-modernization/reports/opencode/remaining-split-views.md (per-section status, files, counted tests, verification, gaps).
