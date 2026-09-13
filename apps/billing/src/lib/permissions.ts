@@ -50,7 +50,7 @@ export const BILLING_SYSTEM_ROLES: Array<
     slug: 'accountant',
     name: 'Accountant',
     description:
-      'Manages customers, sales, tax configuration, and financial reports.',
+      'Manages customers, sales, Sales Orders, tax configuration, and financial reports.',
     permissions: [
       'billing:access',
       'dashboard:read',
@@ -59,6 +59,8 @@ export const BILLING_SYSTEM_ROLES: Array<
       'catalog:read',
       'sales:read',
       'sales:write',
+      'sales-orders:read',
+      'sales-orders:write',
       'subscriptions:read',
       'reports:read',
       'settings:read',
@@ -89,6 +91,7 @@ export const BILLING_SYSTEM_ROLES: Array<
       'customers:read',
       'catalog:read',
       'sales:read',
+      'sales-orders:read',
       'subscriptions:read',
       'reports:read',
       'settings:read',
@@ -134,6 +137,7 @@ export const BILLING_PERMISSION_GROUPS: PermissionGroup[] = [
   resourceGroup('Customers', 'customers'),
   resourceGroup('Catalogue', 'catalog'),
   resourceGroup('Sales', 'sales'),
+  resourceGroup('Sales Orders', 'sales-orders'),
   resourceGroup('Subscriptions', 'subscriptions'),
   resourceGroup('Currencies', 'currencies'),
   resourceGroup('Taxes', 'taxes'),
@@ -166,6 +170,7 @@ function resourceGroup(
     | 'customers'
     | 'catalog'
     | 'sales'
+    | 'sales-orders'
     | 'subscriptions'
     | 'currencies'
     | 'taxes'
