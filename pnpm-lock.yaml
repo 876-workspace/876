@@ -843,6 +843,9 @@ importers:
       '@876/billing':
         specifier: workspace:*
         version: link:../../packages/billing
+      '@876/billing-ui':
+        specifier: workspace:*
+        version: link:../../packages/billing-ui
       '@876/core':
         specifier: workspace:*
         version: link:../../packages/core
