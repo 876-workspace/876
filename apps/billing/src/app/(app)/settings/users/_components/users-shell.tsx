@@ -29,18 +29,20 @@ export function UsersShell({
                 label="Users"
                 value={status}
                 options={[
-                  { value: 'all', label: 'All users' },
+                  { value: 'all', label: 'All Users' },
                   { value: 'active', label: 'Active' },
                   { value: 'suspended', label: 'Suspended' },
                 ]}
               />
             }
-            primaryLabel={canInvite && !open ? 'Add' : undefined}
-            primaryHref={
-              canInvite && !open ? '/settings/users/invite' : undefined
-            }
+            primaryLabel={canInvite ? 'Add' : undefined}
+            primaryHref={canInvite ? '/settings/users/invite' : undefined}
             primaryVariant="info"
             refresh
+            dropdownActions={[
+              { label: 'Import', icon: 'import', disabled: true },
+              { label: 'Export', icon: 'export', disabled: true },
+            ]}
           />
         }
         list={list}

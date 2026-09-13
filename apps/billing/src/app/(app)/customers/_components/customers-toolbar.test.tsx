@@ -28,10 +28,10 @@ describe('CustomersToolbar', () => {
     expect(screen.getByText('All Customers')).toBeTruthy()
   })
 
-  it('shows New primary when customers:write allowed', () => {
+  it('shows Add primary when customers:write allowed', () => {
     mocks.useBillingPermission.mockReturnValue(true)
     render(<CustomersToolbar status="active" />)
-    expect(screen.getByRole('link', { name: /New/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Add/ })).toHaveAttribute(
       'href',
       '/customers/new'
     )
@@ -41,7 +41,7 @@ describe('CustomersToolbar', () => {
   it('hides primary when not permitted', () => {
     mocks.useBillingPermission.mockReturnValue(false)
     render(<CustomersToolbar status="all" />)
-    expect(screen.queryByRole('link', { name: /New/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /Add/ })).toBeNull()
   })
 
   it('always shows refresh dropdown', () => {
