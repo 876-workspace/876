@@ -15,3 +15,6 @@ Rules:
 Verify (foreground): pnpm --filter @876/couriers-app typecheck && pnpm --filter @876/couriers-app lint && pnpm --filter @876/couriers-app test; pnpm --filter @876/billing-ui test; node scripts/check-app-structure.mjs.
 
 Report to plans/2026-09-13-couriers-modernization/reports/sub-agent/finance-shared-ui.md: files changed + why, props added, test counts before/after, verification output summary, anything not done.
+
+## Handoff note (orchestrator, 2026-09-13)
+A previous delegate was stopped part-way. Its partial work is in the working tree (invoices/_components, invoices/_lib, items-list.tsx, payments-list.tsx, payments-skeleton-columns.ts, deleted local items-table/payments-table, package.json + pnpm-lock.yaml adding @876/billing-ui). Inspect `git status` / `git diff` for those three route dirs, finish the goal, and make verification green. Do not touch customers/ (done). If pnpm --filter refuses, run tsc/eslint/vitest from apps/couriers directly.
