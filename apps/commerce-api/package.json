@@ -1,0 +1,39 @@
+{
+  "name": "@876/commerce-api",
+  "version": "0.1.0",
+  "description": "876 Commerce Express API",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "PORT=4010 tsx watch --env-file-if-exists=.env src/server.ts",
+    "build": "tsup",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "boundaries": "dependency-cruiser --config .dependency-cruiser.cjs src",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@876/core": "workspace:*",
+    "compression": "1.8.1",
+    "cors": "2.8.6",
+    "express": "5.2.1",
+    "helmet": "8.3.0",
+    "pino": "10.3.1"
+  },
+  "devDependencies": {
+    "@types/compression": "1.8.1",
+    "@types/cors": "2.8.19",
+    "@types/express": "5.0.6",
+    "@types/node": "26.2.0",
+    "@types/supertest": "7.2.1",
+    "dependency-cruiser": "17.3.4",
+    "eslint": "9.39.4",
+    "pino-pretty": "13.1.3",
+    "supertest": "7.2.2",
+    "tsup": "8.5.1",
+    "tsx": "4.23.12",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  }
+}
