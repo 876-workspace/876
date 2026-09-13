@@ -66,7 +66,7 @@ export const billingNavigation = defineNavigation([
             title: 'Sales Orders',
             href: '/sales-orders',
             icon: 'sales',
-            requires: { permission: 'sales-orders.view' },
+            requires: { permission: 'sales-orders:read' },
           },
           {
             key: 'sales-invoices',
