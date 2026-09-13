@@ -34,15 +34,6 @@ export function AuditView({
   return <div data-subject-id={subjectId} />
 }
 
-export function InvoicesView({
-  subjectId,
-}: {
-  subjectType: SubjectType
-  subjectId: string
-}) {
-  return <div data-subject-id={subjectId} />
-}
-
 export function TicketsView({ userId }: { userId: string }) {
   return <div data-subject-id={userId} />
 }
