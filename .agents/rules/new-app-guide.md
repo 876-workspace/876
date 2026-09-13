@@ -48,7 +48,8 @@ Console → Apps → _your app_ → API Keys.
 | `@876/couriers-app`   | `apps/couriers`   | 3003 |
 | `@876/billing-app`    | `apps/billing`    | 3004 |
 | `@876/invoice-app`    | `apps/invoice`    | 3006 |
-| _next app_            |                   | 3007 |
+| `@876/commerce-app`   | `apps/commerce`   | 3009 |
+| _next app_            |                   | 3010 |
 
 Set the port in the workspace's `package.json` scripts.
 
@@ -124,7 +125,7 @@ it — the Cloudflare build fails outright.
 
 All routing, session, and permission checks live in **RSC layouts and server
 components**, via the app's `src/lib/auth/guards.ts`. See `docs/cloudflare.md`
-→ "Runtime constraints" and `.agents/rules/navigation-performance.md`.
+→ "Runtime constraints" and `.claude/rules/navigation-performance.md`.
 
 ### 3d. Session cookie
 
@@ -171,8 +172,8 @@ and never a bespoke flat wrapper.
 
 An exposable key must never carry admin scope. Client-initiated mutations go
 through a thin route handler that authorizes and then calls the service client — **no server
-actions**. See `.agents/rules/sdk-conventions.md` and
-`.agents/rules/api-access.md`.
+actions**. See `.claude/rules/sdk-conventions.md` and
+`.claude/rules/api-access.md`.
 
 Use a lazy module singleton only for static credentials. Use a request-scoped
 factory when a token or active organization belongs to one request. Do not hide
@@ -180,7 +181,7 @@ either lifetime behind a lazy `Proxy`.
 
 If the app owns a bounded context it may run its own datastore, referencing core
 876 entities by **opaque ID only** — no cross-database foreign keys. See
-`.agents/rules/platform-services.md`. An app with no bounded context of its own
+`.claude/rules/platform-services.md`. An app with no bounded context of its own
 must not grow `db/` or `service/`.
 
 ---
@@ -275,7 +276,7 @@ If the app gates access on an organization, a signed-in account with **no**
 organization must reach onboarding, never `/no-access`, and a `super_admin`/`admin`
 whose org merely lacks the entitlement must be routed to setup rather than a
 wall. Sign-up and onboarding ship together, or neither ships. See
-`.agents/rules/product-org-signup.md`.
+`.claude/rules/product-org-signup.md`.
 
 ---
 
