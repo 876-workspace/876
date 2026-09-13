@@ -4,6 +4,8 @@ import type { CommercialLineSnapshot } from '@/types/commercial-line'
 
 import type { SalesOrderListQuery } from '../../schemas/sales-order'
 
+type SalesOrderLineWrite = CommercialLineSnapshot & { id: string }
+
 export function runSalesOrderTransaction<T>(
   work: (tx: Prisma.TransactionClient) => Promise<T>
 ) {
@@ -44,29 +46,23 @@ export async function listSalesOrderRows(
           orderBy: { createdAt: 'desc' },
         })
 
-  const activeInvoiceByOrderId = new Map(
-    invoices.flatMap((invoice) =>
-      invoice.salesOrderId && !invoicesSeenBefore(invoices, invoice)
-        ? [[invoice.salesOrderId, invoice] as const]
-        : []
+  const activeInvoiceByOrderId = new Map<
+    string,
+    (typeof invoices)[number]
+  >()
+  for (const invoice of invoices) {
+    if (
+      invoice.salesOrderId &&
+      !activeInvoiceByOrderId.has(invoice.salesOrderId)
     )
-  )
+      activeInvoiceByOrderId.set(invoice.salesOrderId, invoice)
+  }
 
   return {
     rows: page,
     activeInvoiceByOrderId,
     hasMore: normalized.length > query.limit,
   }
-}
-
-function invoicesSeenBefore<T extends { id: string; salesOrderId: string | null }>(
-  invoices: T[],
-  current: T
-) {
-  const index = invoices.indexOf(current)
-  return invoices
-    .slice(0, index)
-    .some((invoice) => invoice.salesOrderId === current.salesOrderId)
 }
 
 export function findSalesOrderRow(tenantId: string, salesOrderId: string) {
@@ -163,7 +159,7 @@ export function createSalesOrderRow(
     sourceExternalReference?: string | null
     sourceIdempotencyKey?: string | null
     sourcePayloadHash?: string | null
-    lines: CommercialLineSnapshot[]
+    lines: SalesOrderLineWrite[]
     now: number
   }
 ) {
@@ -205,7 +201,6 @@ export function createSalesOrderRow(
       updatedAt: input.now,
       lines: {
         create: input.lines.map((line, position) => ({
-          id: inputLineId(line, position, input.id),
           ...line,
           position,
           createdAt: input.now,
@@ -222,18 +217,6 @@ export function createSalesOrderRow(
       },
     },
   })
-}
-
-/** IDs are supplied by the workflow; this helper exists only to keep the input shape compact. */
-function inputLineId(
-  line: CommercialLineSnapshot & { id?: string },
-  position: number,
-  salesOrderId: string
-) {
-  if (line.id) return line.id
-  throw new Error(
-    `Sales Order ${salesOrderId} line ${position} is missing its generated id.`
-  )
 }
 
 export async function updateDraftSalesOrderRow(
@@ -261,7 +244,7 @@ export async function updateDraftSalesOrderRow(
     notes?: string | null
     terms?: string | null
     metadata?: Record<string, unknown> | null
-    lines?: Array<CommercialLineSnapshot & { id: string }>
+    lines?: SalesOrderLineWrite[]
     now: number
   }
 ) {
