@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import { describe, expect, it, vi } from 'vitest'
 const navigation = vi.hoisted(() => ({
@@ -95,5 +95,24 @@ describe('RolesShell', () => {
       </RolesShell>
     )
     expect(screen.getByText('All Roles')).toBeInTheDocument()
+  })
+  it('renders the standard list toolbar actions', () => {
+    navigation.search = new URLSearchParams()
+    navigation.segments = []
+    render(
+      <RolesShell title="Roles" newHref="/roles/new" canCreate list={null}>
+        {null}
+      </RolesShell>
+    )
+
+    expect(screen.getByText('All Roles')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^Add$/ })).toHaveAttribute(
+      'href',
+      '/roles/new'
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
+    expect(screen.getByText('Refresh')).toBeInTheDocument()
+    expect(screen.getByText('Import')).toBeInTheDocument()
+    expect(screen.getByText('Export')).toBeInTheDocument()
   })
 })

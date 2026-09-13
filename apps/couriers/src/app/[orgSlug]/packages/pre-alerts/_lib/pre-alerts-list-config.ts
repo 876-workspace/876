@@ -1,5 +1,5 @@
 export const PRE_ALERT_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Pre-alerts' },
+  { value: 'all', label: 'All Pre-alerts', headingLabel: 'All Pre-alerts' },
   { value: 'pending', label: 'Pending', headingLabel: 'Pending Pre-alerts' },
   { value: 'received', label: 'Received', headingLabel: 'Received Pre-alerts' },
   {
@@ -10,14 +10,8 @@ export const PRE_ALERT_STATUS_OPTIONS = [
 ]
 
 export const PRE_ALERTS_DROPDOWN_ACTIONS = [
-  { label: 'Import', icon: 'import' as const },
-  { label: 'Export', icon: 'export' as const },
-  {
-    label: 'Delete pre-alerts',
-    icon: 'delete' as const,
-    destructive: true,
-    separator: true,
-  },
+  { label: 'Import', icon: 'import' as const, disabled: true },
+  { label: 'Export', icon: 'export' as const, disabled: true },
 ]
 
 const PRE_ALERT_STATUS_VALUES = new Set(

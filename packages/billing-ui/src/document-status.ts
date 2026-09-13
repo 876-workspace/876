@@ -72,13 +72,24 @@ export const RECURRING_INVOICE_STATUSES = [
   'expired',
 ] as const
 
-export type RecurringInvoiceStatus =
-  (typeof RECURRING_INVOICE_STATUSES)[number]
+export type RecurringInvoiceStatus = (typeof RECURRING_INVOICE_STATUSES)[number]
 
 export const RECURRING_INVOICE_STATUS_OPTIONS: DocumentStatusOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Recurring Invoices' },
-  { value: 'active', label: 'Active', headingLabel: 'Active Recurring Invoices' },
-  { value: 'paused', label: 'Paused', headingLabel: 'Paused Recurring Invoices' },
+  {
+    value: 'all',
+    label: 'All Recurring Invoices',
+    headingLabel: 'All Recurring Invoices',
+  },
+  {
+    value: 'active',
+    label: 'Active',
+    headingLabel: 'Active Recurring Invoices',
+  },
+  {
+    value: 'paused',
+    label: 'Paused',
+    headingLabel: 'Paused Recurring Invoices',
+  },
   {
     value: 'stopped',
     label: 'Stopped',
@@ -110,7 +121,11 @@ export function resolveRecurringInvoiceStatus(
 }
 
 export const SALES_RECEIPT_STATUS_OPTIONS: DocumentStatusOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Sales Receipts' },
+  {
+    value: 'all',
+    label: 'All Sales Receipts',
+    headingLabel: 'All Sales Receipts',
+  },
   { value: 'paid', label: 'Paid', headingLabel: 'Paid Sales Receipts' },
   { value: 'void', label: 'Void', headingLabel: 'Void Sales Receipts' },
 ]
@@ -133,7 +148,11 @@ export function resolveSalesReceiptStatus(
  * exactly how `OPEN`, `PARTIALLY_PAID`, and `UNCOLLECTIBLE` went missing.
  */
 export const INVOICE_STATUS_OPTIONS: DocumentStatusOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Invoices' },
+  {
+    value: 'all',
+    label: 'All Invoices',
+    headingLabel: 'All Invoices',
+  },
   { value: 'draft', label: 'Draft', headingLabel: 'Draft Invoices' },
   { value: 'open', label: 'Open', headingLabel: 'Open Invoices' },
   { value: 'sent', label: 'Sent', headingLabel: 'Sent Invoices' },

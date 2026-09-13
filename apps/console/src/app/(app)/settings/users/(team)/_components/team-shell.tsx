@@ -10,7 +10,7 @@ import {
 } from '@876/ui/status-filter-heading'
 
 export const TEAM_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Users' },
+  { value: 'all', label: 'All Users' },
   { value: 'active', label: 'Active', headingLabel: 'Active Users' },
   { value: 'suspended', label: 'Suspended', headingLabel: 'Suspended Users' },
   { value: 'expired', label: 'Expired', headingLabel: 'Expired Users' },

@@ -1,5 +1,6 @@
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -28,7 +29,17 @@ export default async function OrganizationLabelsPage({ params }: Props) {
 
   return (
     <div>
-      <ResourceToolbar title="Labels" refresh />
+      <ResourceToolbar
+        title="Labels"
+        titleFilter={
+          <StatusFilterHeading
+            label="Labels"
+            value="all"
+            options={[{ value: 'all', label: 'All Labels' }]}
+          />
+        }
+        refresh
+      />
       <Suspense
         fallback={
           <DataTableSkeleton columns={LABELS_SKELETON_COLUMNS} rows={5} />

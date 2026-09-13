@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ListDetailSection } from '@876/ui/list-detail-section'
-import { useListDetailRoute } from '@876/ui/list-detail-shell'
 
 import { StreamingResourceToolbar } from '@/components/patterns/streaming-resource-toolbar'
 import { CATALOG_LISTS } from '../../_components/catalog-list-config'
@@ -22,7 +21,6 @@ export function PriceListsSection({
   list: ReactNode
   children: ReactNode
 }) {
-  const { open } = useListDetailRoute(TAKEOVER_SEGMENTS)
   // A layout receives no `searchParams`, so the active filter is read here on
   // the client, where it stays current across navigations.
   const status = useSearchParams().get('status') ?? 'all'
@@ -35,7 +33,7 @@ export function PriceListsSection({
         <StreamingResourceToolbar
           {...toolbar}
           status={status}
-          primary={open ? undefined : toolbar.primary}
+          primary={toolbar.primary}
         />
       }
       list={list}

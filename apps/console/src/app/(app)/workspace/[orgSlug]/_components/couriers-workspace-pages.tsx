@@ -6,6 +6,7 @@ import { Suspense } from 'react'
 import { AppError } from '@876/ui/app-error'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
 import { toBranchRows } from '@/features/couriers/branch-rows'
 import { toCustomerRows } from '@/features/couriers/customer-rows'
@@ -32,6 +33,16 @@ import { couriers } from '@/lib/services/couriers'
 import { resolveOrg, resolveOrgMembers } from '@/features/orgs/org-data'
 
 type Props = { params: Promise<{ orgSlug: string }> }
+
+function staticTitleFilter(title: string) {
+  return (
+    <StatusFilterHeading
+      label={title}
+      value="all"
+      options={[{ value: 'all', label: `All ${title}` }]}
+    />
+  )
+}
 
 /**
  * The 876 Couriers workspace screens, as an operator reads them.
@@ -121,7 +132,11 @@ export function createCouriersCustomersPage() {
   function Page({ params }: Props) {
     return (
       <div className="space-y-4">
-        <ResourceToolbar title="Customers" refresh />
+        <ResourceToolbar
+          title="Customers"
+          titleFilter={staticTitleFilter('Customers')}
+          refresh
+        />
         <Suspense
           fallback={
             <DataTableSkeleton
@@ -196,7 +211,11 @@ export function createCouriersPackagesPage() {
   function Page({ params }: Props) {
     return (
       <div className="space-y-4">
-        <ResourceToolbar title="Packages" refresh />
+        <ResourceToolbar
+          title="Packages"
+          titleFilter={staticTitleFilter('Packages')}
+          refresh
+        />
         <Suspense
           fallback={
             <DataTableSkeleton
@@ -263,7 +282,11 @@ export function createCouriersBranchesPage() {
   function Page({ params }: Props) {
     return (
       <div className="space-y-4">
-        <ResourceToolbar title="Branches" refresh />
+        <ResourceToolbar
+          title="Branches"
+          titleFilter={staticTitleFilter('Branches')}
+          refresh
+        />
         <Suspense
           fallback={
             <DataTableSkeleton
@@ -314,7 +337,11 @@ export function createCouriersWarehousesPage() {
   function Page({ params }: Props) {
     return (
       <div className="space-y-4">
-        <ResourceToolbar title="Warehouses" refresh />
+        <ResourceToolbar
+          title="Warehouses"
+          titleFilter={staticTitleFilter('Warehouses')}
+          refresh
+        />
         <Suspense
           fallback={
             <DataTableSkeleton
@@ -365,7 +392,11 @@ export function createCouriersTeamPage() {
   function Page({ params }: Props) {
     return (
       <div className="space-y-4">
-        <ResourceToolbar title="Team" refresh />
+        <ResourceToolbar
+          title="Team"
+          titleFilter={staticTitleFilter('Team')}
+          refresh
+        />
         <Suspense
           fallback={
             <DataTableSkeleton

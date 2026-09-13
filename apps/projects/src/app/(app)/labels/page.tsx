@@ -1,5 +1,6 @@
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
@@ -16,6 +17,13 @@ export default async function LabelsPage() {
     <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">
       <ResourceToolbar
         title="Labels"
+        titleFilter={
+          <StatusFilterHeading
+            label="Labels"
+            value="all"
+            options={[{ value: 'all', label: 'All Labels' }]}
+          />
+        }
         primaryLabel="Add"
         primaryHref="/labels/new"
         primaryVariant="info"

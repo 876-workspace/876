@@ -1,7 +1,7 @@
 import type { BillingInvoiceStatus } from '@876/billing/integration'
 
 export const INVOICE_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Invoices' },
+  { value: 'all', label: 'All Invoices', headingLabel: 'All Invoices' },
   { value: 'draft', label: 'Draft', headingLabel: 'Draft Invoices' },
   { value: 'sent', label: 'Sent', headingLabel: 'Sent Invoices' },
   { value: 'overdue', label: 'Overdue', headingLabel: 'Overdue Invoices' },
@@ -10,14 +10,8 @@ export const INVOICE_STATUS_OPTIONS = [
 ]
 
 export const INVOICES_DROPDOWN_ACTIONS = [
-  { label: 'Import', icon: 'import' as const },
-  { label: 'Export', icon: 'export' as const },
-  {
-    label: 'Delete invoices',
-    icon: 'delete' as const,
-    destructive: true,
-    separator: true,
-  },
+  { label: 'Import', icon: 'import' as const, disabled: true },
+  { label: 'Export', icon: 'export' as const, disabled: true },
 ]
 
 /** URL status value → the Billing invoice status the list call filters on. */

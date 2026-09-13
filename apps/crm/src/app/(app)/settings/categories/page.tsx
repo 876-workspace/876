@@ -20,7 +20,7 @@ import { CategorySplitSkeleton } from './_components/category-split-skeleton'
 
 export const metadata = { title: 'Categories - Settings' }
 const CATEGORY_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All categories' },
+  { value: 'all', label: 'All Categories' },
   { value: 'active', label: 'Active' },
   { value: 'archived', label: 'Archived' },
 ]

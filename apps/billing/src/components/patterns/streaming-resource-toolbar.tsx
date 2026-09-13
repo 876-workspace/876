@@ -10,7 +10,6 @@ import { useBillingPermission } from '@/components/providers/permissions-provide
 import type { Permission } from '@/types/access'
 
 export type StreamingResourceAction = {
-  label: string
   href: string
   permission: Permission
 }
@@ -27,19 +26,14 @@ export function StreamingResourceToolbar({
   status,
   options,
   primary,
-  dropdownAction,
 }: {
   title: string
   status: string
   options: StatusFilterOption[]
   primary?: StreamingResourceAction
-  dropdownAction?: StreamingResourceAction
 }) {
   const canUsePrimary = useBillingPermission(
     primary?.permission ?? 'billing:access'
-  )
-  const canUseDropdown = useBillingPermission(
-    dropdownAction?.permission ?? 'billing:access'
   )
 
   return (
@@ -48,21 +42,10 @@ export function StreamingResourceToolbar({
       titleFilter={
         <StatusFilterHeading label={title} value={status} options={options} />
       }
-      primaryLabel={canUsePrimary ? primary?.label : undefined}
+      primaryLabel={canUsePrimary && primary ? 'Add' : undefined}
       primaryHref={canUsePrimary ? primary?.href : undefined}
       primaryVariant="info"
       refresh
-      dropdownActions={
-        canUseDropdown && dropdownAction
-          ? [
-              {
-                label: dropdownAction.label,
-                icon: 'import',
-                href: dropdownAction.href,
-              },
-            ]
-          : []
-      }
     />
   )
 }

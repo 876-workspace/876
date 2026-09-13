@@ -11,7 +11,7 @@ import {
 } from '@876/ui/status-filter-heading'
 
 export const SETUP_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Provisioning' },
+  { value: 'all', label: 'All Provisioning' },
   { value: 'active', label: 'Active', headingLabel: 'Active Provisioning' },
   {
     value: 'archived',

@@ -29,7 +29,6 @@ export function InvoicesSection({
           status={selectedStatus}
           options={INVOICE_STATUS_OPTIONS}
           primary={{
-            label: 'New',
             href: '/invoices/new',
             permission: 'sales:write',
           }}

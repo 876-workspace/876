@@ -2,6 +2,7 @@ import { CustomerListShell } from '@876/crm-ui/customer-list-shell'
 import { AppError } from '@876/ui/app-error'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { Suspense, type ReactNode } from 'react'
 
 import { PlatformOrganizationUnavailable } from '@/components/patterns/platform-organization-unavailable'
@@ -38,7 +39,19 @@ export default function PlatformRequestCustomersLayout({
   return (
     <div className={CONTENT_HEIGHT}>
       <CustomerListShell
-        toolbar={<ResourceToolbar title="Customers" refresh />}
+        toolbar={
+          <ResourceToolbar
+            title="Customers"
+            titleFilter={
+              <StatusFilterHeading
+                label="Customers"
+                value="all"
+                options={[{ value: 'all', label: 'All Customers' }]}
+              />
+            }
+            refresh
+          />
+        }
         list={
           <Suspense
             fallback={

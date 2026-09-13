@@ -7,7 +7,7 @@ import { ListDetailSection } from '@876/ui/list-detail-section'
 import { StreamingResourceToolbar } from '@/components/patterns/streaming-resource-toolbar'
 
 const VENDOR_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Vendors' },
+  { value: 'all', label: 'All Vendors', headingLabel: 'All Vendors' },
   { value: 'active', label: 'Active', headingLabel: 'Active Vendors' },
   { value: 'archived', label: 'Archived', headingLabel: 'Archived Vendors' },
 ]
@@ -33,7 +33,6 @@ export function VendorsSection({
           status={selectedStatus}
           options={VENDOR_STATUS_OPTIONS}
           primary={{
-            label: 'New',
             href: '/purchases/vendors/new',
             permission: 'purchases:write',
           }}

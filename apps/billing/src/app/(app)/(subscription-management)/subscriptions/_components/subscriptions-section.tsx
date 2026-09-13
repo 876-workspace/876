@@ -6,7 +6,11 @@ import { ListDetailSection } from '@876/ui/list-detail-section'
 import { StreamingResourceToolbar } from '@/components/patterns/streaming-resource-toolbar'
 
 const SUBSCRIPTION_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Subscriptions' },
+  {
+    value: 'all',
+    label: 'All Subscriptions',
+    headingLabel: 'All Subscriptions',
+  },
   { value: 'draft', label: 'Draft', headingLabel: 'Draft Subscriptions' },
   {
     value: 'trialing',
@@ -58,7 +62,6 @@ export function SubscriptionsSection({
           status={selectedStatus}
           options={SUBSCRIPTION_STATUS_OPTIONS}
           primary={{
-            label: 'New',
             href: '/subscriptions/new',
             permission: 'subscriptions:write',
           }}

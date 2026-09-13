@@ -23,7 +23,7 @@ import {
 import type { RawReportSearchParams } from './_lib/report-params'
 
 const REPORT_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Reports' },
+  { value: 'all', label: 'All Reports', headingLabel: 'All Reports' },
 ]
 
 export const metadata = {
@@ -49,7 +49,7 @@ export default async function ReportsPage({
             options={REPORT_STATUS_OPTIONS}
           />
         }
-        primaryLabel="New"
+        primaryLabel="Add"
         primaryHref="/reports/new"
         primaryVariant="info"
         refresh

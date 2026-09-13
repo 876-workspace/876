@@ -24,7 +24,7 @@ import { TeamSplitSkeleton } from './_components/team-split-skeleton'
 
 export const metadata = { title: 'Teams - Settings' }
 const TEAM_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All teams' },
+  { value: 'all', label: 'All Teams' },
   { value: 'ACTIVE', label: 'Active' },
   { value: 'ARCHIVED', label: 'Archived' },
 ]

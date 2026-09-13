@@ -20,7 +20,7 @@ import { SESSIONS_SKELETON_COLUMNS } from './_components/sessions-skeleton-colum
 export const metadata = { title: 'Sessions' }
 
 const STATUS_OPTIONS = [
-  { value: 'all', label: 'All' },
+  { value: 'all', label: 'All Sessions' },
   { value: 'active', label: 'Active' },
   { value: 'revoked', label: 'Revoked' },
   { value: 'expired', label: 'Expired' },

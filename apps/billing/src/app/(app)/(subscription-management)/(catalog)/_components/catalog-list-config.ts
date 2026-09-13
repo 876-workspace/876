@@ -8,23 +8,24 @@ type CatalogListConfig = {
   options: StatusFilterOption[]
   primary: {
     href: string
-    label: string
     permission: Permission
   }
   title: string
 }
 
-const ACTIVE_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All' },
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
-]
+function activeOptions(title: string): StatusFilterOption[] {
+  return [
+    { value: 'all', label: `All ${title}` },
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+  ]
+}
 
 export const CATALOG_LISTS = {
   addons: {
     title: 'Add-ons',
-    options: ACTIVE_OPTIONS,
-    primary: { label: 'Add', href: '/addons/new', permission: 'catalog:write' },
+    options: activeOptions('Add-ons'),
+    primary: { href: '/addons/new', permission: 'catalog:write' },
     columns: [
       { label: 'Add-on', cell: 'avatar' },
       { label: 'Product' },
@@ -36,9 +37,8 @@ export const CATALOG_LISTS = {
   },
   coupons: {
     title: 'Coupons',
-    options: ACTIVE_OPTIONS,
+    options: activeOptions('Coupons'),
     primary: {
-      label: 'New Coupon',
       href: '/coupons/new',
       permission: 'subscriptions:write',
     },
@@ -53,8 +53,8 @@ export const CATALOG_LISTS = {
   },
   plans: {
     title: 'Plans',
-    options: ACTIVE_OPTIONS,
-    primary: { label: 'Add', href: '/plans/new', permission: 'catalog:write' },
+    options: activeOptions('Plans'),
+    primary: { href: '/plans/new', permission: 'catalog:write' },
     columns: [
       { label: 'Plan', cell: 'avatar' },
       { label: 'Product' },
@@ -66,9 +66,8 @@ export const CATALOG_LISTS = {
   },
   priceLists: {
     title: 'Price Lists',
-    options: ACTIVE_OPTIONS,
+    options: activeOptions('Price Lists'),
     primary: {
-      label: 'Add',
       href: '/price-lists/new',
       permission: 'catalog:write',
     },
@@ -82,8 +81,8 @@ export const CATALOG_LISTS = {
   },
   prices: {
     title: 'Prices',
-    options: ACTIVE_OPTIONS,
-    primary: { label: 'Add', href: '/prices/new', permission: 'catalog:write' },
+    options: activeOptions('Prices'),
+    primary: { href: '/prices/new', permission: 'catalog:write' },
     columns: [
       { label: 'Catalog target', cell: 'avatar' },
       { label: 'Amount' },
@@ -94,9 +93,8 @@ export const CATALOG_LISTS = {
   },
   products: {
     title: 'Products',
-    options: ACTIVE_OPTIONS,
+    options: activeOptions('Products'),
     primary: {
-      label: 'Add',
       href: '/products/new',
       permission: 'catalog:write',
     },

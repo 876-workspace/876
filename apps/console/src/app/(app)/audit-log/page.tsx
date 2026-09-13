@@ -19,6 +19,7 @@ import {
 
 import { CursorPagination } from '@/components/patterns/cursor-pagination'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { formatDateTime } from '@/lib/format'
@@ -54,7 +55,17 @@ export default async function AuditLogPage({ searchParams }: Props) {
 
   return (
     <Page>
-      <ResourceToolbar title="Audit Log" refresh />
+      <ResourceToolbar
+        title="Audit Log"
+        titleFilter={
+          <StatusFilterHeading
+            label="Audit Log"
+            value="all"
+            options={[{ value: 'all', label: 'All Audit Log' }]}
+          />
+        }
+        refresh
+      />
       <AuditLogFilters filters={filters} />
       <Suspense
         fallback={<DataTableSkeleton columns={AUDIT_LOG_SKELETON_COLUMNS} />}

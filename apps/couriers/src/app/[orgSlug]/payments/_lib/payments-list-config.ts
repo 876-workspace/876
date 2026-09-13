@@ -1,7 +1,7 @@
 import type { BillingPayment } from '@876/billing/integration'
 
 export const PAYMENT_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Payments' },
+  { value: 'all', label: 'All Payments', headingLabel: 'All Payments' },
   { value: 'pending', label: 'Pending', headingLabel: 'Pending Payments' },
   {
     value: 'completed',
@@ -13,14 +13,8 @@ export const PAYMENT_STATUS_OPTIONS = [
 ]
 
 export const PAYMENTS_DROPDOWN_ACTIONS = [
-  { label: 'Import', icon: 'import' as const },
-  { label: 'Export', icon: 'export' as const },
-  {
-    label: 'Delete payments',
-    icon: 'delete' as const,
-    destructive: true,
-    separator: true,
-  },
+  { label: 'Import', icon: 'import' as const, disabled: true },
+  { label: 'Export', icon: 'export' as const, disabled: true },
 ]
 
 /** URL status value → the Billing payment statuses it selects. */

@@ -11,7 +11,7 @@ import {
 } from '@876/ui/status-filter-heading'
 
 export const USER_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All users' },
+  { value: 'all', label: 'All Users' },
   { value: 'active', label: 'Active' },
   { value: 'suspended', label: 'Suspended' },
 ]

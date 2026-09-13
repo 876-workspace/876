@@ -66,7 +66,9 @@ describe('OrganizationLabelsPage', () => {
     })
 
     const { container } = render(page)
-    expect(screen.getByRole('heading', { name: 'Labels' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'All Labels' })
+    ).toBeInTheDocument()
 
     // Real table column headers are rendered during pending fallback
     expect(screen.getByText('Label')).toBeInTheDocument()

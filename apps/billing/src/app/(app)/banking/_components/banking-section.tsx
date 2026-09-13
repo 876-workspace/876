@@ -3,13 +3,12 @@
 import type { ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ListDetailSection } from '@876/ui/list-detail-section'
-import { useListDetailRoute } from '@876/ui/list-detail-shell'
 import type { StatusFilterOption } from '@876/ui/status-filter-heading'
 
 import { StreamingResourceToolbar } from '@/components/patterns/streaming-resource-toolbar'
 
 const BANKING_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Bank Accounts' },
+  { value: 'all', label: 'All Banking', headingLabel: 'All Bank Accounts' },
   { value: 'active', label: 'Active', headingLabel: 'Active Bank Accounts' },
   {
     value: 'archived',
@@ -32,7 +31,6 @@ export function BankingSection({
   list: ReactNode
   children: ReactNode
 }) {
-  const { open } = useListDetailRoute(TAKEOVER_SEGMENTS)
   // A layout receives no `searchParams`, so the active filter is read here on
   // the client, where it stays current across navigations.
   const status = useSearchParams().get('status') ?? 'all'
@@ -44,15 +42,10 @@ export function BankingSection({
           title="Banking"
           status={status}
           options={BANKING_STATUS_OPTIONS}
-          primary={
-            open
-              ? undefined
-              : {
-                  label: 'New',
-                  href: '/banking/new',
-                  permission: 'banking:write',
-                }
-          }
+          primary={{
+            href: '/banking/new',
+            permission: 'banking:write',
+          }}
         />
       }
       list={list}

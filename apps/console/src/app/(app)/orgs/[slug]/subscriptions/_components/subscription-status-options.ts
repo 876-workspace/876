@@ -2,7 +2,7 @@ import type { AdminSubscriptionStatus } from '@876/platform/compat'
 import type { StatusFilterOption } from '@876/ui/status-filter-heading'
 
 export const SUBSCRIPTION_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Subscriptions' },
+  { value: 'all', label: 'All Subscriptions' },
   { value: 'active', label: 'Active', headingLabel: 'Active Subscriptions' },
   {
     value: 'trialing',

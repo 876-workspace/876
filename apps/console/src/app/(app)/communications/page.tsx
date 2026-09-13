@@ -31,7 +31,7 @@ import { formatDateTime } from '@/lib/format'
 export const metadata = { title: 'Communications' }
 
 const STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Communications' },
+  { value: 'all', label: 'All Communications' },
   ...[
     'queued',
     'accepted',

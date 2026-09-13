@@ -137,7 +137,9 @@ describe('OrganizationIssueBoardPage', () => {
     })
 
     render(page)
-    expect(screen.getByRole('heading', { name: 'Board' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'All Board Issues' })
+    ).toBeInTheDocument()
   })
 
   it('renders all six status columns and categorizes board issues', async () => {

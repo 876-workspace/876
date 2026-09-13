@@ -20,7 +20,7 @@ import { PrioritySplitSkeleton } from './_components/priority-split-skeleton'
 
 export const metadata = { title: 'Priorities - Settings' }
 const PRIORITY_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All priorities' },
+  { value: 'all', label: 'All Priorities' },
   { value: 'active', label: 'Active' },
   { value: 'archived', label: 'Archived' },
 ]

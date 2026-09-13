@@ -7,7 +7,7 @@ import {
 } from '@876/ui/status-filter-heading'
 
 const CUSTOMER_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Customers' },
+  { value: 'all', label: 'All Customers', headingLabel: 'All Customers' },
   { value: 'active', label: 'Active', headingLabel: 'Active Customers' },
   { value: 'archived', label: 'Archived', headingLabel: 'Archived Customers' },
 ]

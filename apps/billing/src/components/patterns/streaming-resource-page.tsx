@@ -12,7 +12,6 @@ import {
 type Props = {
   children: ReactNode
   columns: DataTableSkeletonColumn[]
-  dropdownAction?: StreamingResourceAction
   options: StatusFilterOption[]
   primary?: StreamingResourceAction
   status: string

@@ -1,5 +1,5 @@
 export const DELIVERY_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Deliveries' },
+  { value: 'all', label: 'All Deliveries', headingLabel: 'All Deliveries' },
   {
     value: 'scheduled',
     label: 'Scheduled',
@@ -24,14 +24,8 @@ export const DELIVERY_STATUS_OPTIONS = [
 ]
 
 export const DELIVERIES_DROPDOWN_ACTIONS = [
-  { label: 'Import', icon: 'import' as const },
-  { label: 'Export', icon: 'export' as const },
-  {
-    label: 'Delete deliveries',
-    icon: 'delete' as const,
-    destructive: true,
-    separator: true,
-  },
+  { label: 'Import', icon: 'import' as const, disabled: true },
+  { label: 'Export', icon: 'export' as const, disabled: true },
 ]
 
 const DELIVERY_STATUS_VALUES = new Set(

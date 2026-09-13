@@ -38,7 +38,7 @@ describe('DisputesSection', () => {
     renderSection()
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Disputes' })
+      screen.getByRole('heading', { level: 1, name: 'All Disputes' })
     ).toBeInTheDocument()
     expect(screen.getByTestId('dispute-list')).toBeInTheDocument()
   })
@@ -69,7 +69,7 @@ describe('DisputesSection', () => {
 
     expect(screen.getByTestId('dispute-list')).toBeInTheDocument()
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Disputes' })
+      screen.getByRole('heading', { level: 1, name: 'All Disputes' })
     ).toBeInTheDocument()
   })
 

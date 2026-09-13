@@ -29,7 +29,6 @@ export function SalesReceiptsSection({
           status={resolveSalesReceiptStatus(status)}
           options={SALES_RECEIPT_STATUS_OPTIONS}
           primary={{
-            label: 'New',
             href: '/sales-receipts/new',
             permission: 'sales:write',
           }}

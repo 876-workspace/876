@@ -1,4 +1,5 @@
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
+import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { Skeleton } from '@876/ui/skeleton'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -28,7 +29,17 @@ export default async function OrganizationIssueBoardPage({ params }: Props) {
 
   return (
     <div>
-      <ResourceToolbar title="Board" refresh />
+      <ResourceToolbar
+        title="Board"
+        titleFilter={
+          <StatusFilterHeading
+            label="Board"
+            value="all"
+            options={[{ value: 'all', label: 'All Board Issues' }]}
+          />
+        }
+        refresh
+      />
       <Suspense fallback={<BoardFallback />}>
         <BoardData organizationId={org.id} base={projectsBase(orgSlug)} />
       </Suspense>

@@ -20,7 +20,7 @@ type Props = {
 }
 
 const PRICE_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All' },
+  { value: 'all', label: 'All Pricing' },
   { value: 'active', label: 'Active' },
   { value: 'archived', label: 'Archived' },
 ]
@@ -63,6 +63,7 @@ export default async function PlanPricingPage({ params, searchParams }: Props) {
         primaryLabel="Add"
         primaryHref={setup.newHref}
         primaryVariant="info"
+        refresh
       />
       <div className="876-card overflow-hidden">
         <PlanPricingTable setup={setup} />

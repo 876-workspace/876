@@ -7,7 +7,7 @@ import {
 } from '@876/ui/status-filter-heading'
 
 const ITEM_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Items' },
+  { value: 'all', label: 'All Items', headingLabel: 'All Items' },
   { value: 'active', label: 'Active', headingLabel: 'Active Items' },
   { value: 'inactive', label: 'Inactive', headingLabel: 'Inactive Items' },
 ]
@@ -30,8 +30,9 @@ export function ItemsToolbar({
           options={ITEM_STATUS_OPTIONS}
         />
       }
-      primaryLabel={showPrimary ? 'Add' : undefined}
-      primaryHref={showPrimary ? '/items/new' : undefined}
+      primaryLabel="Add"
+      primaryIconOnly={!showPrimary}
+      primaryHref="/items/new"
       primaryVariant="info"
       refresh
     />

@@ -7,7 +7,7 @@ import {
 } from '@876/ui/status-filter-heading'
 
 const QUOTE_STATUS_OPTIONS: StatusFilterOption[] = [
-  { value: 'all', label: 'All', headingLabel: 'All Quotes' },
+  { value: 'all', label: 'All Quotes', headingLabel: 'All Quotes' },
   { value: 'draft', label: 'Draft', headingLabel: 'Draft Quotes' },
   { value: 'sent', label: 'Sent', headingLabel: 'Sent Quotes' },
   { value: 'accepted', label: 'Accepted', headingLabel: 'Accepted Quotes' },
@@ -33,8 +33,9 @@ export function QuotesToolbar({
           options={QUOTE_STATUS_OPTIONS}
         />
       }
-      primaryLabel={showPrimary ? 'Add' : undefined}
-      primaryHref={showPrimary ? '/quotes/new' : undefined}
+      primaryLabel="Add"
+      primaryIconOnly={!showPrimary}
+      primaryHref="/quotes/new"
       primaryVariant="info"
       refresh
     />

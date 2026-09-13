@@ -13,7 +13,7 @@ import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 import { PackagesTable } from './_components/packages-table'
 
 const PACKAGE_STATUS_OPTIONS = [
-  { value: 'all', label: 'All', headingLabel: 'All Packages' },
+  { value: 'all', label: 'All Packages', headingLabel: 'All Packages' },
   {
     value: 'pre_alert',
     label: 'Pre-alert',
@@ -83,14 +83,8 @@ export default async function PackagesPage({ params, searchParams }: Props) {
         primaryVariant="info"
         refresh
         dropdownActions={[
-          { label: 'Import', icon: 'import' },
-          { label: 'Export', icon: 'export' },
-          {
-            label: 'Delete packages',
-            icon: 'delete',
-            destructive: true,
-            separator: true,
-          },
+          { label: 'Import', icon: 'import', disabled: true },
+          { label: 'Export', icon: 'export', disabled: true },
         ]}
       />
 
