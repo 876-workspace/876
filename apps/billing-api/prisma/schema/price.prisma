@@ -35,6 +35,7 @@ model Price {
   quoteLines                 QuoteLine[]
   invoiceLines               InvoiceLine[]
   salesReceiptLines          SalesReceiptLine[]
+  salesOrderLines            SalesOrderLine[]
   creditNoteLines            CreditNoteLine[]
   priceListEntries           PriceListEntry[]
 
