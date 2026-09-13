@@ -3,7 +3,7 @@
 **Run ID:** `2026-09-13-billing-commercial-engine-expansion`  
 **Branch:** `feature/billing-commercial-engine`  
 **Base:** `main` @ `848ac1c34057513222d8fdace4f9a211e01d9ca7`  
-**Status:** IN_PROGRESS — host UI and its baseline tests are in place; API/conversion test floors remain incomplete.
+**Status:** IN_PROGRESS — Sales Order API, conversion, and host test floors are complete; remaining closeout work is outside this pass.
 
 ## Overview
 
@@ -244,22 +244,22 @@ These are present on the branch but are not all final until the binding correcti
 - [ ] Edit the unapplied migration in place to exactly match the final schema.
 - [ ] Add persistence/serializer tests; floor: **4 counted `it()` cases**.
 
-### Phase 2 — Billing API document domain — PARTIAL, RESTRUCTURE REQUIRED
+### Phase 2 — Billing API document domain — COMPLETE
 
 - [x] `buildCommercialLines` shared resolver extracted.
 - [x] Existing document line builder delegates to the shared commercial-line resolver.
 - [x] Initial schemas/repository/service/controllers/routes written.
 - [x] Initial lifecycle tests written.
-- [ ] Move/rewrite Sales Order implementation under `src/modules/documents/` using existing document layout.
-- [ ] Use `DocumentLineCreateSchema` as the line input contract.
-- [ ] Add header/customer/address/salesperson/tax/provenance snapshot preparation using existing document precedents.
-- [ ] Allocate Sales Order number through `nextDocumentNumber` inside transaction.
-- [ ] Use existing `optionalCommandIdempotency` for create + lifecycle commands.
-- [ ] Derive invoicing/payment state with a batched Invoice join/query.
-- [ ] Implement only confirm/cancel/complete transitions; remove pending/start-processing.
-- [ ] Enforce draft-only updates and tenant isolation.
-- [ ] Remove standalone `src/modules/sales-orders/` after documents implementation owns all call sites.
-- [ ] Expand API tests to floor: **30 counted `it()` cases**, including assembled Express auth and server-side filtering.
+- [x] Move/rewrite Sales Order implementation under `src/modules/documents/` using existing document layout.
+- [x] Use `DocumentLineCreateSchema` as the line input contract.
+- [x] Add header/customer/address/salesperson/tax/provenance snapshot preparation using existing document precedents.
+- [x] Allocate Sales Order number through `nextDocumentNumber` inside transaction.
+- [x] Use existing `optionalCommandIdempotency` for create + lifecycle commands.
+- [x] Derive invoicing/payment state with a batched Invoice join/query.
+- [x] Implement only confirm/cancel/complete transitions; remove pending/start-processing.
+- [x] Enforce draft-only updates and tenant isolation.
+- [x] Remove standalone `src/modules/sales-orders/` after documents implementation owns all call sites.
+- [x] Expand API tests to floor: **34 counted `it()` cases**, including assembled Express auth, repository filters, and batched derivation.
 
 ### Phase 3 — bounded SDK — PARTIAL
 
@@ -274,17 +274,17 @@ These are present on the branch but are not all final until the binding correcti
 - [ ] Do **not** modify `packages/billing/src/integration/client.ts`.
 - [ ] Expand SDK tests to floor: **10 counted `it()` cases**, including malformed-response rejection per verb family.
 
-### Phase 4 — conversions — NOT STARTED
+### Phase 4 — conversions — COMPLETE
 
-- [ ] Quote → Sales Order command using existing quote-conversion transaction lock/gate.
-- [ ] Prevent duplicate quote conversion via unique `quoteId` semantics/replay behavior.
-- [ ] Sales Order → Invoice command requiring confirmed order.
-- [ ] Copy Sales Order snapshots to Invoice/InvoiceLine without live repricing.
-- [ ] Set `Invoice.billingReason = SALES_ORDER` and `salesOrderId`.
-- [ ] Block a second non-void Invoice transactionally.
-- [ ] Allow re-invoicing after the previous linked Invoice is VOID.
-- [ ] Add derived invoicing/payment-state tests.
-- [ ] Conversion test floor: **12 counted `it()` cases**.
+- [x] Quote → Sales Order command using existing quote-conversion transaction lock/gate.
+- [x] Prevent duplicate quote conversion via unique `quoteId` semantics/replay behavior.
+- [x] Sales Order → Invoice command requiring confirmed order.
+- [x] Copy Sales Order snapshots to Invoice/InvoiceLine without live repricing.
+- [x] Set `Invoice.billingReason = SALES_ORDER` and `salesOrderId`.
+- [x] Block a second non-void Invoice transactionally.
+- [x] Allow re-invoicing after the previous linked Invoice is VOID.
+- [x] Add derived invoicing/payment-state tests.
+- [x] Conversion test floor: **12 counted `it()` cases**.
 
 ### Phase 5 — Billing module/access/navigation/host — PARTIAL
 
