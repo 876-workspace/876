@@ -15,8 +15,8 @@ model PackageCategory {
   tenant   Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   packages Package[]
 
-  @@unique([tenantId, slug])
-  @@unique([tenantId, provisioningKey])
-  @@index([tenantId, isActive, sortOrder])
+  @@unique([tenantId, slug], map: "package_categories_tenant_id_slug_key", where: raw("(deleted_at IS NULL)"))
+  @@unique([tenantId, provisioningKey], map: "package_categories_tenant_id_provisioning_key_key", where: raw("(deleted_at IS NULL AND provisioning_key IS NOT NULL)"))
+  @@index([tenantId, isActive, sortOrder], map: "package_categories_tenant_id_is_active_sort_order_idx")
   @@map("package_categories")
 }
