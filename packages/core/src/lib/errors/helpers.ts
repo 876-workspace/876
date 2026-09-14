@@ -9,6 +9,7 @@ import { APP_ERRORS } from './apps'
 import { AUTH_ERRORS } from './auth'
 import { BILLING_ERRORS } from './billing'
 import { CONTACT_ERRORS } from './contacts'
+import { COURIERS_ERRORS } from './couriers'
 import { CRM_ERRORS } from './crm'
 import { DEPARTMENT_ERRORS } from './departments'
 import { EMPLOYEE_ERRORS } from './employees'
@@ -43,6 +44,7 @@ export const ERRORS = {
   ...AUTH_ERRORS,
   ...BILLING_ERRORS,
   ...CONTACT_ERRORS,
+  ...COURIERS_ERRORS,
   ...CRM_ERRORS,
   ...DEPARTMENT_ERRORS,
   ...EMPLOYEE_ERRORS,
