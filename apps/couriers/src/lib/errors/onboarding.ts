@@ -34,4 +34,12 @@ export const ONBOARDING_ERRORS = {
     message: 'The workspace could not be activated. Please try again.',
     httpStatus: HttpStatus.BAD_GATEWAY,
   },
+  'onboarding/provisioning-unavailable': {
+    message: 'Workspace defaults could not be loaded. Please try again.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
+  },
+  'onboarding/provisioning-failed': {
+    message: 'Workspace defaults could not be applied. Please try again.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
+  },
 } as const satisfies Record<string, ErrorDef>
