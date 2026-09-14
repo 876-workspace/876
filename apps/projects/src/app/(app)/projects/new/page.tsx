@@ -3,12 +3,12 @@ import type { Metadata } from 'next'
 
 import { NewProjectForm } from '@/features/projects/components/new-project-form'
 import { PageBreadcrumb } from '@/components/page-breadcrumb'
-import { requireAppPermission } from '@/lib/auth/require-projects-context'
+import { requireAppAccess } from '@/lib/auth/require-projects-context'
 
 export const metadata: Metadata = { title: 'New project' }
 
 export default async function NewProjectPage() {
-  await requireAppPermission('projects.create')
+  await requireAppAccess({ module: 'projects', permission: 'projects.create' })
 
   return (
     <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">
