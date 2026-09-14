@@ -44,9 +44,8 @@ vi.mock('@/db/client', () => ({
 
 const { createApp } = await import('@/application')
 const { resetSettingsForTest } = await import('@/config')
-const { reconcileProvisionedPackageCategories } = await import(
-  '../package-categories.service'
-)
+const { reconcileProvisionedPackageCategories } =
+  await import('../package-categories.service')
 
 const testEnv: NodeJS.ProcessEnv = {
   ENVIRONMENT: 'test',
@@ -247,7 +246,8 @@ describe('package categories', () => {
     expect(response.status).toBe(422)
     expect(response.body.error).toEqual({
       code: 'request/invalid',
-      message: 'The request is invalid. Please check the submitted values.',
+      message:
+        'Invalid string: must match pattern /^[a-z0-9]+(?:-[a-z0-9]+)*$/',
     })
     expect(packageCategory.findFirst).not.toHaveBeenCalled()
     expect(packageCategory.create).not.toHaveBeenCalled()
@@ -363,15 +363,13 @@ describe('package categories', () => {
 
   it('adopts a matching tenant-authored slug without resetting its values', async () => {
     // ARRANGE — no provisioning key exists, but the tenant already owns the slug.
-    packageCategory.findFirst
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(
-        categoryRow({
-          provisioningKey: null,
-          name: 'Electronic Goods',
-          description: 'Tenant wording.',
-        })
-      )
+    packageCategory.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(
+      categoryRow({
+        provisioningKey: null,
+        name: 'Electronic Goods',
+        description: 'Tenant wording.',
+      })
+    )
 
     // ACT — reconcile the platform category.
     const result = await reconcileProvisionedPackageCategories('ten_reyes', [

@@ -677,6 +677,43 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
               },
             ],
           },
+          "category": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                  },
+                  "name": {
+                    "type": "string",
+                  },
+                  "slug": {
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "slug",
+                ],
+                "type": "object",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
           "collected_at": {
             "anyOf": [
               {
@@ -777,6 +814,8 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           "customer_id",
           "branch_id",
           "mailbox_id",
+          "category_id",
+          "category",
           "tracking_num",
           "status",
           "package_type",
@@ -786,6 +825,135 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           "collected_at",
           "created_at",
           "updated_at",
+        ],
+        "type": "object",
+      },
+      "PackageCategory": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "id": {
+            "type": "string",
+          },
+          "is_active": {
+            "type": "boolean",
+          },
+          "name": {
+            "type": "string",
+          },
+          "object": {
+            "const": "package_category",
+            "type": "string",
+          },
+          "provisioning_key": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "slug": {
+            "type": "string",
+          },
+          "sort_order": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+          "tenant_id": {
+            "anyOf": [
+              {
+                "type": "string",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "updated_at": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "object",
+          "id",
+          "tenant_id",
+          "provisioning_key",
+          "name",
+          "slug",
+          "description",
+          "icon",
+          "sort_order",
+          "is_active",
+          "created_at",
+          "updated_at",
+          "deleted_at",
+        ],
+        "type": "object",
+      },
+      "PackageCategoryReconciliation": {
+        "additionalProperties": false,
+        "properties": {
+          "object": {
+            "const": "package_category_reconciliation",
+            "type": "string",
+          },
+          "reconciled": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer",
+          },
+          "revision": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer",
+          },
+        },
+        "required": [
+          "object",
+          "revision",
+          "reconciled",
         ],
         "type": "object",
       },
@@ -852,6 +1020,43 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
                   "name",
                 ],
                 "type": "object",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "category": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                  },
+                  "name": {
+                    "type": "string",
+                  },
+                  "slug": {
+                    "type": "string",
+                  },
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "slug",
+                ],
+                "type": "object",
+              },
+              {
+                "type": "null",
+              },
+            ],
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "type": "string",
               },
               {
                 "type": "null",
@@ -991,6 +1196,8 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           "customer_id",
           "branch_id",
           "mailbox_id",
+          "category_id",
+          "category",
           "tracking_num",
           "status",
           "package_type",
@@ -4447,6 +4654,14 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           },
           {
             "in": "query",
+            "name": "category_id",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
             "name": "limit",
             "schema": {
               "default": 25,
@@ -4597,6 +4812,17 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
                     ],
                   },
                   "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "category_id": {
                     "anyOf": [
                       {
                         "minLength": 1,
@@ -4887,6 +5113,17 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
                     ],
                   },
                   "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "category_id": {
                     "anyOf": [
                       {
                         "minLength": 1,
@@ -12745,6 +12982,800 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
         ],
       },
     },
+    "/v1/tenants/{tenantId}/package-categories": {
+      "get": {
+        "operationId": "listPackageCategories",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "is_active",
+            "schema": {
+              "enum": [
+                "true",
+                "false",
+              ],
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 100,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+            },
+          },
+          {
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/PackageCategory",
+                          },
+                          "type": "array",
+                        },
+                        "has_more": {
+                          "type": "boolean",
+                        },
+                        "object": {
+                          "const": "list",
+                          "description": "Always 'list'.",
+                          "type": "string",
+                        },
+                        "total_count": {
+                          "anyOf": [
+                            {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "url": {
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "data",
+                        "has_more",
+                        "url",
+                        "total_count",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Package categories.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "InternalKey": [],
+          },
+        ],
+        "summary": "List package categories",
+        "tags": [
+          "Package categories",
+        ],
+      },
+      "post": {
+        "operationId": "createPackageCategory",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "description": {
+                    "anyOf": [
+                      {
+                        "maxLength": 500,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "icon": {
+                    "anyOf": [
+                      {
+                        "maxLength": 80,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                  },
+                  "name": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "slug": {
+                    "maxLength": 80,
+                    "minLength": 1,
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "type": "string",
+                  },
+                  "sort_order": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                },
+                "required": [
+                  "name",
+                  "slug",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PackageCategory",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Package category created.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Create package category",
+        "tags": [
+          "Package categories",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/package-categories/reconcile": {
+      "post": {
+        "operationId": "reconcilePackageCategories",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "categories": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "description": {
+                          "anyOf": [
+                            {
+                              "maxLength": 500,
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "icon": {
+                          "anyOf": [
+                            {
+                              "maxLength": 80,
+                              "type": "string",
+                            },
+                            {
+                              "type": "null",
+                            },
+                          ],
+                        },
+                        "is_active": {
+                          "default": true,
+                          "type": "boolean",
+                        },
+                        "key": {
+                          "maxLength": 80,
+                          "minLength": 1,
+                          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                          "type": "string",
+                        },
+                        "name": {
+                          "maxLength": 120,
+                          "minLength": 1,
+                          "type": "string",
+                        },
+                        "sort_order": {
+                          "maximum": 9007199254740991,
+                          "minimum": 0,
+                          "type": "integer",
+                        },
+                      },
+                      "required": [
+                        "key",
+                        "name",
+                        "sort_order",
+                      ],
+                      "type": "object",
+                    },
+                    "maxItems": 100,
+                    "minItems": 1,
+                    "type": "array",
+                  },
+                  "revision": {
+                    "maximum": 9007199254740991,
+                    "minimum": 1,
+                    "type": "integer",
+                  },
+                },
+                "required": [
+                  "revision",
+                  "categories",
+                ],
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PackageCategoryReconciliation",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Provisioned package categories reconciled.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Reconcile provisioned package categories",
+        "tags": [
+          "Package categories",
+        ],
+      },
+    },
+    "/v1/tenants/{tenantId}/package-categories/{id}": {
+      "delete": {
+        "operationId": "deletePackageCategory",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "deleted": {
+                          "const": true,
+                          "type": "boolean",
+                        },
+                        "id": {
+                          "type": "string",
+                        },
+                        "object": {
+                          "const": "package_category",
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "object",
+                        "id",
+                        "deleted",
+                      ],
+                      "type": "object",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Package category archived.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Archive package category",
+        "tags": [
+          "Package categories",
+        ],
+      },
+      "get": {
+        "operationId": "retrievePackageCategory",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PackageCategory",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Package category.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Retrieve package category",
+        "tags": [
+          "Package categories",
+        ],
+      },
+      "patch": {
+        "operationId": "updatePackageCategory",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tenantId",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "description": {
+                    "anyOf": [
+                      {
+                        "maxLength": 500,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "icon": {
+                    "anyOf": [
+                      {
+                        "maxLength": 80,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "is_active": {
+                    "type": "boolean",
+                  },
+                  "name": {
+                    "maxLength": 120,
+                    "minLength": 1,
+                    "type": "string",
+                  },
+                  "slug": {
+                    "maxLength": 80,
+                    "minLength": 1,
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                    "type": "string",
+                  },
+                  "sort_order": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer",
+                  },
+                },
+                "type": "object",
+              },
+            },
+          },
+          "required": true,
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PackageCategory",
+                    },
+                    "error": {
+                      "type": "null",
+                    },
+                  },
+                  "required": [
+                    "data",
+                    "error",
+                  ],
+                  "type": "object",
+                },
+              },
+            },
+            "description": "Package category updated.",
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "Missing or invalid credentials.",
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The caller is authenticated but not permitted.",
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope",
+                },
+              },
+            },
+            "description": "The request failed validation.",
+          },
+        },
+        "security": [
+          {
+            "ApiKey": [],
+            "InternalKey": [],
+          },
+        ],
+        "summary": "Update package category",
+        "tags": [
+          "Package categories",
+        ],
+      },
+    },
     "/v1/tenants/{tenantId}/packages": {
       "get": {
         "operationId": "packages-list",
@@ -12785,6 +13816,14 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           {
             "in": "query",
             "name": "branch_id",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
+            "name": "category_id",
             "schema": {
               "minLength": 1,
               "type": "string",
@@ -12953,6 +13992,17 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
                     ],
                   },
                   "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "category_id": {
                     "anyOf": [
                       {
                         "minLength": 1,
@@ -13253,6 +14303,17 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
                     ],
                   },
                   "branch_id": {
+                    "anyOf": [
+                      {
+                        "minLength": 1,
+                        "type": "string",
+                      },
+                      {
+                        "type": "null",
+                      },
+                    ],
+                  },
+                  "category_id": {
                     "anyOf": [
                       {
                         "minLength": 1,
