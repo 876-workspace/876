@@ -48,7 +48,7 @@ export const navConfig = defineNavigation([
         href: '/labels',
         icon: 'labels',
         colorClassName: 'text-rose-500 dark:text-rose-400',
-        requires: { permission: 'labels.view' },
+        requires: { module: 'issues', permission: 'labels.view' },
       },
       {
         key: 'members',
