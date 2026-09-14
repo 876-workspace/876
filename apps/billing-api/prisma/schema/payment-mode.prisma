@@ -7,6 +7,9 @@ model PaymentMode {
   isDefault Boolean @default(false) @map("is_default")
   isActive  Boolean @default(true) @map("is_active")
   isSystem  Boolean @default(false) @map("is_system")
+  /// Canonical opaque 876 Storage identity. The URL is a render cache only.
+  imageFileId String? @map("image_file_id")
+  imageUrl    String? @map("image_url")
   createdAt Int     @map("created_at")
   updatedAt Int     @map("updated_at")
 

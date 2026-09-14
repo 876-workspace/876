@@ -17,6 +17,8 @@ function createMode(overrides: Partial<PaymentMode> = {}): PaymentMode {
     createdAt: 1_757_000_000,
     updatedAt: 1_757_000_000,
     ...overrides,
+    imageFileId: overrides.imageFileId ?? null,
+    imageUrl: overrides.imageUrl ?? null,
   }
 }
 
@@ -103,6 +105,47 @@ describe('PaymentModeSettingsPanel', () => {
     expect(onCreate).toHaveBeenCalledTimes(1)
     expect(onCreate).toHaveBeenCalledWith({ name: 'Cheque' })
     expect(onSuccess).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows a selected image in the create flow and uploads it after creation', async () => {
+    const user = userEvent.setup()
+    const onCreate = vi
+      .fn()
+      .mockResolvedValue({ data: createMode(), error: null })
+    const onUploadImage = vi.fn().mockResolvedValue({ error: null })
+    render(
+      <PaymentModeSettingsPanel
+        modes={[]}
+        canManage
+        onCreate={onCreate}
+        onUpdate={vi.fn()}
+        onDelete={vi.fn()}
+        onUploadImage={onUploadImage}
+        onSuccess={vi.fn()}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: 'Add' }))
+    await user.type(screen.getByLabelText('Payment mode name'), 'Cash')
+    const file = new File(['png'], 'cash.png', { type: 'image/png' })
+    await user.upload(screen.getByLabelText('Payment mode image'), file)
+    await user.click(
+      screen.getByRole('button', { name: 'Create payment mode' })
+    )
+    expect(onUploadImage).toHaveBeenCalledWith('pm_bank_transfer', file)
+  })
+
+  it('renders a payment-mode logo thumbnail', () => {
+    renderPanel({
+      modes: [
+        createMode({
+          imageFileId: 'file_logo',
+          imageUrl: 'https://cdn.example.test/logo.png',
+        }),
+      ],
+    })
+    expect(
+      screen.getByRole('img', { name: 'Bank transfer logo' })
+    ).toHaveAttribute('src', 'https://cdn.example.test/logo.png')
   })
 
   it('updates a custom payment mode with the edited name', async () => {

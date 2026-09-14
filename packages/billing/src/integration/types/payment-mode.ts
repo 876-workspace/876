@@ -34,6 +34,10 @@ export interface BillingPaymentMode {
    */
   isSystem: boolean
 
+  imageFileId: string | null
+
+  imageUrl: string | null
+
   /**
    * Time at which the object was created. Measured in seconds since the Unix epoch.
    */
@@ -54,6 +58,8 @@ export interface BillingPaymentModeUpdateParams {
   name?: string
   isDefault?: boolean
   isActive?: boolean
+  imageFileId?: string | null
+  imageUrl?: string | null
 }
 
 export interface BillingPaymentModeDeleted {

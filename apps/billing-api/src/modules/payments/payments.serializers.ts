@@ -27,6 +27,8 @@ export function serializePaymentMode(row: unknown) {
     isDefault: data.isDefault,
     isActive: data.isActive,
     isSystem: data.isSystem,
+    imageFileId: data.imageFileId ?? null,
+    imageUrl: data.imageUrl ?? null,
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,
   }

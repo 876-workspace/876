@@ -68,4 +68,14 @@ UPLOAD_ROUTES: dict[str, UploadRoute] = {
         audience="public",
         key_template="organizations/{owner_id}/billing/item-variant-media/{file_id}/{version_id}",
     ),
+    "billing.paymentModeImage": UploadRoute(
+        key="billing.paymentModeImage",
+        purpose="billing_payment_mode_image",
+        owner_type="organization",
+        allowed_content_types=_IMAGE_TYPES,
+        max_size_bytes=_IMAGE_MAX_BYTES,
+        category="attachment",
+        audience="public",
+        key_template="organizations/{owner_id}/billing/payment-mode-images/{file_id}/{version_id}",
+    ),
 }

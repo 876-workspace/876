@@ -31,6 +31,12 @@ export interface PaymentModeUpdateParams {
    * Whether the payment mode is active for new payments.
    */
   isActive?: boolean
+
+  /** Opaque 876 Storage file ID for the payment-mode logo. */
+  imageFileId?: string | null
+
+  /** Stable display URL cached from the verified public Storage file. */
+  imageUrl?: string | null
 }
 
 /**
@@ -66,6 +72,10 @@ export interface PaymentMode {
    * Whether this payment mode is a system-managed default.
    */
   isSystem: boolean
+
+  imageFileId: string | null
+
+  imageUrl: string | null
 
   /**
    * Time at which the object was created. Measured in seconds since the Unix epoch.

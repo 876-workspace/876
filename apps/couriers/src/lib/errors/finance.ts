@@ -28,6 +28,23 @@ export const FINANCE_ERRORS = {
     message: 'The payment mode details are invalid.',
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
   },
+  'finance/payment-mode-not-found': {
+    message: 'The payment mode was not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
+  'finance/payment-mode-image-upload-failed': {
+    message: 'The payment mode image could not be uploaded. Please try again.',
+    httpStatus: HttpStatus.BAD_REQUEST,
+  },
+  'finance/payment-mode-image-mismatch': {
+    message: 'The uploaded image does not belong to this payment mode.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'finance/payment-mode-image-attach-failed': {
+    message:
+      'The image was uploaded but could not be attached. Please try again.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
+  },
   'finance/invalid-currency': {
     message: 'The currency details are invalid.',
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,

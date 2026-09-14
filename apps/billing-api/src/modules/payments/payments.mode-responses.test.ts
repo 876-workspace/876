@@ -18,6 +18,8 @@ const mode = {
   isDefault: false,
   isActive: true,
   isSystem: false,
+  imageFileId: null,
+  imageUrl: null,
   createdAt: 1,
   updatedAt: 1,
 }
@@ -28,6 +30,8 @@ const resource = {
   isDefault: false,
   isActive: true,
   isSystem: false,
+  imageFileId: null,
+  imageUrl: null,
   createdAt: 1,
   updatedAt: 1,
 }

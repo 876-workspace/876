@@ -98,18 +98,8 @@ export type PaymentUpdateParams = z.infer<typeof PaymentUpdateSchema>
 export type PaymentUpdateInput = z.input<typeof PaymentUpdateSchema>
 export type PaymentApplyParams = z.infer<typeof PaymentApplySchema>
 
-export interface PaymentModeCreated {
-  object: 'payment_mode'
-  id: string
-}
-
 export interface PaymentCreated {
   object: 'payment'
-  id: string
-}
-
-export interface PaymentModeUpdated {
-  object: 'payment_mode'
   id: string
 }
 

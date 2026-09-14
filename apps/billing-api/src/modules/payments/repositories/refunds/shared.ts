@@ -78,8 +78,7 @@ export async function createCreditNoteRefund(
       balanceAmount: true,
     },
   })
-  if (!creditNote)
-    throw new RefundMutationError('Credit note not found.', 404)
+  if (!creditNote) throw new RefundMutationError('Credit note not found.', 404)
   if (creditNote.customerId !== params.customerId)
     throw new RefundMutationError(
       'The credit note belongs to a different customer.',
@@ -96,7 +95,10 @@ export async function createCreditNoteRefund(
       409
     )
   if (creditNote.balanceAmount < params.amount)
-    throw new RefundMutationError('Refund exceeds the credit note balance.', 422)
+    throw new RefundMutationError(
+      'Refund exceeds the credit note balance.',
+      422
+    )
 
   const newBalance = creditNote.balanceAmount - params.amount
   await tx.creditNote.update({

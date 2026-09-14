@@ -10,10 +10,7 @@ import { recordLedgerEntry } from '@/modules/ledger'
 import { err, ok } from '../result'
 import { hasEnabledCurrency } from '@/modules/currencies'
 import { recomputeCustomerAr } from '@/modules/customers'
-import {
-  createCreditNoteRefund,
-  RefundMutationError,
-} from './shared'
+import { createCreditNoteRefund, RefundMutationError } from './shared'
 import { isRetryableTransactionError } from '@/platform/prisma-errors'
 
 /** Records a cash return to a customer drawn from a credit note or an overpaid payment. */

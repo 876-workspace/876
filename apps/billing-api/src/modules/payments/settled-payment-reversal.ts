@@ -28,8 +28,7 @@ export async function reverseSettledPayment(
       refunds: { select: { id: true } },
     },
   })
-  if (!payment)
-    throw new SettledPaymentReversalError('Payment not found.', 404)
+  if (!payment) throw new SettledPaymentReversalError('Payment not found.', 404)
   if (payment.status !== 'SUCCEEDED')
     throw new SettledPaymentReversalError(
       'Only a successful settled payment can be reversed.',

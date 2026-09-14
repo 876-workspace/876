@@ -12,6 +12,8 @@ export const BillingPaymentModeSchema = z.strictObject({
   isDefault: z.boolean(),
   isActive: z.boolean(),
   isSystem: z.boolean(),
+  imageFileId: z.string().startsWith('file_').nullable(),
+  imageUrl: z.url().nullable(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
 }) satisfies z.ZodType<BillingPaymentMode>

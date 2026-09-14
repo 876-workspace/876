@@ -167,3 +167,32 @@ describe('Couriers payment mode mutation routes', () => {
     })
   })
 })
+
+describe('Couriers payment mode update route image fields', () => {
+  it('rejects a caller-supplied image file and URL without calling Billing', async () => {
+    const { PATCH } = await import('./route')
+    const createBillingIntegration = vi.mocked(
+      (await import('@/lib/services/billing')).createBillingIntegration
+    )
+    createBillingIntegration.mockClear()
+
+    const response = await PATCH(
+      new Request(
+        'http://couriers.test/api/manage/finance/payment-modes/pm_1',
+        {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            orgSlug: 'acme',
+            imageFileId: 'file_evil',
+            imageUrl: 'https://tracker.example/pixel.png',
+          }),
+        }
+      ),
+      { params: Promise.resolve({ modeId: 'pm_1' }) }
+    )
+
+    expect(response.status).toBe(422)
+    expect(createBillingIntegration).not.toHaveBeenCalled()
+  })
+})
