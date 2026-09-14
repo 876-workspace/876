@@ -6,12 +6,12 @@ import { Suspense } from 'react'
 
 import { LabelsData } from '@/features/projects/components/labels-data'
 import { LABELS_SKELETON_COLUMNS } from '@876/projects-ui/skeleton-columns'
-import { requireAppPermission } from '@/lib/auth/require-projects-context'
+import { requireAppAccess } from '@/lib/auth/require-projects-context'
 
 export const metadata: Metadata = { title: 'Labels' }
 
 export default async function LabelsPage() {
-  await requireAppPermission('labels.view')
+  await requireAppAccess({ module: 'issues', permission: 'labels.view' })
 
   return (
     <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">
