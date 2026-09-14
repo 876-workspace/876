@@ -39,6 +39,10 @@
       "types": "./src/request-status.ts",
       "default": "./src/request-status.ts"
     },
+    "./request-forms-list": {
+      "types": "./src/request-forms-list.tsx",
+      "default": "./src/request-forms-list.tsx"
+    },
     "./request-record-shell": {
       "types": "./src/request-record-shell.tsx",
       "default": "./src/request-record-shell.tsx"
