@@ -23,6 +23,10 @@
       "types": "./src/customer-overview.tsx",
       "default": "./src/customer-overview.tsx"
     },
+    "./request-list": {
+      "types": "./src/request-list.tsx",
+      "default": "./src/request-list.tsx"
+    },
     "./request-record-shell": {
       "types": "./src/request-record-shell.tsx",
       "default": "./src/request-record-shell.tsx"
