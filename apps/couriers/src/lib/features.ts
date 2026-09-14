@@ -19,6 +19,7 @@ const COURIERS_GLOBAL_ADD_SLUG = 'couriers-global-add'
 const COURIERS_APP_SWITCHER_SLUG = 'couriers-app-switcher'
 const COURIERS_ORG_SWITCHER_SLUG = 'couriers-org-switcher'
 const COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG = 'couriers-storage-org-logo-upload'
+export const COURIERS_CUSTOMERS_CREATE_SLUG = 'couriers-customers-create'
 
 const LEGACY_FEATURE_SLUGS: Readonly<Record<string, readonly string[]>> = {
   [COURIERS_SEARCH_BAR_SLUG]: ['couriers_search_bar'],
@@ -48,6 +49,7 @@ const DEFAULT_UI_FEATURES: CouriersFeatures['uiFeatures'] = {
 }
 const DISABLED_FEATURES: CouriersFeatures = {
   storageOrgLogoUpload: false,
+  customerCreation: false,
   uiFeatures: DEFAULT_UI_FEATURES,
   enabledWidgetIds: [],
 }
@@ -64,11 +66,15 @@ const getCachedFeatures = cache(async function getCachedFeatures(
   organizationId: string
 ): Promise<CouriersFeatures> {
   const platform = await getPlatformClient()
-  const { data, error } = await platform.features.evaluate({
+  const evaluation = {
     appSlug: COURIERS_APP_SLUG,
     userId,
     organizationId,
-  })
+  }
+  const [{ data, error }, customerCreationDetails] = await Promise.all([
+    platform.features.evaluate(evaluation),
+    platform.features.evaluateDetails(evaluation),
+  ])
   if (error || !data) {
     Sentry.captureMessage('Feature flag outage: features.evaluate failed', {
       level: 'error',
@@ -97,6 +103,13 @@ const getCachedFeatures = cache(async function getCachedFeatures(
       enabledSlugs,
       COURIERS_STORAGE_ORG_LOGO_UPLOAD_SLUG
     ),
+    // The flag was introduced after existing tenants. A missing decision means
+    // that tenant has not received the flag yet, not that creation is paused.
+    // Only an explicit decision can turn the kill switch off.
+    customerCreation:
+      customerCreationDetails.data?.data.find(
+        (decision) => decision.feature.slug === COURIERS_CUSTOMERS_CREATE_SLUG
+      )?.enabled ?? true,
     uiFeatures: {
       searchBar: hasFeature(enabledSlugs, COURIERS_SEARCH_BAR_SLUG),
       themeSwitcher: hasFeature(enabledSlugs, COURIERS_THEME_SWITCHER_SLUG),

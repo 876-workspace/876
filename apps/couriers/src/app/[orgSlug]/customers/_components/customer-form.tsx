@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useState, useTransition } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@876/ui/button'
 import { EmailInput } from '@876/ui/email-input'
@@ -14,10 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@876/ui/select'
+import { SearchableSelect } from '@876/ui/searchable-select'
 import { listDialCodes, parsePhone } from '@876/core/phone'
 
 import { client } from '@/lib/client'
-import type { CustomerRow } from '@/types/customer'
+import type { CustomerRow, GlobalCustomerOption } from '@/types/customer'
 import {
   CustomerBranchField,
   type CustomerBranchOption,
@@ -69,9 +70,16 @@ type Props = {
 
 export function CustomerForm({ orgSlug, branches, customer }: Props) {
   const router = useRouter()
-  // New Couriers customers are always consumer accounts. Keep the stored kind
-  // only to render legacy business records without mutating their identity.
   const kind = customer?.customerKind ?? 'INDIVIDUAL'
+  const [newCustomerKind, setNewCustomerKind] = useState(kind)
+  const [registryQuery, setRegistryQuery] = useState('')
+  const [registryCustomers, setRegistryCustomers] = useState<
+    GlobalCustomerOption[]
+  >([])
+  const [registryError, setRegistryError] = useState<string | null>(null)
+  const [registryLoading, setRegistryLoading] = useState(false)
+  const [selectedRegistryCustomer, setSelectedRegistryCustomer] =
+    useState<GlobalCustomerOption | null>(null)
   const [firstName, setFirstName] = useState(customer?.firstName ?? '')
   const [lastName, setLastName] = useState(customer?.lastName ?? '')
   const [companyName, setCompanyName] = useState(customer?.companyName ?? '')
@@ -94,18 +102,86 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
   const submissionKey = useRef(crypto.randomUUID())
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
-  const identityLocked = customer?.customerType === 'CORE_USER'
+  const identityLocked =
+    customer?.customerType === 'CORE_USER' || selectedRegistryCustomer !== null
   const handleBranchesReady = useCallback(() => setBranchesReady(true), [])
+  const isRegistrySearchActive = !customer && registryQuery.trim().length >= 2
+
+  useEffect(() => {
+    if (!isRegistrySearchActive) return
+    const controller = new AbortController()
+    const timeout = window.setTimeout(async () => {
+      setRegistryLoading(true)
+      setRegistryError(null)
+      try {
+        const query = new URLSearchParams({
+          orgSlug,
+          q: registryQuery.trim(),
+        })
+        const response = await fetch(
+          `/api/manage/customers/registry?${query}`,
+          {
+            signal: controller.signal,
+          }
+        )
+        const result = (await response.json()) as {
+          data: GlobalCustomerOption[] | null
+          error: { message: string } | null
+        }
+        if (!response.ok || !result.data) {
+          setRegistryError(
+            result.error?.message ?? 'Customers could not be loaded.'
+          )
+          return
+        }
+        setRegistryCustomers(result.data)
+      } catch (reason) {
+        if (!controller.signal.aborted)
+          setRegistryError(
+            reason instanceof Error
+              ? reason.message
+              : 'Customers could not be loaded.'
+          )
+      } finally {
+        if (!controller.signal.aborted) setRegistryLoading(false)
+      }
+    }, 200)
+    return () => {
+      controller.abort()
+      window.clearTimeout(timeout)
+    }
+  }, [isRegistrySearchActive, orgSlug, registryQuery])
+
+  function selectRegistryCustomer(customerId: string) {
+    const next =
+      registryCustomers.find((item) => item.id === customerId) ?? null
+    if (!next) {
+      setSelectedRegistryCustomer(null)
+      return
+    }
+    if (next.enrolled) {
+      setError('This party is already a Couriers customer.')
+      return
+    }
+    setSelectedRegistryCustomer(next)
+    setNewCustomerKind(next.customerKind)
+    setFirstName(next.firstName ?? '')
+    setLastName(next.lastName ?? '')
+    setCompanyName(next.companyName ?? '')
+    setEmail(next.email ?? '')
+    setPhone(splitPhone(next.phone))
+  }
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
+    const activeKind = customer?.customerKind ?? newCustomerKind
     // A CORE_USER's identity belongs to their 876 account, so the form must not
     // send those fields at all. Sending them unchanged would still read as an
     // identity edit server-side and reject a perfectly valid branch or TRN change.
     const identity = identityLocked
       ? {}
-      : kind === 'INDIVIDUAL'
+      : activeKind === 'INDIVIDUAL'
         ? {
             firstName: firstName.trim(),
             lastName: lastName.trim() || undefined,
@@ -113,9 +189,10 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
         : { companyName: companyName.trim() }
     if (
       !identityLocked &&
-      ((kind === 'INDIVIDUAL' && (!firstName.trim() || !lastName.trim())) ||
-        (kind === 'BUSINESS' && !companyName.trim()) ||
-        (!customer && !email.trim()))
+      ((activeKind === 'INDIVIDUAL' && !firstName.trim()) ||
+        (activeKind === 'INDIVIDUAL' && !lastName.trim()) ||
+        (activeKind === 'BUSINESS' && !companyName.trim()) ||
+        (!customer && !selectedRegistryCustomer && !email.trim()))
     ) {
       setError('Complete the required identity fields.')
       return
@@ -162,11 +239,29 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
             ...params,
             status,
           })
-        : await client.customers.create(orgSlug, {
-            ...params,
-            customerKind: kind,
-            idempotencyKey: submissionKey.current,
-          })
+        : await client.customers.create(
+            orgSlug,
+            selectedRegistryCustomer
+              ? {
+                  source: 'registry',
+                  billingCustomerId: selectedRegistryCustomer.id,
+                  branchId,
+                  isCommercial: false,
+                }
+              : {
+                  source: 'party',
+                  idempotencyKey: submissionKey.current,
+                  party: {
+                    customerKind: activeKind,
+                    ...identity,
+                    ...(email.trim() ? { email: email.trim() } : {}),
+                    ...(submittedPhone ? { phone: submittedPhone } : {}),
+                  },
+                  branchId,
+                  ...(trnValue === undefined ? {} : { trn: trnValue }),
+                  isCommercial: false,
+                }
+          )
       if (result.error) {
         setError(result.error.message)
         return
@@ -183,7 +278,52 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
   return (
     <form className="max-w-3xl space-y-6" onSubmit={submit}>
       <div className="876-card space-y-5 p-5">
-        {kind === 'INDIVIDUAL' ? (
+        {!customer ? (
+          <FormRow
+            htmlFor="customer-registry"
+            label="Customer"
+            className={customerFormRowClassName}
+          >
+            <SearchableSelect
+              id="customer-registry"
+              options={(isRegistrySearchActive ? registryCustomers : []).map(
+                (item) => ({
+                  value: item.id,
+                  label: `${item.name}${item.enrolled ? ' — Already a customer' : ''}`,
+                })
+              )}
+              value={selectedRegistryCustomer?.id ?? ''}
+              onValueChange={selectRegistryCustomer}
+              onSearchChange={setRegistryQuery}
+              placeholder="Search customers or enter a new one"
+              searchPlaceholder="Search customers…"
+              emptyMessage="No matches"
+              loading={isRegistrySearchActive && registryLoading}
+              error={isRegistrySearchActive ? registryError : null}
+              disabled={isPending}
+            />
+          </FormRow>
+        ) : null}
+        {!customer && !selectedRegistryCustomer ? (
+          <FormRow label="Type" className={customerFormRowClassName}>
+            <Select
+              value={newCustomerKind}
+              onValueChange={(value) =>
+                setNewCustomerKind(value as typeof newCustomerKind)
+              }
+              disabled={isPending}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="INDIVIDUAL">Individual</SelectItem>
+                <SelectItem value="BUSINESS">Business</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormRow>
+        ) : null}
+        {(customer?.customerKind ?? newCustomerKind) === 'INDIVIDUAL' ? (
           <FormRow
             label="Name"
             required
@@ -202,7 +342,7 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
                 value={firstName}
                 onChange={(event) => setFirstName(event.target.value)}
                 disabled={isPending || identityLocked}
-                required
+                required={!identityLocked}
               />
               <Input
                 id="customer-last-name"
@@ -211,7 +351,7 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
                 value={lastName}
                 onChange={(event) => setLastName(event.target.value)}
                 disabled={isPending || identityLocked}
-                required
+                required={!identityLocked}
               />
             </div>
           </FormRow>
@@ -227,14 +367,14 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
               value={companyName}
               onChange={(event) => setCompanyName(event.target.value)}
               disabled={isPending || identityLocked}
-              required
+              required={!identityLocked}
             />
           </FormRow>
         )}
         <FormRow
           htmlFor="customer-email"
           label="Email"
-          required={!customer}
+          required={!customer && !selectedRegistryCustomer}
           className={customerFormRowClassName}
           hint={
             identityLocked
@@ -247,7 +387,7 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             disabled={isPending || identityLocked}
-            required={!customer}
+            required={!customer && !selectedRegistryCustomer}
           />
         </FormRow>
         <FormRow

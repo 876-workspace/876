@@ -22,6 +22,14 @@ export const CUSTOMER_ERRORS = {
     message: 'A customer with that email already exists.',
     httpStatus: HttpStatus.CONFLICT,
   },
+  'customer/already-exists': {
+    message: 'This party is already a Couriers customer.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'customer/creation-paused': {
+    message: 'Customer creation is currently paused.',
+    httpStatus: HttpStatus.FORBIDDEN,
+  },
 } as const satisfies Record<string, ErrorDef>
 
 export type CustomerErrorCode = keyof typeof CUSTOMER_ERRORS

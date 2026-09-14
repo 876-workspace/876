@@ -90,13 +90,16 @@ describe('CustomerForm', () => {
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
     expect(mocks.create).toHaveBeenCalledTimes(1)
     expect(mocks.create).toHaveBeenCalledWith('nkr-express', {
-      firstName: 'Marlon',
-      lastName: 'Brown',
-      email: 'marlon.brown@example.jm',
+      source: 'party',
+      party: {
+        customerKind: 'INDIVIDUAL',
+        firstName: 'Marlon',
+        lastName: 'Brown',
+        email: 'marlon.brown@example.jm',
+      },
       branchId: 'br_kingston',
       trn: '123-456-789',
       isCommercial: false,
-      customerKind: 'INDIVIDUAL',
       idempotencyKey: expect.any(String),
     })
   })
@@ -196,7 +199,7 @@ describe('CustomerForm', () => {
       />
     )
 
-    expect(screen.getAllByRole('combobox')[0]?.textContent).toBe('🇯🇲\u2002+1')
+    expect(screen.getAllByRole('combobox')[2]?.textContent).toBe('🇯🇲\u2002+1')
   })
   it('splits a stored Jamaican number and submits it unchanged', async () => {
     render(
@@ -335,7 +338,7 @@ describe('CustomerForm', () => {
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
     expect(mocks.create).toHaveBeenCalledWith(
       'nkr-express',
-      expect.objectContaining({ branchId: 'br_kingston' })
+      expect.objectContaining({ source: 'party', branchId: 'br_kingston' })
     )
   })
 
@@ -487,7 +490,7 @@ describe('CustomerForm', () => {
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
     expect(mocks.create).toHaveBeenCalledWith(
       'nkr-express',
-      expect.objectContaining({ isCommercial: false })
+      expect.objectContaining({ source: 'party', isCommercial: false })
     )
   })
 
@@ -519,7 +522,9 @@ describe('CustomerForm', () => {
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
     expect(mocks.create).toHaveBeenCalledWith(
       'nkr-express',
-      expect.objectContaining({ phone: '+18765550142' })
+      expect.objectContaining({
+        party: expect.objectContaining({ phone: '+18765550142' }),
+      })
     )
   })
 
@@ -536,7 +541,7 @@ describe('CustomerForm', () => {
     fill('Email', 'a@b.jm')
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
-    expect(mocks.create.mock.calls[0]?.[1]).not.toHaveProperty('phone')
+    expect(mocks.create.mock.calls[0]?.[1].party).not.toHaveProperty('phone')
     unmount()
     vi.clearAllMocks()
     mocks.update.mockResolvedValue({ data: { id: 'cprof_nkr' }, error: null })
@@ -706,7 +711,7 @@ describe('CustomerForm', () => {
         branches={[{ id: 'br_kingston', name: 'Kingston' }]}
       />
     )
-    expect(screen.getAllByRole('combobox')[0]?.textContent).toBe('🇯🇲\u2002+1')
+    expect(screen.getAllByRole('combobox')[2]?.textContent).toBe('🇯🇲\u2002+1')
     // New customer phone is blank but dialCode is +1, not empty
   })
 
@@ -792,7 +797,7 @@ describe('CustomerForm', () => {
     fireEvent.change(box, { target: { value: '   ' } })
     fireEvent.click(screen.getByRole('button', { name: 'Add' }))
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
-    expect(mocks.create.mock.calls[0]?.[1]).not.toHaveProperty('phone')
+    expect(mocks.create.mock.calls[0]?.[1].party).not.toHaveProperty('phone')
   })
 
   it('sends an updated phone when edited to a new valid number', async () => {
@@ -829,7 +834,9 @@ describe('CustomerForm', () => {
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
     expect(mocks.create).toHaveBeenCalledWith(
       'nkr-express',
-      expect.objectContaining({ email: 'marlon@example.jm' })
+      expect.objectContaining({
+        party: expect.objectContaining({ email: 'marlon@example.jm' }),
+      })
     )
   })
 

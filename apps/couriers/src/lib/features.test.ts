@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
   getPlatformClient: vi.fn(),
   evaluate: vi.fn(),
+  evaluateDetails: vi.fn(),
 }))
 
 vi.mock('react', async (importOriginal) => {
@@ -41,12 +42,49 @@ describe('getFeatures', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.getPlatformClient.mockResolvedValue({
-      features: { evaluate: mocks.evaluate },
+      features: {
+        evaluate: mocks.evaluate,
+        evaluateDetails: mocks.evaluateDetails,
+      },
     })
     mocks.evaluate.mockResolvedValue({
       data: { data: [] },
       error: null,
     })
+    mocks.evaluateDetails.mockResolvedValue({
+      data: { data: [] },
+      error: null,
+    })
+  })
+
+  it('keeps customer creation available when the flag has no evaluation decision', async () => {
+    const result = await getFeatures({
+      userId: 'user_kingston_123',
+      organizationId: 'organization_island_123',
+    })
+
+    expect(result.customerCreation).toBe(true)
+  })
+
+  it('pauses customer creation only for an explicit disabled decision', async () => {
+    mocks.evaluateDetails.mockResolvedValue({
+      data: {
+        data: [
+          {
+            feature: { slug: 'couriers-customers-create' },
+            enabled: false,
+          },
+        ],
+      },
+      error: null,
+    })
+
+    const result = await getFeatures({
+      userId: 'user_kingston_123',
+      organizationId: 'organization_island_123',
+    })
+
+    expect(result.customerCreation).toBe(false)
   })
 
   it.each([
@@ -123,6 +161,7 @@ describe('getFeatures', () => {
 
       expect(result).toEqual({
         storageOrgLogoUpload: false,
+        customerCreation: true,
         uiFeatures: expectedUiFeatures,
         enabledWidgetIds: [],
       })
@@ -148,6 +187,7 @@ describe('getFeatures', () => {
 
     expect(result).toEqual({
       storageOrgLogoUpload: true,
+      customerCreation: true,
       uiFeatures: {
         searchBar: false,
         themeSwitcher: false,
@@ -199,6 +239,7 @@ describe('getFeatures', () => {
 
     expect(result).toEqual({
       storageOrgLogoUpload: false,
+      customerCreation: true,
       uiFeatures: {
         searchBar: false,
         themeSwitcher: false,
@@ -232,6 +273,7 @@ describe('getFeatures', () => {
 
     expect(result).toEqual({
       storageOrgLogoUpload: false,
+      customerCreation: true,
       uiFeatures: {
         searchBar: false,
         themeSwitcher: false,
@@ -290,12 +332,13 @@ describe('getFeatures', () => {
           message: 'Feature evaluation is temporarily unavailable.',
         },
       },
+      false,
     ],
-    ['missing evaluation data', { data: null, error: null }],
-    ['empty evaluation', { data: { data: [] }, error: null }],
+    ['missing evaluation data', { data: null, error: null }, false],
+    ['empty evaluation', { data: { data: [] }, error: null }, true],
   ] as const)(
     'returns the complete disabled defaults for an %s',
-    async (_case, evaluation) => {
+    async (_case, evaluation, customerCreation) => {
       mocks.evaluate.mockResolvedValue(evaluation)
 
       const result = await getFeatures({
@@ -305,6 +348,7 @@ describe('getFeatures', () => {
 
       expect(result).toEqual({
         storageOrgLogoUpload: false,
+        customerCreation,
         uiFeatures: {
           searchBar: false,
           themeSwitcher: false,

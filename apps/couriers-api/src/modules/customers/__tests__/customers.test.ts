@@ -25,24 +25,31 @@ function customerRow(overrides: Record<string, unknown> = {}) {
   }
 }
 
-const { tenant, courierCustomerProfile, branch, mailbox, $transaction } =
-  vi.hoisted(() => ({
-    tenant: { findUnique: vi.fn() },
-    courierCustomerProfile: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-    },
-    branch: { findFirst: vi.fn() },
-    mailbox: {
-      findFirst: vi.fn(),
-      findUnique: vi.fn(),
-      count: vi.fn(),
-      create: vi.fn(),
-    },
-    $transaction: vi.fn(),
-  }))
+const {
+  tenant,
+  courierCustomerProfile,
+  branch,
+  mailbox,
+  modulePreference,
+  $transaction,
+} = vi.hoisted(() => ({
+  tenant: { findUnique: vi.fn() },
+  courierCustomerProfile: {
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+  },
+  branch: { findFirst: vi.fn() },
+  mailbox: {
+    findFirst: vi.fn(),
+    findUnique: vi.fn(),
+    count: vi.fn(),
+    create: vi.fn(),
+  },
+  modulePreference: { findMany: vi.fn() },
+  $transaction: vi.fn(),
+}))
 
 const billing = vi.hoisted(() => ({
   createExternalCustomer: vi.fn(),
@@ -51,7 +58,14 @@ const billing = vi.hoisted(() => ({
 }))
 
 vi.mock('@/db/client', () => ({
-  prisma: { tenant, courierCustomerProfile, branch, mailbox, $transaction },
+  prisma: {
+    tenant,
+    courierCustomerProfile,
+    branch,
+    mailbox,
+    modulePreference,
+    $transaction,
+  },
   disconnectDb: vi.fn(),
   pingDb: vi.fn(),
 }))
@@ -97,9 +111,16 @@ beforeEach(() => {
     createdAt: NOW - 100,
     updatedAt: NOW - 100,
   })
+  modulePreference.findMany.mockResolvedValue([])
   $transaction.mockImplementation(
     (callback: (tx: Record<string, unknown>) => unknown) =>
-      callback({ tenant, courierCustomerProfile, mailbox, branch })
+      callback({
+        tenant,
+        courierCustomerProfile,
+        mailbox,
+        branch,
+        modulePreference,
+      })
   )
 })
 
@@ -264,88 +285,34 @@ describe('customers', () => {
     expect(courierCustomerProfile.findMany).not.toHaveBeenCalled()
   })
 
-  it('uses the tenant default branch when customer creation omits branch_id', async () => {
-    courierCustomerProfile.findFirst.mockResolvedValue(null)
-    billing.createExternalCustomer.mockResolvedValue({
-      data: { id: 'cus_spanish_town' },
-      error: null,
-    })
-    courierCustomerProfile.create.mockResolvedValue(
-      customerRow({ id: 'cprof_spanish_town', branchId: 'br_spanish_town' })
-    )
-    branch.findFirst.mockResolvedValue({ id: 'br_spanish_town' })
-
+  it('requires a home branch before creating a customer', async () => {
     const response = await request(createApp())
       .post('/v1/tenants/ten_reyes/customers')
       .set(ADMIN_HEADERS)
       .send({
+        source: 'party',
         idempotency_key: 'idem_spanish_town',
-        customer_kind: 'INDIVIDUAL',
-        first_name: 'Maria',
+        party: { first_name: 'Maria' },
       })
 
-    expect(response.status).toBe(201)
-    expect(response.body).toEqual({
-      data: expect.objectContaining({
-        object: 'courier_customer_profile',
-        id: 'cprof_spanish_town',
-        branch_id: 'br_spanish_town',
-      }),
-      error: null,
-    })
-    expect(branch.findFirst).toHaveBeenCalledWith({
-      where: { tenantId: 'ten_reyes', isDefault: true },
-      select: { id: true },
-    })
-    expect(courierCustomerProfile.create).toHaveBeenCalledWith({
-      data: {
-        tenantId: 'ten_reyes',
-        billingCustomerId: 'cus_spanish_town',
-        userId: null,
-        branchId: 'br_spanish_town',
-        trn: null,
-        status: 'ACTIVE',
-        isCommercial: false,
-        firstSeenAt: NOW,
-        createdAt: NOW,
-        updatedAt: NOW,
-      },
-    })
+    expect(response.status).toBe(422)
+    expect(billing.createExternalCustomer).not.toHaveBeenCalled()
   })
 
-  it('keeps branch_id null when customer creation explicitly clears it', async () => {
-    courierCustomerProfile.findFirst.mockResolvedValue(null)
-    billing.createExternalCustomer.mockResolvedValue({
-      data: { id: 'cus_portmore' },
-      error: null,
-    })
-    courierCustomerProfile.create.mockResolvedValue(
-      customerRow({ id: 'cprof_portmore', branchId: null })
-    )
-
+  it('rejects a request which mixes registry and party sources', async () => {
     const response = await request(createApp())
       .post('/v1/tenants/ten_reyes/customers')
       .set(ADMIN_HEADERS)
       .send({
+        source: 'registry',
+        billing_customer_id: 'cus_portmore',
         idempotency_key: 'idem_portmore',
-        customer_kind: 'INDIVIDUAL',
-        first_name: 'Paul',
-        branch_id: null,
+        party: { first_name: 'Paul' },
+        branch_id: 'br_kingston',
       })
 
-    expect(response.status).toBe(201)
-    expect(response.body).toEqual({
-      data: expect.objectContaining({
-        object: 'courier_customer_profile',
-        id: 'cprof_portmore',
-        branch_id: null,
-      }),
-      error: null,
-    })
-    expect(branch.findFirst).not.toHaveBeenCalled()
-    expect(courierCustomerProfile.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ branchId: null }),
-    })
+    expect(response.status).toBe(422)
+    expect(billing.createExternalCustomer).not.toHaveBeenCalled()
   })
 
   it('rejects a cross-tenant branch on customer creation before writing', async () => {
@@ -355,9 +322,9 @@ describe('customers', () => {
       .post('/v1/tenants/ten_reyes/customers')
       .set(ADMIN_HEADERS)
       .send({
+        source: 'party',
         idempotency_key: 'idem_cross_tenant',
-        customer_kind: 'INDIVIDUAL',
-        first_name: 'Cross',
+        party: { first_name: 'Cross' },
         branch_id: 'br_other',
       })
 
@@ -368,6 +335,104 @@ describe('customers', () => {
     })
     expect(billing.createExternalCustomer).not.toHaveBeenCalled()
     expect(courierCustomerProfile.create).not.toHaveBeenCalled()
+  })
+
+  it('creates an external registry party before its courier profile', async () => {
+    courierCustomerProfile.findFirst.mockResolvedValue(null)
+    billing.createExternalCustomer.mockResolvedValue({
+      data: { id: 'cus_new' },
+      error: null,
+    })
+    courierCustomerProfile.create.mockResolvedValue(
+      customerRow({ billingCustomerId: 'cus_new' })
+    )
+
+    const response = await request(createApp())
+      .post('/v1/tenants/ten_reyes/customers')
+      .set(ADMIN_HEADERS)
+      .send({
+        source: 'party',
+        idempotency_key: 'idem-new-customer',
+        party: { first_name: 'Ada', email: 'ada@example.test' },
+        branch_id: 'br_kingston',
+      })
+
+    expect(response.status).toBe(201)
+    expect(billing.createExternalCustomer).toHaveBeenCalledWith('org_reyes', {
+      idempotencyKey: 'idem-new-customer',
+      customerKind: 'INDIVIDUAL',
+      firstName: 'Ada',
+      lastName: null,
+      companyName: null,
+      email: 'ada@example.test',
+      phone: null,
+    })
+    expect(courierCustomerProfile.create).toHaveBeenCalled()
+  })
+
+  it('creates only a profile when the registry party already exists', async () => {
+    courierCustomerProfile.findFirst.mockResolvedValue(null)
+
+    const response = await request(createApp())
+      .post('/v1/tenants/ten_reyes/customers')
+      .set(ADMIN_HEADERS)
+      .send({
+        source: 'registry',
+        billing_customer_id: 'cus_brown_1',
+        branch_id: 'br_kingston',
+      })
+
+    expect(response.status).toBe(201)
+    expect(billing.retrieveCustomer).toHaveBeenCalledWith(
+      'org_reyes',
+      'cus_brown_1'
+    )
+    expect(billing.createExternalCustomer).not.toHaveBeenCalled()
+    expect(courierCustomerProfile.create).toHaveBeenCalled()
+  })
+
+  it('does not create a profile when registry creation fails', async () => {
+    billing.createExternalCustomer.mockResolvedValue({
+      data: null,
+      error: { code: 'billing/unavailable', message: 'Offline.' },
+    })
+
+    const response = await request(createApp())
+      .post('/v1/tenants/ten_reyes/customers')
+      .set(ADMIN_HEADERS)
+      .send({
+        source: 'party',
+        idempotency_key: 'idem-offline',
+        party: { first_name: 'Ada' },
+        branch_id: 'br_kingston',
+      })
+
+    expect(response.status).toBe(503)
+    expect(courierCustomerProfile.create).not.toHaveBeenCalled()
+  })
+
+  it('does not allocate a mailbox when customer preferences disable auto-assignment', async () => {
+    courierCustomerProfile.findFirst.mockResolvedValue(null)
+    mailbox.findFirst.mockResolvedValue(null)
+    modulePreference.findMany.mockResolvedValue([
+      {
+        key: 'mailbox-auto-assign',
+        booleanValue: false,
+        integerValue: null,
+      },
+    ])
+
+    const response = await request(createApp())
+      .post('/v1/tenants/ten_reyes/customers')
+      .set(ADMIN_HEADERS)
+      .send({
+        source: 'registry',
+        billing_customer_id: 'cus_brown_1',
+        branch_id: 'br_kingston',
+      })
+
+    expect(response.status).toBe(201)
+    expect(mailbox.create).not.toHaveBeenCalled()
   })
 
   it('rejects a cross-tenant branch on customer update before writing', async () => {
@@ -385,222 +450,6 @@ describe('customers', () => {
       error: { code: 'branch/not-found', message: 'Not found.' },
     })
     expect(courierCustomerProfile.update).not.toHaveBeenCalled()
-  })
-
-  describe('enrollments', () => {
-    function stubEnrollment() {
-      courierCustomerProfile.findFirst.mockResolvedValue(null)
-      courierCustomerProfile.create.mockResolvedValue(
-        customerRow({ id: 'cprof_enrolled' })
-      )
-      tenant.findUnique.mockResolvedValue({
-        id: 'ten_reyes',
-        orgId: 'org_reyes',
-        mailboxPrefix: 'KG',
-      })
-      mailbox.findFirst.mockResolvedValue(null)
-      mailbox.findUnique.mockResolvedValue(null)
-      mailbox.count.mockResolvedValue(0)
-      mailbox.create.mockResolvedValue({
-        id: 'mb_1001',
-        tenantId: 'ten_reyes',
-        customerId: 'cprof_enrolled',
-        number: 'KG1001',
-        isPrimary: true,
-        createdAt: NOW,
-        updatedAt: NOW,
-      })
-    }
-
-    it('retries once when the mailbox-number insert loses a P2002 race', async () => {
-      stubEnrollment()
-      mailbox.create
-        .mockRejectedValueOnce({ code: 'P2002' })
-        .mockResolvedValue({
-          id: 'mb_1001',
-          tenantId: 'ten_reyes',
-          customerId: 'cprof_enrolled',
-          number: 'KG1001',
-          isPrimary: true,
-          createdAt: NOW,
-          updatedAt: NOW,
-        })
-
-      const response = await request(createApp())
-        .post('/v1/tenants/ten_reyes/customers/enrollments')
-        .set(ADMIN_HEADERS)
-        .send({ billing_customer_id: 'cus_enroll_1' })
-
-      expect(response.status).toBe(201)
-      expect(response.body).toEqual({
-        data: expect.objectContaining({
-          object: 'courier_customer_enrollment',
-          customer: expect.objectContaining({ id: 'cprof_enrolled' }),
-          mailbox: expect.objectContaining({ number: 'KG1001' }),
-        }),
-        error: null,
-      })
-      expect(courierCustomerProfile.create).toHaveBeenCalledTimes(2)
-      expect(mailbox.create).toHaveBeenCalledTimes(2)
-    })
-
-    it('verifies the Billing customer belongs to the tenant organization', async () => {
-      stubEnrollment()
-
-      const response = await request(createApp())
-        .post('/v1/tenants/ten_reyes/customers/enrollments')
-        .set(ADMIN_HEADERS)
-        .send({ billing_customer_id: 'cus_enroll_1' })
-
-      expect(response.status).toBe(201)
-      expect(billing.retrieveCustomer).toHaveBeenCalledWith(
-        'org_reyes',
-        'cus_enroll_1'
-      )
-    })
-
-    it('rejects a Billing customer outside the tenant organization', async () => {
-      billing.retrieveCustomer.mockResolvedValue({
-        data: null,
-        error: { code: 'customer/not-found', message: 'Not found.' },
-      })
-
-      const response = await request(createApp())
-        .post('/v1/tenants/ten_reyes/customers/enrollments')
-        .set(ADMIN_HEADERS)
-        .send({ billing_customer_id: 'cus_other_org' })
-
-      expect(response.status).toBe(404)
-      expect(response.body).toEqual({
-        data: null,
-        error: { code: 'customer/not-found', message: 'Not found.' },
-      })
-      expect(courierCustomerProfile.create).not.toHaveBeenCalled()
-    })
-
-    it('does not enroll when the Billing registry is unavailable', async () => {
-      billing.retrieveCustomer.mockResolvedValue({
-        data: null,
-        error: { code: 'billing/unreachable', message: 'Unavailable.' },
-      })
-
-      const response = await request(createApp())
-        .post('/v1/tenants/ten_reyes/customers/enrollments')
-        .set(ADMIN_HEADERS)
-        .send({ billing_customer_id: 'cus_enroll_1' })
-
-      expect(response.status).toBe(503)
-      expect(response.body).toEqual({
-        data: null,
-        error: {
-          code: 'customer/registry-unavailable',
-          message: 'The customer registry is temporarily unavailable.',
-        },
-      })
-      expect(courierCustomerProfile.create).not.toHaveBeenCalled()
-    })
-
-    it('does not enroll an archived Billing customer', async () => {
-      billing.retrieveCustomer.mockResolvedValue({
-        data: { id: 'cus_archived', status: 'ARCHIVED' },
-        error: null,
-      })
-
-      const response = await request(createApp())
-        .post('/v1/tenants/ten_reyes/customers/enrollments')
-        .set(ADMIN_HEADERS)
-        .send({ billing_customer_id: 'cus_archived' })
-
-      expect(response.status).toBe(404)
-      expect(response.body).toEqual({
-        data: null,
-        error: { code: 'customer/not-found', message: 'Not found.' },
-      })
-      expect(courierCustomerProfile.create).not.toHaveBeenCalled()
-    })
-
-    it('refreshes Courier-specific fields when reviving an enrollment', async () => {
-      const existing = customerRow({
-        deletedAt: NOW - 50,
-        branchId: 'br_old',
-        status: 'SUSPENDED',
-        isCommercial: false,
-      })
-      courierCustomerProfile.findFirst.mockResolvedValue(existing)
-      courierCustomerProfile.update.mockResolvedValue(
-        customerRow({
-          branchId: 'br_kingston',
-          status: 'ACTIVE',
-          isCommercial: true,
-        })
-      )
-      mailbox.findFirst.mockResolvedValue({
-        id: 'mb_existing',
-        tenantId: 'ten_reyes',
-        customerId: existing.id,
-        number: 'KG1001',
-        isPrimary: true,
-        createdAt: NOW - 100,
-        updatedAt: NOW - 100,
-      })
-
-      const response = await request(createApp())
-        .post('/v1/tenants/ten_reyes/customers/enrollments')
-        .set(ADMIN_HEADERS)
-        .send({
-          billing_customer_id: 'cus_brown_1',
-          branch_id: 'br_kingston',
-          status: 'ACTIVE',
-          is_commercial: true,
-        })
-
-      expect(response.status).toBe(201)
-      expect(courierCustomerProfile.update).toHaveBeenCalledWith({
-        where: { id: existing.id },
-        data: {
-          branchId: 'br_kingston',
-          status: 'ACTIVE',
-          isCommercial: true,
-          deletedAt: null,
-          deletedBy: null,
-          deletionReason: null,
-          updatedAt: NOW,
-        },
-      })
-    })
-
-    it('returns 409 when the mailbox-number race persists across retries', async () => {
-      stubEnrollment()
-      mailbox.create.mockRejectedValue({ code: 'P2002' })
-
-      const response = await request(createApp())
-        .post('/v1/tenants/ten_reyes/customers/enrollments')
-        .set(ADMIN_HEADERS)
-        .send({ billing_customer_id: 'cus_enroll_2' })
-
-      expect(response.status).toBe(409)
-      expect(response.body).toEqual({
-        data: null,
-        error: expect.objectContaining({ code: 'customer/conflict' }),
-      })
-      expect(mailbox.create).toHaveBeenCalledTimes(3)
-    })
-
-    it('maps a branch foreign-key violation to a 404', async () => {
-      stubEnrollment()
-      courierCustomerProfile.create.mockRejectedValue({ code: 'P2003' })
-
-      const response = await request(createApp())
-        .post('/v1/tenants/ten_reyes/customers/enrollments')
-        .set(ADMIN_HEADERS)
-        .send({ billing_customer_id: 'cus_enroll_3' })
-
-      expect(response.status).toBe(404)
-      expect(response.body).toEqual({
-        data: null,
-        error: expect.objectContaining({ code: 'branch/not-found' }),
-      })
-    })
   })
 
   describe('Advanced — AAA and realistic data (1.2, 1.6, 2.10)', () => {

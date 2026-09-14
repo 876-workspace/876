@@ -146,14 +146,8 @@ export type CustomerView = z.infer<typeof customerViewSchema>
 export const customerKindSchema = z.enum(['INDIVIDUAL', 'BUSINESS'])
 export type CustomerKind = z.infer<typeof customerKindSchema>
 
-export const customerCreateParamsSchema = z
+const customerPartySchema = z
   .strictObject({
-    /**
-     * Client-generated, stable across retries of one submission. It keys the
-     * Billing registry create so a retry after a failed local write reuses the
-     * customer already created instead of minting a duplicate.
-     */
-    idempotencyKey: z.string().min(8).max(255),
     customerKind: customerKindSchema.default('INDIVIDUAL'),
     firstName: z.string().trim().min(1).optional(),
     lastName: z.string().trim().min(1).optional(),
@@ -162,10 +156,6 @@ export const customerCreateParamsSchema = z
     // create there is no previous value to clear, and null simply means absent.
     email: z.email().nullable().optional(),
     phone: z.string().trim().min(1).nullable().optional(),
-    branchId: z.string().optional(),
-    trn: z.string().trim().min(1).nullable().optional(),
-    isCommercial: z.boolean().optional(),
-    status: customerStatusSchema.optional(),
   })
   .superRefine((value, context) => {
     if (value.customerKind === 'INDIVIDUAL' && !value.firstName)
@@ -181,23 +171,41 @@ export const customerCreateParamsSchema = z
         message: 'Company name is required for a business.',
       })
   })
-export type CustomerCreateParams = z.input<typeof customerCreateParamsSchema>
 
-export const customerEnrollmentParamsSchema = z.strictObject({
-  billingCustomerId: z.string().min(1),
+const customerProfileCreateParamsSchema = z.strictObject({
   branchId: z.string().min(1),
+  trn: z.string().trim().min(1).nullable().optional(),
   isCommercial: z.boolean().optional(),
   status: customerStatusSchema.optional(),
 })
-export type CustomerEnrollmentParams = z.input<
-  typeof customerEnrollmentParamsSchema
->
+
+export const customerCreateParamsSchema = z.discriminatedUnion('source', [
+  z
+    .strictObject({
+      source: z.literal('registry'),
+      billingCustomerId: z.string().min(1),
+    })
+    .extend(customerProfileCreateParamsSchema.shape),
+  z
+    .strictObject({
+      source: z.literal('party'),
+      idempotencyKey: z.string().min(8).max(255),
+      party: customerPartySchema,
+    })
+    .extend(customerProfileCreateParamsSchema.shape),
+])
+export type CustomerCreateParams = z.input<typeof customerCreateParamsSchema>
 
 export interface GlobalCustomerOption {
   id: string
   name: string
   email: string | null
   phone: string | null
+  firstName: string | null
+  lastName: string | null
+  companyName: string | null
+  customerKind: CustomerKind
+  enrolled: boolean
 }
 
 /**

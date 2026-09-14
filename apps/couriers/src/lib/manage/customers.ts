@@ -6,39 +6,11 @@ import type { ServiceResult } from '@/types/api'
 import type { CouriersTenant } from '@/types/auth'
 import type {
   CustomerCreateParams,
-  CustomerEnrollmentParams,
   CustomerUpdateParams,
   CustomerView,
 } from '@/types/customer'
 
-export async function enrollManagedCustomer({
-  tenant,
-  params,
-}: {
-  tenant: CouriersTenant
-  params: CustomerEnrollmentParams
-}): ServiceResult<CustomerView> {
-  const { getCouriers } = await import('@/lib/services/couriers')
-  const client = await getCouriers()
-  const result = await client.customers.create({
-    mode: 'existing',
-    billingCustomerId: params.billingCustomerId,
-    branchId: params.branchId,
-    status: params.status,
-    isCommercial: params.isCommercial,
-  })
-  if (result.error !== null) return couriersFailure(result.error)
-  if (result.data.object !== 'courier_customer_enrollment')
-    return couriersFailure({
-      code: 'couriers/unexpected-response',
-      message: 'Enrollment did not return a customer.',
-    })
-
-  return { data: toCustomerView(result.data.customer), error: null }
-}
-
 export async function createManagedCustomer({
-  tenant,
   params,
 }: {
   tenant: CouriersTenant
@@ -46,20 +18,33 @@ export async function createManagedCustomer({
 }): ServiceResult<CustomerView> {
   const { getCouriers } = await import('@/lib/services/couriers')
   const client = await getCouriers()
-  const result = await client.customers.create({
-    mode: 'new',
-    idempotencyKey: params.idempotencyKey,
-    customerKind: params.customerKind ?? 'INDIVIDUAL',
-    firstName: params.firstName,
-    lastName: params.lastName,
-    companyName: params.companyName,
-    email: params.email ?? undefined,
-    phone: params.phone ?? undefined,
-    branchId: params.branchId,
-    status: params.status,
-    isCommercial: params.isCommercial,
-    trn: params.trn ?? undefined,
-  })
+  const result = await client.customers.create(
+    params.source === 'registry'
+      ? {
+          source: 'registry',
+          billingCustomerId: params.billingCustomerId,
+          branchId: params.branchId,
+          status: params.status,
+          trn: params.trn ?? undefined,
+          isCommercial: params.isCommercial,
+        }
+      : {
+          source: 'party',
+          idempotencyKey: params.idempotencyKey,
+          party: {
+            customerKind: params.party.customerKind ?? 'INDIVIDUAL',
+            firstName: params.party.firstName,
+            lastName: params.party.lastName,
+            companyName: params.party.companyName,
+            email: params.party.email ?? undefined,
+            phone: params.party.phone ?? undefined,
+          },
+          branchId: params.branchId,
+          status: params.status,
+          isCommercial: params.isCommercial,
+          trn: params.trn ?? undefined,
+        }
+  )
   if (result.error !== null) return couriersFailure(result.error)
   if (result.data.object !== 'courier_customer_profile')
     return couriersFailure({
@@ -70,7 +55,6 @@ export async function createManagedCustomer({
 }
 
 export async function updateManagedCustomer({
-  tenant,
   id,
   params,
 }: {

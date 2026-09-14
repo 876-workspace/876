@@ -70,8 +70,9 @@ describe('managed customers', () => {
     const result = await createManagedCustomer({
       tenant,
       params: {
+        source: 'party',
         idempotencyKey: 'submission-nkr-001',
-        firstName: 'Marlon',
+        party: { firstName: 'Marlon' },
         branchId: 'br_kingston',
         isCommercial: true,
       },
@@ -82,18 +83,44 @@ describe('managed customers', () => {
       error: null,
     })
     expect(mocks.create).toHaveBeenCalledWith({
-      mode: 'new',
+      source: 'party',
       idempotencyKey: 'submission-nkr-001',
-      customerKind: 'INDIVIDUAL',
-      firstName: 'Marlon',
-      lastName: undefined,
-      companyName: undefined,
-      email: undefined,
-      phone: undefined,
+      party: {
+        customerKind: 'INDIVIDUAL',
+        firstName: 'Marlon',
+        lastName: undefined,
+        companyName: undefined,
+        email: undefined,
+        phone: undefined,
+      },
       branchId: 'br_kingston',
       status: undefined,
       isCommercial: true,
       trn: undefined,
+    })
+  })
+
+  it('creates a profile from an existing registry party through the same operation', async () => {
+    await expect(
+      createManagedCustomer({
+        tenant,
+        params: {
+          source: 'registry',
+          billingCustomerId: 'cus_existing',
+          branchId: 'br_kingston',
+        },
+      })
+    ).resolves.toEqual({
+      data: expect.objectContaining({ id: courierCustomer.id }),
+      error: null,
+    })
+    expect(mocks.create).toHaveBeenCalledWith({
+      source: 'registry',
+      billingCustomerId: 'cus_existing',
+      branchId: 'br_kingston',
+      status: undefined,
+      trn: undefined,
+      isCommercial: undefined,
     })
   })
 
@@ -106,7 +133,12 @@ describe('managed customers', () => {
     await expect(
       createManagedCustomer({
         tenant,
-        params: { idempotencyKey: 'submission-nkr-002', firstName: 'Marlon' },
+        params: {
+          source: 'party',
+          idempotencyKey: 'submission-nkr-002',
+          party: { firstName: 'Marlon' },
+          branchId: 'br_kingston',
+        },
       })
     ).resolves.toMatchObject({
       data: null,
@@ -123,7 +155,12 @@ describe('managed customers', () => {
     await expect(
       createManagedCustomer({
         tenant,
-        params: { idempotencyKey: 'submission-nkr-003', firstName: 'Marlon' },
+        params: {
+          source: 'party',
+          idempotencyKey: 'submission-nkr-003',
+          party: { firstName: 'Marlon' },
+          branchId: 'br_kingston',
+        },
       })
     ).resolves.toMatchObject({
       data: null,

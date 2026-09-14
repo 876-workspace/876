@@ -40,6 +40,7 @@ export const listCustomersQuerySchema = z
   .strictObject({
     status: customerStatusSchema.optional(),
     branch_id: z.string().min(1).optional(),
+    billing_customer_ids: z.string().min(1).optional(),
     limit: z.coerce.number().int().min(1).max(100).default(25),
     starting_after: z.string().min(1).optional(),
     ending_before: z.string().min(1).optional(),
@@ -48,39 +49,50 @@ export const listCustomersQuerySchema = z
     message: 'Only one cursor may be provided.',
   })
 const customerKindSchema = z.enum(['INDIVIDUAL', 'BUSINESS'])
-
-export const createCustomerBodySchema = z
+const customerPartySchema = z
   .strictObject({
-    idempotency_key: z.string().min(8).max(255),
     customer_kind: customerKindSchema.default('INDIVIDUAL'),
     first_name: z.string().trim().min(1).optional(),
     last_name: z.string().trim().min(1).nullable().optional(),
     company_name: z.string().trim().min(1).optional(),
     email: z.string().trim().pipe(z.email()).nullable().optional(),
     phone: z.string().trim().min(1).nullable().optional(),
-    branch_id: z.string().min(1).nullable().optional(),
-    status: customerStatusSchema.optional(),
-    trn: z.string().trim().min(1).nullable().optional(),
-    is_commercial: z.boolean().optional(),
   })
   .superRefine((value, ctx) => {
-    const kind = (value.customer_kind ?? 'INDIVIDUAL') as
-      'INDIVIDUAL' | 'BUSINESS'
-    if (kind === 'INDIVIDUAL' && !value.first_name) {
+    if (value.customer_kind === 'INDIVIDUAL' && !value.first_name)
       ctx.addIssue({
         code: 'custom',
         path: ['first_name'],
         message: 'First name is required for an individual.',
       })
-    }
-    if (kind === 'BUSINESS' && !value.company_name) {
+    if (value.customer_kind === 'BUSINESS' && !value.company_name)
       ctx.addIssue({
         code: 'custom',
         path: ['company_name'],
         message: 'Company name is required for a business.',
       })
-    }
   })
+const customerProfileCreateSchema = z.strictObject({
+  branch_id: z.string().min(1),
+  status: customerStatusSchema.optional(),
+  trn: z.string().trim().min(1).nullable().optional(),
+  is_commercial: z.boolean().optional(),
+})
+export const createCustomerBodySchema = z.discriminatedUnion('source', [
+  z
+    .strictObject({
+      source: z.literal('registry'),
+      billing_customer_id: z.string().min(1),
+    })
+    .extend(customerProfileCreateSchema.shape),
+  z
+    .strictObject({
+      source: z.literal('party'),
+      idempotency_key: z.string().min(8).max(255),
+      party: customerPartySchema,
+    })
+    .extend(customerProfileCreateSchema.shape),
+])
 export const updateCustomerBodySchema = z.strictObject({
   branch_id: z.string().min(1).nullable().optional(),
   status: customerStatusSchema.optional(),
