@@ -1,3 +1,4 @@
+import { listObject } from '@/http/envelope'
 import { createApiRouter, type GuardResolver } from '@/http/api-router'
 import {
   deletedObjectSchema,
@@ -129,12 +130,13 @@ export function createMeRouter(resolveGuards: GuardResolver) {
         tenant.id,
         req.valid.query as never
       )
-      res.status(200).json({
-        object: 'list',
-        data: result.data,
-        has_more: result.hasMore,
-        url: `/v1/me/packages`,
-      })
+      res.status(200).json(
+        listObject({
+          data: result.data,
+          hasMore: result.hasMore,
+          url: `/v1/me/packages`,
+        })
+      )
     },
   })
 
@@ -233,12 +235,13 @@ export function createMeRouter(resolveGuards: GuardResolver) {
         tenant.id,
         req.valid.query as never
       )
-      res.status(200).json({
-        object: 'list',
-        data: result.data,
-        has_more: result.hasMore,
-        url: '/v1/me/customers',
-      })
+      res.status(200).json(
+        listObject({
+          data: result.data,
+          hasMore: result.hasMore,
+          url: '/v1/me/customers',
+        })
+      )
     },
   })
 
@@ -391,12 +394,13 @@ export function createMeRouter(resolveGuards: GuardResolver) {
     handler: async (req, res) => {
       const tenant = req.tenant!
       const { id } = req.valid.params as IdParams
-      res.status(200).json({
-        object: 'list',
-        data: await customersService.listMailboxes(tenant.id, id),
-        has_more: false,
-        url: `/v1/me/customers/${id}/mailboxes`,
-      })
+      res.status(200).json(
+        listObject({
+          data: await customersService.listMailboxes(tenant.id, id),
+          hasMore: false,
+          url: `/v1/me/customers/${id}/mailboxes`,
+        })
+      )
     },
   })
 
@@ -481,12 +485,13 @@ export function createMeRouter(resolveGuards: GuardResolver) {
         tenant.id,
         req.valid.query as never
       )
-      res.status(200).json({
-        object: 'list',
-        data: result.branches,
-        has_more: result.hasMore,
-        url: '/v1/me/branches',
-      })
+      res.status(200).json(
+        listObject({
+          data: result.branches,
+          hasMore: result.hasMore,
+          url: '/v1/me/branches',
+        })
+      )
     },
   })
 
@@ -577,12 +582,13 @@ export function createMeRouter(resolveGuards: GuardResolver) {
     },
     handler: async (req, res) => {
       const tenant = req.tenant!
-      res.status(200).json({
-        object: 'list',
-        data: await warehousesService.listWarehouses(tenant.id),
-        has_more: false,
-        url: '/v1/me/warehouses',
-      })
+      res.status(200).json(
+        listObject({
+          data: await warehousesService.listWarehouses(tenant.id),
+          hasMore: false,
+          url: '/v1/me/warehouses',
+        })
+      )
     },
   })
 
@@ -678,12 +684,13 @@ export function createMeRouter(resolveGuards: GuardResolver) {
     },
     handler: async (req, res) => {
       const tenant = req.tenant!
-      res.status(200).json({
-        object: 'list',
-        data: await teamService.listRoles(tenant.id),
-        has_more: false,
-        url: '/v1/me/roles',
-      })
+      res.status(200).json(
+        listObject({
+          data: await teamService.listRoles(tenant.id),
+          hasMore: false,
+          url: '/v1/me/roles',
+        })
+      )
     },
   })
 
@@ -791,12 +798,13 @@ export function createMeRouter(resolveGuards: GuardResolver) {
       const { status } = (req.valid.query ?? {}) as {
         status?: 'active' | 'inactive'
       }
-      res.status(200).json({
-        object: 'list',
-        data: await teamService.listMembers(tenant.id, status),
-        has_more: false,
-        url: '/v1/me/team',
-      })
+      res.status(200).json(
+        listObject({
+          data: await teamService.listMembers(tenant.id, status),
+          hasMore: false,
+          url: '/v1/me/team',
+        })
+      )
     },
   })
 
@@ -883,12 +891,13 @@ export function createMeRouter(resolveGuards: GuardResolver) {
     },
     handler: async (req, res) => {
       const tenant = req.tenant!
-      res.status(200).json({
-        object: 'list',
-        data: await settingsService.list(tenant.id),
-        has_more: false,
-        url: '/v1/me/settings/modules',
-      })
+      res.status(200).json(
+        listObject({
+          data: await settingsService.list(tenant.id),
+          hasMore: false,
+          url: '/v1/me/settings/modules',
+        })
+      )
     },
   })
 
@@ -989,12 +998,13 @@ export function createMeRouter(resolveGuards: GuardResolver) {
         tenant.id,
         req.valid.query as never
       )
-      res.status(200).json({
-        object: 'list',
-        data: result.data,
-        has_more: result.hasMore,
-        url: '/v1/me/addresses',
-      })
+      res.status(200).json(
+        listObject({
+          data: result.data,
+          hasMore: result.hasMore,
+          url: '/v1/me/addresses',
+        })
+      )
     },
   })
 
@@ -1092,12 +1102,13 @@ export function createMeRouter(resolveGuards: GuardResolver) {
         tenant.id,
         req.valid.query as never
       )
-      res.status(200).json({
-        object: 'list',
-        data: result.data,
-        has_more: result.hasMore,
-        url: '/v1/me/mailboxes',
-      })
+      res.status(200).json(
+        listObject({
+          data: result.data,
+          hasMore: result.hasMore,
+          url: '/v1/me/mailboxes',
+        })
+      )
     },
   })
 

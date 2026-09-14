@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express'
 
+import { listObject } from '@/http/envelope'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 
 import * as service from './tenants.service'
@@ -32,13 +33,14 @@ export async function retrieveTenantByOrgId(
 export async function listTenants(req: Request, res: Response): Promise<void> {
   const query = validQuery<ListTenantsQuery>(req)
   const { tenants, hasMore, totalCount } = await service.listTenants(query)
-  res.status(200).json({
-    object: 'list',
-    data: tenants,
-    has_more: hasMore,
-    url: '/v1/tenants',
-    total_count: totalCount,
-  })
+  res.status(200).json(
+    listObject({
+      data: tenants,
+      hasMore: hasMore,
+      url: '/v1/tenants',
+      totalCount,
+    })
+  )
 }
 
 export async function createTenant(req: Request, res: Response): Promise<void> {
