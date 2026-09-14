@@ -1,3 +1,4 @@
+import { COURIERS_MODULES } from '@876/core/modules'
 import { defineModuleCatalog, type ModuleDefinition } from '@876/settings'
 
 export const COURIERS_MODULE_CATALOG = defineModuleCatalog([
@@ -55,8 +56,7 @@ export const COURIERS_MODULE_CATALOG = defineModuleCatalog([
     ],
   },
   {
-    key: 'customers',
-    label: 'Customers',
+    ...COURIERS_MODULES.customers,
     optional: false,
     enabledByDefault: true,
     preferences: [
@@ -118,8 +118,7 @@ export const COURIERS_MODULE_CATALOG = defineModuleCatalog([
     ],
   },
   {
-    key: 'packages',
-    label: 'Packages',
+    ...COURIERS_MODULES.packages,
     optional: false,
     enabledByDefault: true,
     preferences: [
@@ -158,8 +157,7 @@ export const COURIERS_MODULE_CATALOG = defineModuleCatalog([
     ],
   },
   {
-    key: 'pre-alerts',
-    label: 'Pre-alerts',
+    ...COURIERS_MODULES.preAlerts,
     optional: true,
     enabledByDefault: true,
     preferences: [
