@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { PROJECTS_MODULES } from '../modules'
 import { appPermissionCatalogs, projectsPermissionCatalog } from './catalogs'
 
 describe('projectsPermissionCatalog', () => {
@@ -7,7 +8,7 @@ describe('projectsPermissionCatalog', () => {
     expect(projectsPermissionCatalog.app).toBe('876-projects')
   })
 
-  it('declares exactly the eight module keys in declaration order', () => {
+  it('declares exactly the eight permission groups in declaration order', () => {
     expect(projectsPermissionCatalog.modules.map((module) => module.key)).toEqual([
       'dashboard',
       'projects',
@@ -18,6 +19,16 @@ describe('projectsPermissionCatalog', () => {
       'reports',
       'settings',
     ])
+  })
+
+  it('reuses canonical module labels where permission and module semantics match', () => {
+    const modules = new Map(
+      projectsPermissionCatalog.modules.map((module) => [module.key, module])
+    )
+
+    expect(modules.get('projects')?.label).toBe(PROJECTS_MODULES.projects.label)
+    expect(modules.get('issues')?.label).toBe(PROJECTS_MODULES.issues.label)
+    expect(modules.get('reports')?.label).toBe(PROJECTS_MODULES.reports.label)
   })
 
   it('ensures every permission key matches the kebab-module.kebab-action contract', () => {
