@@ -3,12 +3,15 @@ import type { AdminRuntime } from '../runtime'
 import {
   deletedPackageCategorySchema,
   packageCategoryListSchema,
+  packageCategoryReconciliationSchema,
   packageCategorySchema,
   type CreatePackageCategoryBody,
   type DeletedPackageCategory,
   type ListPackageCategoriesParams,
   type PackageCategory,
   type PackageCategoryList,
+  type PackageCategoryReconciliation,
+  type ReconcilePackageCategoriesBody,
   type UpdatePackageCategoryBody,
 } from '../types/package-category.schema'
 
@@ -50,6 +53,14 @@ export function createPackageCategoriesResource(runtime: AdminRuntime) {
           body,
         },
         packageCategorySchema
+      )
+    },
+
+    reconcile(tenantId: string, body: ReconcilePackageCategoriesBody) {
+      return AdminRequest<PackageCategoryReconciliation>(
+        runtime,
+        { method: 'POST', path: `${path(tenantId)}/reconcile`, body },
+        packageCategoryReconciliationSchema
       )
     },
 
