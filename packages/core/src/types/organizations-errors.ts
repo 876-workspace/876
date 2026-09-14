@@ -9,6 +9,7 @@ export const organizationErrorCodeValues = [
   'organization/has-members',
   'organization/internal-error',
   'organization/not-found',
+  'organization/provider-conflict',
   'organization/validation-failed',
 ] as const
 

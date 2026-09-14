@@ -18,6 +18,14 @@ export const INVITE_ERRORS = {
     message: 'Invite not found.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
+  'invite/not_found': {
+    message: 'Invite not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
+  'invite/rate_limited': {
+    message: 'Too many invites.',
+    httpStatus: HttpStatus.TOO_MANY_REQUESTS,
+  },
   'invite/user-not-found': {
     message: 'User not found.',
     httpStatus: HttpStatus.NOT_FOUND,

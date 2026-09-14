@@ -57,6 +57,10 @@ export const AUTH_ERRORS = {
     message: 'You do not have permission to perform this action.',
     httpStatus: HttpStatus.FORBIDDEN,
   },
+  'auth/identity-unavailable': {
+    message: 'Sign-in could not be verified right now. Please try again.',
+    httpStatus: HttpStatus.SERVICE_UNAVAILABLE,
+  },
   'auth/internal-error': {
     message:
       'An unexpected error occurred during authentication. Please try again later.',
@@ -111,7 +115,7 @@ export const AUTH_ERRORS = {
     httpStatus: HttpStatus.UNAUTHORIZED,
   },
   'auth/invalid-token': {
-    message: 'Invalid authentication token. Please sign in again.',
+    message: 'The Bearer [REDACTED] is invalid or expired.',
     httpStatus: HttpStatus.UNAUTHORIZED,
   },
   'auth/missing-code': {

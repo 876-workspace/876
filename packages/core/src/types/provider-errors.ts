@@ -25,6 +25,7 @@ export const providerErrorCodeValues = [
   'provider/misconfigured',
   'provider/token-expired',
   'provider/token-invalid',
+  'provider/unavailable',
   'provider/unsupported-grant-type',
   'provider/unsupported-response-type',
 ] as const
