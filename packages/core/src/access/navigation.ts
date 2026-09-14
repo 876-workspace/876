@@ -1,7 +1,9 @@
-import { can, hasFeature, type AccessContext } from './context'
+import { can, hasFeature, hasModule, type AccessContext } from './context'
 
 /** What a nav entry requires to be visible. Undefined = always visible. */
 export interface NavRequirement {
+  /** Required organization capability module. */
+  module?: string
   /** Required permission key. */
   permission?: string
   /** Required feature-flag key. */
@@ -51,6 +53,9 @@ export function navRequirementPasses(
   context: AccessContext
 ): boolean {
   if (!requirement) return true
+
+  if (requirement.module !== undefined && !hasModule(context, requirement.module))
+    return false
 
   if (
     requirement.permission !== undefined &&
@@ -102,6 +107,9 @@ function resolveEntries(
       ...(entry.requires
         ? {
             requires: {
+              ...(entry.requires.module !== undefined
+                ? { module: entry.requires.module }
+                : {}),
               ...(entry.requires.permission !== undefined
                 ? { permission: entry.requires.permission }
                 : {}),
