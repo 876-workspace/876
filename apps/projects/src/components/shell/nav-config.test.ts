@@ -113,15 +113,20 @@ describe('Projects navigation access binding', () => {
     expect(hrefs).toContain('/issues')
   })
 
-  it('removes Issues and Board when the issues module is not entitled', () => {
+  it('removes Issues, Board, and Labels when the issues module is not entitled', () => {
     const hrefs = resolveNavigation(
       navConfig,
-      context(['projects.view', 'issues.view'], [], ['projects'])
+      context(
+        ['projects.view', 'issues.view', 'labels.view'],
+        [],
+        ['projects']
+      )
     ).flatMap((group) => group.entries.map(({ href }) => href))
 
     expect(hrefs).toContain('/projects')
     expect(hrefs).not.toContain('/issues')
     expect(hrefs).not.toContain('/board')
+    expect(hrefs).not.toContain('/labels')
   })
 
   it('returns structurally cloneable server output without mutating the registry', () => {
