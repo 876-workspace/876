@@ -4,6 +4,7 @@ import {
 } from './provisioning-setup-policy.schemas'
 import { provisioningDraftReplaceSchema } from './provisioning.schemas'
 import type { ProvisioningDraftReplace } from './provisioning.schemas'
+import { COURIERS_PACKAGE_CATEGORY_DEFAULTS } from './provisioning-import.couriers'
 import type {
   ProvisioningImportApplicationManifest,
   ProvisioningImportSetup,
@@ -346,14 +347,32 @@ function crmResources(
   return rows
 }
 
+function couriersResources(): ProvisioningDraftReplace['resources'] {
+  return COURIERS_PACKAGE_CATEGORY_DEFAULTS.map((category, index) => ({
+    resource_type: 'package_category',
+    key: category.key,
+    position: (index + 1) * 10,
+    properties: [
+      stringProp('name', category.name),
+      ...optionalStringProp('description', category.description),
+      integerProp('sortOrder', category.sortOrder),
+      booleanProp('isActive', true),
+    ],
+  }))
+}
+
 export function buildApplicationImportDraft(
   manifest: ProvisioningImportApplicationManifest
 ): ProvisioningDraftReplace {
   const resources = Array.isArray(manifest.resources)
-    ? (manifest.resources as ProvisioningDraftReplace['resources'])
+    ? manifest.app_slug === '876-couriers' && manifest.resources.length === 0
+      ? couriersResources()
+      : (manifest.resources as ProvisioningDraftReplace['resources'])
     : manifest.app_slug === '876-crm'
       ? crmResources(manifest.resources)
-      : []
+      : manifest.app_slug === '876-couriers'
+        ? couriersResources()
+        : []
 
   const steps = manifest.steps.map((value, index) =>
     typeof value === 'string'
