@@ -47,6 +47,10 @@ export async function update(
           ...(params.isActive !== undefined && {
             isActive: params.isActive,
           }),
+          ...(params.imageFileId !== undefined && {
+            imageFileId: params.imageFileId,
+            imageUrl: params.imageFileId === null ? null : params.imageUrl,
+          }),
           updatedAt: now,
         },
       })

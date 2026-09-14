@@ -23,8 +23,27 @@ export const PaymentModeUpdateSchema = z
     name: z.string().trim().min(1).max(120).optional(),
     isDefault: z.boolean().optional(),
     isActive: z.boolean().optional(),
+    imageFileId: z.string().startsWith('file_').nullable().optional(),
+    imageUrl: z
+      .url({ protocol: /^https$/ })
+      .nullable()
+      .optional(),
   })
   .refine((value) => Object.keys(value).length > 0, 'Nothing to update.')
+  // The URL is only a display cache of the Storage file, so it may never be
+  // written on its own or outlive the file it describes.
+  .refine(
+    (value) =>
+      value.imageUrl === undefined ||
+      (value.imageUrl === null
+        ? value.imageFileId === null
+        : typeof value.imageFileId === 'string'),
+    'An image URL must be sent together with its Storage file.'
+  )
+  .refine(
+    (value) => !(typeof value.imageFileId === 'string' && !value.imageUrl),
+    'A Storage image file must be sent with its display URL.'
+  )
 
 export const PaymentAllocationSchema = z.strictObject({
   invoiceId: IdSchema,
@@ -149,6 +168,8 @@ export interface PaymentModeResource {
   isDefault: boolean
   isActive: boolean
   isSystem: boolean
+  imageFileId: string | null
+  imageUrl: string | null
   createdAt: number
   updatedAt: number
 }
