@@ -453,6 +453,7 @@ export type {
   Currency,
   CurrencyCreated,
   CurrencyEnableParams,
+  CurrencyUpdateParams,
   CurrencyMutation,
 } from './currency'
 export {

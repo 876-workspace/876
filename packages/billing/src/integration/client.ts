@@ -1,5 +1,6 @@
 import { createIntegrationBankAccountsResource } from './resources/bank-accounts'
 import { createIntegrationCustomersResource } from './resources/customers'
+import { createIntegrationCurrenciesResource } from './resources/currencies'
 import { createIntegrationInvoicesResource } from './resources/invoices'
 import { createIntegrationItemsResource } from './resources/items'
 import { createIntegrationQuotesResource } from './resources/quotes'
@@ -28,6 +29,7 @@ export function create876BillingIntegrationClient(
     organizations: createIntegrationOrganizationsResource(runtime),
     bankAccounts: createIntegrationBankAccountsResource(runtime),
     customers: createIntegrationCustomersResource(runtime),
+    currencies: createIntegrationCurrenciesResource(runtime),
     items: createIntegrationItemsResource(runtime),
     invoices: createIntegrationInvoicesResource(runtime),
     quotes: createIntegrationQuotesResource(runtime),
