@@ -12,7 +12,10 @@ import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
+import { canAccess } from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
+import { requireAppCapability } from '@/lib/auth/guards'
+import { INVOICE_REQUESTS_SLUG } from '@/lib/features'
 import { getCrm } from '@/lib/services/crm'
 
 export const metadata = { title: 'Requests' }
@@ -22,8 +25,15 @@ type Props = {
 }
 
 export default async function RequestsPage({ searchParams }: Props) {
-  const { status } = await searchParams
+  const [{ status }, access] = await Promise.all([
+    searchParams,
+    requireAppCapability({
+      permission: 'requests.view',
+      feature: INVOICE_REQUESTS_SLUG,
+    }),
+  ])
   const selectedStatus = isRequestStatus(status) ? status : 'all'
+  const canCreate = canAccess(access, 'requests.create')
 
   return (
     <Page className="mx-auto w-full max-w-[1400px]">
@@ -36,8 +46,8 @@ export default async function RequestsPage({ searchParams }: Props) {
             options={REQUEST_STATUS_OPTIONS}
           />
         }
-        primaryLabel="Add"
-        primaryHref="/requests/new"
+        primaryLabel={canCreate ? 'Add' : undefined}
+        primaryHref={canCreate ? '/requests/new' : undefined}
         primaryVariant="info"
         refresh
       />
