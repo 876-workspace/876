@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  BILLING_COMMERCIAL_MODULE_KEYS,
   INVOICE_COMMERCIAL_MODULE_KEYS,
   findAppModule,
 } from '@876/core/modules'
@@ -108,6 +109,34 @@ describe('canonical plan module seed definitions', () => {
     ).toBe(false)
   })
 
+  it('binds Requests to app-scoped rollout flags in both finance apps', () => {
+    // ARRANGE
+    const definitions = PLATFORM_MODULES.filter(
+      (definition) => definition.key === 'requests'
+    )
+
+    // ACT
+    const bindings = definitions.map((definition) => ({
+      appSlug: definition.appSlug,
+      featureSlug: definition.featureSlug,
+      includeCurrentAppPlans: definition.includeCurrentAppPlans,
+    }))
+
+    // ASSERT
+    expect(bindings).toEqual([
+      {
+        appSlug: '876-invoice',
+        featureSlug: 'invoice-requests',
+        includeCurrentAppPlans: true,
+      },
+      {
+        appSlug: '876-billing',
+        featureSlug: 'billing-requests',
+        includeCurrentAppPlans: true,
+      },
+    ])
+  })
+
   it('keeps Billing sales and documents as explicit legacy modules', () => {
     // ARRANGE
     const billingDefinitions = PLATFORM_MODULES.filter(
@@ -129,7 +158,7 @@ describe('canonical plan module seed definitions', () => {
     ])
   })
 
-  it('preserves established Billing positions for existing canonical modules', () => {
+  it('preserves established Billing positions and appends Requests', () => {
     // ARRANGE
     const billingDefinitions = new Map(
       PLATFORM_MODULES.filter(
@@ -144,6 +173,7 @@ describe('canonical plan module seed definitions', () => {
       purchases: billingDefinitions.get('purchases'),
       banking: billingDefinitions.get('banking'),
       payroll: billingDefinitions.get('payroll'),
+      requests: billingDefinitions.get('requests'),
     }
 
     // ASSERT
@@ -152,16 +182,21 @@ describe('canonical plan module seed definitions', () => {
       purchases: 30,
       banking: 40,
       payroll: 60,
+      requests: 70,
     })
   })
 
-  it('creates Invoice modules and grants only the initial free-plan subset', async () => {
+  it('grants new Invoice Requests to the current plan beside the free baseline', async () => {
     // ARRANGE
     repository.listApps.mockResolvedValue([
       { id: 'app_invoice', slug: '876-invoice' },
     ])
     repository.listProducts.mockResolvedValue([
-      { id: 'product_invoice_free', slug: INVOICE_FREE_PLAN_SLUG },
+      {
+        id: 'product_invoice_free',
+        slug: INVOICE_FREE_PLAN_SLUG,
+        appId: 'app_invoice',
+      },
     ])
 
     // ACT
@@ -170,7 +205,7 @@ describe('canonical plan module seed definitions', () => {
     // ASSERT
     expect(result).toEqual({
       modulesCreated: INVOICE_COMMERCIAL_MODULE_KEYS.length,
-      planModulesCreated: INVOICE_FREE_PLAN_MODULE_KEYS.length,
+      planModulesCreated: INVOICE_FREE_PLAN_MODULE_KEYS.length + 1,
       billingAssignments: 0,
       ownerProvisioned: false,
     })
@@ -190,20 +225,69 @@ describe('canonical plan module seed definitions', () => {
     ).toEqual(
       INVOICE_COMMERCIAL_MODULE_KEYS.map((key) => ({
         key,
-        grants: new Set<string>(INVOICE_FREE_PLAN_MODULE_KEYS).has(key)
-          ? [{ id: 'planModule_generated', productId: 'product_invoice_free' }]
-          : [],
+        grants:
+          new Set<string>(INVOICE_FREE_PLAN_MODULE_KEYS).has(key) ||
+          key === 'requests'
+            ? [{ id: 'planModule_generated', productId: 'product_invoice_free' }]
+            : [],
       }))
     )
   })
 
-  it('does not restore a removed default grant after the module already exists', async () => {
+  it('grants new Billing Requests to every current Billing plan only', async () => {
+    // ARRANGE
+    repository.listApps.mockResolvedValue([
+      { id: 'app_billing', slug: '876-billing' },
+    ])
+    repository.listFeatures.mockResolvedValue([
+      { id: 'feat_requests', slug: 'billing-requests' },
+    ])
+    repository.listProducts.mockResolvedValue([
+      { id: 'plan_free', slug: 'billing-free', appId: 'app_billing' },
+      { id: 'plan_pro', slug: 'billing-pro', appId: 'app_billing' },
+      { id: 'plan_invoice', slug: 'invoice-free', appId: 'app_invoice' },
+    ])
+
+    // ACT
+    await seedPlatformPlanModules()
+
+    // ASSERT
+    const requestsCall = repository.createApplicationModule.mock.calls.find(
+      ([params]) => params.key === 'requests'
+    )
+    expect(requestsCall?.[0]).toEqual(
+      expect.objectContaining({
+        appId: 'app_billing',
+        key: 'requests',
+        featureId: 'feat_requests',
+        initialGrants: [
+          { id: 'planModule_generated', productId: 'plan_free' },
+          { id: 'planModule_generated', productId: 'plan_pro' },
+        ],
+      })
+    )
+    expect(
+      repository.createApplicationModule.mock.calls
+        .filter(([params]) => params.appId === 'app_billing')
+        .map(([params]) => params.key)
+    ).toEqual([
+      ...BILLING_COMMERCIAL_MODULE_KEYS,
+      'sales',
+      'documents',
+    ])
+  })
+
+  it('does not restore a removed Requests grant after the module already exists', async () => {
     // ARRANGE
     repository.listApps.mockResolvedValue([
       { id: 'app_invoice', slug: '876-invoice' },
     ])
     repository.listProducts.mockResolvedValue([
-      { id: 'product_invoice_free', slug: INVOICE_FREE_PLAN_SLUG },
+      {
+        id: 'product_invoice_free',
+        slug: INVOICE_FREE_PLAN_SLUG,
+        appId: 'app_invoice',
+      },
     ])
     repository.findApplicationModule.mockImplementation(
       (_appId: string, key: string) => {
