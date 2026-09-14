@@ -26,10 +26,15 @@ export function PackagesList({ packages, orgSlug, emptyState }: Props) {
   const query = searchParams.toString()
   const selectedId = segments[0] === 'new' ? null : (segments[0] ?? null)
   const status = resolvePackageStatusFilter(searchParams.get('status'))
-  const rows =
+  const category = searchParams.get('category')
+  const statusRows =
     status === 'all'
       ? packages
       : packages.filter((row) => row.statusCode === status)
+  // Filter client-side because layouts receive no searchParams and this list holds every page.
+  const rows = category
+    ? statusRows.filter((row) => row.categoryId === category)
+    : statusRows
 
   if (segments.length === 0)
     return (

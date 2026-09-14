@@ -14,6 +14,7 @@ export type PackageTableRow = {
   trackingNumber: string
   branch: string
   category: string
+  categoryId: string | null
   status: string
   statusCode:
     | 'PRE_ALERT'

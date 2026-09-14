@@ -72,7 +72,9 @@ export async function PackagesListData({ orgSlug }: { orgSlug: string }) {
     ),
   ]
   const identities = await listBillingCustomers(ctx.orgId, billingIds)
-  const identityById = new Map(identities.map((customer) => [customer.id, customer]))
+  const identityById = new Map(
+    identities.map((customer) => [customer.id, customer])
+  )
 
   const rows: PackageTableRow[] = packages.map((pkg) => {
     const profile = profileById.get(pkg.customer_id)
@@ -98,6 +100,7 @@ export async function PackagesListData({ orgSlug }: { orgSlug: string }) {
         ? (branchById.get(pkg.branch_id)?.name ?? pkg.branch_id)
         : '—',
       category: pkg.category?.name ?? 'Uncategorized',
+      categoryId: pkg.category_id ?? null,
       status: packageStatusLabel(pkg.status),
       statusCode: pkg.status,
     }

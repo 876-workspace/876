@@ -13,8 +13,7 @@ export type PackageFormOption = { value: string; label: string }
 
 export async function loadPackageFormOptions(orgSlug: string) {
   const ctx = await getManageContext(orgSlug)
-  if (!ctx?.tenant)
-    return { customers: [], branches: [], categories: [] }
+  if (!ctx?.tenant) return { customers: [], branches: [], categories: [] }
 
   const [profiles, branchesResult, categories] = await Promise.all([
     listAllCustomerProfiles(ctx.tenant.id),
@@ -22,7 +21,9 @@ export async function loadPackageFormOptions(orgSlug: string) {
     listAllCategories(ctx.tenant.id),
   ])
 
-  const billingIds = [...new Set(profiles.map((row) => row.billing_customer_id))]
+  const billingIds = [
+    ...new Set(profiles.map((row) => row.billing_customer_id)),
+  ]
   const identities = await listBillingCustomers(ctx.orgId, billingIds)
   const identityById = new Map(identities.map((row) => [row.id, row]))
 
@@ -50,6 +51,15 @@ export async function loadPackageFormOptions(orgSlug: string) {
     .map((category) => ({ value: category.id, label: category.name }))
 
   return { customers, branches, categories: categoryOptions }
+}
+
+export async function loadActivePackageCategoryOptions(orgSlug: string) {
+  const ctx = await getManageContext(orgSlug)
+  if (!ctx?.tenant) return []
+
+  return (await listAllCategories(ctx.tenant.id))
+    .filter((category) => category.is_active && category.deleted_at === null)
+    .map((category) => ({ value: category.id, label: category.name }))
 }
 
 async function listAllCustomerProfiles(tenantId: string) {
