@@ -19,6 +19,7 @@ export type CommerceContextResult =
       userId: string
       organizationId: string
       organizationName: string
+      appId: string | null
       isAdmin: boolean
       accessStatus: 'active' | 'trialing' | 'blocked' | 'none'
     }
@@ -63,6 +64,7 @@ export const getCommerceContextResult = cache(
       organizationId: organizationMembership.organization.id,
       organizationName:
         organizationMembership.organization.name ?? 'Organization',
+      appId: subscription.data?.app_id ?? null,
       isAdmin: isOrganizationAdmin(organizationMembership.role),
       accessStatus:
         subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
