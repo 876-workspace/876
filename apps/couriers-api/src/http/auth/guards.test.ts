@@ -24,6 +24,7 @@ const testEnv: NodeJS.ProcessEnv = {
   DATABASE_URL: 'prisma://127.0.0.1:1/?api_key=test',
   API_876_KEY: APP_KEY,
   API_INTERNAL_KEY: 'test-internal-key',
+  API_URL: ISSUER,
   OAUTH_ISSUER: ISSUER,
   OAUTH_AUDIENCE: AUDIENCE,
   OAUTH_JWKS_URL: JWKS_URL,
@@ -98,14 +99,34 @@ async function createToken(
     .sign(privateKey)
 }
 
-function mockJwks(jwk: Record<string, unknown>) {
-  const fetchMock = vi.fn().mockResolvedValue(
-    new Response(
+async function createSessionToken(
+  privateKey: Awaited<ReturnType<typeof generateKeyPair>>['privateKey'],
+  claims: Record<string, unknown> = { sid: 'ses_123' }
+): Promise<string> {
+  const now = Math.floor(Date.now() / 1000)
+
+  return new SignJWT({ token_use: 'access', realm: 'enterprise', ...claims })
+    .setProtectedHeader({ alg: 'RS256', kid: 'platform-key-1' })
+    .setSubject('user_123')
+    .setIssuedAt(now)
+    .setExpirationTime(now + 300)
+    .sign(privateKey)
+}
+
+function mockJwks(
+  jwk: Record<string, unknown>,
+  introspection: Record<string, unknown> = { active: true, sub: 'user_123' }
+) {
+  const fetchMock = vi.fn(async (input: string | URL | Request) => {
+    const url = input instanceof Request ? input.url : String(input)
+    if (url.endsWith('/oauth/introspect'))
+      return new Response(JSON.stringify(introspection))
+    return new Response(
       JSON.stringify({
         keys: [{ ...jwk, alg: 'RS256', kid: 'platform-key-1', use: 'sig' }],
       })
     )
-  )
+  })
   vi.stubGlobal('fetch', fetchMock)
   return fetchMock
 }
@@ -163,7 +184,7 @@ describe('session-tier authentication', () => {
     expect(handler).toHaveBeenCalledTimes(1)
     expect(findApiKeyByHash).toHaveBeenCalledTimes(1)
     expect(markApiKeyUsed).toHaveBeenCalledTimes(1)
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it('rejects a token signed by an unknown key before the handler runs', async () => {
@@ -244,6 +265,7 @@ describe('session-tier authentication', () => {
   it('rejects a session request when verification is not configured', async () => {
     resetSettingsForTest({
       ...testEnv,
+      API_URL: '',
       OAUTH_AUDIENCE: '',
       OAUTH_ISSUER: '',
       OAUTH_JWKS_URL: '',
@@ -287,5 +309,117 @@ describe('session-tier authentication', () => {
     expectInvalidToken(response)
     expect(handler).not.toHaveBeenCalled()
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  describe('first-party session tokens', () => {
+    it('accepts an audience-less session token the identity API confirms is live', async () => {
+      const { privateKey, publicKey } = await generateKeyPair('RS256')
+      const token = await createSessionToken(privateKey)
+      const fetchMock = mockJwks(await exportJWK(publicKey))
+
+      const response = await sessionRequest(createSessionApp(), token)
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        data: { object: 'session-probe' },
+        error: null,
+      })
+      expect(handler).toHaveBeenCalledTimes(1)
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      const [url, init] = fetchMock.mock.calls[1] as unknown as [
+        string,
+        RequestInit,
+      ]
+      expect(url).toBe(`${ISSUER}/oauth/introspect`)
+      expect(init.method).toBe('POST')
+      expect(init.headers).toEqual({
+        authorization: `Bearer ${APP_KEY}`,
+        'content-type': 'application/x-www-form-urlencoded',
+      })
+      expect(String(init.body)).toBe(new URLSearchParams({ token }).toString())
+    })
+
+    it('rejects a session token whose session has been signed out', async () => {
+      const { privateKey, publicKey } = await generateKeyPair('RS256')
+      const token = await createSessionToken(privateKey)
+      const fetchMock = mockJwks(await exportJWK(publicKey), { active: false })
+
+      const response = await sessionRequest(createSessionApp(), token)
+
+      expectInvalidToken(response)
+      expect(handler).not.toHaveBeenCalled()
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+    })
+
+    it('rejects a live session that introspects to a different subject', async () => {
+      const { privateKey, publicKey } = await generateKeyPair('RS256')
+      const token = await createSessionToken(privateKey)
+      const fetchMock = mockJwks(await exportJWK(publicKey), {
+        active: true,
+        sub: 'user_other',
+      })
+
+      const response = await sessionRequest(createSessionApp(), token)
+
+      expectInvalidToken(response)
+      expect(handler).not.toHaveBeenCalled()
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+    })
+
+    it('rejects an audience-less token that names no session without introspecting', async () => {
+      const { privateKey, publicKey } = await generateKeyPair('RS256')
+      const token = await createSessionToken(privateKey, {})
+      const fetchMock = mockJwks(await exportJWK(publicKey))
+
+      const response = await sessionRequest(createSessionApp(), token)
+
+      expectInvalidToken(response)
+      expect(handler).not.toHaveBeenCalled()
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('answers 503 when the identity API cannot confirm the session', async () => {
+      const { privateKey, publicKey } = await generateKeyPair('RS256')
+      const token = await createSessionToken(privateKey)
+      const jwk = await exportJWK(publicKey)
+      const fetchMock = vi.fn(async (input: string | URL | Request) => {
+        const url = input instanceof Request ? input.url : String(input)
+        if (url.endsWith('/oauth/introspect'))
+          throw new Error('network unavailable')
+        return new Response(
+          JSON.stringify({
+            keys: [{ ...jwk, alg: 'RS256', kid: 'platform-key-1', use: 'sig' }],
+          })
+        )
+      })
+      vi.stubGlobal('fetch', fetchMock)
+
+      const response = await sessionRequest(createSessionApp(), token)
+
+      expect(response.status).toBe(503)
+      expect(response.body).toEqual({
+        data: null,
+        error: {
+          code: 'auth/identity-unavailable',
+          message: 'Sign-in could not be verified right now. Please try again.',
+        },
+      })
+      expect(handler).not.toHaveBeenCalled()
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+    })
+
+    it('reuses a confirmed introspection for repeat requests inside the cache window', async () => {
+      const { privateKey, publicKey } = await generateKeyPair('RS256')
+      const token = await createSessionToken(privateKey)
+      const fetchMock = mockJwks(await exportJWK(publicKey))
+      const app = createSessionApp()
+      await sessionRequest(app, token)
+
+      const response = await sessionRequest(app, token)
+
+      expect(response.status).toBe(200)
+      expect(handler).toHaveBeenCalledTimes(2)
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+    })
   })
 })

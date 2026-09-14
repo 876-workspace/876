@@ -68,6 +68,9 @@ const envSchema = z.object({
   // An unset internal key is a valid degraded configuration: admin routes
   // reject every request until a service secret is configured.
   API_INTERNAL_KEY: str(),
+  // The identity API that minted the bearer. Session tokens are confirmed live
+  // through its `/oauth/introspect`, so a signed-out session stops working.
+  API_URL: str(),
   OAUTH_ISSUER: str(),
   // The client ID the identity API placed in the access token's `aud` claim.
   // It is deliberately separate from API_876_KEY: an API key is not an OAuth
@@ -88,6 +91,12 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>
 
+function jwksUrlFor(e: Env): string {
+  if (e.OAUTH_JWKS_URL) return e.OAUTH_JWKS_URL
+  const base = (e.API_URL || e.OAUTH_ISSUER).replace(/\/+$/, '')
+  return base ? `${base}/oauth/.well-known/jwks.json` : ''
+}
+
 function build(env: NodeJS.ProcessEnv) {
   const parsed = envSchema.safeParse(env)
   if (!parsed.success) {
@@ -106,14 +115,11 @@ function build(env: NodeJS.ProcessEnv) {
     api876Key: e.API_876_KEY,
     integrationKey: e.COURIERS_INTEGRATION_KEY,
     internalKey: e.API_INTERNAL_KEY,
+    identityApiUrl: e.API_URL.replace(/\/+$/, ''),
     oauth: {
       issuer: e.OAUTH_ISSUER.replace(/\/+$/, ''),
       audience: e.OAUTH_AUDIENCE.trim(),
-      jwksUrl:
-        e.OAUTH_JWKS_URL ||
-        (e.OAUTH_ISSUER
-          ? `${e.OAUTH_ISSUER.replace(/\/+$/, '')}/oauth/.well-known/jwks.json`
-          : ''),
+      jwksUrl: jwksUrlFor(e),
     },
     sentryDsn: e.SENTRY_DSN,
     billingApiUrl: e.BILLING_API_URL,
