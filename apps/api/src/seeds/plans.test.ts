@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   INVOICE_COMMERCIAL_MODULE_KEYS,
+  PROJECTS_COMMERCIAL_MODULE_KEYS,
   findAppModule,
 } from '@876/core/modules'
 
@@ -37,6 +38,8 @@ import {
   INVOICE_FREE_PLAN_MODULE_KEYS,
   INVOICE_FREE_PLAN_SLUG,
   PLATFORM_MODULES,
+  PROJECTS_FREE_PLAN_MODULE_KEYS,
+  PROJECTS_FREE_PLAN_SLUG,
   seedPlatformPlanModules,
 } from './plans'
 
@@ -106,6 +109,32 @@ describe('canonical plan module seed definitions', () => {
     expect(
       invoiceDefinitions.some((definition) => definition.key === 'crm')
     ).toBe(false)
+  })
+
+  it('materializes only Projects capabilities with current commercial semantics', () => {
+    // ARRANGE
+    const definitions = PLATFORM_MODULES.filter(
+      (definition) =>
+        definition.appSlug === '876-projects' && definition.syncIdentity
+    )
+
+    // ACT
+    const keys = definitions.map((definition) => definition.key)
+
+    // ASSERT
+    expect(keys).toEqual(PROJECTS_COMMERCIAL_MODULE_KEYS)
+    expect(keys).toEqual(['projects', 'issues'])
+    expect(keys).not.toContain('reports')
+  })
+
+  it('does not materialize Commerce capabilities before runtime module gates exist', () => {
+    // ARRANGE / ACT
+    const definitions = PLATFORM_MODULES.filter(
+      (definition) => definition.appSlug === '876-commerce'
+    )
+
+    // ASSERT
+    expect(definitions).toEqual([])
   })
 
   it('keeps Billing sales and documents as explicit legacy modules', () => {
@@ -193,6 +222,40 @@ describe('canonical plan module seed definitions', () => {
         grants: new Set<string>(INVOICE_FREE_PLAN_MODULE_KEYS).has(key)
           ? [{ id: 'planModule_generated', productId: 'product_invoice_free' }]
           : [],
+      }))
+    )
+  })
+
+  it('creates Projects modules with initial grants to its free plan', async () => {
+    // ARRANGE
+    repository.listApps.mockResolvedValue([
+      { id: 'app_projects', slug: '876-projects' },
+    ])
+    repository.listProducts.mockResolvedValue([
+      { id: 'product_projects_free', slug: PROJECTS_FREE_PLAN_SLUG },
+    ])
+
+    // ACT
+    const result = await seedPlatformPlanModules()
+
+    // ASSERT
+    expect(result).toEqual({
+      modulesCreated: PROJECTS_COMMERCIAL_MODULE_KEYS.length,
+      planModulesCreated: PROJECTS_FREE_PLAN_MODULE_KEYS.length,
+      billingAssignments: 0,
+      ownerProvisioned: false,
+    })
+    expect(
+      repository.createApplicationModule.mock.calls.map(([params]) => ({
+        key: params.key,
+        grants: params.initialGrants,
+      }))
+    ).toEqual(
+      PROJECTS_COMMERCIAL_MODULE_KEYS.map((key) => ({
+        key,
+        grants: [
+          { id: 'planModule_generated', productId: 'product_projects_free' },
+        ],
       }))
     )
   })
