@@ -46,6 +46,9 @@ Rules:
   answers with a limit/quota/"promotion ended" error, or exits having written
   nothing, is switched for the next model in the same pool, then the next pool.
   Record which model finished the run in the report and `plan.md`.
+- **Free and prepaid models always run at their maximum reasoning level**
+  (user, 2026-09-14): Cline `--thinking xhigh`, opencode `--variant max`, Command
+  Code `--effort max`. If a model rejects the top level, use the highest it accepts.
 - **Probe before a long run** (one-word prompt, costs nothing) when a model may be
   exhausted — see each CLI's probe command below.
 - **Gemini (`agy`) is currently out** (2026-09-14). Do not route work to it until
@@ -59,9 +62,9 @@ Rules:
 
 | Tool                    | Command                                                                                                                          | Notes                                                                                                                                                                                                     |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Cline**               | `cline -c <dir> -m <model> --thinking none -t <secs> "<prompt>" < /dev/null`                                                     | Free pool #1. Headless act mode, auto-approve. **Reads a lot** — see "Briefing the free tier".                                                                                                            |
-| **opencode**            | `opencode run -m <model> [--variant <effort>] --auto "<prompt>" < /dev/null`                                                     | Free pool #2. An invalid flag prints help and exits 0 with no changes — check the diff.                                                                                                                   |
-| **Command Code**        | `command-code -p --yolo --skip-onboarding -m <model> --max-turns <n> "<prompt>" < /dev/null`                                     | Prepaid; DeepSeek V4.1 Flash is the workhorse. `--effort low\|medium\|high`, `--output-format json` for an NDJSON stream. `--list-models` shows ~70 models.                                               |
+| **Cline**               | `cline -c <dir> -m <model> --thinking xhigh -t <secs> "<prompt>" < /dev/null`                                                    | Free pool #1. Headless act mode, auto-approve. **Reads a lot** — see "Briefing the free tier".                                                                                                            |
+| **opencode**            | `opencode run -m <model> --variant max --auto "<prompt>" < /dev/null`                                                            | Free pool #2. An invalid flag prints help and exits 0 with no changes — check the diff.                                                                                                                   |
+| **Command Code**        | `command-code -p --yolo --skip-onboarding -m <model> --effort max --max-turns <n> "<prompt>" < /dev/null`                        | Prepaid; DeepSeek V4.1 Flash is the workhorse. `--effort low\|medium\|high`, `--output-format json` for an NDJSON stream. `--list-models` shows ~70 models.                                               |
 | **Codex**               | `codex exec -m gpt-5.6-terra -c model_reasoning_effort=medium --dangerously-bypass-approvals-and-sandbox "<prompt>" < /dev/null` | Models: `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-5.5`, plus `gpt-reserve` (not yet evaluated). **`gpt-6-astra` only when the user explicitly asks** (see below). Always pass `-m` and effort. |
 | **Muse Code** (Meta)    | `muse exec --trust-workspace`                                                                                                    | Cannot run commands in this container — see its section.                                                                                                                                                  |
 | **agy** (Antigravity)   | `agy`                                                                                                                            | **Gemini out as of 2026-09-14.**                                                                                                                                                                          |
@@ -98,7 +101,7 @@ Traps worth remembering:
 
 **Reasoning-effort note:** the `Agent` tool's `model` parameter only selects the
 model; express depth in the brief. For CLIs pass the effort flag explicitly
-(`-c model_reasoning_effort=`, `--variant`, `--effort`, `--thinking`).
+(`-c model_reasoning_effort=`, `--variant`, `--effort`, `--thinking`); free and prepaid models always at their maximum level.
 
 ## Code exploration on Sonnet (high effort) — matching orchestrator-quality results
 
@@ -506,12 +509,12 @@ whole subtree. For the free tier the brief must do the reading for it:
 ## Cline — free pool #1
 
 ```bash
-cline -c /root/projects/876 -m <model> --thinking none -t 3600 \
+cline -c /root/projects/876 -m <model> --thinking xhigh -t 3600 \
   "$(cat plans/<run>/briefs/cline/<brief>.md)" < /dev/null > /dev/null 2>&1
 ```
 
-- `--thinking none` for speed; models with mandatory reasoning (Muse) take
-  `--thinking low`.
+- **Always `--thinking xhigh`** (the maximum; verified 2026-09-14). If a model rejects
+  it, step down one level at a time (`high`, `medium`) — never `none`.
 - `-c <dir>` working directory, `-t <secs>` hard timeout (always set),
   `< /dev/null` so it never waits on stdin.
 - Harmless noise: `error: hook dispatch failed: session.hook requires a valid hook event payload`.
@@ -519,13 +522,13 @@ cline -c /root/projects/876 -m <model> --thinking none -t 3600 \
 
 Free models (2026-09-14, each has its own **daily limit** — rotate):
 
-| Model id                                | Notes                                                                     |
-| --------------------------------------- | ------------------------------------------------------------------------- |
-| `cline-free/deepseek-v4.1-flash`        | fast, 1M context; the default                                             |
-| `cline-free/muse-spark-1.3-contributor` | strongest free coder; hit its daily limit on 2026-09-14; `--thinking low` |
-| `z-ai/glm-5.3-flash`                    | fast multimodal                                                           |
-| `cline-free/solar-pro4`                 | documents and coding                                                      |
-| `poolside/laguna-s-2.1:free`            | coding agent                                                              |
+| Model id                                | Notes                                                   |
+| --------------------------------------- | ------------------------------------------------------- |
+| `cline-free/deepseek-v4.1-flash`        | fast, 1M context; the default                           |
+| `cline-free/muse-spark-1.3-contributor` | strongest free coder; hit its daily limit on 2026-09-14 |
+| `z-ai/glm-5.3-flash`                    | fast multimodal                                         |
+| `cline-free/solar-pro4`                 | documents and coding                                    |
+| `poolside/laguna-s-2.1:free`            | coding agent                                            |
 
 The roster rotates; read the live list instead of trusting this table:
 
@@ -540,7 +543,7 @@ read `run_result.finishReason` / `text`. A limit shows as an error result.
 ## opencode — free pool #2
 
 ```bash
-opencode run -m opencode/<model> [--variant <low|medium|high|max>] --auto \
+opencode run -m opencode/<model> --variant max --auto \
   "$(cat plans/<run>/briefs/opencode/<brief>.md)" < /dev/null > /dev/null 2>&1
 ```
 
@@ -559,7 +562,7 @@ List live: `opencode models | grep -i free`.
 
 ```bash
 command-code -p --yolo --skip-onboarding -m deepseek/deepseek-v4.1-flash \
-  --max-turns 150 "$(cat plans/<run>/briefs/command-code/<brief>.md)" < /dev/null > /dev/null 2>&1
+  --effort max --max-turns 150 "$(cat plans/<run>/briefs/command-code/<brief>.md)" < /dev/null > /dev/null 2>&1
 ```
 
 - The user pays $1/month for **extremely generous DeepSeek V4.1 Flash** usage.
@@ -571,7 +574,8 @@ command-code -p --yolo --skip-onboarding -m deepseek/deepseek-v4.1-flash \
   `command-code --list-models` shows all ~70 (it also lists Claude, GPT and
   Gemini models — do not route premium models through it without asking).
 - `--max-turns` defaults to 100 and exits 8 at the cap; raise it for real work.
-- `--effort low|medium|high` where the model supports it.
+- **Always `--effort max`.** DeepSeek V4.1 Flash supports `low|high|max`
+  (`xhigh` is rejected); if another model rejects `max`, use its highest level.
 - Never use `-w/--worktree` (no worktrees for delegates).
 - Probe: `command-code -p "Reply with OK" -m <model> --max-turns 1 --skip-onboarding < /dev/null`.
 
