@@ -18,7 +18,7 @@ export type {
   EffectivePermissionInput,
   GroupedAppPermissions,
 } from './types'
-export { can, hasFeature, variantOf } from './context'
+export { can, hasFeature, hasModule, variantOf } from './context'
 export type { AccessContext } from './context'
 export {
   defineNavigation,
