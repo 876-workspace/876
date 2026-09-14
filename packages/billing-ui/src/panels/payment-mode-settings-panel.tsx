@@ -12,18 +12,27 @@ import { Button } from '@876/ui/button'
 import { CreditCard, Plus, Trash } from '@876/ui/icons'
 import { Input } from '@876/ui/input'
 
-type MutationResult = { error: { message: string } | null }
+type MutationResult<T = unknown> = {
+  data?: T | null
+  error: { message: string } | null
+}
 
 export interface PaymentModeSettingsPanelProps {
   modes: PaymentMode[]
   canManage: boolean
-  onCreate: (params: PaymentModeCreateParams) => Promise<MutationResult>
+  onCreate: (
+    params: PaymentModeCreateParams
+  ) => Promise<MutationResult<PaymentMode>>
   onUpdate: (
     id: string,
     params: PaymentModeUpdateParams
   ) => Promise<MutationResult>
   onDelete: (id: string) => Promise<MutationResult>
   canDelete?: (mode: PaymentMode) => boolean
+  onUploadImage?: (
+    modeId: string,
+    file: File
+  ) => Promise<MutationResult<PaymentMode>>
   onSuccess: () => void
 }
 
@@ -35,6 +44,7 @@ export function PaymentModeSettingsPanel({
   onUpdate,
   onDelete,
   canDelete = (mode) => !mode.isSystem && !mode.isDefault,
+  onUploadImage,
   onSuccess,
 }: PaymentModeSettingsPanelProps) {
   const [name, setName] = useState('')
@@ -42,8 +52,9 @@ export function PaymentModeSettingsPanel({
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [editingMode, setEditingMode] = useState<PaymentMode | null>(null)
+  const [createImage, setCreateImage] = useState<File | null>(null)
 
-  function run(action: () => Promise<MutationResult>, done?: () => void) {
+  function run<T>(action: () => Promise<MutationResult<T>>, done?: () => void) {
     setError(null)
     startTransition(async () => {
       const result = await action()
@@ -81,9 +92,20 @@ export function PaymentModeSettingsPanel({
               return
             }
             run(
-              () => onCreate({ name: trimmed }),
+              async () => {
+                const created = await onCreate({ name: trimmed })
+                if (
+                  created.error ||
+                  !createImage ||
+                  !onUploadImage ||
+                  !created.data
+                )
+                  return created
+                return onUploadImage(created.data.id, createImage)
+              },
               () => {
                 setName('')
+                setCreateImage(null)
                 setShowForm(false)
               }
             )
@@ -96,6 +118,16 @@ export function PaymentModeSettingsPanel({
             placeholder="Bank transfer"
             required
           />
+          {onUploadImage ? (
+            <Input
+              aria-label="Payment mode image"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={(event) =>
+                setCreateImage(event.target.files?.[0] ?? null)
+              }
+            />
+          ) : null}
           <Button type="submit" disabled={isPending}>
             {isPending ? 'Saving…' : 'Create payment mode'}
           </Button>
@@ -114,12 +146,17 @@ export function PaymentModeSettingsPanel({
           mode={editingMode}
           disabled={isPending}
           onCancel={() => setEditingMode(null)}
-          onSubmit={(name) =>
+          onSubmit={(name, image) =>
             run(
-              () => onUpdate(editingMode.id, { name }),
+              async () => {
+                const updated = await onUpdate(editingMode.id, { name })
+                if (updated.error || !image || !onUploadImage) return updated
+                return onUploadImage(editingMode.id, image)
+              },
               () => setEditingMode(null)
             )
           }
+          onUploadImage={onUploadImage}
         />
       ) : null}
       {error ? (
@@ -142,9 +179,17 @@ export function PaymentModeSettingsPanel({
                 key={mode.id}
                 className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center"
               >
-                <span className="876-icon-tile">
-                  <CreditCard className="text-876-blue size-4" />
-                </span>
+                {mode.imageUrl ? (
+                  <img
+                    className="size-9 rounded-md object-cover"
+                    src={mode.imageUrl}
+                    alt={`${mode.name} logo`}
+                  />
+                ) : (
+                  <span className="876-icon-tile">
+                    <CreditCard className="text-876-blue size-4" />
+                  </span>
+                )}
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-medium">{mode.name}</p>
@@ -158,11 +203,6 @@ export function PaymentModeSettingsPanel({
                       <Badge variant="outline">Archived</Badge>
                     ) : null}
                   </div>
-                  <p className="text-muted-foreground mt-1 text-xs">
-                    {mode.isActive
-                      ? 'Available when recording payments.'
-                      : 'Retained for payment history.'}
-                  </p>
                 </div>
                 {canManage ? (
                   <div className="flex flex-wrap gap-1">
@@ -228,20 +268,23 @@ function PaymentModeEditForm({
   disabled,
   onCancel,
   onSubmit,
+  onUploadImage,
 }: {
   mode: PaymentMode
   disabled: boolean
   onCancel: () => void
-  onSubmit: (name: string) => void
+  onSubmit: (name: string, image: File | null) => void
+  onUploadImage?: PaymentModeSettingsPanelProps['onUploadImage']
 }) {
   const [name, setName] = useState(mode.name)
+  const [image, setImage] = useState<File | null>(null)
 
   return (
     <form
       className="876-card border-876-blue/25 flex flex-wrap gap-3 p-5"
       onSubmit={(event) => {
         event.preventDefault()
-        onSubmit(name.trim())
+        onSubmit(name.trim(), image)
       }}
     >
       <Input
@@ -250,6 +293,14 @@ function PaymentModeEditForm({
         onChange={(event) => setName(event.target.value)}
         required
       />
+      {onUploadImage ? (
+        <Input
+          aria-label="Payment mode edit image"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          onChange={(event) => setImage(event.target.files?.[0] ?? null)}
+        />
+      ) : null}
       <Button type="submit" disabled={disabled}>
         {disabled ? 'Saving…' : 'Save changes'}
       </Button>
