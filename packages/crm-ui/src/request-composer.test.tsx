@@ -15,7 +15,11 @@ describe('RequestComposer customer selection', () => {
       <RequestComposer
         state={{ status: 'ready' }}
         customerOptions={[
-          { id: 'cus_1', name: 'Acme Limited', description: 'billing@acme.test' },
+          {
+            id: 'cus_1',
+            name: 'Acme Limited',
+            description: 'billing@acme.test',
+          },
           { id: 'cus_2', name: 'Jane Doe' },
         ]}
         onSubmit={onSubmit}

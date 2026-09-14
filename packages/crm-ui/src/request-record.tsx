@@ -14,6 +14,8 @@ export function RequestRecord({
   baseHref,
   closeHref,
   customerHref,
+  layout = 'card',
+  closeLabel,
   onUpdate,
   children,
 }: {
@@ -21,6 +23,8 @@ export function RequestRecord({
   baseHref: string
   closeHref?: string
   customerHref?: string
+  layout?: 'card' | 'inline'
+  closeLabel?: string
   onUpdate: (input: UpdateRequestInput) => Promise<{
     data: CrmRequest | null
     error: AppErrorValue | null
@@ -48,7 +52,9 @@ export function RequestRecord({
       request={current}
       baseHref={baseHref}
       closeHref={closeHref}
+      closeLabel={closeLabel}
       customerHref={customerHref}
+      layout={layout}
     >
       {error ? (
         <AppError

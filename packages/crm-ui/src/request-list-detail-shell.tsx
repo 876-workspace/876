@@ -26,13 +26,15 @@ export function RequestListDetailShell({
   children,
   baseHref,
   canCreate = true,
+  takeoverSegments = ['new'],
 }: {
   list: ReactNode
   children: ReactNode
   baseHref: string
   canCreate?: boolean
+  takeoverSegments?: readonly string[]
 }) {
-  const { open } = useListDetailRoute(['new'])
+  const { open } = useListDetailRoute(takeoverSegments)
   const status = useSearchParams().get('status') ?? 'all'
   return (
     <ListDetailShell

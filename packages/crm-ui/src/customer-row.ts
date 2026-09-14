@@ -7,7 +7,8 @@ export function toCrmCustomerRow(entry: Customer): CrmCustomerRow {
   const customer = entry.customer
   const primary = customer?.primaryContact ?? null
   const contactName = primary
-    ? [primary.firstName, primary.lastName].filter(Boolean).join(' ').trim() || null
+    ? [primary.firstName, primary.lastName].filter(Boolean).join(' ').trim() ||
+      null
     : null
 
   return {
@@ -19,7 +20,8 @@ export function toCrmCustomerRow(entry: Customer): CrmCustomerRow {
         ? (customer.companyName ?? null)
         : null,
     isBusiness: customer?.customerKind === 'BUSINESS',
-    typeLabel: customer?.customerKind === 'BUSINESS' ? 'Business' : 'Individual',
+    typeLabel:
+      customer?.customerKind === 'BUSINESS' ? 'Business' : 'Individual',
     email: customer?.email ?? primary?.email ?? null,
     phone:
       customer?.phone ?? primary?.workPhone ?? primary?.mobilePhone ?? null,

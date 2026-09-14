@@ -94,6 +94,34 @@ describe('customer request panels', () => {
       })
     ).toHaveAttribute('href', '/requests/req_1')
   })
+  it('renders the customer list inline without the split pane by request', () => {
+    render(
+      <CustomerRequestsPanel
+        state={{ status: 'ready', requests: [request] }}
+        requestHref={(id) => `/customers/c1/requests/${id}`}
+        layout="inline"
+      />
+    )
+
+    expect(
+      screen.getByRole('link', { name: /Open request 42/ })
+    ).toHaveAttribute('href', '/customers/c1/requests/req_1')
+    expect(
+      document.querySelector('[data-slot="list-pane"]')
+    ).not.toBeInTheDocument()
+  })
+  it('keeps the customer panel pane layout as the default', () => {
+    render(
+      <CustomerRequestsPanel
+        state={{ status: 'ready', requests: [request] }}
+        requestHref={() => '/requests/req_1'}
+      />
+    )
+
+    expect(
+      document.querySelector('[data-slot="list-pane"]')
+    ).toBeInTheDocument()
+  })
   it('does not render a new request button without a host href', () => {
     render(
       <CustomerRequestsPanel

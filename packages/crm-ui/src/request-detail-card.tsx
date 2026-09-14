@@ -17,24 +17,28 @@ export function RequestDetailCard({
   baseHref,
   closeHref = baseHref,
   customerHref,
+  layout = 'card',
+  closeLabel = 'Close request',
   children,
 }: {
   request: CrmRequest
   baseHref: string
   closeHref?: string
   customerHref?: string
+  layout?: 'card' | 'inline'
+  closeLabel?: string
   children?: ReactNode
 }) {
   const related =
     request.relatedResourceType && request.relatedResourceId
       ? `${request.relatedResourceType} · ${request.relatedResourceSnapshot?.number ?? request.relatedResourceId}`
       : 'None'
-  return (
-    <DetailCard aria-label={`Request ${request.number}`}>
+  const content = (
+    <>
       <DetailCardHeader
         title={`Request #${request.number}`}
         closeHref={closeHref}
-        closeLabel="Close request"
+        closeLabel={closeLabel}
       />
       <DetailCardRouteTabs
         tabs={[
@@ -93,6 +97,13 @@ export function RequestDetailCard({
         {children}
       </DetailCardBody>
       <DetailCardIdBar>{request.id}</DetailCardIdBar>
-    </DetailCard>
+    </>
+  )
+
+  if (layout === 'inline')
+    return <div aria-label={`Request ${request.number}`}>{content}</div>
+
+  return (
+    <DetailCard aria-label={`Request ${request.number}`}>{content}</DetailCard>
   )
 }

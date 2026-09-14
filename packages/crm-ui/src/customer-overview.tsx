@@ -34,7 +34,10 @@ export function CustomerOverview({ customer }: { customer: CrmCustomerRow }) {
             </dt>
             <dd className="text-foreground mt-0.5 text-[0.8125rem] font-medium">
               {customer.email ? (
-                <a href={`mailto:${customer.email}`} className="hover:underline">
+                <a
+                  href={`mailto:${customer.email}`}
+                  className="hover:underline"
+                >
                   {customer.email}
                 </a>
               ) : (

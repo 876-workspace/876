@@ -52,17 +52,25 @@ export function RequestCustomersList({
                   {customer.name}
                 </span>
                 <span className="text-muted-foreground mt-0.5 block truncate text-xs">
-                  {customer.contactName ?? customer.email ?? customer.typeLabel ?? 'Customer'}
+                  {customer.contactName ??
+                    customer.email ??
+                    customer.typeLabel ??
+                    'Customer'}
                 </span>
               </div>
-              <Badge variant={customer.status === 'ACTIVE' ? 'success' : 'secondary'}>
+              <Badge
+                variant={customer.status === 'ACTIVE' ? 'success' : 'secondary'}
+              >
                 {customer.status === 'ACTIVE' ? 'Active' : 'Inactive'}
               </Badge>
             </>
           )
 
           return (
-            <li key={customer.profileId} className="hover:bg-muted/40 transition-colors">
+            <li
+              key={customer.profileId}
+              className="hover:bg-muted/40 transition-colors"
+            >
               {href ? (
                 <Link
                   href={href}
