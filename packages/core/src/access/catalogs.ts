@@ -1,4 +1,8 @@
-import { FINANCE_MODULES } from '../modules'
+import {
+  COMMERCE_MODULES,
+  FINANCE_MODULES,
+  PROJECTS_MODULES,
+} from '../modules'
 import { defineAppPermissionCatalog } from './index'
 import type { AppPermission, AppPermissionCatalog } from './types'
 
@@ -55,6 +59,13 @@ function crudModule(
   extra: readonly string[] = []
 ): ModuleDraft {
   return crud(definition.key, definition.label, extra)
+}
+
+function moduleActions(
+  definition: { key: string; label: string },
+  actions: readonly string[]
+): ModuleDraft {
+  return { key: definition.key, label: definition.label, actions }
 }
 
 function titleCase(value: string): string {
@@ -213,12 +224,12 @@ export const projectsPermissionCatalog: AppPermissionCatalog =
     app: '876-projects',
     modules: modules([
       { key: 'dashboard', label: 'Dashboard', actions: ['view'] },
-      crud('projects', 'Projects', ['archive']),
-      crud('issues', 'Issues'),
+      crudModule(PROJECTS_MODULES.projects, ['archive']),
+      crudModule(PROJECTS_MODULES.issues),
       crud('comments', 'Comments'),
       crud('labels', 'Labels'),
       crud('members', 'Members'),
-      { key: 'reports', label: 'Reports', actions: ['view'] },
+      moduleActions(PROJECTS_MODULES.reports, ['view']),
       { key: 'settings', label: 'Settings', actions: ['view', 'edit'] },
     ]),
   })
@@ -227,6 +238,46 @@ export const commercePermissionCatalog: AppPermissionCatalog =
   defineAppPermissionCatalog({
     app: '876-commerce',
     modules: modules([
+      { key: 'dashboard', label: 'Dashboard', actions: ['view'] },
+      moduleActions(COMMERCE_MODULES.catalog, ['view', 'edit']),
+      crud('products', 'Products', ['publish']),
+      crud('collections', 'Collections'),
+      moduleActions(COMMERCE_MODULES.orders, [
+        'view',
+        'create',
+        'edit',
+        'cancel',
+        'fulfill',
+        'refund',
+      ]),
+      crudModule(COMMERCE_MODULES.customers),
+      moduleActions(COMMERCE_MODULES.inventory, ['view', 'adjust', 'transfer']),
+      moduleActions(COMMERCE_MODULES.storefront, ['view', 'edit', 'publish']),
+      moduleActions({ key: 'themes', label: 'Themes' }, [
+        'view',
+        'edit',
+        'publish',
+      ]),
+      moduleActions({ key: 'domains', label: 'Domains' }, ['view', 'edit']),
+      moduleActions(COMMERCE_MODULES.checkout, ['view', 'edit']),
+      moduleActions(COMMERCE_MODULES.payments, ['view', 'refund']),
+      crudModule(COMMERCE_MODULES.discounts),
+      moduleActions(COMMERCE_MODULES.shipping, ['view', 'edit']),
+      moduleActions(COMMERCE_MODULES.fulfillment, ['view', 'create', 'edit']),
+      moduleActions(COMMERCE_MODULES.returns, ['view', 'create', 'edit']),
+      moduleActions(COMMERCE_MODULES.markets, ['view', 'edit']),
+      crudModule(COMMERCE_MODULES.marketing),
+      moduleActions(COMMERCE_MODULES.analytics, ['view', 'export']),
+      moduleActions(COMMERCE_MODULES.pos, ['view', 'edit']),
+      crudModule(COMMERCE_MODULES.b2b),
+      moduleActions(COMMERCE_MODULES.subscriptions, [
+        'view',
+        'create',
+        'edit',
+        'cancel',
+      ]),
+      crudModule(COMMERCE_MODULES.channels),
+      crudModule(COMMERCE_MODULES.automation),
       { key: 'settings', label: 'Settings', actions: ['view', 'edit'] },
     ]),
   })
