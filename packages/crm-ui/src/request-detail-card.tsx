@@ -15,11 +15,13 @@ import {
 export function RequestDetailCard({
   request,
   baseHref,
+  closeHref = baseHref,
   customerHref,
   children,
 }: {
   request: CrmRequest
   baseHref: string
+  closeHref?: string
   customerHref?: string
   children?: ReactNode
 }) {
@@ -31,7 +33,7 @@ export function RequestDetailCard({
     <DetailCard aria-label={`Request ${request.number}`}>
       <DetailCardHeader
         title={`Request #${request.number}`}
-        closeHref={baseHref}
+        closeHref={closeHref}
         closeLabel="Close request"
       />
       <DetailCardRouteTabs
