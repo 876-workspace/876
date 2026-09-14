@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { apiJson } from '@876/core/api'
+import type { AccessContext } from '@876/core/access'
 
 import {
   canAccess,
@@ -13,20 +14,21 @@ export type ApiContext =
   | { response: Response; orgId?: undefined; userId?: undefined }
   | { response: null; orgId: string; userId: string }
 
-async function resolveApiAccess(): Promise<
-  | { response: Response; context?: undefined; orgId?: undefined; userId?: undefined }
+type ResolvedApiAccess =
+  | {
+      response: Response
+      context?: undefined
+      orgId?: undefined
+      userId?: undefined
+    }
   | {
       response: null
-      context: Awaited<ReturnType<typeof resolveAccessContext>> extends {
-        status: 'ok'
-        context: infer T
-      }
-        ? T
-        : never
+      context: AccessContext
       orgId: string
       userId: string
     }
-> {
+
+async function resolveApiAccess(): Promise<ResolvedApiAccess> {
   const context = await getProjectsApiContext()
   if (!context)
     return {
