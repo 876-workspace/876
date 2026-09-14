@@ -253,6 +253,12 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
       legacySlugs: ['couriers_operations_customers'],
     },
     {
+      slug: 'couriers-customers-create',
+      name: 'Create customers',
+      description: 'Allows new Couriers customers to be created.',
+      defaultEnabled: true,
+    },
+    {
       slug: 'couriers-operations-items',
       name: 'Items',
       description: 'Controls access to Couriers items.',

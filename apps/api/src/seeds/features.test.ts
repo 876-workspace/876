@@ -105,6 +105,15 @@ describe('feature seed catalog', () => {
     })
   })
 
+  it('seeds the enabled standalone Couriers customer-creation kill switch', () => {
+    expect(seedFor('876-couriers', 'couriers-customers-create')).toEqual({
+      slug: 'couriers-customers-create',
+      name: 'Create customers',
+      description: 'Allows new Couriers customers to be created.',
+      defaultEnabled: true,
+    })
+  })
+
   it('seeds the platform Work child disabled for opt-in rollout', () => {
     expect(
       PLATFORM_FEATURE_SEEDS.find(
