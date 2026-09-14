@@ -39,6 +39,37 @@ export const billingNavigation = defineNavigation([
         requires: { permission: 'customers:read' },
       },
       {
+        key: 'requests',
+        title: 'Requests',
+        href: '/requests',
+        icon: 'requests',
+        colorClassName: 'text-[var(--876-blue)]',
+        requires: {
+          permission: 'customers:read',
+          feature: 'billing-requests',
+        },
+        children: [
+          {
+            key: 'requests-list',
+            title: 'Requests',
+            href: '/requests',
+            icon: 'requests',
+          },
+          {
+            key: 'requests-customers',
+            title: 'Customers',
+            href: '/requests/customers',
+            icon: 'customers',
+          },
+          {
+            key: 'requests-forms',
+            title: 'Forms',
+            href: '/requests/forms',
+            icon: 'forms',
+          },
+        ],
+      },
+      {
         key: 'items',
         title: 'Items',
         href: '/items',
@@ -283,6 +314,37 @@ export const invoiceNavigation = defineNavigation([
         icon: 'customers',
         colorClassName: 'text-[var(--876-gold)]',
         requires: { permission: 'customers.view' },
+      },
+      {
+        key: 'requests',
+        title: 'Requests',
+        href: '/requests',
+        icon: 'requests',
+        colorClassName: 'text-[var(--876-blue)]',
+        requires: {
+          permission: 'requests.view',
+          feature: 'invoice-requests',
+        },
+        children: [
+          {
+            key: 'requests-list',
+            title: 'Requests',
+            href: '/requests',
+            icon: 'requests',
+          },
+          {
+            key: 'requests-customers',
+            title: 'Customers',
+            href: '/requests/customers',
+            icon: 'customers',
+          },
+          {
+            key: 'requests-forms',
+            title: 'Forms',
+            href: '/requests/forms',
+            icon: 'forms',
+          },
+        ],
       },
       {
         key: 'items',
