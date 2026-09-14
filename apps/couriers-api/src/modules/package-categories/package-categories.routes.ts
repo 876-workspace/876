@@ -9,6 +9,7 @@ import {
   createPackageCategory,
   deletePackageCategory,
   listPackageCategories,
+  reconcilePackageCategories,
   retrievePackageCategory,
   updatePackageCategory,
 } from './package-categories.controller'
@@ -16,7 +17,9 @@ import {
   createPackageCategoryBodySchema,
   listPackageCategoriesQuerySchema,
   packageCategoryParamsSchema,
+  packageCategoryReconciliationSchema,
   packageCategorySchema,
+  reconcilePackageCategoriesBodySchema,
   tenantParamsSchema,
   updatePackageCategoryBodySchema,
 } from './package-categories.schemas'
@@ -58,6 +61,22 @@ export function createPackageCategoriesRouter() {
         },
       },
       handler: createPackageCategory,
+    })
+    .post({
+      path: '/reconcile',
+      summary: 'Reconcile provisioned package categories',
+      operationId: 'reconcilePackageCategories',
+      request: {
+        params: tenantParamsSchema,
+        body: reconcilePackageCategoriesBodySchema,
+      },
+      responses: {
+        200: {
+          description: 'Provisioned package categories reconciled.',
+          schema: successEnvelopeSchema(packageCategoryReconciliationSchema),
+        },
+      },
+      handler: reconcilePackageCategories,
     })
     .get({
       path: '/:id',
