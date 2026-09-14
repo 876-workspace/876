@@ -1,7 +1,8 @@
 import type { ErrorDef, AppError, HttpStatusCode } from '@876/core'
-import { HttpStatus } from '@876/core'
+import { BILLING_ERRORS, HttpStatus } from '@876/core'
 
 import { ADDRESS_ERRORS } from './address'
+import { FINANCE_ERRORS } from './finance'
 import { GENERIC_ERRORS } from './generic'
 import { TENANT_ERRORS } from './tenant'
 import { CUSTOMER_ERRORS } from './customer'
@@ -19,6 +20,8 @@ export const COURIERS_ERRORS = {
   ...ROLE_ERRORS,
   ...TEAM_ERRORS,
   ...STORAGE_ERRORS,
+  ...FINANCE_ERRORS,
+  ...BILLING_ERRORS,
 } as const satisfies Record<string, ErrorDef>
 
 export type CouriersErrorCode = keyof typeof COURIERS_ERRORS
