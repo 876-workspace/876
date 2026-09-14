@@ -4,7 +4,6 @@ import { validBody, validParams, validQuery } from '@/http/middleware/validate'
 import * as service from './customers.service'
 import type {
   CreateCustomerBody,
-  CustomerEnrollmentBody,
   CustomerParams,
   DeleteCustomerBody,
   ListCustomersQuery,
@@ -33,17 +32,6 @@ export async function createCustomer(req: Request, res: Response) {
     .status(201)
     .json(
       await service.createCustomer(tenantId, validBody<CreateCustomerBody>(req))
-    )
-}
-export async function enrollCustomer(req: Request, res: Response) {
-  const { tenantId } = validParams<TenantParams>(req)
-  res
-    .status(201)
-    .json(
-      await service.enrollCustomer(
-        tenantId,
-        validBody<CustomerEnrollmentBody>(req)
-      )
     )
 }
 export async function retrieveCustomer(req: Request, res: Response) {

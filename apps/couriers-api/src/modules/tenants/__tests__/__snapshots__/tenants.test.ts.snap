@@ -3019,6 +3019,14 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           },
           {
             "in": "query",
+            "name": "billing_customer_ids",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
             "name": "limit",
             "schema": {
               "default": 25,
@@ -3155,96 +3163,151 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           "content": {
             "application/json": {
               "schema": {
-                "additionalProperties": false,
-                "properties": {
-                  "branch_id": {
-                    "anyOf": [
-                      {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "billing_customer_id": {
                         "minLength": 1,
                         "type": "string",
                       },
-                      {
-                        "type": "null",
-                      },
-                    ],
-                  },
-                  "company_name": {
-                    "minLength": 1,
-                    "type": "string",
-                  },
-                  "customer_kind": {
-                    "default": "INDIVIDUAL",
-                    "enum": [
-                      "INDIVIDUAL",
-                      "BUSINESS",
-                    ],
-                    "type": "string",
-                  },
-                  "email": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                      },
-                      {
-                        "type": "null",
-                      },
-                    ],
-                  },
-                  "first_name": {
-                    "minLength": 1,
-                    "type": "string",
-                  },
-                  "idempotency_key": {
-                    "maxLength": 255,
-                    "minLength": 8,
-                    "type": "string",
-                  },
-                  "is_commercial": {
-                    "type": "boolean",
-                  },
-                  "last_name": {
-                    "anyOf": [
-                      {
+                      "branch_id": {
                         "minLength": 1,
                         "type": "string",
                       },
-                      {
-                        "type": "null",
+                      "is_commercial": {
+                        "type": "boolean",
                       },
+                      "source": {
+                        "const": "registry",
+                        "type": "string",
+                      },
+                      "status": {
+                        "enum": [
+                          "ACTIVE",
+                          "SUSPENDED",
+                        ],
+                        "type": "string",
+                      },
+                      "trn": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                    },
+                    "required": [
+                      "source",
+                      "billing_customer_id",
+                      "branch_id",
                     ],
+                    "type": "object",
                   },
-                  "phone": {
-                    "anyOf": [
-                      {
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "branch_id": {
                         "minLength": 1,
                         "type": "string",
                       },
-                      {
-                        "type": "null",
-                      },
-                    ],
-                  },
-                  "status": {
-                    "enum": [
-                      "ACTIVE",
-                      "SUSPENDED",
-                    ],
-                    "type": "string",
-                  },
-                  "trn": {
-                    "anyOf": [
-                      {
-                        "minLength": 1,
+                      "idempotency_key": {
+                        "maxLength": 255,
+                        "minLength": 8,
                         "type": "string",
                       },
-                      {
-                        "type": "null",
+                      "is_commercial": {
+                        "type": "boolean",
                       },
+                      "party": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "company_name": {
+                            "minLength": 1,
+                            "type": "string",
+                          },
+                          "customer_kind": {
+                            "default": "INDIVIDUAL",
+                            "enum": [
+                              "INDIVIDUAL",
+                              "BUSINESS",
+                            ],
+                            "type": "string",
+                          },
+                          "email": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                              },
+                              {
+                                "type": "null",
+                              },
+                            ],
+                          },
+                          "first_name": {
+                            "minLength": 1,
+                            "type": "string",
+                          },
+                          "last_name": {
+                            "anyOf": [
+                              {
+                                "minLength": 1,
+                                "type": "string",
+                              },
+                              {
+                                "type": "null",
+                              },
+                            ],
+                          },
+                          "phone": {
+                            "anyOf": [
+                              {
+                                "minLength": 1,
+                                "type": "string",
+                              },
+                              {
+                                "type": "null",
+                              },
+                            ],
+                          },
+                        },
+                        "type": "object",
+                      },
+                      "source": {
+                        "const": "party",
+                        "type": "string",
+                      },
+                      "status": {
+                        "enum": [
+                          "ACTIVE",
+                          "SUSPENDED",
+                        ],
+                        "type": "string",
+                      },
+                      "trn": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                    },
+                    "required": [
+                      "source",
+                      "idempotency_key",
+                      "party",
+                      "branch_id",
                     ],
+                    "type": "object",
                   },
-                },
-                "required": [
-                  "idempotency_key",
                 ],
                 "type": "object",
               },
@@ -9653,6 +9716,14 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           },
           {
             "in": "query",
+            "name": "billing_customer_ids",
+            "schema": {
+              "minLength": 1,
+              "type": "string",
+            },
+          },
+          {
+            "in": "query",
             "name": "limit",
             "schema": {
               "default": 25,
@@ -9800,96 +9871,151 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           "content": {
             "application/json": {
               "schema": {
-                "additionalProperties": false,
-                "properties": {
-                  "branch_id": {
-                    "anyOf": [
-                      {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "billing_customer_id": {
                         "minLength": 1,
                         "type": "string",
                       },
-                      {
-                        "type": "null",
-                      },
-                    ],
-                  },
-                  "company_name": {
-                    "minLength": 1,
-                    "type": "string",
-                  },
-                  "customer_kind": {
-                    "default": "INDIVIDUAL",
-                    "enum": [
-                      "INDIVIDUAL",
-                      "BUSINESS",
-                    ],
-                    "type": "string",
-                  },
-                  "email": {
-                    "anyOf": [
-                      {
-                        "type": "string",
-                      },
-                      {
-                        "type": "null",
-                      },
-                    ],
-                  },
-                  "first_name": {
-                    "minLength": 1,
-                    "type": "string",
-                  },
-                  "idempotency_key": {
-                    "maxLength": 255,
-                    "minLength": 8,
-                    "type": "string",
-                  },
-                  "is_commercial": {
-                    "type": "boolean",
-                  },
-                  "last_name": {
-                    "anyOf": [
-                      {
+                      "branch_id": {
                         "minLength": 1,
                         "type": "string",
                       },
-                      {
-                        "type": "null",
+                      "is_commercial": {
+                        "type": "boolean",
                       },
+                      "source": {
+                        "const": "registry",
+                        "type": "string",
+                      },
+                      "status": {
+                        "enum": [
+                          "ACTIVE",
+                          "SUSPENDED",
+                        ],
+                        "type": "string",
+                      },
+                      "trn": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                    },
+                    "required": [
+                      "source",
+                      "billing_customer_id",
+                      "branch_id",
                     ],
+                    "type": "object",
                   },
-                  "phone": {
-                    "anyOf": [
-                      {
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "branch_id": {
                         "minLength": 1,
                         "type": "string",
                       },
-                      {
-                        "type": "null",
-                      },
-                    ],
-                  },
-                  "status": {
-                    "enum": [
-                      "ACTIVE",
-                      "SUSPENDED",
-                    ],
-                    "type": "string",
-                  },
-                  "trn": {
-                    "anyOf": [
-                      {
-                        "minLength": 1,
+                      "idempotency_key": {
+                        "maxLength": 255,
+                        "minLength": 8,
                         "type": "string",
                       },
-                      {
-                        "type": "null",
+                      "is_commercial": {
+                        "type": "boolean",
                       },
+                      "party": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "company_name": {
+                            "minLength": 1,
+                            "type": "string",
+                          },
+                          "customer_kind": {
+                            "default": "INDIVIDUAL",
+                            "enum": [
+                              "INDIVIDUAL",
+                              "BUSINESS",
+                            ],
+                            "type": "string",
+                          },
+                          "email": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                              },
+                              {
+                                "type": "null",
+                              },
+                            ],
+                          },
+                          "first_name": {
+                            "minLength": 1,
+                            "type": "string",
+                          },
+                          "last_name": {
+                            "anyOf": [
+                              {
+                                "minLength": 1,
+                                "type": "string",
+                              },
+                              {
+                                "type": "null",
+                              },
+                            ],
+                          },
+                          "phone": {
+                            "anyOf": [
+                              {
+                                "minLength": 1,
+                                "type": "string",
+                              },
+                              {
+                                "type": "null",
+                              },
+                            ],
+                          },
+                        },
+                        "type": "object",
+                      },
+                      "source": {
+                        "const": "party",
+                        "type": "string",
+                      },
+                      "status": {
+                        "enum": [
+                          "ACTIVE",
+                          "SUSPENDED",
+                        ],
+                        "type": "string",
+                      },
+                      "trn": {
+                        "anyOf": [
+                          {
+                            "minLength": 1,
+                            "type": "string",
+                          },
+                          {
+                            "type": "null",
+                          },
+                        ],
+                      },
+                    },
+                    "required": [
+                      "source",
+                      "idempotency_key",
+                      "party",
+                      "branch_id",
                     ],
+                    "type": "object",
                   },
-                },
-                "required": [
-                  "idempotency_key",
                 ],
                 "type": "object",
               },
@@ -9979,169 +10105,6 @@ exports[`the published OpenAPI document > matches the snapshot (no undocumented 
           },
         ],
         "summary": "Create a courier customer profile",
-        "tags": [
-          "Customers",
-        ],
-      },
-    },
-    "/v1/tenants/{tenantId}/customers/enrollments": {
-      "post": {
-        "operationId": "customers-enroll",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "tenantId",
-            "required": true,
-            "schema": {
-              "minLength": 1,
-              "type": "string",
-            },
-          },
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "additionalProperties": false,
-                "properties": {
-                  "billing_customer_id": {
-                    "minLength": 1,
-                    "type": "string",
-                  },
-                  "branch_id": {
-                    "anyOf": [
-                      {
-                        "minLength": 1,
-                        "type": "string",
-                      },
-                      {
-                        "type": "null",
-                      },
-                    ],
-                  },
-                  "is_commercial": {
-                    "type": "boolean",
-                  },
-                  "status": {
-                    "enum": [
-                      "ACTIVE",
-                      "SUSPENDED",
-                    ],
-                    "type": "string",
-                  },
-                  "user_id": {
-                    "anyOf": [
-                      {
-                        "minLength": 1,
-                        "type": "string",
-                      },
-                      {
-                        "type": "null",
-                      },
-                    ],
-                  },
-                },
-                "required": [
-                  "billing_customer_id",
-                ],
-                "type": "object",
-              },
-            },
-          },
-          "required": true,
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/CourierCustomerEnrollment",
-                    },
-                    "error": {
-                      "type": "null",
-                    },
-                  },
-                  "required": [
-                    "data",
-                    "error",
-                  ],
-                  "type": "object",
-                },
-              },
-            },
-            "description": "Customer profile and primary mailbox enrolled.",
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope",
-                },
-              },
-            },
-            "description": "Missing or invalid credentials.",
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope",
-                },
-              },
-            },
-            "description": "The caller is authenticated but not permitted.",
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope",
-                },
-              },
-            },
-            "description": "Tenant or branch not found.",
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope",
-                },
-              },
-            },
-            "description": "Customer conflict.",
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope",
-                },
-              },
-            },
-            "description": "The request failed validation.",
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope",
-                },
-              },
-            },
-            "description": "Mailbox allocation unavailable.",
-          },
-        },
-        "security": [
-          {
-            "ApiKey": [],
-            "InternalKey": [],
-          },
-        ],
-        "summary": "Atomically enroll a courier customer with a primary mailbox",
         "tags": [
           "Customers",
         ],

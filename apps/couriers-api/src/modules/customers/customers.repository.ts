@@ -25,6 +25,13 @@ export async function listTenantCustomers(options: {
       deletedAt: null,
       ...(options.query.status ? { status: options.query.status } : {}),
       ...(options.query.branch_id ? { branchId: options.query.branch_id } : {}),
+      ...(options.query.billing_customer_ids
+        ? {
+            billingCustomerId: {
+              in: options.query.billing_customer_ids.split(','),
+            },
+          }
+        : {}),
       ...(anchor
         ? options.query.starting_after
           ? customersAfter(anchor)
@@ -58,6 +65,7 @@ export async function enrollTenantCustomer(options: {
   status: 'ACTIVE' | 'SUSPENDED'
   trn: string | null
   isCommercial: boolean
+  rejectExisting?: boolean
   now: number
 }) {
   return prisma.$transaction(async (tx) => {
@@ -69,7 +77,11 @@ export async function enrollTenantCustomer(options: {
           : { userId: options.userId }),
       },
     })
-    if (existing && existing.billingCustomerId !== options.billingCustomerId)
+    if (
+      existing &&
+      (existing.billingCustomerId !== options.billingCustomerId ||
+        (options.rejectExisting && existing.deletedAt === null))
+    )
       return { kind: 'conflict' as const }
 
     const profile = existing
@@ -115,12 +127,24 @@ export async function enrollTenantCustomer(options: {
       select: { mailboxPrefix: true },
     })
     if (!tenant) return { kind: 'tenant_missing' as const }
+    const preferences = await tx.modulePreference.findMany({
+      where: { tenantId: options.tenantId, module: 'customers' },
+      select: { key: true, booleanValue: true, integerValue: true },
+    })
+    const autoAssignMailbox =
+      preferences.find((row) => row.key === 'mailbox-auto-assign')
+        ?.booleanValue ?? true
+    if (!autoAssignMailbox)
+      return { kind: 'success' as const, profile, mailbox: null }
+    const mailboxNumberLength =
+      preferences.find((row) => row.key === 'mailbox-number-length')
+        ?.integerValue ?? 5
     const prefix = tenant.mailboxPrefix?.trim().toUpperCase() ?? ''
     const count = await tx.mailbox.count({
       where: { tenantId: options.tenantId },
     })
     for (let attempt = 0; attempt < 25; attempt += 1) {
-      const number = `${prefix}${String(1001 + count + attempt).padStart(4, '0')}`
+      const number = `${prefix}${String(1001 + count + attempt).padStart(mailboxNumberLength, '0')}`
       const occupied = await tx.mailbox.findUnique({
         where: {
           mailboxes_tenant_id_number_key: {

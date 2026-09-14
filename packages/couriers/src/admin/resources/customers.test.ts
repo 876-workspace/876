@@ -68,16 +68,20 @@ const listParams = {
 }
 
 const createCustomerBody = {
+  source: 'party' as const,
   idempotency_key: 'idem_12345678',
-  customer_kind: 'INDIVIDUAL' as const,
-  first_name: 'Marcia',
-  last_name: 'Campbell',
+  party: {
+    customer_kind: 'INDIVIDUAL' as const,
+    first_name: 'Marcia',
+    last_name: 'Campbell',
+  },
   branch_id: 'br_montego_bay/freeport',
   status: 'ACTIVE' as const,
   is_commercial: true,
 }
 
-const enrollCustomerBody = {
+const registryCustomerBody = {
+  source: 'registry' as const,
   billing_customer_id: 'billcus_sophia_brown',
   branch_id: 'br_kingston/harbour',
   status: 'ACTIVE' as const,
@@ -95,12 +99,6 @@ const deletedCustomer = {
   object: 'courier_customer_profile' as const,
   id: customerId,
   deleted: true as const,
-}
-
-const customerEnrollment = {
-  object: 'courier_customer_enrollment' as const,
-  customer,
-  mailbox,
 }
 
 const createMailboxBody = {
@@ -213,15 +211,15 @@ describe('createCustomersResource', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
-  it('enrolls an existing Billing customer with the exact body', async () => {
-    const fetchMock = successFetch(customerEnrollment)
+  it('creates a profile for an existing registry customer with the exact body', async () => {
+    const fetchMock = successFetch(customer)
     const resource = createResource(fetchMock, internalKey)
 
-    const result = await resource.enroll(tenantId, enrollCustomerBody)
+    const result = await resource.create(tenantId, registryCustomerBody)
 
-    expect(result).toEqual({ data: customerEnrollment, error: null })
+    expect(result).toEqual({ data: customer, error: null })
     expect(fetchMock).toHaveBeenCalledWith(
-      `${baseUrl}/v1/tenants/ten_kingston%2F876/customers/enrollments`,
+      `${baseUrl}/v1/tenants/ten_kingston%2F876/customers`,
       {
         method: 'POST',
         headers: {
@@ -229,7 +227,7 @@ describe('createCustomersResource', () => {
           'x-876-api-key': apiKey,
           'x-internal-key': internalKey,
         },
-        body: JSON.stringify(enrollCustomerBody),
+        body: JSON.stringify(registryCustomerBody),
       }
     )
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -376,8 +374,8 @@ describe('createCustomersResource', () => {
       invoke: (resource) => resource.create(tenantId, createCustomerBody),
     },
     {
-      name: 'enroll',
-      invoke: (resource) => resource.enroll(tenantId, enrollCustomerBody),
+      name: 'create (registry)',
+      invoke: (resource) => resource.create(tenantId, registryCustomerBody),
     },
     {
       name: 'update',

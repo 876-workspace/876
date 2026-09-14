@@ -9,8 +9,6 @@ import {
 import * as controller from './customers.controller'
 import {
   createCustomerBodySchema,
-  customerEnrollmentBodySchema,
-  customerEnrollmentSchema,
   customerParamsSchema,
   customerSchema,
   deleteCustomerBodySchema,
@@ -62,29 +60,6 @@ export function createCustomersRouter(resolveGuards: GuardResolver) {
       409: { description: 'Customer exists.', schema: errorEnvelopeSchema },
     },
     handler: controller.createCustomer,
-  })
-  api.post({
-    path: '/enrollments',
-    security: 'admin',
-    operationId: 'customers-enroll',
-    summary: 'Atomically enroll a courier customer with a primary mailbox',
-    request: { params: tenantParamsSchema, body: customerEnrollmentBodySchema },
-    responses: {
-      201: {
-        description: 'Customer profile and primary mailbox enrolled.',
-        schema: successEnvelopeSchema(customerEnrollmentSchema),
-      },
-      404: {
-        description: 'Tenant or branch not found.',
-        schema: errorEnvelopeSchema,
-      },
-      409: { description: 'Customer conflict.', schema: errorEnvelopeSchema },
-      503: {
-        description: 'Mailbox allocation unavailable.',
-        schema: errorEnvelopeSchema,
-      },
-    },
-    handler: controller.enrollCustomer,
   })
   api.get({
     path: '/:id',

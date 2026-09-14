@@ -3,12 +3,9 @@ import type { Runtime } from '../runtime'
 import {
   customerListSchema,
   customerSchema,
-  customerEnrollmentSchema,
   deletedCustomerSchema,
   type CreateCustomerBody,
   type Customer,
-  type CustomerEnrollment,
-  type CustomerEnrollmentBody,
   type CustomerList,
   type DeletedCustomer,
   type DeleteCustomerBody,
@@ -17,46 +14,60 @@ import {
 } from '../admin/types/customer.schema'
 
 export type CreateCustomerParams =
-  | ({
-      mode?: 'new'
-      customerKind?: 'INDIVIDUAL' | 'BUSINESS'
-      firstName?: string
-      lastName?: string
-      companyName?: string
-      email?: string
-      phone?: string
-      branchId?: string
+  | {
+      source: 'party'
       idempotencyKey: string
+      party: {
+        customerKind?: 'INDIVIDUAL' | 'BUSINESS'
+        firstName?: string
+        lastName?: string | null
+        companyName?: string
+        email?: string | null
+        phone?: string | null
+      }
+      branchId: string
       status?: 'ACTIVE' | 'SUSPENDED'
       trn?: string | null
       isCommercial?: boolean
-    } & Record<string, unknown>)
+    }
   | {
-      mode: 'existing'
+      source: 'registry'
       billingCustomerId: string
-      branchId?: string
+      branchId: string
       status?: 'ACTIVE' | 'SUSPENDED'
+      trn?: string | null
       isCommercial?: boolean
-      userId?: string | null
     }
 
 function toCreateCustomerBody(
-  params: Extract<CreateCustomerParams, { mode?: 'new' } | { mode?: undefined }>
+  params: CreateCustomerParams
 ): CreateCustomerBody {
-  const kind = params.customerKind ?? 'INDIVIDUAL'
+  if (params.source === 'registry')
+    return {
+      source: 'registry',
+      billing_customer_id: params.billingCustomerId,
+      branch_id: params.branchId,
+      status: params.status,
+      trn: params.trn,
+      is_commercial: params.isCommercial,
+    }
+
   return {
+    source: 'party',
     idempotency_key: params.idempotencyKey,
-    customer_kind: kind,
-    first_name: params.firstName,
-    last_name: params.lastName ?? null,
-    company_name: params.companyName,
-    email: params.email ?? null,
-    phone: params.phone ?? null,
-    branch_id: params.branchId ?? null,
+    party: {
+      customer_kind: params.party.customerKind,
+      first_name: params.party.firstName,
+      last_name: params.party.lastName,
+      company_name: params.party.companyName,
+      email: params.party.email,
+      phone: params.party.phone,
+    },
+    branch_id: params.branchId,
     status: params.status,
-    trn: params.trn ?? undefined,
+    trn: params.trn,
     is_commercial: params.isCommercial,
-  } as CreateCustomerBody
+  }
 }
 
 export function createCustomersResource(runtime: Runtime) {
@@ -77,22 +88,7 @@ export function createCustomersResource(runtime: Runtime) {
       )
     },
     create(params: CreateCustomerParams) {
-      if ((params as { mode?: string }).mode === 'existing') {
-        const p = params as Extract<CreateCustomerParams, { mode: 'existing' }>
-        const body: CustomerEnrollmentBody = {
-          billing_customer_id: p.billingCustomerId,
-          branch_id: p.branchId ?? null,
-          status: p.status,
-          is_commercial: p.isCommercial,
-          user_id: p.userId ?? undefined,
-        }
-        return SessionRequest<CustomerEnrollment>(
-          runtime,
-          { method: 'POST', path: `${path}/enrollments`, body },
-          customerEnrollmentSchema
-        )
-      }
-      const body = toCreateCustomerBody(params as never)
+      const body = toCreateCustomerBody(params)
       return SessionRequest<Customer>(
         runtime,
         { method: 'POST', path, body },
