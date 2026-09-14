@@ -1,5 +1,6 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
+import { type PaymentMode } from '@/db'
 import { prisma } from '@/db/client'
 import type { ServiceResult } from '../../schemas/api'
 import type { PaymentModeUpdateParams } from '../../schemas/payment'
@@ -12,7 +13,7 @@ export async function update(
   tenantId: string,
   modeId: string,
   params: PaymentModeUpdateParams
-): ServiceResult<{ id: string }> {
+): ServiceResult<PaymentMode> {
   const current = await prisma.paymentMode.findFirst({
     where: { id: modeId, tenantId },
   })
@@ -28,14 +29,14 @@ export async function update(
 
   try {
     const now = nowUnixSeconds()
-    await prisma.$transaction(async (tx) => {
+    const mode = await prisma.$transaction(async (tx) => {
       if (params.isDefault === true)
         await tx.paymentMode.updateMany({
           where: { tenantId, isDefault: true, id: { not: modeId } },
           data: { isDefault: false, updatedAt: now },
         })
 
-      await tx.paymentMode.update({
+      return tx.paymentMode.update({
         where: { id: modeId },
         data: {
           ...(params.name !== undefined && { name: params.name }),
@@ -51,7 +52,7 @@ export async function update(
       })
     })
 
-    return ok({ id: modeId })
+    return ok(mode)
   } catch (error) {
     if (isUniqueConstraintError(error))
       return err('A payment mode with this name already exists.', 409)

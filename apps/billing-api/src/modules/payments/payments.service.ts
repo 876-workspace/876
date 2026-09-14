@@ -65,26 +65,21 @@ export const paymentsService = {
     return serializePaymentMode(row)
   },
   async createMode(tenantId: string, body: PaymentModeCreateParams) {
-    return {
-      object: 'payment_mode',
-      ...(await unwrap(
-        await paymentModes.create(tenantId, body),
-        'payment_mode'
-      )),
-    }
+    return serializePaymentMode(
+      await unwrap(await paymentModes.create(tenantId, body), 'payment_mode')
+    )
   },
   async updateMode(
     tenantId: string,
     id: string,
     body: PaymentModeUpdateParams
   ) {
-    return {
-      object: 'payment_mode',
-      ...(await unwrap(
+    return serializePaymentMode(
+      await unwrap(
         await paymentModes.update(tenantId, id, body),
         'payment_mode'
-      )),
-    }
+      )
+    )
   },
   async deleteMode(tenantId: string, id: string) {
     return {
