@@ -2,6 +2,10 @@ import type { ErrorDef } from '@876/core'
 import { HttpStatus } from '@876/core'
 
 export const ROLE_ERRORS = {
+  'role/invalid': {
+    message: 'Invalid role.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
   'role/default-immutable': {
     message: 'Default roles cannot be edited or deleted.',
     httpStatus: HttpStatus.BAD_REQUEST,
@@ -19,7 +23,7 @@ export const ROLE_ERRORS = {
     httpStatus: HttpStatus.CONFLICT,
   },
   'role/not-found': {
-    message: 'The requested role was not found.',
+    message: 'Role not found.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
 } as const satisfies Record<string, ErrorDef>

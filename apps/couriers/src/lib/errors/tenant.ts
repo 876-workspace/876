@@ -2,8 +2,12 @@ import type { ErrorDef } from '@876/core'
 import { HttpStatus } from '@876/core'
 
 export const TENANT_ERRORS = {
+  'tenant/already-exists': {
+    message: 'A courier tenant already exists for this organization.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
   'tenant/not-found': {
-    message: 'The requested tenant was not found.',
+    message: 'Tenant not found.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
   'tenant/subdomain-taken': {

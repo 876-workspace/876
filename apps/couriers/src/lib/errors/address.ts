@@ -2,6 +2,10 @@ import type { ErrorDef } from '@876/core'
 import { HttpStatus } from '@876/core'
 
 export const ADDRESS_ERRORS = {
+  'address/invalid': {
+    message: 'Invalid address.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
   'address/not-found': {
     message: 'The requested address was not found.',
     httpStatus: HttpStatus.NOT_FOUND,

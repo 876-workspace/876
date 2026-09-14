@@ -2,6 +2,14 @@ import type { ErrorDef } from '@876/core'
 import { HttpStatus } from '@876/core'
 
 export const CUSTOMER_ERRORS = {
+  'couriers/unexpected-response': {
+    message: 'The customer service returned an invalid response.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
+  },
+  'customer/invalid': {
+    message: 'Invalid customer.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
   'customer/not-found': {
     message: 'The requested customer was not found.',
     httpStatus: HttpStatus.NOT_FOUND,

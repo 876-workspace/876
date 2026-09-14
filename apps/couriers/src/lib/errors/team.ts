@@ -2,6 +2,14 @@ import type { ErrorDef } from '@876/core'
 import { HttpStatus } from '@876/core'
 
 export const TEAM_ERRORS = {
+  'team/invalid-invite': {
+    message: 'Invalid invite.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
+  'team/invalid': {
+    message: 'Invalid team member.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
   'team/already-member': {
     message: 'This user is already a team member.',
     httpStatus: HttpStatus.CONFLICT,

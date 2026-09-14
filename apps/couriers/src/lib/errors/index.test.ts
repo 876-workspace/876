@@ -55,6 +55,7 @@ describe('handleApiError', () => {
     // ASSERT
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({
+      data: null,
       error: {
         code: 'error/forbidden',
         message: 'You do not have permission to access this resource.',
@@ -74,6 +75,7 @@ describe('handleApiError', () => {
     // ASSERT
     expect(response.status).toBe(500)
     await expect(response.json()).resolves.toEqual({
+      data: null,
       error: {
         code: 'error/unknown',
         message: 'An unexpected error occurred. Please try again.',
