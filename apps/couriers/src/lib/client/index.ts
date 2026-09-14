@@ -7,6 +7,7 @@ import { roles } from './roles'
 import { requests } from './requests'
 import { team } from './team'
 import { warehouses } from './warehouses'
+import { items } from './items'
 
 export const client = {
   addresses,
@@ -18,6 +19,7 @@ export const client = {
   requests,
   team,
   warehouses,
+  items,
 }
 
 export { addresses } from './addresses'
@@ -29,4 +31,5 @@ export { roles } from './roles'
 export { requests } from './requests'
 export { team } from './team'
 export { warehouses } from './warehouses'
+export { items } from './items'
 export type { ClientResult } from '@/types/api'
