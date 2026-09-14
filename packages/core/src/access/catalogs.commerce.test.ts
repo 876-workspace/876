@@ -9,7 +9,9 @@ describe('commercePermissionCatalog', () => {
   })
 
   it('declares capability and subdomain permission groups in stable order', () => {
-    expect(commercePermissionCatalog.modules.map((module) => module.key)).toEqual([
+    expect(
+      commercePermissionCatalog.modules.map((module) => module.key)
+    ).toEqual([
       'dashboard',
       'catalog',
       'products',
@@ -57,7 +59,9 @@ describe('commercePermissionCatalog', () => {
     const permissionModules = commercePermissionCatalog.modules.map(
       (module) => module.key
     )
-    const canonicalModules = new Set(Object.values(COMMERCE_MODULES).map((m) => m.key))
+    const canonicalModules: Set<string> = new Set(
+      Object.values(COMMERCE_MODULES).map((module) => module.key)
+    )
 
     expect(permissionModules).toContain('themes')
     expect(permissionModules).toContain('domains')
@@ -70,14 +74,16 @@ describe('commercePermissionCatalog', () => {
       commercePermissionCatalog.permissions.map((permission) => permission.key)
     )
 
-    expect([...keys].filter((key) => key.startsWith('orders.')).sort()).toEqual([
-      'orders.cancel',
-      'orders.create',
-      'orders.edit',
-      'orders.fulfill',
-      'orders.refund',
-      'orders.view',
-    ])
+    expect([...keys].filter((key) => key.startsWith('orders.')).sort()).toEqual(
+      [
+        'orders.cancel',
+        'orders.create',
+        'orders.edit',
+        'orders.fulfill',
+        'orders.refund',
+        'orders.view',
+      ]
+    )
     expect(
       [...keys].filter((key) => key.startsWith('inventory.')).sort()
     ).toEqual(['inventory.adjust', 'inventory.transfer', 'inventory.view'])
@@ -98,6 +104,8 @@ describe('commercePermissionCatalog', () => {
   })
 
   it('registers the catalog under 876-commerce', () => {
-    expect(appPermissionCatalogs['876-commerce']).toBe(commercePermissionCatalog)
+    expect(appPermissionCatalogs['876-commerce']).toBe(
+      commercePermissionCatalog
+    )
   })
 })
