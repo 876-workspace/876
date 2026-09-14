@@ -36,9 +36,15 @@ export const SETTINGS_NAV_GROUPS: readonly NavGroupDefinition[] = [
       },
       {
         key: 'users',
-        title: 'Users & roles',
+        title: 'Users',
         href: '/settings/users',
         icon: 'users',
+      },
+      {
+        key: 'roles',
+        title: 'Roles',
+        href: '/settings/users/roles',
+        icon: 'roles',
       },
       {
         key: 'subscription',
@@ -136,7 +142,7 @@ export function settingsContext(basePath: string): SidebarContext {
 
 /**
  * The settings entry owning a pathname — longest href wins, so
- * `users/roles/new` resolves to Users & roles. Shares the matching rule with
+ * `users/roles/new` resolves to Roles, not Users. Shares the matching rule with
  * the rendered links (`isActiveSidebarPath`) so the highlight cannot drift.
  */
 export function resolveSettingsActiveKey(

@@ -54,8 +54,13 @@ describe('settingsContext', () => {
       },
       {
         group: 'Organization',
-        title: 'Users & roles',
+        title: 'Users',
         href: '/island-logistics/settings/users',
+      },
+      {
+        group: 'Organization',
+        title: 'Roles',
+        href: '/island-logistics/settings/users/roles',
       },
       {
         group: 'Organization',
@@ -117,8 +122,10 @@ describe('resolveSettingsActiveKey', () => {
     ['/island-logistics/settings/branding', 'branding'],
     ['/island-logistics/settings/locations/new', 'locations'],
     ['/island-logistics/settings/users', 'users'],
-    ['/island-logistics/settings/users/roles', 'users'],
-    ['/island-logistics/settings/users/roles/new', 'users'],
+    ['/island-logistics/settings/users/usr_123', 'users'],
+    ['/island-logistics/settings/users/roles', 'roles'],
+    ['/island-logistics/settings/users/roles/new', 'roles'],
+    ['/island-logistics/settings/users/roles/role_admin', 'roles'],
     ['/island-logistics/settings/modules/invoices', 'modules'],
     ['/island-logistics/settings/finance', 'finance'],
     ['/island-logistics/settings', null],
@@ -135,6 +142,6 @@ describe('resolveSettingsActiveKey', () => {
         '/montego-express/settings/users/roles/new',
         '/montego-express'
       )
-    ).toBe('users')
+    ).toBe('roles')
   })
 })
