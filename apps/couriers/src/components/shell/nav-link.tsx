@@ -22,16 +22,19 @@ export function NavLink({
   icon: Icon,
   color,
   iconClassName,
+  active,
 }: {
   href: string
   title: string
   icon: IconComponent
   color?: string
   iconClassName?: string
+  /** Overrides prefix matching when sibling hrefs nest (Users vs Users/Roles). */
+  active?: boolean
 }) {
   const pathname = usePathname()
   const { isMobile, state } = useSidebar()
-  const isActive = isActivePath(pathname, href)
+  const isActive = active ?? isActivePath(pathname, href)
 
   const linkEl = (
     <Link

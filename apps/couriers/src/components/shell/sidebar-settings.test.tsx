@@ -66,7 +66,7 @@ describe('Sidebar context switch', () => {
     )
     expect(screen.getByRole('link', { name: 'Customers' })).toBeVisible()
     expect(
-      screen.queryByRole('link', { name: 'Users & roles' })
+      screen.queryByRole('link', { name: 'Roles' })
     ).not.toBeInTheDocument()
     expect(
       screen.queryByRole('link', { name: 'Back to main navigation' })
@@ -78,9 +78,13 @@ describe('Sidebar context switch', () => {
 
     renderSidebar()
 
-    expect(screen.getByRole('link', { name: 'Users & roles' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Users' })).toHaveAttribute(
       'href',
       '/island-logistics/settings/users'
+    )
+    expect(screen.getByRole('link', { name: 'Roles' })).toHaveAttribute(
+      'href',
+      '/island-logistics/settings/users/roles'
     )
     expect(screen.getByRole('link', { name: 'Finance' })).toHaveAttribute(
       'href',
@@ -102,9 +106,12 @@ describe('Sidebar context switch', () => {
 
     const { unmount } = renderSidebar()
 
-    expect(screen.getByRole('link', { name: 'Users & roles' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Roles' })).toHaveAttribute(
       'aria-current',
       'page'
+    )
+    expect(screen.getByRole('link', { name: 'Users' })).not.toHaveAttribute(
+      'aria-current'
     )
     expect(
       screen.getByRole('link', { name: 'Back to main navigation' })

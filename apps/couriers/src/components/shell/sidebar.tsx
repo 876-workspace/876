@@ -7,7 +7,11 @@ import { nav } from './nav-config'
 import { resolveSettingsNavIcon } from './nav-icons'
 import { NavDropdown } from './nav-dropdown'
 import { NavLink } from './nav-link'
-import { isSettingsPath, settingsContext } from './settings-nav'
+import {
+  isSettingsPath,
+  resolveSettingsActiveKey,
+  settingsContext,
+} from './settings-nav'
 import { OrgAvatar } from '@876/ui/org-avatar'
 import { ChevronsLeft } from '@876/ui/icons'
 import {
@@ -111,7 +115,9 @@ function AppNav({ basePath }: { basePath: string }) {
  * applies there with no second implementation.
  */
 function SettingsNav({ basePath }: { basePath: string }) {
+  const pathname = usePathname()
   const context = settingsContext(basePath)
+  const activeKey = resolveSettingsActiveKey(pathname, basePath)
 
   return (
     <nav aria-label="Settings sections" className="flex flex-1 flex-col gap-4">
@@ -140,6 +146,7 @@ function SettingsNav({ basePath }: { basePath: string }) {
                 href={entry.href}
                 title={entry.title}
                 icon={resolveSettingsNavIcon(entry.icon)}
+                active={entry.key === activeKey}
               />
             ))}
           </div>
