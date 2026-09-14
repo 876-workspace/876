@@ -5,6 +5,8 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
+import { getFeatures } from '@/lib/features'
+import { getAppError, getError } from '@/lib/errors'
 import { createManagedCustomer } from '@/lib/manage/customers'
 import { customerCreateParamsSchema } from '@/types/customer'
 
@@ -30,6 +32,15 @@ export async function POST(request: NextRequest) {
     )
   if (!ctx.tenant)
     return apiJson({ error: 'Tenant not found.' }, { status: 404 })
+  const features = await getFeatures({
+    userId: ctx.userId,
+    organizationId: ctx.orgId,
+  })
+  if (!features.customerCreation)
+    return apiJson(
+      { error: getAppError('customer/creation-paused') },
+      { status: getError('customer/creation-paused').httpStatus }
+    )
   const params = { ...(body as Record<string, unknown>) }
   delete params.orgSlug
   const parsed = customerCreateParamsSchema.safeParse(params)
