@@ -3,6 +3,7 @@ import { apiJson } from '@876/core/api'
 
 import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
+import { errorResponse } from '@/lib/errors'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 
 export const runtime = 'nodejs'
@@ -11,15 +12,15 @@ export async function POST() {
   const ctx = await getManageContext()
 
   if (!ctx) {
-    return apiJson({ error: 'Not authenticated' }, { status: 401 })
+    return errorResponse('auth/no-session')
   }
 
   if (ctx.role === 'staff') {
-    return apiJson({ error: 'Insufficient permissions' }, { status: 403 })
+    return errorResponse('auth/forbidden')
   }
 
   if (ctx.accessStatus === 'blocked') {
-    return apiJson({ error: 'Access is restricted' }, { status: 403 })
+    return errorResponse('auth/account-on-hold')
   }
 
   if (ctx.accessStatus === 'active') {
@@ -32,7 +33,7 @@ export async function POST() {
   })
 
   if (result.error) {
-    return apiJson({ error: 'Failed to activate workspace' }, { status: 500 })
+    return errorResponse('onboarding/activation-failed')
   }
 
   return apiJson({ data: result.data })

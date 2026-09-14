@@ -30,6 +30,7 @@ vi.mock('@/lib/couriers', () => ({
   }),
 }))
 
+import { getError } from '@/lib/errors'
 import { POST } from './route'
 
 function request(body: string | Record<string, unknown>) {
@@ -128,7 +129,10 @@ describe('Couriers roles create route', () => {
     const body = await response.json()
 
     expect(response.status).toBe(401)
-    expect(body.error.message).toBe('Unauthorized.')
+    expect(body.error).toEqual({
+      code: 'auth/no-session',
+      message: getError('auth/no-session').message,
+    })
     expect(mocks.create).not.toHaveBeenCalled()
   })
 
@@ -139,10 +143,10 @@ describe('Couriers roles create route', () => {
     const body = await response.json()
 
     expect(response.status).toBe(403)
-    expect(body.error.code).toBe('auth/forbidden')
-    expect(body.error.message).toBe(
-      'You do not have permission to create roles.'
-    )
+    expect(body.error).toEqual({
+      code: 'auth/forbidden',
+      message: getError('auth/forbidden').message,
+    })
     expect(mocks.create).not.toHaveBeenCalled()
   })
 
@@ -197,8 +201,10 @@ describe('Couriers roles create route', () => {
     const body = await response.json()
 
     expect(response.status).toBe(422)
-    expect(body.error.message).toBe('One or more permission keys are invalid.')
-    expect(body.error.code).toBe('request/invalid')
+    expect(body.error).toEqual({
+      code: 'request/invalid',
+      message: getError('request/invalid').message,
+    })
     expect(body.data).toBeNull()
   })
 

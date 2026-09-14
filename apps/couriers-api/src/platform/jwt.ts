@@ -210,11 +210,7 @@ function unwrapEnvelope(body: unknown): Introspection | null {
 }
 
 function identityUnavailable(cause?: unknown) {
-  return appError('auth/identity-unavailable', {
-    message: 'Sign-in could not be verified right now. Please try again.',
-    httpStatus: 503,
-    cause,
-  })
+  return appError('auth/identity-unavailable', { cause })
 }
 
 /** Drop cached key sets and confirmed tokens so tests start clean. */

@@ -2,6 +2,18 @@ import type { ErrorDef } from '@876/core'
 import { HttpStatus } from '@876/core'
 
 export const PORTAL_ERRORS = {
+  'portal/enrollment-required': {
+    message: 'Portal enrollment is required.',
+    httpStatus: HttpStatus.FORBIDDEN,
+  },
+  'portal/unavailable': {
+    message: 'Portal unavailable.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
+  'portal/packages-unavailable': {
+    message: 'Failed to load packages.',
+    httpStatus: HttpStatus.INTERNAL_SERVER_ERROR,
+  },
   'portal/billing-unavailable': {
     message: 'Billing is temporarily unavailable. Please try again.',
     httpStatus: HttpStatus.SERVICE_UNAVAILABLE,

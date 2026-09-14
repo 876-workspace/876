@@ -1,6 +1,7 @@
 import { apiJson } from '@876/core/api'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
+import { errorResponse } from '@/lib/errors'
 import {
   createPortalCouriersClient,
   isPortalNotFound,
@@ -14,11 +15,10 @@ export const runtime = 'nodejs'
 
 export async function GET() {
   const session = await getAuthSession()
-  if (!isSignedSession(session))
-    return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!isSignedSession(session)) return errorResponse('auth/no-session')
 
   const tenant = await getPortalTenant()
-  if (!tenant) return apiJson({ error: 'Portal unavailable.' }, { status: 404 })
+  if (!tenant) return errorResponse('portal/unavailable')
 
   try {
     const packagesResult = await listAllPortalPackages(
@@ -26,10 +26,7 @@ export async function GET() {
       tenant.id
     )
     if (isPortalNotFound(packagesResult))
-      return apiJson(
-        { error: 'Portal enrollment is required.' },
-        { status: 403 }
-      )
+      return errorResponse('portal/enrollment-required')
 
     const packages = requirePortalData(packagesResult).map(
       toPortalPackageListItem
@@ -38,6 +35,6 @@ export async function GET() {
     return apiJson({ data: packages })
   } catch (error) {
     console.error('[portal.packages]', error)
-    return apiJson({ error: 'Failed to load packages.' }, { status: 500 })
+    return errorResponse('portal/packages-unavailable')
   }
 }

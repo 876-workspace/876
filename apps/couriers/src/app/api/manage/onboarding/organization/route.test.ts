@@ -20,6 +20,7 @@ vi.mock('@/lib/services/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 
+import { getError } from '@/lib/errors'
 import { POST } from './route'
 
 const signedSession = {
@@ -67,9 +68,9 @@ describe('Couriers onboarding organization route', () => {
     const body = await response.json()
 
     expect(response.status).toBe(401)
-    expect(body.error).toMatchObject({
+    expect(body.error).toEqual({
       code: 'auth/no-session',
-      message: 'Unauthorized.',
+      message: getError('auth/no-session').message,
     })
     expect(mocks.getPlatformClient).not.toHaveBeenCalled()
   })
@@ -135,8 +136,11 @@ describe('Couriers onboarding organization route', () => {
     )
     const body = await response.json()
 
-    expect(response.status).toBe(500)
-    expect(body.error.message).toBe('Failed to verify workspace.')
+    expect(response.status).toBe(502)
+    expect(body.error).toEqual({
+      code: 'onboarding/verification-failed',
+      message: getError('onboarding/verification-failed').message,
+    })
     expect(mocks.createOrganization).not.toHaveBeenCalled()
   })
 
@@ -194,7 +198,7 @@ describe('Couriers onboarding organization route', () => {
     const interruptedResponse = await POST(request(payload))
     const retryResponse = await POST(request(payload))
 
-    expect(interruptedResponse.status).toBe(500)
+    expect(interruptedResponse.status).toBe(502)
     expect(retryResponse.status).toBe(200)
     await expect(retryResponse.json()).resolves.toMatchObject({
       data: { organization_id: 'organization_123' },
@@ -225,35 +229,44 @@ describe('Couriers onboarding organization route', () => {
 
     expect(response.status).toBe(401)
     expect(body.error).toEqual({
-      code: 'auth/session-invalid',
-      message: 'Your session is no longer valid. Please sign in again.',
+      code: 'auth/invalid-session',
+      message: getError('auth/invalid-session').message,
     })
     expect(mocks.cookieDelete).toHaveBeenCalledWith('876-session')
     expect(mocks.replaceAnswers).not.toHaveBeenCalled()
   })
 
   it.each([
-    'organization/duplicate-slug',
-    'auth/organization-slug-taken',
-    'organization/provider-conflict',
-  ])('returns 409 and preserves the %s platform error', async (code) => {
-    mocks.createOrganization.mockResolvedValue({
-      data: null,
-      error: { code, message: 'Organization is already in use.' },
-    })
+    [
+      'organization/duplicate-slug',
+      getError('organization/duplicate-slug').message,
+    ],
+    [
+      'auth/organization-slug-taken',
+      getError('auth/organization-slug-taken').message,
+    ],
+    [
+      'organization/provider-conflict',
+      getError('organization/provider-conflict').message,
+    ],
+  ])(
+    'returns 409 and preserves the %s platform error',
+    async (code, message) => {
+      mocks.createOrganization.mockResolvedValue({
+        data: null,
+        error: { code, message: 'Organization is already in use.' },
+      })
 
-    const response = await POST(
-      request({ name: 'Montego Couriers', answers: {} })
-    )
-    const body = await response.json()
+      const response = await POST(
+        request({ name: 'Montego Couriers', answers: {} })
+      )
+      const body = await response.json()
 
-    expect(response.status).toBe(409)
-    expect(body.error).toEqual({
-      code,
-      message: 'Organization is already in use.',
-    })
-    expect(mocks.replaceAnswers).not.toHaveBeenCalled()
-  })
+      expect(response.status).toBe(409)
+      expect(body.error).toEqual({ code, message })
+      expect(mocks.replaceAnswers).not.toHaveBeenCalled()
+    }
+  )
 
   it('returns 502 while preserving unexpected platform errors', async () => {
     mocks.createOrganization.mockResolvedValue({
@@ -272,11 +285,11 @@ describe('Couriers onboarding organization route', () => {
     expect(response.status).toBe(502)
     expect(body.error).toEqual({
       code: 'provider/unavailable',
-      message: 'Organization provider is unavailable.',
+      message: getError('provider/unavailable').message,
     })
   })
 
-  it('surfaces the real answer persistence error', async () => {
+  it('normalizes the answer persistence validation error', async () => {
     mocks.replaceAnswers.mockResolvedValue({
       data: null,
       error: {
@@ -293,7 +306,10 @@ describe('Couriers onboarding organization route', () => {
     )
     const body = await response.json()
 
-    expect(response.status).toBe(500)
-    expect(body.error.message).toBe('Fleet size must be a positive number.')
+    expect(response.status).toBe(422)
+    expect(body.error).toEqual({
+      code: 'onboarding/invalid-answers',
+      message: getError('onboarding/invalid-answers').message,
+    })
   })
 })

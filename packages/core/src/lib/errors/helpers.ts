@@ -13,7 +13,9 @@ import { CRM_ERRORS } from './crm'
 import { DEPARTMENT_ERRORS } from './departments'
 import { EMPLOYEE_ERRORS } from './employees'
 import { FEATURE_ERRORS } from './features'
+import { GENERIC_ERRORS } from './generic'
 import { INVITE_ERRORS } from './invites'
+import { INTEGRATION_KEY_ERRORS } from './integration-keys'
 import { LOCATION_ERRORS } from './locations'
 import { MEMBERSHIP_ERRORS } from './memberships'
 import { OAUTH_GRANT_ERRORS } from './oauth-grants'
@@ -21,10 +23,12 @@ import { ORGANIZATION_ERRORS } from './organizations'
 import { PRODUCT_ERRORS } from './products'
 import { PROFILE_ERRORS } from './profiles'
 import { PROVIDER_ERRORS } from './provider'
+import { REQUEST_ERRORS } from './request'
 import { RESERVED_USERNAME_ERRORS } from './reserved-usernames'
 import { ROLE_ERRORS } from './roles'
 import { SESSION_ERRORS } from './sessions'
 import { SUBSCRIPTION_ERRORS } from './subscriptions'
+import { TENANT_ERRORS } from './tenants'
 import { USER_FEATURE_ERRORS } from './user-features'
 import { USER_ERRORS } from './users'
 import { WORK_ERRORS } from './work'
@@ -43,7 +47,9 @@ export const ERRORS = {
   ...DEPARTMENT_ERRORS,
   ...EMPLOYEE_ERRORS,
   ...FEATURE_ERRORS,
+  ...GENERIC_ERRORS,
   ...INVITE_ERRORS,
+  ...INTEGRATION_KEY_ERRORS,
   ...LOCATION_ERRORS,
   ...MEMBERSHIP_ERRORS,
   ...OAUTH_GRANT_ERRORS,
@@ -51,10 +57,12 @@ export const ERRORS = {
   ...PRODUCT_ERRORS,
   ...PROFILE_ERRORS,
   ...PROVIDER_ERRORS,
+  ...REQUEST_ERRORS,
   ...RESERVED_USERNAME_ERRORS,
   ...ROLE_ERRORS,
   ...SESSION_ERRORS,
   ...SUBSCRIPTION_ERRORS,
+  ...TENANT_ERRORS,
   ...USER_ERRORS,
   ...USER_FEATURE_ERRORS,
   ...WORK_ERRORS,

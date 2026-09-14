@@ -87,6 +87,10 @@ export const PROVIDER_ERRORS = {
     message: 'The access token is invalid.',
     httpStatus: HttpStatus.UNAUTHORIZED,
   },
+  'provider/unavailable': {
+    message: 'The provider is temporarily unavailable. Please try again.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
+  },
   'provider/unsupported-grant-type': {
     message: 'The OAuth grant type is not supported.',
     httpStatus: HttpStatus.BAD_REQUEST,

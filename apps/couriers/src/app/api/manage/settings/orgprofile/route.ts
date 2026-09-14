@@ -7,6 +7,7 @@ import { z } from 'zod'
 
 import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
+import { errorResponse } from '@/lib/errors'
 
 export const runtime = 'nodejs'
 
@@ -51,35 +52,25 @@ export async function PATCH(request: NextRequest) {
   try {
     body = await request.json()
   } catch {
-    return apiJson({ error: 'Invalid organization profile.' }, { status: 422 })
+    return errorResponse('settings/invalid-profile')
   }
 
   const parsed = profileSchema.safeParse(body)
-  if (!parsed.success)
-    return apiJson({ error: 'Invalid organization profile.' }, { status: 422 })
+  if (!parsed.success) return errorResponse('settings/invalid-profile')
 
   const { orgSlug, ...fields } = parsed.data
 
   const ctx = await getManageContext(orgSlug)
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
   if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
-    return apiJson(
-      {
-        error: 'You do not have permission to edit the organization profile.',
-      },
-      { status: 403, code: 'auth/forbidden' }
-    )
+    return errorResponse('auth/forbidden')
 
   const platform = await getPlatformClient()
   const result = await platform.organizations.updateProfile(
     ctx.orgId,
     fields as PlatformOrgProfileUpdateParams
   )
-  if (result.error)
-    return apiJson(
-      { error: result.error.message },
-      { status: 502, code: result.error.code }
-    )
+  if (result.error) return errorResponse(result.error.code)
 
   return apiJson({ data: result.data })
 }

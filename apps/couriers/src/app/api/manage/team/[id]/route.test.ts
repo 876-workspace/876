@@ -23,6 +23,7 @@ vi.mock('@/lib/couriers', () => ({
   toTeamMemberView: (member: Record<string, unknown>) => member,
 }))
 
+import { getError } from '@/lib/errors'
 import { DELETE, PATCH } from './route'
 
 const context = { params: Promise.resolve({ id: 'tmem_123' }) }
@@ -128,10 +129,10 @@ describe('Couriers team member route', () => {
       const body = await response.json()
 
       expect(response.status).toBe(403)
-      expect(body.error.code).toBe('auth/forbidden')
-      expect(body.error.message).toBe(
-        'You do not have permission to update users.'
-      )
+      expect(body.error).toEqual({
+        code: 'auth/forbidden',
+        message: getError('auth/forbidden').message,
+      })
       expect(mocks.update).not.toHaveBeenCalled()
     })
 

@@ -1,6 +1,7 @@
 import { apiJson } from '@876/core/api'
 
 import { getManageContext } from '@/lib/auth/manage-context'
+import { errorResponse } from '@/lib/errors'
 import { getPlatformClient } from '@/lib/services/platform'
 
 export const runtime = 'nodejs'
@@ -14,16 +15,12 @@ export const runtime = 'nodejs'
  */
 export async function GET() {
   const ctx = await getManageContext()
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
 
   const platform = await getPlatformClient()
   const { data, error } = await platform.countries.list()
 
-  if (error)
-    return apiJson(
-      { error: 'Country information could not be loaded.' },
-      { status: 503 }
-    )
+  if (error) return errorResponse('address/geography-unavailable')
 
   return apiJson({ data })
 }

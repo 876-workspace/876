@@ -1,5 +1,12 @@
 import type { ErrorDef, AppError, HttpStatusCode } from '@876/core'
-import { BILLING_ERRORS, HttpStatus } from '@876/core'
+import {
+  BILLING_ERRORS,
+  getError as getCoreError,
+  isErrorCode as isCoreErrorCode,
+  HttpStatus,
+  toAppError,
+} from '@876/core'
+import { apiJson } from '@876/core/api'
 
 import { ADDRESS_ERRORS } from './address'
 import { FINANCE_ERRORS } from './finance'
@@ -10,6 +17,11 @@ import { PORTAL_ERRORS } from './portal'
 import { ROLE_ERRORS } from './role'
 import { TEAM_ERRORS } from './team'
 import { STORAGE_ERRORS } from './storage'
+import { LOCATION_ERRORS } from './location'
+import { MAILBOX_ERRORS } from './mailbox'
+import { ONBOARDING_ERRORS } from './onboarding'
+import { SETTINGS_ERRORS } from './settings'
+import { WIDGETS_ERRORS } from './widgets'
 
 export const COURIERS_ERRORS = {
   ...GENERIC_ERRORS,
@@ -22,6 +34,11 @@ export const COURIERS_ERRORS = {
   ...STORAGE_ERRORS,
   ...FINANCE_ERRORS,
   ...BILLING_ERRORS,
+  ...LOCATION_ERRORS,
+  ...MAILBOX_ERRORS,
+  ...ONBOARDING_ERRORS,
+  ...SETTINGS_ERRORS,
+  ...WIDGETS_ERRORS,
 } as const satisfies Record<string, ErrorDef>
 
 export type CouriersErrorCode = keyof typeof COURIERS_ERRORS
@@ -45,6 +62,8 @@ export function getError(code: string): {
     }
   }
 
+  if (isCoreErrorCode(code)) return getCoreError(code)
+
   return {
     code: 'error/unknown',
     message: `An unexpected error occurred. (Code: ${code})`,
@@ -67,9 +86,10 @@ export function getAppError(code: string): AppError {
  * Creates a standard Response object with the AppError payload and correct HTTP status.
  */
 export function errorResponse(code: string): Response {
-  return Response.json(
-    { error: getAppError(code) },
-    { status: getError(code).httpStatus }
+  const error = getError(code)
+  return apiJson(
+    { data: null, error: toAppError(error) },
+    { status: error.httpStatus }
   )
 }
 

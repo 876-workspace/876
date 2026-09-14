@@ -5,11 +5,8 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import {
-  couriersErrorStatus,
-  toAddressUpdateBody,
-  toAddressView,
-} from '@/lib/couriers'
+import { errorResponse } from '@/lib/errors'
+import { toAddressUpdateBody, toAddressView } from '@/lib/couriers'
 import { getCouriers } from '@/lib/services/couriers'
 import { addressUpdateParamsSchema } from '@/types/address'
 
@@ -26,42 +23,29 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   try {
     body = await request.json()
   } catch {
-    return apiJson({ error: 'Invalid address.' }, { status: 422 })
+    return errorResponse('address/invalid')
   }
 
   const envelope = envelopeSchema.safeParse(body)
-  if (!envelope.success)
-    return apiJson({ error: 'Invalid address.' }, { status: 422 })
+  if (!envelope.success) return errorResponse('address/invalid')
 
   const ctx = await getManageContext(envelope.data.orgSlug)
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
   if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
-    return apiJson(
-      { error: 'You do not have permission to manage locations.' },
-      { status: 403, code: 'auth/forbidden' }
-    )
-  if (!ctx.tenant)
-    return apiJson({ error: 'Tenant not found.' }, { status: 404 })
+    return errorResponse('auth/forbidden')
+  if (!ctx.tenant) return errorResponse('tenant/not-found')
 
   const rest = { ...(body as Record<string, unknown>) }
   delete rest.orgSlug
   const parsed = addressUpdateParamsSchema.safeParse(rest)
-  if (!parsed.success)
-    return apiJson(
-      { error: parsed.error.issues[0]?.message ?? 'Invalid address.' },
-      { status: 422 }
-    )
+  if (!parsed.success) return errorResponse('address/invalid')
 
   const $876 = await getCouriers()
   const result = await $876.addresses.update(
     id,
     toAddressUpdateBody(parsed.data)
   )
-  if (result.error)
-    return apiJson(
-      { error: result.error.message },
-      { status: couriersErrorStatus(result.error), code: result.error.code }
-    )
+  if (result.error) return errorResponse(result.error.code)
 
   return apiJson({ data: toAddressView(result.data) })
 }
@@ -69,25 +53,17 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 export async function DELETE(request: NextRequest, { params }: Params) {
   const { id } = await params
   const orgSlug = request.nextUrl.searchParams.get('orgSlug')
-  if (!orgSlug) return apiJson({ error: 'Invalid address.' }, { status: 422 })
+  if (!orgSlug) return errorResponse('address/invalid')
 
   const ctx = await getManageContext(orgSlug)
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
   if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
-    return apiJson(
-      { error: 'You do not have permission to manage locations.' },
-      { status: 403, code: 'auth/forbidden' }
-    )
-  if (!ctx.tenant)
-    return apiJson({ error: 'Tenant not found.' }, { status: 404 })
+    return errorResponse('auth/forbidden')
+  if (!ctx.tenant) return errorResponse('tenant/not-found')
 
   const $876 = await getCouriers()
   const result = await $876.addresses.delete(id)
-  if (result.error)
-    return apiJson(
-      { error: result.error.message },
-      { status: couriersErrorStatus(result.error), code: result.error.code }
-    )
+  if (result.error) return errorResponse(result.error.code)
 
   return apiJson({ data: { id: result.data.id, deleted: result.data.deleted } })
 }

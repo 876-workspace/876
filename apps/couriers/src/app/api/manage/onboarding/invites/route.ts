@@ -6,6 +6,8 @@ import { z } from 'zod'
 
 import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
+import { errorResponse } from '@/lib/errors'
+import { getAppError } from '@/lib/errors'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 
 export const runtime = 'nodejs'
@@ -24,20 +26,18 @@ const InvitesSchema = z.strictObject({
 
 export async function POST(request: NextRequest) {
   const ctx = await getManageContext()
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role === 'staff')
-    return apiJson({ error: 'Insufficient permissions' }, { status: 403 })
+  if (!ctx) return errorResponse('auth/no-session')
+  if (ctx.role === 'staff') return errorResponse('auth/forbidden')
 
   let body: unknown
   try {
     body = await request.json()
   } catch {
-    return apiJson({ error: 'Invalid JSON.' }, { status: 400 })
+    return errorResponse('request/invalid-json')
   }
 
   const parsed = InvitesSchema.safeParse(body)
-  if (!parsed.success)
-    return apiJson({ error: 'Provide valid invite emails.' }, { status: 422 })
+  if (!parsed.success) return errorResponse('onboarding/invalid-invites')
 
   const platform = await getPlatformClient()
   const results = []
@@ -51,7 +51,11 @@ export async function POST(request: NextRequest) {
 
     results.push(
       result.error
-        ? { email: invite.email, ok: false, error: result.error.message }
+        ? {
+            email: invite.email,
+            ok: false,
+            error: getAppError(result.error.code).message,
+          }
         : { email: invite.email, ok: true }
     )
   }

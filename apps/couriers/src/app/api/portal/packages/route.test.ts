@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { PortalPackage } from '@876/couriers'
 
+import { getError } from '@/lib/errors'
 import type { CouriersTenant, Signed876Session } from '@/types/auth'
 
 const mocks = vi.hoisted(() => ({
@@ -119,7 +120,10 @@ describe('portal packages GET', () => {
     expect(response.status).toBe(401)
     expect(body).toEqual({
       data: null,
-      error: { code: 'auth/no-session', message: 'Unauthorized.' },
+      error: {
+        code: 'auth/no-session',
+        message: getError('auth/no-session').message,
+      },
     })
     expect(mocks.getAuthSession).toHaveBeenCalledTimes(1)
     expect(mocks.getAuthSession).toHaveBeenCalledWith()
@@ -141,7 +145,10 @@ describe('portal packages GET', () => {
     expect(response.status).toBe(404)
     expect(body).toEqual({
       data: null,
-      error: { code: 'error/not-found', message: 'Portal unavailable.' },
+      error: {
+        code: 'portal/unavailable',
+        message: getError('portal/unavailable').message,
+      },
     })
     expect(mocks.getPortalTenant).toHaveBeenCalledTimes(1)
     expect(mocks.getPortalTenant).toHaveBeenCalledWith()
@@ -167,8 +174,8 @@ describe('portal packages GET', () => {
     expect(body).toEqual({
       data: null,
       error: {
-        code: 'auth/forbidden',
-        message: 'Portal enrollment is required.',
+        code: 'portal/enrollment-required',
+        message: getError('portal/enrollment-required').message,
       },
     })
     expect(mocks.createPortalCouriersClient).toHaveBeenCalledTimes(1)
@@ -237,8 +244,8 @@ describe('portal packages GET', () => {
     expect(body).toEqual({
       data: null,
       error: {
-        code: 'error/unknown',
-        message: 'Failed to load packages.',
+        code: 'portal/packages-unavailable',
+        message: getError('portal/packages-unavailable').message,
       },
     })
     expect(mocks.createPortalCouriersClient).toHaveBeenCalledTimes(1)

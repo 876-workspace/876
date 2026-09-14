@@ -30,6 +30,10 @@ export const GENERIC_ERRORS = {
     message: 'A network error occurred. Please check your connection.',
     httpStatus: HttpStatus.SERVICE_UNAVAILABLE,
   },
+  'error/invalid-json': {
+    message: 'The request body is not valid JSON.',
+    httpStatus: HttpStatus.BAD_REQUEST,
+  },
 } as const satisfies Record<string, ErrorDef>
 
 export type GenericErrorCode = keyof typeof GENERIC_ERRORS

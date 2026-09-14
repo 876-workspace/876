@@ -23,6 +23,10 @@ export const ORGANIZATION_ERRORS = {
     message: 'No organization exists with the provided identifier.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
+  'organization/provider-conflict': {
+    message: 'The identity provider rejected this organization request.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
   'organization/validation-failed': {
     message: 'Please check the organization input and try again.',
     httpStatus: HttpStatus.BAD_REQUEST,

@@ -34,6 +34,7 @@ vi.mock('@/lib/services/couriers', () => ({
 vi.mock('@/lib/couriers', () => ({
   couriersErrorStatus: mocks.couriersErrorStatus,
 }))
+import { getError } from '@/lib/errors'
 import { DELETE, PATCH } from './route'
 const context = { params: Promise.resolve({ id: 'cprof_nkr' }) }
 function patch(body: string | Record<string, unknown>) {
@@ -196,20 +197,21 @@ describe('customer [id] route', () => {
       expect(response.status).toBe(404)
       expect(mocks.client.customers.delete).not.toHaveBeenCalled()
     })
-    it('maps a Couriers not-found error with couriersErrorStatus', async () => {
+    it('maps a Couriers not-found error through the registry', async () => {
       mocks.client.customers.delete.mockResolvedValue({
         data: null,
         error: { code: 'customer/not-found', message: 'Not found.' },
       })
       const response = await DELETE(delRequest(), context)
       expect(response.status).toBe(404)
-      const body = await response.json()
-      expect(body.error.message).toBe('Not found.')
-      expect(body.error.code).toBe('customer/not-found')
-      expect(mocks.couriersErrorStatus).toHaveBeenCalledWith({
-        code: 'customer/not-found',
-        message: 'Not found.',
+      expect(await response.json()).toEqual({
+        data: null,
+        error: {
+          code: 'customer/not-found',
+          message: getError('customer/not-found').message,
+        },
       })
+      expect(mocks.couriersErrorStatus).not.toHaveBeenCalled()
       expect(mocks.client.customers.delete).toHaveBeenCalledTimes(1)
     })
     it('deletes with the exact tenant, id, and audit body', async () => {

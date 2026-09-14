@@ -1,21 +1,24 @@
 import 'server-only'
 
 import { apiJson } from '@876/core/api'
-import type { AppError } from '@876/core'
 import type { NextRequest } from 'next/server'
 
 import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { getError } from '@/lib/errors'
+import { errorResponse } from '@/lib/errors'
+import { getAppError, getError } from '@/lib/errors'
 import { storage } from '@/lib/services/storage'
 import { organizationLogoUploadCompleteSchema } from '@/types/storage'
 
 export const runtime = 'nodejs'
 
-function storageErrorResponse(error: AppError) {
+function storageErrorResponse(error: { code: string }) {
   const definition = getError(error.code)
 
-  return apiJson({ error }, { status: definition.httpStatus, code: error.code })
+  return apiJson(
+    { data: null, error: getAppError(error.code) },
+    { status: definition.httpStatus }
+  )
 }
 
 /** Verifies an organization-logo upload, then atomically replaces its profile reference. */
@@ -26,7 +29,6 @@ export async function POST(request: NextRequest) {
   } catch {
     return storageErrorResponse({
       code: 'storage/invalid-request',
-      message: 'The upload request is invalid.',
     })
   }
 
@@ -34,18 +36,12 @@ export async function POST(request: NextRequest) {
   if (!parsed.success)
     return storageErrorResponse({
       code: 'storage/invalid-request',
-      message: 'The upload request is invalid.',
     })
 
   const ctx = await getManageContext(parsed.data.orgSlug)
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
   if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
-    return apiJson(
-      {
-        error: 'You do not have permission to edit the organization profile.',
-      },
-      { status: 403, code: 'auth/forbidden' }
-    )
+    return errorResponse('auth/forbidden')
 
   const result = await storage.uploads.complete(parsed.data.id)
   if (result.error) return storageErrorResponse(result.error)
@@ -54,12 +50,10 @@ export async function POST(request: NextRequest) {
   if (file.owner_type !== 'organization' || file.owner_id !== ctx.orgId)
     return storageErrorResponse({
       code: 'storage/invalid-owner',
-      message: 'This file does not belong to the selected organization.',
     })
   if (file.status !== 'ready' || !file.url)
     return storageErrorResponse({
       code: 'storage/upload-verification-failed',
-      message: 'The uploaded file could not be verified. Please try again.',
     })
 
   const platform = await getPlatformClient()
@@ -67,11 +61,7 @@ export async function POST(request: NextRequest) {
     logo_file_id: file.id,
     logo_url: file.url,
   })
-  if (profileResult.error)
-    return apiJson(
-      { error: profileResult.error },
-      { status: 502, code: profileResult.error.code }
-    )
+  if (profileResult.error) return errorResponse(profileResult.error.code)
 
   return apiJson({ data: file })
 }

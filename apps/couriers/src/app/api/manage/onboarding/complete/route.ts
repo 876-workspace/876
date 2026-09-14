@@ -5,8 +5,8 @@ import { toSlug } from '@876/core/utils'
 
 import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
+import { errorResponse } from '@/lib/errors'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
-import { couriersErrorStatus } from '@/lib/couriers'
 import { couriersOperator } from '@/lib/services/couriers'
 import { ONBOARDING_COUNTRY, ORGANIZATION_TARGET_KEY } from '@/lib/onboarding'
 
@@ -14,11 +14,10 @@ export const runtime = 'nodejs'
 
 export async function POST() {
   const ctx = await getManageContext()
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role === 'staff')
-    return apiJson({ error: 'Insufficient permissions' }, { status: 403 })
+  if (!ctx) return errorResponse('auth/no-session')
+  if (ctx.role === 'staff') return errorResponse('auth/forbidden')
   if (ctx.accessStatus === 'blocked')
-    return apiJson({ error: 'Access is restricted' }, { status: 403 })
+    return errorResponse('auth/account-on-hold')
 
   const platform = await getPlatformClient()
 
@@ -28,11 +27,7 @@ export async function POST() {
     ORGANIZATION_TARGET_KEY,
     ONBOARDING_COUNTRY
   )
-  if (orgSubmit.error)
-    return apiJson(
-      { error: 'Complete the business profile step first.' },
-      { status: 422 }
-    )
+  if (orgSubmit.error) return errorResponse('onboarding/incomplete')
 
   const appSession = await platform.onboarding.retrieve(
     ctx.orgId,
@@ -41,18 +36,14 @@ export async function POST() {
     ONBOARDING_COUNTRY
   )
   if (appSession.error || !appSession.data)
-    return apiJson({ error: 'Failed to load setup answers.' }, { status: 500 })
+    return errorResponse('onboarding/answers-unavailable')
 
   const answers = appSession.data.answers
   const platformName =
     typeof answers.platform_name === 'string'
       ? answers.platform_name.trim()
       : ''
-  if (!platformName)
-    return apiJson(
-      { error: 'Provide your platform name in the setup step.' },
-      { status: 422 }
-    )
+  if (!platformName) return errorResponse('onboarding/platform-name-required')
 
   const mailboxPrefix =
     typeof answers.mailbox_prefix === 'string' && answers.mailbox_prefix.trim()
@@ -65,14 +56,12 @@ export async function POST() {
     COURIERS_APP_SLUG,
     ONBOARDING_COUNTRY
   )
-  if (appSubmit.error)
-    return apiJson({ error: 'Complete the setup step first.' }, { status: 422 })
+  if (appSubmit.error) return errorResponse('onboarding/incomplete')
 
   const prov = await platform.subscriptions.create(ctx.orgId, {
     appSlug: COURIERS_APP_SLUG,
   })
-  if (prov.error)
-    return apiJson({ error: 'Failed to activate workspace.' }, { status: 500 })
+  if (prov.error) return errorResponse('onboarding/activation-failed')
 
   let tenantId = ctx.tenant?.id
   if (!tenantId) {
@@ -82,14 +71,7 @@ export async function POST() {
       slug: toSlug(platformName),
       creator_user_id: ctx.userId,
     })
-    if (created.error)
-      return apiJson(
-        { error: created.error.message },
-        {
-          status: couriersErrorStatus(created.error),
-          code: created.error.code,
-        }
-      )
+    if (created.error) return errorResponse(created.error.code)
 
     tenantId = created.data.id
   }
@@ -98,14 +80,7 @@ export async function POST() {
     const updated = await couriersOperator.tenants.update(tenantId, {
       mailbox_prefix: mailboxPrefix,
     })
-    if (updated.error)
-      return apiJson(
-        { error: updated.error.message },
-        {
-          status: couriersErrorStatus(updated.error),
-          code: updated.error.code,
-        }
-      )
+    if (updated.error) return errorResponse(updated.error.code)
   }
 
   return apiJson({

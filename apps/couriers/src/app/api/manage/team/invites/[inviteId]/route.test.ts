@@ -14,6 +14,7 @@ vi.mock('@/lib/services/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 
+import { getError } from '@/lib/errors'
 import { DELETE } from './route'
 
 const context = { params: Promise.resolve({ inviteId: 'invite_123' }) }
@@ -86,10 +87,10 @@ describe('Couriers team invite revoke route', () => {
     const body = await response.json()
 
     expect(response.status).toBe(403)
-    expect(body.error.code).toBe('auth/forbidden')
-    expect(body.error.message).toBe(
-      'You do not have permission to revoke invites.'
-    )
+    expect(body.error).toEqual({
+      code: 'auth/forbidden',
+      message: getError('auth/forbidden').message,
+    })
     expect(mocks.revokeInvite).not.toHaveBeenCalled()
   })
 
@@ -138,7 +139,7 @@ describe('Couriers team invite revoke route', () => {
     expect(mocks.revokeInvite).toHaveBeenCalledTimes(1)
   })
 
-  it('propagates platform revoke failures as 502 with the platform code', async () => {
+  it('propagates platform revoke failures with the registered status and code', async () => {
     mocks.revokeInvite.mockResolvedValue({
       data: null,
       error: {
@@ -155,9 +156,11 @@ describe('Couriers team invite revoke route', () => {
     )
     const body = await response.json()
 
-    expect(response.status).toBe(502)
-    expect(body.error.message).toBe('Invite not found.')
-    expect(body.error.code).toBe('invite/not_found')
+    expect(response.status).toBe(404)
+    expect(body.error).toEqual({
+      code: 'invite/not_found',
+      message: getError('invite/not_found').message,
+    })
     expect(body.data).toBeNull()
   })
 })

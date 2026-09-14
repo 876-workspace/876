@@ -13,6 +13,7 @@ export const authErrorCodeValues = [
   'auth/email-blacklisted',
   'auth/email-not-verified',
   'auth/forbidden',
+  'auth/identity-unavailable',
   'auth/internal-error',
   'auth/invalid-code',
   'auth/invalid-credentials',
@@ -89,6 +90,8 @@ export const authErrorMessages = {
   'auth/email-not-verified':
     'Please verify your email address before signing in.',
   'auth/forbidden': 'You do not have permission to perform this action.',
+  'auth/identity-unavailable':
+    'Sign-in could not be verified right now. Please try again.',
   'auth/internal-error':
     'An unexpected error occurred during authentication. Please try again later.',
   'auth/invalid-code':
@@ -106,7 +109,7 @@ export const authErrorMessages = {
     'Unable to refresh your session. Please sign in again.',
   'auth/invalid-response': 'Unexpected auth response. Please try again.',
   'auth/invalid-session': 'The session is invalid. Please sign in again.',
-  'auth/invalid-token': 'Invalid authentication token. Please sign in again.',
+  'auth/invalid-token': 'The Bearer [REDACTED] is invalid or expired.',
   'auth/missing-code': 'Please enter the verification code.',
   'auth/missing-credentials': 'Username or email and password are required.',
   'auth/missing-email': 'Please enter your email address.',

@@ -7,6 +7,8 @@ export const inviteErrorCodeValues = [
   'invite/app-not-found',
   'invite/email-mismatch',
   'invite/not-found',
+  'invite/not_found',
+  'invite/rate_limited',
   'invite/user-not-found',
 ] as const
 

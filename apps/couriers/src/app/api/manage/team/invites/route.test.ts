@@ -25,6 +25,7 @@ vi.mock('@/lib/couriers-app', () => ({
   COURIERS_APP_SLUG: '876-couriers',
 }))
 
+import { getError } from '@/lib/errors'
 import { POST } from './route'
 
 function request(body: string | Record<string, unknown>) {
@@ -117,7 +118,10 @@ describe('Couriers team invite route', () => {
     const body = await response.json()
 
     expect(response.status).toBe(401)
-    expect(body.error.message).toBe('Unauthorized.')
+    expect(body.error).toEqual({
+      code: 'auth/no-session',
+      message: getError('auth/no-session').message,
+    })
     expect(mocks.retrieveRole).not.toHaveBeenCalled()
   })
 
@@ -128,10 +132,10 @@ describe('Couriers team invite route', () => {
     const body = await response.json()
 
     expect(response.status).toBe(403)
-    expect(body.error.code).toBe('auth/forbidden')
-    expect(body.error.message).toBe(
-      'You do not have permission to invite users.'
-    )
+    expect(body.error).toEqual({
+      code: 'auth/forbidden',
+      message: getError('auth/forbidden').message,
+    })
     expect(mocks.retrieveRole).not.toHaveBeenCalled()
     expect(mocks.createInvite).not.toHaveBeenCalled()
   })
@@ -224,7 +228,7 @@ describe('Couriers team invite route', () => {
     })
   })
 
-  it('propagates platform invite failures as 502 with the platform code', async () => {
+  it('propagates platform invite failures with the registered status and code', async () => {
     mocks.createInvite.mockResolvedValue({
       data: null,
       error: {
@@ -236,9 +240,11 @@ describe('Couriers team invite route', () => {
     const response = await POST(request(validBody))
     const body = await response.json()
 
-    expect(response.status).toBe(502)
-    expect(body.error.message).toBe('Too many invites.')
-    expect(body.error.code).toBe('invite/rate_limited')
+    expect(response.status).toBe(429)
+    expect(body.error).toEqual({
+      code: 'invite/rate_limited',
+      message: getError('invite/rate_limited').message,
+    })
     expect(body.data).toBeNull()
   })
 

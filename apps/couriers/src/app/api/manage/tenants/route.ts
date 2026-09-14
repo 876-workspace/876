@@ -3,7 +3,8 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { couriersErrorStatus, toCouriersTenant } from '@/lib/couriers'
+import { errorResponse } from '@/lib/errors'
+import { toCouriersTenant } from '@/lib/couriers'
 import { couriersOperator } from '@/lib/services/couriers'
 
 export const runtime = 'nodejs'
@@ -19,32 +20,23 @@ const TenantCreateSchema = z.strictObject({
 export async function POST(request: NextRequest) {
   const ctx = await getManageContext()
   if (!ctx) {
-    return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+    return errorResponse('auth/no-session')
   }
 
   if (ctx.tenant) {
-    return apiJson(
-      { error: 'A courier tenant already exists for this organization.' },
-      { status: 409 }
-    )
+    return errorResponse('tenant/already-exists')
   }
 
   let body: unknown
   try {
     body = await request.json()
   } catch {
-    return apiJson({ error: 'Invalid JSON.' }, { status: 400 })
+    return errorResponse('request/invalid-json')
   }
 
   const parsed = TenantCreateSchema.safeParse(body)
   if (!parsed.success) {
-    return apiJson(
-      {
-        error:
-          'Provide only a non-empty name and a lowercase letters, numbers, or hyphens slug.',
-      },
-      { status: 422 }
-    )
+    return errorResponse('request/invalid')
   }
 
   const { name, slug } = parsed.data
@@ -56,10 +48,7 @@ export async function POST(request: NextRequest) {
     creator_user_id: ctx.userId,
   })
   if (result.error) {
-    return apiJson(
-      { error: result.error.message },
-      { status: couriersErrorStatus(result.error), code: result.error.code }
-    )
+    return errorResponse(result.error.code)
   }
 
   return apiJson(

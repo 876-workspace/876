@@ -1,7 +1,8 @@
-import { apiError, apiJson } from '@876/core/api'
+import { apiJson } from '@876/core/api'
 import type { NoteColor } from '@876/widgets'
 
 import { requireNotepadMember } from '@/lib/widgets-auth'
+import { errorResponse } from '@/lib/errors'
 import { widgets } from '@/lib/services/widgets'
 
 export const runtime = 'nodejs'
@@ -26,11 +27,7 @@ export async function GET(request: Request) {
       unfiled,
     }
   )
-  if (result.error)
-    return apiError(result.error.message, {
-      status: 502,
-      code: result.error.code,
-    })
+  if (result.error) return errorResponse(result.error.code ?? 'error/unknown')
 
   return apiJson({ data: result.data, error: null })
 }
@@ -43,7 +40,7 @@ export async function POST(request: Request) {
   try {
     body = await request.json()
   } catch {
-    return apiError('Invalid JSON body.', { status: 400 })
+    return errorResponse('request/invalid-json')
   }
 
   const record =
@@ -66,11 +63,7 @@ export async function POST(request: Request) {
             : undefined,
     }
   )
-  if (result.error)
-    return apiError(result.error.message, {
-      status: 502,
-      code: result.error.code,
-    })
+  if (result.error) return errorResponse(result.error.code ?? 'error/unknown')
 
   return apiJson({ data: result.data, error: null }, { status: 201 })
 }

@@ -7,17 +7,12 @@ import { z } from 'zod'
 
 import { getPlatformClient } from '@/lib/services/platform'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
+import { errorResponse } from '@/lib/errors'
 import { ONBOARDING_COUNTRY, ORGANIZATION_TARGET_KEY } from '@/lib/onboarding'
 
 export const runtime = 'nodejs'
 
 const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME ?? '876-session'
-const ORGANIZATION_CONFLICT_CODES = new Set([
-  'organization/duplicate-slug',
-  'auth/organization-slug-taken',
-  'organization/provider-conflict',
-])
-
 const organizationSchema = z.strictObject({
   name: z.string().trim().min(1),
   answers: z.record(z.string(), z.unknown()),
@@ -25,32 +20,23 @@ const organizationSchema = z.strictObject({
 
 export async function POST(request: NextRequest) {
   const session = await getAuthSession()
-  if (!isSignedSession(session))
-    return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!isSignedSession(session)) return errorResponse('auth/no-session')
 
   let body: unknown
   try {
     body = await request.json()
   } catch {
-    return apiJson(
-      { error: 'Invalid onboarding organization.' },
-      { status: 422 }
-    )
+    return errorResponse('onboarding/invalid-organization')
   }
 
   const parsed = organizationSchema.safeParse(body)
-  if (!parsed.success)
-    return apiJson(
-      { error: 'Invalid onboarding organization.' },
-      { status: 422 }
-    )
+  if (!parsed.success) return errorResponse('onboarding/invalid-organization')
 
   const platform = await getPlatformClient()
   const memberships = await platform.memberships.listRouting({
     userId: session.user.id,
   })
-  if (memberships.error)
-    return apiJson({ error: 'Failed to verify workspace.' }, { status: 500 })
+  if (memberships.error) return errorResponse('onboarding/verification-failed')
   let organizationId = memberships.data.data[0]?.organization.id
   if (!organizationId) {
     const organization = await platform.organizations.create({
@@ -62,20 +48,10 @@ export async function POST(request: NextRequest) {
         const cookieStore = await cookies()
         cookieStore.delete(SESSION_COOKIE_NAME)
 
-        return apiJson(
-          { error: 'Your session is no longer valid. Please sign in again.' },
-          { status: 401, code: 'auth/session-invalid' }
-        )
+        return errorResponse('auth/invalid-session')
       }
 
-      const status = ORGANIZATION_CONFLICT_CODES.has(organization.error.code)
-        ? 409
-        : 502
-
-      return apiJson(
-        { error: organization.error.message },
-        { status, code: organization.error.code }
-      )
+      return errorResponse(organization.error.code)
     }
     organizationId = organization.data.id
   }
@@ -89,8 +65,7 @@ export async function POST(request: NextRequest) {
       answers: parsed.data.answers,
     }
   )
-  if (answers.error)
-    return apiJson({ error: answers.error.message }, { status: 500 })
+  if (answers.error) return errorResponse(answers.error.code)
 
   return apiJson({
     data: {

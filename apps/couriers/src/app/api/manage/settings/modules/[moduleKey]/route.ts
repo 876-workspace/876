@@ -6,7 +6,7 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { couriersErrorStatus } from '@/lib/couriers'
+import { errorResponse } from '@/lib/errors'
 import { couriersOperator } from '@/lib/services/couriers'
 
 export const runtime = 'nodejs'
@@ -20,32 +20,22 @@ type RouteContext = { params: Promise<{ moduleKey: string }> }
 
 export async function GET(request: NextRequest, context: RouteContext) {
   const orgSlug = request.nextUrl.searchParams.get('orgSlug')
-  if (!orgSlug)
-    return apiJson({ error: 'Organization is required.' }, { status: 422 })
+  if (!orgSlug) return errorResponse('settings/organization-required')
 
   const ctx = await getManageContext(orgSlug)
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
   if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
-    return apiJson(
-      { error: 'You do not have permission to view settings.' },
-      { status: 403, code: 'auth/forbidden' }
-    )
-  if (!ctx.tenant)
-    return apiJson({ error: 'Tenant not found.' }, { status: 404 })
+    return errorResponse('auth/forbidden')
+  if (!ctx.tenant) return errorResponse('tenant/not-found')
 
   const { moduleKey } = await context.params
   const parsedModule = moduleKeySchema.safeParse(moduleKey)
-  if (!parsedModule.success)
-    return apiJson({ error: 'Unknown module.' }, { status: 404 })
+  if (!parsedModule.success) return errorResponse('settings/unknown-module')
   const result = await couriersOperator.settings.preferences.retrieve(
     ctx.tenant.id,
     parsedModule.data
   )
-  if (result.error)
-    return apiJson(
-      { error: result.error.message },
-      { status: couriersErrorStatus(result.error), code: result.error.code }
-    )
+  if (result.error) return errorResponse(result.error.code)
 
   const data = result.data
   return apiJson({
@@ -62,37 +52,27 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     body = await request.json()
   } catch {
-    return apiJson({ error: 'Invalid preferences.' }, { status: 422 })
+    return errorResponse('settings/invalid-preferences')
   }
 
   const parsed = updateSchema.safeParse(body)
-  if (!parsed.success)
-    return apiJson({ error: 'Invalid preferences.' }, { status: 422 })
+  if (!parsed.success) return errorResponse('settings/invalid-preferences')
 
   const ctx = await getManageContext(parsed.data.orgSlug)
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
   if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
-    return apiJson(
-      { error: 'You do not have permission to edit settings.' },
-      { status: 403, code: 'auth/forbidden' }
-    )
-  if (!ctx.tenant)
-    return apiJson({ error: 'Tenant not found.' }, { status: 404 })
+    return errorResponse('auth/forbidden')
+  if (!ctx.tenant) return errorResponse('tenant/not-found')
 
   const { moduleKey } = await context.params
   const parsedModule = moduleKeySchema.safeParse(moduleKey)
-  if (!parsedModule.success)
-    return apiJson({ error: 'Unknown module.' }, { status: 404 })
+  if (!parsedModule.success) return errorResponse('settings/unknown-module')
   const result = await couriersOperator.settings.preferences.update(
     ctx.tenant.id,
     parsedModule.data,
     parsed.data.values
   )
-  if (result.error)
-    return apiJson(
-      { error: result.error.message },
-      { status: couriersErrorStatus(result.error), code: result.error.code }
-    )
+  if (result.error) return errorResponse(result.error.code)
 
   const data = result.data
   return apiJson({
