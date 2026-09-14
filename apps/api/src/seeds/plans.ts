@@ -44,11 +44,16 @@ export const INVOICE_FREE_PLAN_MODULE_KEYS = [
 
 const invoiceFreeModuleKeys = new Set<string>(INVOICE_FREE_PLAN_MODULE_KEYS)
 
+const INVOICE_FEATURE_SLUGS: Readonly<Record<string, string>> = {
+  requests: 'invoice-requests',
+}
+
 const BILLING_FEATURE_SLUGS: Readonly<Record<string, string>> = {
   subscriptions: 'billing-subscriptions',
   purchases: 'billing-purchases',
   banking: 'billing-banking',
   payroll: 'billing-payroll',
+  requests: 'billing-requests',
 }
 
 /**
@@ -61,6 +66,7 @@ const BILLING_MODULE_POSITIONS: Readonly<Record<string, number>> = {
   purchases: 30,
   banking: 40,
   payroll: 60,
+  requests: 70,
 }
 
 type PlatformModuleDef = {
@@ -71,6 +77,7 @@ type PlatformModuleDef = {
   featureSlug: string | null
   position: number
   includedPlanSlugs: readonly string[]
+  includeCurrentAppPlans: boolean
   syncIdentity: boolean
 }
 
@@ -81,6 +88,7 @@ function registryModuleDefinitions(params: {
   positions?: Readonly<Record<string, number>>
   featureSlugs?: Readonly<Record<string, string>>
   includedPlanSlugs?: (key: string) => readonly string[]
+  includeCurrentAppPlans?: (key: string) => boolean
 }): PlatformModuleDef[] {
   return params.keys.map((key, index) => {
     const definition = findAppModule(params.appSlug, key)
@@ -97,6 +105,7 @@ function registryModuleDefinitions(params: {
       featureSlug: params.featureSlugs?.[key] ?? null,
       position: params.positions?.[key] ?? params.positionBase + index * 10,
       includedPlanSlugs: params.includedPlanSlugs?.(key) ?? [],
+      includeCurrentAppPlans: params.includeCurrentAppPlans?.(key) ?? false,
       syncIdentity: true,
     }
   })
@@ -107,8 +116,10 @@ const CANONICAL_FINANCE_MODULES = [
     appSlug: INVOICE_MODULE_REGISTRY.app,
     keys: INVOICE_COMMERCIAL_MODULE_KEYS,
     positionBase: 10,
+    featureSlugs: INVOICE_FEATURE_SLUGS,
     includedPlanSlugs: (key) =>
       invoiceFreeModuleKeys.has(key) ? [INVOICE_FREE_PLAN_SLUG] : [],
+    includeCurrentAppPlans: (key) => key === 'requests',
   }),
   ...registryModuleDefinitions({
     appSlug: BILLING_MODULE_REGISTRY.app,
@@ -116,6 +127,7 @@ const CANONICAL_FINANCE_MODULES = [
     positionBase: 100,
     positions: BILLING_MODULE_POSITIONS,
     featureSlugs: BILLING_FEATURE_SLUGS,
+    includeCurrentAppPlans: (key) => key === 'requests',
   }),
 ]
 
@@ -136,6 +148,7 @@ export const PLATFORM_MODULES: readonly PlatformModuleDef[] = [
     featureSlug: 'billing-sales',
     position: 10,
     includedPlanSlugs: [BILLING_INTERNAL_PLAN_SLUG],
+    includeCurrentAppPlans: false,
     syncIdentity: false,
   },
   {
@@ -146,6 +159,7 @@ export const PLATFORM_MODULES: readonly PlatformModuleDef[] = [
     featureSlug: 'billing-documents',
     position: 50,
     includedPlanSlugs: [BILLING_INTERNAL_PLAN_SLUG],
+    includeCurrentAppPlans: false,
     syncIdentity: false,
   },
   {
@@ -157,6 +171,7 @@ export const PLATFORM_MODULES: readonly PlatformModuleDef[] = [
     featureSlug: null,
     position: 10,
     includedPlanSlugs: ['876-couriers-free', '876-couriers-pro'],
+    includeCurrentAppPlans: false,
     syncIdentity: false,
   },
 ] as const
@@ -197,13 +212,28 @@ export async function seedPlatformPlanModules(): Promise<PlanSeedSummary> {
     const feature = definition.featureSlug
       ? (featuresBySlug.get(definition.featureSlug) ?? null)
       : null
+
     if (!applicationModule) {
-      const initialGrants = definition.includedPlanSlugs.flatMap((slug) => {
+      const explicitlyIncluded = definition.includedPlanSlugs.flatMap((slug) => {
         const product = productsBySlug.get(slug)
-        return product
-          ? [{ id: generateId('planModule'), productId: product.id }]
-          : []
+        return product ? [product] : []
       })
+      const currentAppPlans = definition.includeCurrentAppPlans
+        ? products.filter((product) => product.appId === app.id)
+        : []
+      const initialProducts = [
+        ...new Map(
+          [...explicitlyIncluded, ...currentAppPlans].map((product) => [
+            product.id,
+            product,
+          ])
+        ).values(),
+      ]
+      const initialGrants = initialProducts.map((product) => ({
+        id: generateId('planModule'),
+        productId: product.id,
+      }))
+
       // A failed grant must roll back its new module, so a retry can still
       // distinguish bootstrap from an operator's later grant removal.
       await createApplicationModule({
@@ -313,7 +343,7 @@ export async function backfillBillingPlanAssignments(): Promise<PlanSeedSummary>
     modulesCreated: 0,
     planModulesCreated: 0,
     billingAssignments: assignments,
-    ownerProvisioned,
+    ownerProvisioned: ownerProvisioned,
   }
 }
 
