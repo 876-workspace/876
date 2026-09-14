@@ -24,7 +24,7 @@ Claude writes code itself only for security-critical/design-critical work
 (auth, key handling, sessions, provisioning — see "Fable is never delegated"),
 for small surgical fixes found during verification, or when every delegate tier is
 unavailable. Claude `Agent` sub-agents are **not** the default delegate — use them
-only when the user asks, or for read-only exploration no CLI can do.
+only when the user asks, or for read-only exploration no CLI can do. If you use claude Agent, do not pass in the orchestrator context. Claude is expensive.
 
 ## Spend order — exhaust free and prepaid quota first
 
@@ -42,7 +42,7 @@ Command Code … look at all models by all the CLIs and use them up."_
 
 Rules:
 
-- **Rotate, don't stop, when a model hits its daily limit.** A free model that
+- **Rotate, don't stop, when a model hits its daily limit for Cline.** A free model that
   answers with a limit/quota/"promotion ended" error, or exits having written
   nothing, is switched for the next model in the same pool, then the next pool.
   Record which model finished the run in the report and `plan.md`.
@@ -57,18 +57,18 @@ Rules:
 
 ## Available tooling — verified 2026-09-14, do not re-probe
 
-| Tool                    | Command                                                                                                                          | Notes                                                                                                                                                       |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Cline**               | `cline -c <dir> -m <model> --thinking none -t <secs> "<prompt>" < /dev/null`                                                     | Free pool #1. Headless act mode, auto-approve. **Reads a lot** — see "Briefing the free tier".                                                              |
-| **opencode**            | `opencode run -m <model> [--variant <effort>] --auto "<prompt>" < /dev/null`                                                     | Free pool #2. An invalid flag prints help and exits 0 with no changes — check the diff.                                                                     |
-| **Command Code**        | `command-code -p --yolo --skip-onboarding -m <model> --max-turns <n> "<prompt>" < /dev/null`                                     | Prepaid; DeepSeek V4.1 Flash is the workhorse. `--effort low\|medium\|high`, `--output-format json` for an NDJSON stream. `--list-models` shows ~70 models. |
-| **Codex**               | `codex exec -m gpt-5.6-terra -c model_reasoning_effort=medium --dangerously-bypass-approvals-and-sandbox "<prompt>" < /dev/null` | Models: `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-5.5`, plus `gpt-6-astra` and `gpt-reserve` (not yet evaluated). Always pass `-m` and effort.   |
-| **Muse Code** (Meta)    | `muse exec --trust-workspace`                                                                                                    | Cannot run commands in this container — see its section.                                                                                                    |
-| **agy** (Antigravity)   | `agy`                                                                                                                            | **Gemini out as of 2026-09-14.**                                                                                                                            |
-| **Cloudflare Wrangler** | `npx wrangler`                                                                                                                   | authenticated (legacy; apps deploy on Vercel now)                                                                                                           |
-| **GitHub CLI**          | `gh`                                                                                                                             | authenticated as `876-workspace`                                                                                                                            |
-| **Sentry**              | `sentry`                                                                                                                         | authenticated, org `efesto`. Never `sentry-cli` (unauthenticated).                                                                                          |
-| **Docker**              | —                                                                                                                                | unavailable                                                                                                                                                 |
+| Tool                    | Command                                                                                                                          | Notes                                                                                                                                                                                                     |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Cline**               | `cline -c <dir> -m <model> --thinking none -t <secs> "<prompt>" < /dev/null`                                                     | Free pool #1. Headless act mode, auto-approve. **Reads a lot** — see "Briefing the free tier".                                                                                                            |
+| **opencode**            | `opencode run -m <model> [--variant <effort>] --auto "<prompt>" < /dev/null`                                                     | Free pool #2. An invalid flag prints help and exits 0 with no changes — check the diff.                                                                                                                   |
+| **Command Code**        | `command-code -p --yolo --skip-onboarding -m <model> --max-turns <n> "<prompt>" < /dev/null`                                     | Prepaid; DeepSeek V4.1 Flash is the workhorse. `--effort low\|medium\|high`, `--output-format json` for an NDJSON stream. `--list-models` shows ~70 models.                                               |
+| **Codex**               | `codex exec -m gpt-5.6-terra -c model_reasoning_effort=medium --dangerously-bypass-approvals-and-sandbox "<prompt>" < /dev/null` | Models: `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-5.5`, plus `gpt-reserve` (not yet evaluated). **`gpt-6-astra` only when the user explicitly asks** (see below). Always pass `-m` and effort. |
+| **Muse Code** (Meta)    | `muse exec --trust-workspace`                                                                                                    | Cannot run commands in this container — see its section.                                                                                                                                                  |
+| **agy** (Antigravity)   | `agy`                                                                                                                            | **Gemini out as of 2026-09-14.**                                                                                                                                                                          |
+| **Cloudflare Wrangler** | `npx wrangler`                                                                                                                   | authenticated (legacy; apps deploy on Vercel now)                                                                                                                                                         |
+| **GitHub CLI**          | `gh`                                                                                                                             | authenticated as `876-workspace`                                                                                                                                                                          |
+| **Sentry**              | `sentry`                                                                                                                         | authenticated, org `efesto`. Never `sentry-cli` (unauthenticated).                                                                                                                                        |
+| **Docker**              | —                                                                                                                                | unavailable                                                                                                                                                                                               |
 
 **MCP servers** (`.mcp.json`, repo root): `sentry` — HTTP, `https://mcp.sentry.dev/mcp`.
 
@@ -148,6 +148,10 @@ good enough.
   itself, not delegating it.
 
 ## Codex — the tier for tougher work
+
+**`gpt-6-astra` is never chosen by the orchestrator.** It is the most capable GPT
+model — on par with Claude's top tier (Fable) — and consumes GPT usage far too
+fast. Use it only when the user explicitly asks for it by name (user, 2026-09-14).
 
 Default: **`gpt-5.6-terra` at `medium`** (user, 2026-09-14). Raise to `high` for a
 genuinely hard brief (cross-service, migrations, security-adjacent); use
