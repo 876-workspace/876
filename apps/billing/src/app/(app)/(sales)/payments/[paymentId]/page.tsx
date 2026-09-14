@@ -18,11 +18,10 @@ export const metadata: Metadata = {
 export default async function PaymentPage({ params }: Props) {
   const context = await requirePagePermission('payments:read')
   const { paymentId } = await params
-  const [payment, features]: [LegacyBillingRecord, Awaited<ReturnType<typeof getFeatures>>] =
-    await Promise.all([
-      service.payments.retrieve(context.tenant.id, paymentId),
-      getFeatures({ userId: context.userId, organizationId: context.orgId }),
-    ])
+  const [payment, features] = await Promise.all([
+    service.payments.retrieve(context.tenant.id, paymentId),
+    getFeatures({ userId: context.userId, organizationId: context.orgId }),
+  ])
   if (!payment) notFound()
 
   const allocated = payment.invoiceAllocations.reduce(
@@ -31,6 +30,10 @@ export default async function PaymentPage({ params }: Props) {
     0n
   )
   const canWrite = context.permissions.includes('payments:write')
+  const canViewRequests =
+    features.productFeatures.requests &&
+    context.permissions.includes('customers:read')
+  const canCreateRequest = context.permissions.includes('customers:write')
   const canRefund =
     canWrite &&
     (payment.status === 'SUCCEEDED' ||
@@ -80,7 +83,7 @@ export default async function PaymentPage({ params }: Props) {
       }
       refundHref={canRefund ? `/payments/${payment.id}/refund` : undefined}
     >
-      {features.productFeatures.requests ? (
+      {canViewRequests ? (
         <RelatedRequestsClient
           customerId={payment.customer.id}
           resourceType="payment"
@@ -91,6 +94,7 @@ export default async function PaymentPage({ params }: Props) {
             currency: payment.currency,
             status: payment.status,
           }}
+          canCreate={canCreateRequest}
         />
       ) : null}
     </PaymentDetailCard>
