@@ -9,6 +9,7 @@
 
 import { listObject, type ListObject } from '@/http/envelope'
 import { AppHttpError } from '@/http/errors'
+import { nullableToDbUnixSeconds } from '@/platform/timestamps'
 
 import {
   noFieldsToUpdate,
@@ -16,6 +17,7 @@ import {
   resolveIncludeDeleted,
   sentFields,
 } from './directory.service'
+import { renameKeys } from './directory.repository'
 
 import type {
   ListDirectoryQuery,
@@ -131,6 +133,14 @@ export async function createBank(body: BankCreate): Promise<Bank> {
     logoUrl: body.logo_url ?? null,
     headOffice: body.head_office ?? null,
     website: body.website ?? null,
+    generalPhone: body.general_phone ?? null,
+    supportPhone: body.support_phone ?? null,
+    supportEmail: body.support_email ?? null,
+    complaintsEmail: body.complaints_email ?? null,
+    contactUrl: body.contact_url ?? null,
+    sourceUrl: body.source_url ?? null,
+    sourceAsOf: body.source_as_of ?? null,
+    lastVerifiedAt: nullableToDbUnixSeconds(body.last_verified_at),
   })
 
   return serializeBank(row)
@@ -171,6 +181,22 @@ export async function updateBank(
   return serializeBank(row)
 }
 
+/**
+ * The wire sends `last_verified_at` as a JSON number of Unix seconds; Prisma's
+ * BIGINT column takes a bigint. Every resource that can carry the field goes
+ * through here so none of them writes a number into a bigint column.
+ */
+function toDbTimestamp(data: Record<string, unknown>): Record<string, unknown> {
+  if (!Object.prototype.hasOwnProperty.call(data, 'lastVerifiedAt')) return data
+
+  return {
+    ...data,
+    lastVerifiedAt: nullableToDbUnixSeconds(
+      data['lastVerifiedAt'] as number | null | undefined
+    ),
+  }
+}
+
 function renameBankFields(
   data: Record<string, unknown>
 ): Record<string, unknown> {
@@ -183,11 +209,17 @@ function renameBankFields(
     swift_code: 'swiftCode',
     logo_url: 'logoUrl',
     head_office: 'headOffice',
+    general_phone: 'generalPhone',
+    support_phone: 'supportPhone',
+    support_email: 'supportEmail',
+    complaints_email: 'complaintsEmail',
+    contact_url: 'contactUrl',
+    source_url: 'sourceUrl',
+    source_as_of: 'sourceAsOf',
+    last_verified_at: 'lastVerifiedAt',
   }
 
-  return Object.fromEntries(
-    Object.entries(data).map(([key, value]) => [map[key] ?? key, value])
-  )
+  return toDbTimestamp(renameKeys(data, map))
 }
 
 export async function deleteBank(
@@ -291,8 +323,14 @@ export async function createBankBranch(
     name: body.name,
     transitNumber: body.transit_number,
     routingNumber: body.routing_number ?? null,
+    rawAddress: body.raw_address ?? null,
     contactNumber: body.contact_number ?? null,
     operatingHours: body.operating_hours ?? null,
+    branchType: body.branch_type ?? null,
+    status: body.status ?? null,
+    sourceUrl: body.source_url ?? null,
+    sourceAsOf: body.source_as_of ?? null,
+    lastVerifiedAt: nullableToDbUnixSeconds(body.last_verified_at),
     address: body.address,
   })
 
@@ -327,13 +365,16 @@ function renameBranchFields(
   const map: Record<string, string> = {
     transit_number: 'transitNumber',
     routing_number: 'routingNumber',
+    raw_address: 'rawAddress',
     contact_number: 'contactNumber',
     operating_hours: 'operatingHours',
+    branch_type: 'branchType',
+    source_url: 'sourceUrl',
+    source_as_of: 'sourceAsOf',
+    last_verified_at: 'lastVerifiedAt',
   }
 
-  return Object.fromEntries(
-    Object.entries(data).map(([key, value]) => [map[key] ?? key, value])
-  )
+  return toDbTimestamp(renameKeys(data, map))
 }
 
 export async function deleteBankBranch(
@@ -520,10 +561,20 @@ export async function createCreditUnion(
   body: CreditUnionCreate
 ): Promise<CreditUnion> {
   const row = await repository.createCreditUnion({
+    code: body.code ?? null,
     name: body.name,
     shortName: body.short_name ?? null,
     logoUrl: body.logo_url ?? null,
     headquarters: body.headquarters ?? null,
+    website: body.website ?? null,
+    generalPhone: body.general_phone ?? null,
+    supportPhone: body.support_phone ?? null,
+    supportEmail: body.support_email ?? null,
+    complaintsEmail: body.complaints_email ?? null,
+    contactUrl: body.contact_url ?? null,
+    sourceUrl: body.source_url ?? null,
+    sourceAsOf: body.source_as_of ?? null,
+    lastVerifiedAt: nullableToDbUnixSeconds(body.last_verified_at),
   })
 
   return serializeCreditUnion(row)
@@ -539,10 +590,16 @@ export async function updateCreditUnion(
   const map: Record<string, string> = {
     short_name: 'shortName',
     logo_url: 'logoUrl',
+    general_phone: 'generalPhone',
+    support_phone: 'supportPhone',
+    support_email: 'supportEmail',
+    complaints_email: 'complaintsEmail',
+    contact_url: 'contactUrl',
+    source_url: 'sourceUrl',
+    source_as_of: 'sourceAsOf',
+    last_verified_at: 'lastVerifiedAt',
   }
-  const renamed = Object.fromEntries(
-    Object.entries(data).map(([key, value]) => [map[key] ?? key, value])
-  )
+  const renamed = toDbTimestamp(renameKeys(data, map))
 
   const row = await repository.updateCreditUnion(creditUnionId, renamed)
   if (!row)
@@ -633,10 +690,18 @@ export async function createCreditUnionBranch(
     )
 
   const row = await repository.createCreditUnionBranch(creditUnionId, {
+    code: body.code ?? null,
     name: body.name,
     contactNumber: body.contact_number ?? null,
     email: body.email ?? null,
-    address: body.address,
+    operatingHours: body.operating_hours ?? null,
+    branchType: body.branch_type ?? null,
+    status: body.status ?? null,
+    sourceUrl: body.source_url ?? null,
+    sourceAsOf: body.source_as_of ?? null,
+    lastVerifiedAt: nullableToDbUnixSeconds(body.last_verified_at),
+    rawAddress: body.raw_address ?? null,
+    address: body.address ?? null,
   })
 
   return serializeCreditUnionBranch(row)
@@ -650,15 +715,21 @@ export async function updateCreditUnionBranch(
   if (Object.keys(data).length === 0 && body.address == null)
     throw noFieldsToUpdate()
 
-  const map: Record<string, string> = { contact_number: 'contactNumber' }
-  const renamed = Object.fromEntries(
-    Object.entries(data).map(([key, value]) => [map[key] ?? key, value])
-  )
+  const map: Record<string, string> = {
+    contact_number: 'contactNumber',
+    raw_address: 'rawAddress',
+    operating_hours: 'operatingHours',
+    branch_type: 'branchType',
+    source_url: 'sourceUrl',
+    source_as_of: 'sourceAsOf',
+    last_verified_at: 'lastVerifiedAt',
+  }
+  const renamed = toDbTimestamp(renameKeys(data, map))
 
   const row = await repository.updateCreditUnionBranch(
     branchId,
     renamed,
-    body.address
+    body.address ?? null
   )
   if (!row)
     throw notFound(

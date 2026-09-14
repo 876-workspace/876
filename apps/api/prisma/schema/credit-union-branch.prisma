@@ -3,17 +3,28 @@
 
 model CreditUnionBranch {
   id               String           @id @db.VarChar
+  /** Stable lowercase slug; the seed's idempotent upsert key. */
+  code             String?          @unique @db.VarChar
   creditUnionId    String           @map("credit_union_id") @db.VarChar
   name             String           @db.VarChar
-  addressId        String           @map("address_id") @db.VarChar
+  rawAddress       String?          @map("raw_address") @db.VarChar
+  addressId        String?          @map("address_id") @db.VarChar
   contactNumber    String?          @map("contact_number") @db.VarChar
   email            String?          @db.VarChar
+  operatingHours   String?          @map("operating_hours") @db.VarChar
+  /** Controlled value from src/platform/financial-directory-vocabulary.ts. */
+  branchType       String?          @map("branch_type") @db.VarChar
+  /** Null means "not verified yet", never "assumed active". */
+  status           String?          @db.VarChar
+  sourceUrl        String?          @map("source_url") @db.VarChar
+  sourceAsOf       String?          @map("source_as_of") @db.VarChar(10)
+  lastVerifiedAt   BigInt?          @map("last_verified_at")
   deletedAt        BigInt?          @map("deleted_at")
   deletedBy        String?          @map("deleted_by") @db.VarChar
   deletionReason   String?          @map("deletion_reason")
   createdAt        BigInt           @map("created_at")
   updatedAt        BigInt           @map("updated_at")
-  directoryAddress DirectoryAddress @relation(fields: [addressId], references: [id], onUpdate: NoAction)
+  directoryAddress DirectoryAddress? @relation(fields: [addressId], references: [id], onUpdate: NoAction)
   creditUnion      CreditUnion      @relation(fields: [creditUnionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([addressId], map: "ix_credit_union_branches_address_id")

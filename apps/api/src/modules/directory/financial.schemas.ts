@@ -10,6 +10,12 @@
 import { z } from 'zod'
 
 import {
+  BANK_BRANCH_TYPES,
+  CREDIT_UNION_BRANCH_TYPES,
+  LOCATION_STATUSES,
+} from '@/platform/financial-directory-vocabulary'
+
+import {
   directoryAddressCreateSchema,
   directoryAddressSchema,
   directoryAddressUpdateSchema,
@@ -54,6 +60,15 @@ export const bankBranchBatchQuerySchema = listDirectoryQuerySchema.extend({
 
 export type BankBranchBatchQuery = z.infer<typeof bankBranchBatchQuerySchema>
 
+/**
+ * Public contact and provenance values captured from an official source.
+ * `source_as_of` is the source's own `YYYY-MM-DD` publication date;
+ * `last_verified_at` is the Unix second a human verified the record.
+ */
+const isoDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'must be YYYY-MM-DD')
+
 export const bankSchema = z
   .object({
     object: z.literal('bank'),
@@ -68,6 +83,14 @@ export const bankSchema = z
     logo_url: z.string().nullable(),
     head_office: z.string().nullable(),
     website: z.string().nullable(),
+    general_phone: z.string().nullable(),
+    support_phone: z.string().nullable(),
+    support_email: z.string().nullable(),
+    complaints_email: z.string().nullable(),
+    contact_url: z.string().nullable(),
+    source_url: z.string().nullable(),
+    source_as_of: z.string().nullable(),
+    last_verified_at: z.number().int().nullable(),
     created_at: z.number().int(),
     updated_at: z.number().int(),
   })
@@ -89,6 +112,14 @@ export const bankCreateSchema = z.strictObject({
   logo_url: z.string().trim().min(1).nullish(),
   head_office: z.string().trim().min(1).nullish(),
   website: z.string().trim().min(1).nullish(),
+  general_phone: z.string().trim().min(1).nullish(),
+  support_phone: z.string().trim().min(1).nullish(),
+  support_email: z.string().trim().min(1).nullish(),
+  complaints_email: z.string().trim().min(1).nullish(),
+  contact_url: z.string().trim().min(1).nullish(),
+  source_url: z.string().trim().min(1).nullish(),
+  source_as_of: isoDateSchema.nullish(),
+  last_verified_at: z.number().int().nonnegative().nullish(),
 })
 
 export type BankCreate = z.infer<typeof bankCreateSchema>
@@ -104,6 +135,14 @@ export const bankUpdateSchema = z.strictObject({
   logo_url: z.string().trim().min(1).nullable().optional(),
   head_office: z.string().trim().min(1).nullable().optional(),
   website: z.string().trim().min(1).nullable().optional(),
+  general_phone: z.string().trim().min(1).nullable().optional(),
+  support_phone: z.string().trim().min(1).nullable().optional(),
+  support_email: z.string().trim().min(1).nullable().optional(),
+  complaints_email: z.string().trim().min(1).nullable().optional(),
+  contact_url: z.string().trim().min(1).nullable().optional(),
+  source_url: z.string().trim().min(1).nullable().optional(),
+  source_as_of: isoDateSchema.nullable().optional(),
+  last_verified_at: z.number().int().nonnegative().nullable().optional(),
 })
 
 export type BankUpdate = z.infer<typeof bankUpdateSchema>
@@ -116,9 +155,15 @@ export const bankBranchSchema = z
     name: z.string(),
     transit_number: z.string(),
     routing_number: z.string().nullable(),
+    raw_address: z.string().nullable(),
     address_id: z.string().nullable(),
     contact_number: z.string().nullable(),
     operating_hours: z.string().nullable(),
+    branch_type: z.enum(BANK_BRANCH_TYPES).nullable(),
+    status: z.enum(LOCATION_STATUSES).nullable(),
+    source_url: z.string().nullable(),
+    source_as_of: z.string().nullable(),
+    last_verified_at: z.number().int().nullable(),
     address: directoryAddressSchema.nullable(),
     created_at: z.number().int(),
     updated_at: z.number().int(),
@@ -135,8 +180,14 @@ export const bankBranchCreateSchema = z.strictObject({
   name: z.string().min(1),
   transit_number: z.string().min(1),
   routing_number: z.string().nullish(),
+  raw_address: z.string().nullish(),
   contact_number: z.string().nullish(),
   operating_hours: z.string().nullish(),
+  branch_type: z.enum(BANK_BRANCH_TYPES).nullish(),
+  status: z.enum(LOCATION_STATUSES).nullish(),
+  source_url: z.string().trim().min(1).nullish(),
+  source_as_of: isoDateSchema.nullish(),
+  last_verified_at: z.number().int().nonnegative().nullish(),
   address: directoryAddressCreateSchema,
 })
 
@@ -146,8 +197,14 @@ export const bankBranchUpdateSchema = z.strictObject({
   name: z.string().nullish(),
   transit_number: z.string().nullish(),
   routing_number: z.string().nullish(),
+  raw_address: z.string().nullish(),
   contact_number: z.string().nullish(),
   operating_hours: z.string().nullish(),
+  branch_type: z.enum(BANK_BRANCH_TYPES).nullish(),
+  status: z.enum(LOCATION_STATUSES).nullish(),
+  source_url: z.string().trim().min(1).nullish(),
+  source_as_of: isoDateSchema.nullish(),
+  last_verified_at: z.number().int().nonnegative().nullish(),
   address: directoryAddressUpdateSchema.nullish(),
 })
 
@@ -199,10 +256,20 @@ export const creditUnionSchema = z
   .object({
     object: z.literal('credit_union'),
     id: z.string(),
+    code: z.string().nullable(),
     name: z.string(),
     short_name: z.string().nullable(),
     logo_url: z.string().nullable(),
     headquarters: z.string().nullable(),
+    website: z.string().nullable(),
+    general_phone: z.string().nullable(),
+    support_phone: z.string().nullable(),
+    support_email: z.string().nullable(),
+    complaints_email: z.string().nullable(),
+    contact_url: z.string().nullable(),
+    source_url: z.string().nullable(),
+    source_as_of: z.string().nullable(),
+    last_verified_at: z.number().int().nullable(),
     created_at: z.number().int(),
     updated_at: z.number().int(),
   })
@@ -211,19 +278,48 @@ export const creditUnionSchema = z
 export type CreditUnion = z.infer<typeof creditUnionSchema>
 
 export const creditUnionCreateSchema = z.strictObject({
+  code: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9][a-z0-9-]*$/, 'must be a lowercase slug')
+    .nullish(),
   name: z.string().min(1),
   short_name: z.string().nullish(),
   logo_url: z.string().nullish(),
   headquarters: z.string().nullish(),
+  website: z.string().trim().min(1).nullish(),
+  general_phone: z.string().trim().min(1).nullish(),
+  support_phone: z.string().trim().min(1).nullish(),
+  support_email: z.string().trim().min(1).nullish(),
+  complaints_email: z.string().trim().min(1).nullish(),
+  contact_url: z.string().trim().min(1).nullish(),
+  source_url: z.string().trim().min(1).nullish(),
+  source_as_of: isoDateSchema.nullish(),
+  last_verified_at: z.number().int().nonnegative().nullish(),
 })
 
 export type CreditUnionCreate = z.infer<typeof creditUnionCreateSchema>
 
 export const creditUnionUpdateSchema = z.strictObject({
+  code: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9][a-z0-9-]*$/, 'must be a lowercase slug')
+    .nullable()
+    .optional(),
   name: z.string().nullish(),
   short_name: z.string().nullish(),
   logo_url: z.string().nullish(),
   headquarters: z.string().nullish(),
+  website: z.string().trim().min(1).nullable().optional(),
+  general_phone: z.string().trim().min(1).nullable().optional(),
+  support_phone: z.string().trim().min(1).nullable().optional(),
+  support_email: z.string().trim().min(1).nullable().optional(),
+  complaints_email: z.string().trim().min(1).nullable().optional(),
+  contact_url: z.string().trim().min(1).nullable().optional(),
+  source_url: z.string().trim().min(1).nullable().optional(),
+  source_as_of: isoDateSchema.nullable().optional(),
+  last_verified_at: z.number().int().nonnegative().nullable().optional(),
 })
 
 export type CreditUnionUpdate = z.infer<typeof creditUnionUpdateSchema>
@@ -232,12 +328,20 @@ export const creditUnionBranchSchema = z
   .object({
     object: z.literal('credit_union_branch'),
     id: z.string(),
+    code: z.string().nullable(),
     credit_union_id: z.string(),
     name: z.string(),
-    address_id: z.string(),
+    raw_address: z.string().nullable(),
+    address_id: z.string().nullable(),
     contact_number: z.string().nullable(),
     email: z.string().nullable(),
-    address: directoryAddressSchema,
+    operating_hours: z.string().nullable(),
+    branch_type: z.enum(CREDIT_UNION_BRANCH_TYPES).nullable(),
+    status: z.enum(LOCATION_STATUSES).nullable(),
+    source_url: z.string().nullable(),
+    source_as_of: z.string().nullable(),
+    last_verified_at: z.number().int().nullable(),
+    address: directoryAddressSchema.nullable(),
     created_at: z.number().int(),
     updated_at: z.number().int(),
   })
@@ -249,10 +353,22 @@ export const creditUnionBranchSchema = z
 export type CreditUnionBranch = z.infer<typeof creditUnionBranchSchema>
 
 export const creditUnionBranchCreateSchema = z.strictObject({
+  code: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9][a-z0-9-]*$/, 'must be a lowercase slug')
+    .nullish(),
   name: z.string().min(1),
+  raw_address: z.string().nullish(),
   contact_number: z.string().nullish(),
   email: z.string().nullish(),
-  address: directoryAddressCreateSchema,
+  operating_hours: z.string().nullish(),
+  branch_type: z.enum(CREDIT_UNION_BRANCH_TYPES).nullish(),
+  status: z.enum(LOCATION_STATUSES).nullish(),
+  source_url: z.string().trim().min(1).nullish(),
+  source_as_of: isoDateSchema.nullish(),
+  last_verified_at: z.number().int().nonnegative().nullish(),
+  address: directoryAddressCreateSchema.nullish(),
 })
 
 export type CreditUnionBranchCreate = z.infer<
@@ -260,9 +376,22 @@ export type CreditUnionBranchCreate = z.infer<
 >
 
 export const creditUnionBranchUpdateSchema = z.strictObject({
+  code: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9][a-z0-9-]*$/, 'must be a lowercase slug')
+    .nullable()
+    .optional(),
   name: z.string().nullish(),
+  raw_address: z.string().nullish(),
   contact_number: z.string().nullish(),
   email: z.string().nullish(),
+  operating_hours: z.string().nullish(),
+  branch_type: z.enum(CREDIT_UNION_BRANCH_TYPES).nullish(),
+  status: z.enum(LOCATION_STATUSES).nullish(),
+  source_url: z.string().trim().min(1).nullish(),
+  source_as_of: isoDateSchema.nullish(),
+  last_verified_at: z.number().int().nonnegative().nullish(),
   address: directoryAddressUpdateSchema.nullish(),
 })
 

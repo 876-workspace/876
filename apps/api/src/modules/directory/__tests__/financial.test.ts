@@ -107,6 +107,14 @@ function bankRow(overrides: Record<string, unknown> = {}) {
     logoUrl: null,
     headOffice: '1-7 Knutsford Boulevard, Kingston 5',
     website: 'https://www.jncb.com',
+    generalPhone: null,
+    supportPhone: null,
+    supportEmail: null,
+    complaintsEmail: null,
+    contactUrl: null,
+    sourceUrl: null,
+    sourceAsOf: null,
+    lastVerifiedAt: null,
     createdAt: BigInt(NOW),
     updatedAt: BigInt(NOW),
     ...overrides,
@@ -126,6 +134,14 @@ const SERIALIZED_BANK = {
   logo_url: null,
   head_office: '1-7 Knutsford Boulevard, Kingston 5',
   website: 'https://www.jncb.com',
+  general_phone: null,
+  support_phone: null,
+  support_email: null,
+  complaints_email: null,
+  contact_url: null,
+  source_url: null,
+  source_as_of: null,
+  last_verified_at: null,
   created_at: NOW,
   updated_at: NOW,
 }
@@ -172,6 +188,11 @@ function branchRow(overrides: Record<string, unknown> = {}) {
     addressId: 'diraddr_11',
     contactNumber: '+18769351000',
     operatingHours: 'Mon-Fri 09:00-15:00',
+    branchType: null,
+    status: null,
+    sourceUrl: null,
+    sourceAsOf: null,
+    lastVerifiedAt: null,
     createdAt: BigInt(NOW),
     updatedAt: BigInt(NOW),
     directoryAddress: addressRow(),
@@ -189,6 +210,11 @@ const SERIALIZED_BRANCH = {
   address_id: 'diraddr_11',
   contact_number: '+18769351000',
   operating_hours: 'Mon-Fri 09:00-15:00',
+  branch_type: null,
+  status: null,
+  source_url: null,
+  source_as_of: null,
+  last_verified_at: null,
   address: SERIALIZED_ADDRESS,
   created_at: NOW,
   updated_at: NOW,
@@ -284,7 +310,9 @@ describe('GET /directory/banks', () => {
   })
 
   it('filters banks by country when country_code is supplied', async () => {
-    await request(createApp()).get('/directory/banks?country_code=JM').set(KEY_ONLY)
+    await request(createApp())
+      .get('/directory/banks?country_code=JM')
+      .set(KEY_ONLY)
 
     expect(bank.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -414,7 +442,8 @@ describe('POST /directory/banks', () => {
       data: null,
       error: {
         code: 'bank/duplicate-code',
-        message: 'A bank with this code already exists in the selected country.',
+        message:
+          'A bank with this code already exists in the selected country.',
       },
     })
     expect(bank.create).not.toHaveBeenCalled()
