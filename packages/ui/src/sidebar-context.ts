@@ -2,6 +2,7 @@ import type { NavEntry, NavGroupDefinition } from '@876/core/access'
 
 export type SidebarContextKind =
   | 'root'
+  | 'platform'
   | 'section'
   | 'product'
   | 'workspace'
@@ -22,11 +23,12 @@ export type SidebarContext = {
 }
 
 export type SidebarContextDefinition = Omit<SidebarContext, 'kind'> & {
-  kind: Exclude<SidebarContextKind, 'root'>
+  kind: Exclude<SidebarContextKind, 'root' | 'platform'>
 }
 
 export type SidebarContextOptions = {
   rootKey?: string
+  rootKind?: Extract<SidebarContextKind, 'root' | 'platform'>
   rootBackLabel?: string
   /**
    * Only these navigation entries promote their `children` into a full sidebar
@@ -53,7 +55,7 @@ function rootContext(
 ): SidebarContext {
   return {
     key: options.rootKey ?? DEFAULT_ROOT_KEY,
-    kind: 'root',
+    kind: options.rootKind ?? 'root',
     backLabel: options.rootBackLabel ?? 'Home',
     title: '',
     href: '/',
@@ -109,8 +111,12 @@ export function sidebarContexts(
   ]
 }
 
+function isRootContext(context: SidebarContext): boolean {
+  return context.kind === 'root' || context.kind === 'platform'
+}
+
 function contextClaims(context: SidebarContext, pathname: string): boolean {
-  if (context.kind === 'root') return false
+  if (isRootContext(context)) return false
   if (isActiveSidebarPath(pathname, context.href)) return true
 
   return contextEntries(context).some((entry) =>
@@ -156,7 +162,7 @@ export function entryOpensContext(
   contexts: readonly SidebarContext[]
 ): boolean {
   return contexts.some(
-    (context) => context.kind !== 'root' && context.href === entry.href
+    (context) => !isRootContext(context) && context.href === entry.href
   )
 }
 
