@@ -21,6 +21,7 @@ export function PaymentModeSettings({
       onCreate={client.paymentModes.create}
       onUpdate={client.paymentModes.update}
       onDelete={client.paymentModes.delete}
+      onUploadImage={client.paymentModes.uploadImage}
       onSuccess={() => router.refresh()}
     />
   )

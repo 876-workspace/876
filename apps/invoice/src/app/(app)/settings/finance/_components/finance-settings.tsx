@@ -57,6 +57,7 @@ export function PaymentModesPanel({
       onCreate={client.paymentModes.create}
       onUpdate={client.paymentModes.update}
       onDelete={client.paymentModes.delete}
+      onUploadImage={client.paymentModes.uploadImage}
       onSuccess={refresh}
     />
   )

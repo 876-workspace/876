@@ -85,6 +85,8 @@ describe('PaymentModesPanel', () => {
             isDefault: false,
             isActive: true,
             isSystem: false,
+            imageFileId: null,
+            imageUrl: null,
             createdAt: 1000,
             updatedAt: 1000,
           },
