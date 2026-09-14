@@ -75,12 +75,12 @@ describe('one-time provisioning import specification', () => {
       expect(draft.manifest_version).toBe(1)
       expect(draft.reconciliation).toBe('create_missing')
       expect(draft.preserve_tenant_overrides).toBe(true)
-      expect(draft.resources.some((row) => row.resource_type === 'workspace')).toBe(
-        true
-      )
-      expect(draft.resources.some((row) => row.resource_type === 'currency')).toBe(
-        true
-      )
+      expect(
+        draft.resources.some((row) => row.resource_type === 'workspace')
+      ).toBe(true)
+      expect(
+        draft.resources.some((row) => row.resource_type === 'currency')
+      ).toBe(true)
       expect(policy.conditions).toHaveLength(setup.country_codes.length)
       expect(
         policy.entitlements.some(
@@ -121,11 +121,71 @@ describe('one-time provisioning import specification', () => {
     expect(invoiceManifest?.finance_dependency).toBe('embedded')
   })
 
+  it('declares Couriers as an embedded-finance consumer', async () => {
+    const spec = await loadSpec()
+    const couriersManifest = spec.application_manifests.find(
+      (entry) => entry.app_slug === '876-couriers'
+    )
+
+    expect(couriersManifest?.finance_dependency).toBe('embedded')
+  })
+
+  it('grants Couriers every required shared catalog read and write scope', async () => {
+    const spec = await loadSpec()
+    const couriersManifest = spec.application_manifests.find(
+      (entry) => entry.app_slug === '876-couriers'
+    )
+
+    expect(couriersManifest?.finance_scopes).toEqual([
+      'billing.customers.read',
+      'billing.customers.write',
+      'billing.items.read',
+      'billing.items.write',
+      'billing.invoices.read',
+      'billing.invoices.write',
+      'billing.payments.read',
+      'billing.payments.write',
+      'billing.taxes.read',
+      'billing.taxes.write',
+      'billing.currencies.read',
+      'billing.currencies.write',
+    ])
+  })
+
+  it('carries the Couriers finance scopes into its application import draft', async () => {
+    const spec = await loadSpec()
+    const couriersManifest = spec.application_manifests.find(
+      (entry) => entry.app_slug === '876-couriers'
+    )
+    if (!couriersManifest) throw new Error('Couriers manifest is required.')
+
+    expect(
+      buildApplicationImportDraft(couriersManifest).finance_scopes
+    ).toEqual(couriersManifest.finance_scopes)
+  })
+
+  it('keeps the Couriers currency scope distinct from its tax scope', async () => {
+    const spec = await loadSpec()
+    const couriersManifest = spec.application_manifests.find(
+      (entry) => entry.app_slug === '876-couriers'
+    )
+
+    expect(couriersManifest?.finance_scopes).toEqual(
+      expect.arrayContaining([
+        'billing.taxes.read',
+        'billing.taxes.write',
+        'billing.currencies.read',
+        'billing.currencies.write',
+      ])
+    )
+  })
+
   it('includes Work as an independently configurable service entitlement', async () => {
     const spec = await loadSpec()
     expect(
       spec.default_entitlements.find(
-        (entry) => entry.target_type === 'service' && entry.target_key === 'work'
+        (entry) =>
+          entry.target_type === 'service' && entry.target_key === 'work'
       )
     ).toEqual({ target_type: 'service', target_key: 'work', enabled: true })
   })
@@ -139,8 +199,14 @@ describe('one-time provisioning import specification', () => {
     expect(capabilities).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ target_key: 'work.tasks', enabled: true }),
-        expect.objectContaining({ target_key: 'work.reminders', enabled: true }),
-        expect.objectContaining({ target_key: 'work.calendars', enabled: true }),
+        expect.objectContaining({
+          target_key: 'work.reminders',
+          enabled: true,
+        }),
+        expect.objectContaining({
+          target_key: 'work.calendars',
+          enabled: true,
+        }),
         expect.objectContaining({ target_key: 'work.events', enabled: true }),
         expect.objectContaining({ target_key: 'work.alerts', enabled: true }),
         expect.objectContaining({ target_key: 'work.my-work', enabled: true }),
@@ -152,7 +218,9 @@ describe('one-time provisioning import specification', () => {
 
   it('rejects unknown entitlement and Work capability targets during dry-run schema validation', async () => {
     const raw = await loadRawSpec()
-    const entitlements = raw.default_entitlements as Array<Record<string, unknown>>
+    const entitlements = raw.default_entitlements as Array<
+      Record<string, unknown>
+    >
     entitlements.push({
       target_type: 'service_capability',
       target_key: 'work.unknown',
