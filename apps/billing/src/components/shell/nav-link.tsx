@@ -20,25 +20,30 @@ export function NavLink({
   title,
   icon: Icon,
   colorClassName,
+  active,
+  onClick,
 }: {
   href: string
   title: string
   icon: IconComponent
   colorClassName?: string
+  active?: boolean
+  onClick?: () => void
 }) {
   const pathname = usePathname()
   const { isMobile, state } = useSidebar()
-  const active = isActivePath(pathname, href)
+  const isActive = active ?? isActivePath(pathname, href)
 
   const link = (
     <Link
       href={href}
-      aria-current={active ? 'page' : undefined}
+      aria-current={isActive ? 'page' : undefined}
+      onClick={onClick}
       className={cn(
         NavLinkBase,
         'min-h-[2.25rem] px-3 py-1.5 text-[0.8125rem] leading-5 font-normal',
         'group-data-[collapsible=icon]:size-9 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0',
-        active ? NavLinkActive : NavLinkRest
+        isActive ? NavLinkActive : NavLinkRest
       )}
     >
       <Icon
