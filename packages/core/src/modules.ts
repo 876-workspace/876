@@ -33,6 +33,21 @@ export function defineAppModuleRegistry<
 }
 
 /**
+ * Cross-domain module identity shared by more than one product plane.
+ *
+ * These definitions name capabilities without moving their business ownership.
+ * Requests remains CRM-owned even when Billing and Invoice project it as a
+ * commercial application module.
+ */
+export const SHARED_APP_MODULES = {
+  requests: {
+    key: 'requests',
+    label: 'Requests',
+    description: 'Track and manage customer requests.',
+  },
+} as const satisfies Record<string, AppModuleDefinition>
+
+/**
  * Finance module identity shared by two or more real architectural planes.
  *
  * Settings-only definitions remain at their product owner until another real
@@ -128,6 +143,7 @@ export const INVOICE_MODULE_REGISTRY = defineAppModuleRegistry({
     FINANCE_MODULES.salesReceipts,
     FINANCE_MODULES.timeTracking,
     FINANCE_MODULES.customers,
+    SHARED_APP_MODULES.requests,
   ],
 })
 
@@ -155,6 +171,9 @@ export const BILLING_MODULE_REGISTRY = defineAppModuleRegistry({
  * Billing identities such as `invoices`, `quotes`, `payments`, `customers`, and
  * `sales-orders` must not appear as selectable Billing plan grants until runtime
  * entitlement enforcement is wired to those exact keys.
+ *
+ * Requests is deliberately present in both projections because this work wires
+ * its exact app-scoped feature gate in both finance hosts.
  */
 export const INVOICE_COMMERCIAL_MODULE_KEYS = [
   'invoices',
@@ -165,6 +184,7 @@ export const INVOICE_COMMERCIAL_MODULE_KEYS = [
   'sales-receipts',
   'time-tracking',
   'customers',
+  'requests',
 ] as const
 
 export const BILLING_COMMERCIAL_MODULE_KEYS = [
@@ -172,6 +192,7 @@ export const BILLING_COMMERCIAL_MODULE_KEYS = [
   'purchases',
   'banking',
   'payroll',
+  'requests',
 ] as const
 
 export const APP_MODULE_REGISTRIES = {
