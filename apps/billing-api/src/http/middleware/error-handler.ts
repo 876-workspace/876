@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import { ZodError } from 'zod'
 
-import { AppHttpError, isAppHttpError } from '@/http/errors'
+import { appError, errors, isAppHttpError } from '@/http/errors'
 import { getLogger } from '@/platform/logger'
 
 const log = getLogger('http.error')
@@ -31,31 +31,32 @@ export function errorHandler(
       msg: message,
       type: code,
     }))
-    res.status(422).json({
-      error: {
-        code: 'validation/invalid-request',
-        message: 'The request body or parameters failed validation.',
-        details,
-      },
-    })
+    const validationError = errors.validation(
+      'The request body or parameters failed validation.',
+      details
+    )
+    res
+      .status(validationError.httpStatus)
+      .json({ error: validationError.toClientError() })
     return
   }
   if (error instanceof SyntaxError && 'body' in error) {
-    res.status(422).json({
-      error: {
-        code: 'validation/invalid-request',
-        message: 'The request body or parameters failed validation.',
-      },
-    })
+    const validationError = errors.validation(
+      'The request body or parameters failed validation.'
+    )
+    res
+      .status(validationError.httpStatus)
+      .json({ error: validationError.toClientError() })
     return
   }
   log.error(
     { err: error, path: req.path, method: req.method },
     'request_unhandled_error'
   )
-  res.status(500).json({
-    error: { code: 'error/http', message: 'Internal Server Error' },
-  })
+  const internalError = appError('error/unknown')
+  res
+    .status(internalError.httpStatus)
+    .json({ error: internalError.toClientError() })
 }
 
 export function notFoundHandler(
@@ -63,11 +64,5 @@ export function notFoundHandler(
   _res: Response,
   next: NextFunction
 ): void {
-  next(
-    new AppHttpError({
-      code: 'error/not-found',
-      message: 'Not Found',
-      httpStatus: 404,
-    })
-  )
+  next(appError('error/not-found'))
 }
