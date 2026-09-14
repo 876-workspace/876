@@ -17,7 +17,6 @@ export function CustomerRequestRows({
   errorMessage: string | null
 }) {
   const status = useSearchParams().get('status')
-  const requestHref = (id: string) => `${baseHref}/${encodeURIComponent(id)}`
 
   if (errorMessage || !requests)
     return (
@@ -26,7 +25,7 @@ export function CustomerRequestRows({
           status: 'error',
           message: errorMessage ?? 'Requests are unavailable.',
         }}
-        requestHref={requestHref}
+        requestBaseHref={baseHref}
       />
     )
 
@@ -42,7 +41,7 @@ export function CustomerRequestRows({
           ? { status: 'ready', requests: visible }
           : { status: 'empty' }
       }
-      requestHref={requestHref}
+      requestBaseHref={baseHref}
     />
   )
 }

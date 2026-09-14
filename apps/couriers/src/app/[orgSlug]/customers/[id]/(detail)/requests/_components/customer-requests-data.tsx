@@ -18,8 +18,6 @@ export async function CustomerRequestsData({
     resolveCustomer(orgSlug, id),
   ])
   const baseHref = `/${orgSlug}/customers/${encodeURIComponent(id)}/requests`
-  const requestHref = (requestId: string) =>
-    `${baseHref}/${encodeURIComponent(requestId)}`
 
   if (!context || !customer)
     return (
@@ -28,7 +26,7 @@ export async function CustomerRequestsData({
           status: 'error',
           message: toAppError(getError('auth/forbidden')).message,
         }}
-        requestHref={requestHref}
+        requestBaseHref={baseHref}
       />
     )
 
@@ -43,7 +41,7 @@ export async function CustomerRequestsData({
           status: 'error',
           message: toAppError(getError(result.error.code)).message,
         }}
-        requestHref={requestHref}
+        requestBaseHref={baseHref}
       />
     )
 
@@ -54,7 +52,7 @@ export async function CustomerRequestsData({
           ? { status: 'ready', requests: result.data.data }
           : { status: 'empty' }
       }
-      requestHref={requestHref}
+      requestBaseHref={baseHref}
       newRequestHref={`${baseHref}/new`}
       layout="inline"
     />

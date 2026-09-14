@@ -26,7 +26,7 @@ export async function CustomerRequestsTab({
       state={
         requests.length ? { status: 'ready', requests } : { status: 'empty' }
       }
-      requestHref={(requestId) => `/requests/${requestId}`}
+      requestBaseHref="/requests"
       newRequestHref="/requests/new"
     />
   )

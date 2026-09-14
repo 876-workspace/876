@@ -56,7 +56,7 @@ describe('customer request panels', () => {
     render(
       <CustomerRequestsPanel
         state={{ status: 'loading' }}
-        requestHref={() => '/x'}
+        requestBaseHref="/x"
       />
     )
     expect(document.querySelector('[data-slot="skeleton"]')).toBeInTheDocument()
@@ -65,17 +65,14 @@ describe('customer request panels', () => {
     render(
       <CustomerRequestsPanel
         state={{ status: 'error', message: 'Offline' }}
-        requestHref={() => '/x'}
+        requestBaseHref="/x"
       />
     )
     expect(screen.getByRole('alert')).toHaveTextContent('Offline')
   })
   it('renders the customer empty state', () => {
     render(
-      <CustomerRequestsPanel
-        state={{ status: 'empty' }}
-        requestHref={() => '/x'}
-      />
+      <CustomerRequestsPanel state={{ status: 'empty' }} requestBaseHref="/x" />
     )
     expect(
       screen.getByText('No requests for this customer')
@@ -85,7 +82,7 @@ describe('customer request panels', () => {
     render(
       <CustomerRequestsPanel
         state={{ status: 'ready', requests: [request] }}
-        requestHref={(id) => `/requests/${id}`}
+        requestBaseHref="/requests"
       />
     )
     expect(
@@ -94,11 +91,24 @@ describe('customer request panels', () => {
       })
     ).toHaveAttribute('href', '/requests/req_1')
   })
+  it('builds request links from a serializable base href', () => {
+    // Regression: server hosts passed an href function to this client panel,
+    // which React rejects at the RSC boundary.
+    render(
+      <CustomerRequestsPanel
+        state={{ status: 'ready', requests: [{ ...request, id: 'req 1/2' }] }}
+        requestBaseHref="/efesto/customers/c1/requests"
+      />
+    )
+    expect(
+      screen.getByRole('link', { name: /Open request 42/ })
+    ).toHaveAttribute('href', '/efesto/customers/c1/requests/req%201%2F2')
+  })
   it('renders the customer list inline without the split pane by request', () => {
     render(
       <CustomerRequestsPanel
         state={{ status: 'ready', requests: [request] }}
-        requestHref={(id) => `/customers/c1/requests/${id}`}
+        requestBaseHref="/customers/c1/requests"
         layout="inline"
       />
     )
@@ -114,7 +124,7 @@ describe('customer request panels', () => {
     render(
       <CustomerRequestsPanel
         state={{ status: 'ready', requests: [request] }}
-        requestHref={() => '/requests/req_1'}
+        requestBaseHref="/requests"
       />
     )
 
@@ -124,10 +134,7 @@ describe('customer request panels', () => {
   })
   it('does not render a new request button without a host href', () => {
     render(
-      <CustomerRequestsPanel
-        state={{ status: 'empty' }}
-        requestHref={() => '/x'}
-      />
+      <CustomerRequestsPanel state={{ status: 'empty' }} requestBaseHref="/x" />
     )
     expect(
       screen.queryByRole('link', { name: 'New request' })
@@ -137,7 +144,7 @@ describe('customer request panels', () => {
     render(
       <CustomerRequestsPanel
         state={{ status: 'empty' }}
-        requestHref={() => '/x'}
+        requestBaseHref="/x"
         newRequestHref="/requests/new"
       />
     )
@@ -323,7 +330,7 @@ describe('customer request panels', () => {
     render(
       <CustomerRequestsPanel
         state={{ status: 'ready', requests: [request] }}
-        requestHref={() => '/x'}
+        requestBaseHref="/x"
       />
     )
     expect(document.body.textContent).not.toContain('CRM_SERVICE_KEY')

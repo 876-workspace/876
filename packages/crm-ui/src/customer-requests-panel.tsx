@@ -22,12 +22,14 @@ export type CustomerRequestsPanelState =
 
 export function CustomerRequestsPanel({
   state,
-  requestHref,
+  requestBaseHref,
   newRequestHref,
   layout = 'pane',
 }: {
   state: CustomerRequestsPanelState
-  requestHref: (requestId: string) => string
+  // A string, not an href builder: server hosts render this client panel, and
+  // a function prop cannot cross the RSC boundary.
+  requestBaseHref: string
   newRequestHref?: string
   layout?: 'pane' | 'inline'
 }) {
@@ -54,7 +56,7 @@ export function CustomerRequestsPanel({
       {state.status === 'ready' ? (
         <RequestRows
           requests={state.requests}
-          requestHref={requestHref}
+          requestBaseHref={requestBaseHref}
           layout={layout}
         />
       ) : null}
@@ -64,11 +66,11 @@ export function CustomerRequestsPanel({
 
 function RequestRows({
   requests,
-  requestHref,
+  requestBaseHref,
   layout,
 }: {
   requests: readonly CrmRequest[]
-  requestHref: (requestId: string) => string
+  requestBaseHref: string
   layout: 'pane' | 'inline'
 }) {
   if (layout === 'inline')
@@ -82,7 +84,7 @@ function RequestRows({
           requests.map((request) => (
             <li key={request.id} className="p-3">
               <Link
-                href={requestHref(request.id)}
+                href={`${requestBaseHref}/${encodeURIComponent(request.id)}`}
                 aria-label={`Open request ${request.number}: ${request.subject}`}
                 className="flex items-center justify-between gap-3"
               >
@@ -109,7 +111,7 @@ function RequestRows({
           requests.map((request) => (
             <ListPaneItem
               key={request.id}
-              href={requestHref(request.id)}
+              href={`${requestBaseHref}/${encodeURIComponent(request.id)}`}
               label={`Open request ${request.number}: ${request.subject}`}
               title={`#${request.number} ${request.subject}`}
               subtitle={request.status}
