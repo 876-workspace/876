@@ -1,7 +1,7 @@
 # Implementation Plan: Couriers customers, settings, modules, requests & finance
 
 - Run ID: 2026-09-14-couriers-customers-settings-modules
-- Status: IN_PROGRESS
+- Status: COMPLETED ✅
 - Branch strategy: delegates share the main checkout on disjoint scopes; each phase is split
   into its own branch/PR by path, merged in order, then Vercel prod deploys of touched apps.
 
@@ -74,7 +74,9 @@ See checklist; reports in ./reports.
 - [x] E requests — #564; F finance page — #569; G registry errors — #572 (Codex luna + Command Code test repair); session lists + customer kind — #570; Users/Roles split — #571
 - [x] H1 Couriers finance scopes — #573; applied: 876-couriers default profile revision 2 published (needed #576 app-role validation fix), connection event delivered to Billing
 - [x] H2 payment-mode full resources — #574; H3/H4 currencies + panel controls — #575; H5 items CRUD — #577
-- [ ] H6 payment-mode images (Codex terra high, running)
-- [ ] Deploy: CRM service key rotation (crm-api + invoice, billing, console, crm, couriers), CRM_* env on 876-couriers, redeploy api, billing-api, couriers-api, crm-api, couriers, invoice, billing, console, crm
+- [x] H6 payment-mode images — #579 (orchestrator closed a client-writable image URL gap; migration applied)
+- [x] Deploy (19:07–19:25, main e091585ca): CRM service key rotation (crm-api + invoice, billing, console, crm, couriers), CRM_* env on 876-couriers, redeploy api, billing-api, couriers-api, crm-api, couriers, invoice, billing, console, crm
 - Known gap: tax rates are immutable in Billing's contract (no edit); needs an effective-dated successor capability.
 - Incidents: two OOM crashes (5 parallel delegates; full apps/api vitest beside dev servers); inotify watcher limit raised to 524288 (/etc/sysctl.d/60-inotify-watchers.conf).
+
+- Couriers first prod build failed (server-only @876/crm import in a client component) — fixed in #580, redeployed READY. Prod smoke: couriers-api session bearer 200, couriers /login 200, social redirect_uri = own /callback.
