@@ -133,4 +133,4 @@ AND rollout flag enabled when one exists
 - Do not introduce `eslint-disable` comments or `as any` casts to satisfy a gate.
 - Do not run database migrations against a live database while implementing schema changes; write additive migration SQL for CI/deployment.
 
-See `docs/architecture/012-app-access-profiles.md`, `docs/architecture/016-canonical-application-module-registry.md`, and `docs/architecture/017-module-runtime-access.md` for the complete design and adoption sequence.
+See `docs/architecture/012-app-access-profiles.md`, `docs/architecture/016-canonical-application-module-registry.md`, and `docs/architecture/026-module-runtime-access.md` for the complete design and adoption sequence.

@@ -1,4 +1,4 @@
-# ADR-017: Module-aware application runtime access
+# ADR-026: Module-aware application runtime access
 
 ## Status
 
