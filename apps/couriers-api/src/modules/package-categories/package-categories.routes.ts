@@ -1,4 +1,4 @@
-import { createApiRouter } from '@/http/api-router'
+import { createApiRouter, type GuardResolver } from '@/http/api-router'
 import {
   deletedObjectSchema,
   listObjectSchema,
@@ -24,11 +24,12 @@ import {
   updatePackageCategoryBodySchema,
 } from './package-categories.schemas'
 
-export function createPackageCategoriesRouter() {
+export function createPackageCategoriesRouter(resolveGuards: GuardResolver) {
   return createApiRouter({
     tag: 'Package categories',
     prefix: '/v1/tenants/:tenantId/package-categories',
     security: 'admin',
+    resolveGuards,
   })
     .get({
       path: '',
