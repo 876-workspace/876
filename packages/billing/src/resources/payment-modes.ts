@@ -31,7 +31,7 @@ export function createPaymentModesResource(runtime: Runtime) {
       )
     },
     create(params: PaymentModeCreateParams, options?: RequestOptions) {
-      return Request<PaymentModeCreated>(
+      return Request<PaymentMode>(
         runtime,
         {
           method: 'POST',
@@ -39,7 +39,7 @@ export function createPaymentModesResource(runtime: Runtime) {
           body: params,
           signal: options?.signal,
         },
-        PaymentModeCreatedSchema
+        PaymentModeSchema
       )
     },
     retrieve(modeId: string, options?: RequestOptions) {
@@ -58,7 +58,7 @@ export function createPaymentModesResource(runtime: Runtime) {
       params: PaymentModeUpdateParams,
       options?: RequestOptions
     ) {
-      return Request<PaymentModeCreated>(
+      return Request<PaymentMode>(
         runtime,
         {
           method: 'PATCH',
@@ -66,7 +66,7 @@ export function createPaymentModesResource(runtime: Runtime) {
           body: params,
           signal: options?.signal,
         },
-        PaymentModeCreatedSchema
+        PaymentModeSchema
       )
     },
     delete(modeId: string, options?: RequestOptions) {

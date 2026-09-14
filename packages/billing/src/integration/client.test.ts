@@ -591,6 +591,8 @@ describe('create876BillingIntegrationClient', () => {
       isDefault: true,
       isActive: true,
       isSystem: true,
+      imageFileId: null,
+      imageUrl: null,
       createdAt: 1,
       updatedAt: 1,
     }

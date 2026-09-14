@@ -11,6 +11,15 @@ export type {
   BillingItemMediaUploadOptions,
   BillingItemMediaUploadRequest,
 } from './item-media'
+export {
+  billingPaymentModeImageUploadRequestSchema,
+  orchestrateBillingPaymentModeImageUpload,
+} from './payment-mode-image'
+export type {
+  BillingPaymentModeImageTarget,
+  BillingPaymentModeImageUploadOptions,
+  BillingPaymentModeImageUploadRequest,
+} from './payment-mode-image'
 export type {
   BillingServerClientOptions,
   BillingServerCredentials,

@@ -10,7 +10,11 @@ const startSchema = targetSchema.extend({
   action: z.literal('start'),
   fileName: z.string().trim().min(1).max(1024),
   contentType: z.enum(['image/png', 'image/jpeg', 'image/webp']),
-  sizeBytes: z.number().int().positive().max(5 * 1024 * 1024),
+  sizeBytes: z
+    .number()
+    .int()
+    .positive()
+    .max(5 * 1024 * 1024),
 })
 
 const completeSchema = targetSchema.extend({
@@ -18,10 +22,10 @@ const completeSchema = targetSchema.extend({
   sessionId: z.string().min(1),
 })
 
-export const billingItemMediaUploadRequestSchema = z.discriminatedUnion('action', [
-  startSchema,
-  completeSchema,
-])
+export const billingItemMediaUploadRequestSchema = z.discriminatedUnion(
+  'action',
+  [startSchema, completeSchema]
+)
 
 export type BillingItemMediaUploadRequest = z.infer<
   typeof billingItemMediaUploadRequestSchema
@@ -49,10 +53,7 @@ type OrchestrationResult =
   | { data: unknown; error: null; status: 200 | 201 }
   | { data: null; error: string; status: 400 | 409 | 502 }
 
-function failure(
-  error: string,
-  status: 400 | 409 | 502
-): OrchestrationResult {
+function failure(error: string, status: 400 | 409 | 502): OrchestrationResult {
   return { data: null, error, status }
 }
 
