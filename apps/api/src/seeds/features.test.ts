@@ -49,12 +49,13 @@ describe('feature seed catalog', () => {
     expect(new Set(aliases).size).toBe(aliases.length)
   })
 
-  it('seeds Invoice shell flags plus explicit Work widget gates', () => {
+  it('seeds Invoice shell flags, Requests, and explicit Work widget gates', () => {
     const invoiceSeeds = FEATURE_SEEDS_BY_APP['876-invoice'] ?? []
 
     expect(invoiceSeeds.map((seed) => seed.slug)).toEqual([
       'invoice-widgets',
       'invoice-widgets-work',
+      'invoice-requests',
       'invoice-theme-switcher',
       'invoice-global-add',
       'invoice-app-switcher',
@@ -76,14 +77,32 @@ describe('feature seed catalog', () => {
       tags: ['widget'],
     })
 
+    expect(seedFor('876-invoice', 'invoice-requests')).toEqual({
+      slug: 'invoice-requests',
+      name: 'Requests',
+      description: 'Controls access to customer request management in Invoice.',
+      defaultEnabled: true,
+    })
+
     const shellFlags = invoiceSeeds.filter(
-      (seed) => !seed.slug.startsWith('invoice-widgets')
+      (seed) =>
+        !seed.slug.startsWith('invoice-widgets') &&
+        seed.slug !== 'invoice-requests'
     )
     expect(shellFlags).toHaveLength(5)
     expect(shellFlags.every((seed) => seed.defaultEnabled === true)).toBe(true)
     expect(invoiceSeeds.every((seed) => seed.legacySlugs === undefined)).toBe(
       true
     )
+  })
+
+  it('seeds Billing Requests globally enabled without a legacy alias', () => {
+    expect(seedFor('876-billing', 'billing-requests')).toEqual({
+      slug: 'billing-requests',
+      name: 'Requests',
+      description: 'Controls access to customer request management in Billing.',
+      defaultEnabled: true,
+    })
   })
 
   it('seeds the platform Work child disabled for opt-in rollout', () => {
