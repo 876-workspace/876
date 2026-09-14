@@ -1,5 +1,5 @@
 /// A non-binding sales proposal. Quote acceptance can later create an invoice,
-/// Sales Receipt, or subscription, but this release does not itself collect payment.
+/// Sales Receipt, Sales Order, or subscription, but this release does not itself collect payment.
 model Quote {
   id             String      @id
   tenantId       String      @map("tenant_id")
@@ -31,6 +31,7 @@ model Quote {
   lines                  QuoteLine[]
   convertedInvoice       Invoice?      @relation("QuoteConvertedInvoice")
   convertedSalesReceipt  SalesReceipt? @relation("QuoteConvertedSalesReceipt")
+  convertedSalesOrder    SalesOrder?   @relation("QuoteConvertedSalesOrder")
 
   @@unique([tenantId, number], name: "billing_quotes_tenant_id_number_key", map: "billing_quotes_tenant_id_number_key")
   @@index([tenantId, status], map: "billing_quotes_tenant_id_status_idx")

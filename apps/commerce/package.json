@@ -1,0 +1,40 @@
+{
+  "name": "@876/commerce-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbopack --port 3009",
+    "build": "NEXT_TELEMETRY_DISABLED=1 next build --webpack",
+    "build:next": "NEXT_TELEMETRY_DISABLED=1 next build --webpack",
+    "start": "next start --port ${PORT:-3009}",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf .next .turbo"
+  },
+  "dependencies": {
+    "@876/account": "workspace:*",
+    "@876/core": "workspace:*",
+    "@876/ui": "workspace:*",
+    "@876/workspace": "workspace:*",
+    "@876/commerce": "workspace:*",
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "26.2.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.3.1",
+    "jsdom": "30.0.1",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  },
+  "description": "876 Commerce organization workspace app"
+}

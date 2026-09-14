@@ -25,13 +25,15 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 
 ## Current Architecture
 
-| Workspace           | Path              | Port | Role                                                                                      |
-| ------------------- | ----------------- | ---- | ----------------------------------------------------------------------------------------- |
-| `@876/app`          | `apps/876`        | 3000 | Consumer app — embedded auth; org/account management; PWA.                                |
-| `@876/enterprise`   | `apps/enterprise` | 3001 | Enterprise org workspace — embedded auth (sign-in + business onboarding); org dashboards. |
-| `@876/console`      | `apps/console`    | 3002 | Internal Console — embedded admin sign-in; platform admin console.                        |
-| `@876/couriers-app` | `apps/couriers`   | 3003 | Couriers SaaS app — multitenant courier management platform.                              |
-| `@876/api`          | `apps/api`        | 4000 | Express backend; owns database/provider server calls + OAuth Authorization Server.        |
+| Workspace           | Path                | Port | Role                                                                                      |
+| ------------------- | ------------------- | ---- | ----------------------------------------------------------------------------------------- |
+| `@876/app`          | `apps/876`          | 3000 | Consumer app — embedded auth; org/account management; PWA.                                |
+| `@876/enterprise`   | `apps/enterprise`   | 3001 | Enterprise org workspace — embedded auth (sign-in + business onboarding); org dashboards. |
+| `@876/console`      | `apps/console`      | 3002 | Internal Console — embedded admin sign-in; platform admin console.                        |
+| `@876/couriers-app` | `apps/couriers`     | 3003 | Couriers SaaS app — multitenant courier management platform.                              |
+| `@876/api`          | `apps/api`          | 4000 | Express backend; owns database/provider server calls + OAuth Authorization Server.        |
+| `@876/commerce-app` | `apps/commerce`     | 3009 | Commerce organization workspace — merchant storefront setup surface.                      |
+| `@876/commerce-api` | `apps/commerce-api` | 4040 | Express Commerce service — health and readiness probes until the first model.             |
 
 ### Shared packages
 
@@ -115,6 +117,7 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 - Read `.claude/rules/navigation-performance.md` before adding a `loading.tsx`, adding an `await` to a layout, writing an auth/permission guard, or changing a database client. It records what was measured while fixing Console and Couriers: why a segment fallback must never sit above a route group, why a detail layout awaits `params` and nothing else, why a guard is made cheap rather than non-blocking, and why pooled database clients are scoped to each Worker request.
 - Read `.claude/rules/api-backend.md` before editing `apps/api`, API contracts, OpenAPI docs, repositories, provider integrations, or API client methods.
 - Read `.claude/rules/app-structure.md` before creating or moving **any** component, hook, or module file in a Next.js app (the `_components/` / `components/{shell,providers,patterns}` / `features/<domain>` placement model, the `src/lib/` spine, the no-barrels and no-app-name-prefix rules).
+- Read `.claude/rules/product-lineup.md` before adding a finance, subscription, inventory, storefront, or marketplace product, splitting or renaming a finance app, or deciding which app or service a money/commerce capability belongs to (Invoice / Books / Billing / Inventory / Commerce / Marketplace on one financial plane; one subscription engine; Commerce and Marketplace as separate services). See `docs/architecture/025-finance-and-commerce-product-lineup.md`.
 - Read `.claude/rules/shared-product-ui.md` before building a product screen more than one 876 surface renders, before adding a `@876/<product>-ui` package, and before creating a new product app that reuses existing domain UI (the host/product ownership split, and the shared `transpilePackages` list that keeps every app — including future ones — in sync).
 - Read `.claude/rules/app-layout.md` before scaffolding or editing any page in Console, Enterprise, Couriers, Billing, or a new sidebar-style app (page containers, toolbars, list status filters, list/detail/settings patterns, forms-vs-dialogs, back-links, button labels/colors). These do not apply to `@876/app` (consumer), which has its own layout.
 - Read `.claude/rules/stripe-api-pattern.md` before changing API contracts, SDK contracts, service results, provider errors, or serialized resources.

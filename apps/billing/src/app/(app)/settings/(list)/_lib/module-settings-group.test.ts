@@ -27,6 +27,10 @@ describe('billing module settings navigation', () => {
       { label: 'Reports settings', href: '/settings/modules/reports' },
       { label: 'CRM settings', href: '/settings/modules/crm' },
       {
+        label: 'Sales orders settings',
+        href: '/settings/modules/sales-orders',
+      },
+      {
         label: 'Subscriptions settings',
         href: '/settings/modules/subscriptions',
       },

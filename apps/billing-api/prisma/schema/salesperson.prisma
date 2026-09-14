@@ -15,6 +15,7 @@ model Salesperson {
   invoices          Invoice[]
   recurringInvoices RecurringInvoice[]
   salesReceipts     SalesReceipt[]
+  salesOrders       SalesOrder[]
 
   @@unique([tenantId, id], map: "billing_salespeople_tenant_id_id_key")
   @@unique([tenantId, externalReference], map: "billing_salespeople_tenant_external_reference_key")

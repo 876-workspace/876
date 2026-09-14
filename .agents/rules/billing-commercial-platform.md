@@ -10,7 +10,7 @@ This rule is companion to `billing-data-plane.md`, `platform-services.md`, `expr
 
 Billing remains one modular bounded service (`apps/billing-api`) with internal bounded domains. A future Store, Restaurant, POS, Marketplace, or other product consumes Billing commercial resources instead of creating competing canonical copies.
 
-The generic `commerce/orders` example in `platform-services.md` is superseded for canonical commercial resources: future Orders, Channels, Fulfillment, Purchasing, and advanced Inventory belong inside the Billing commercial plane when they are actually implemented. Product-specific operational domains that are not canonical commercial truth still follow the normal platform-services placement rules.
+The generic `commerce/orders` example in `platform-services.md` is superseded for canonical commercial resources: Sales Orders are implemented in Billing; future Channels, Fulfillment, Purchasing, and advanced Inventory belong inside the Billing commercial plane when they are actually implemented. Product-specific operational domains that are not canonical commercial truth still follow the normal platform-services placement rules.
 
 ## Canonical ownership
 
@@ -37,7 +37,7 @@ Never create `restaurant_products`, `store_products`, or `marketplace_products` 
 
 Current Billing domains include Catalog, Pricing, lightweight Inventory, Billing Engine/calculation, Documents, Customers, Payments, Tax, Ledger and Commercial configuration.
 
-Reserved future boundaries include Orders, Channels, Fulfillment, Purchasing and advanced Inventory.
+Reserved future boundaries include Channels, Fulfillment, Purchasing and advanced Inventory. Sales Orders are a Billing Documents resource; carts and checkout remain deferred.
 
 **A reserved future boundary is documentation only.** Do not create empty folders, tables, routes, SDK namespaces, settings, events or UI for it until a real feature is being implemented.
 

@@ -52,7 +52,7 @@ import { toDocumentCustomerOption } from '@/lib/customers/document-recipient'
 
 type SelectOption = { label: string; value: string }
 type CurrencyOption = SelectOption & { decimalPlaces: number }
-type DocumentKind = 'invoice' | 'quote'
+type DocumentKind = 'invoice' | 'quote' | 'sales-order'
 
 export interface InvoiceDocumentInitial {
   invoiceId: string
@@ -144,7 +144,12 @@ function DocumentCreateMode({
   const [totalsSnapshot, setTotalsSnapshot] =
     useState<DocumentTotalsSnapshot | null>(null)
 
-  const title = kind === 'quote' ? 'Quote' : 'Invoice'
+  const title =
+    kind === 'quote'
+      ? 'Quote'
+      : kind === 'sales-order'
+        ? 'Sales Order'
+        : 'Invoice'
   const decimalPlaces =
     currencies.find((option) => option.value === currency)?.decimalPlaces ?? 2
   const parsedAdjustments =
@@ -326,17 +331,23 @@ function DocumentCreateMode({
       const result =
         kind === 'quote'
           ? await client.quotes.create({ ...common, expiresAt: endAt })
-          : await client.invoices.create({
-              ...common,
-              dueAt: endAt,
-              salespersonId: salespersonId || null,
-              orderNumber: orderNumber.trim() || null,
-              referenceNumber: referenceNumber.trim() || null,
-              subject: subject.trim() || null,
-              discountAmount: parsedAdjustments.discount.toString(),
-              shippingAmount: parsedAdjustments.shipping.toString(),
-              adjustmentAmount: parsedAdjustments.adjustment.toString(),
-            })
+          : kind === 'sales-order'
+            ? await client.salesOrders.create({
+                ...common,
+                salespersonId: salespersonId || null,
+                referenceNumber: referenceNumber.trim() || null,
+              })
+            : await client.invoices.create({
+                ...common,
+                dueAt: endAt,
+                salespersonId: salespersonId || null,
+                orderNumber: orderNumber.trim() || null,
+                referenceNumber: referenceNumber.trim() || null,
+                subject: subject.trim() || null,
+                discountAmount: parsedAdjustments.discount.toString(),
+                shippingAmount: parsedAdjustments.shipping.toString(),
+                adjustmentAmount: parsedAdjustments.adjustment.toString(),
+              })
       if (result.error || !result.data) {
         setError(
           result.error?.message ?? `Failed to create ${title.toLowerCase()}.`

@@ -48,7 +48,8 @@ Console → Apps → _your app_ → API Keys.
 | `@876/couriers-app`   | `apps/couriers`   | 3003 |
 | `@876/billing-app`    | `apps/billing`    | 3004 |
 | `@876/invoice-app`    | `apps/invoice`    | 3006 |
-| _next app_            |                   | 3007 |
+| `@876/commerce-app`   | `apps/commerce`   | 3009 |
+| _next app_            |                   | 3010 |
 
 Set the port in the workspace's `package.json` scripts.
 

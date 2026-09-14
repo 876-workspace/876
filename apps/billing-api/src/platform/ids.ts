@@ -30,6 +30,8 @@ const entityPrefixes: Record<string, string> = {
   InvoiceLine: 'invl',
   SalesReceipt: 'sr',
   SalesReceiptLine: 'srl',
+  SalesOrder: 'so',
+  SalesOrderLine: 'sol',
   Subscription: 'sub',
   SubscriptionItem: 'si',
   SubscriptionEvent: 'sev',

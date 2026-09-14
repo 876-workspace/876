@@ -61,6 +61,8 @@
     "check:service-bundle": "node scripts/check-service-bundle.mjs",
     "dev:projects": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api projects-api && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/projects-api --filter=@876/projects-app",
     "dev:projects:api": "pnpm dev:env && pnpm check:database-env projects-api && pnpm --filter @876/projects-api dev",
+    "dev:commerce": "pnpm dev:env && pnpm check:session-secret && pnpm check:database-env api && pnpm build:sdk && turbo run dev --filter=@876/api --filter=@876/commerce-api --filter=@876/commerce-app",
+    "dev:commerce:api": "pnpm dev:env && pnpm --filter @876/commerce-api dev",
     "dev:docs": "pnpm --filter @876/docs dev"
   },
   "dependencies": {

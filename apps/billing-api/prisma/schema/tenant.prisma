@@ -45,6 +45,7 @@ model Tenant {
   recurringInvoices               RecurringInvoice[]
   recurringInvoiceRuns            RecurringInvoiceRun[]
   salesReceipts                   SalesReceipt[]
+  salesOrders                     SalesOrder[]
   creditNotes                     CreditNote[]
   creditNoteAllocations           CreditNoteAllocation[]
   refunds                         Refund[]

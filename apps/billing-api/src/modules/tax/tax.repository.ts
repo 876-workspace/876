@@ -7,6 +7,16 @@ import type {
   TaxRateUpdateBody,
 } from './tax.schemas'
 
+export function findActiveCommercialTaxRateRows(
+  tenantId: string,
+  ids: readonly string[]
+) {
+  return prisma.taxRate.findMany({
+    where: { tenantId, id: { in: [...ids] }, isActive: true },
+    select: { id: true, name: true, rate: true, inclusive: true },
+  })
+}
+
 export function listTaxAuthorityRows(tenantId: string) {
   return prisma.taxAuthority.findMany({
     where: { tenantId },

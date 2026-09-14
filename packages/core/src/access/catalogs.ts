@@ -223,6 +223,14 @@ export const projectsPermissionCatalog: AppPermissionCatalog =
     ]),
   })
 
+export const commercePermissionCatalog: AppPermissionCatalog =
+  defineAppPermissionCatalog({
+    app: '876-commerce',
+    modules: modules([
+      { key: 'settings', label: 'Settings', actions: ['view', 'edit'] },
+    ]),
+  })
+
 export const billingPermissionCatalog: AppPermissionCatalog =
   defineAppPermissionCatalog({
     app: '876-billing',
@@ -231,6 +239,11 @@ export const billingPermissionCatalog: AppPermissionCatalog =
       crudModule(FINANCE_MODULES.customers),
       crud('catalog', 'Catalog'),
       crud('sales', 'Sales'),
+      {
+        key: FINANCE_MODULES.salesOrders.key,
+        label: FINANCE_MODULES.salesOrders.label,
+        actions: ['view', 'edit'],
+      },
       crudModule(FINANCE_MODULES.subscriptions),
       { key: 'reports', label: 'Reports', actions: ['view'] },
       crud('currencies', 'Currencies'),
@@ -286,4 +299,5 @@ export const appPermissionCatalogs: Record<string, AppPermissionCatalog> = {
   '876-crm': crmPermissionCatalog,
   '876-invoice': invoicePermissionCatalog,
   '876-projects': projectsPermissionCatalog,
+  '876-commerce': commercePermissionCatalog,
 }

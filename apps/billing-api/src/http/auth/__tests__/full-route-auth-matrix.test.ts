@@ -67,8 +67,11 @@ describe('frozen v1 route authentication matrix', () => {
     // shared-directory branches across banks in one call.
     // 370 -> 371: `GET /banking/accounts/{accountId}/account-number`, the
     // write-guarded disclosure of a sealed account number.
-    expect(operations).toHaveLength(371)
-    expect(protectedPublicOperations()).toHaveLength(370)
+    // 371 -> 380: Sales Order list/create/retrieve/update, three lifecycle
+    // commands, quote conversion, and invoice conversion are authenticated
+    // tenant operations.
+    expect(operations).toHaveLength(380)
+    expect(protectedPublicOperations()).toHaveLength(379)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })

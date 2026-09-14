@@ -109,6 +109,12 @@ const SHARED_FINANCE_MODULE_CATALOG = defineModuleCatalog([
 
 const BILLING_ONLY_MODULE_CATALOG = defineModuleCatalog([
   {
+    ...FINANCE_MODULES.salesOrders,
+    optional: true,
+    enabledByDefault: true,
+    preferences: [],
+  },
+  {
     ...FINANCE_MODULES.subscriptions,
     optional: true,
     enabledByDefault: true,

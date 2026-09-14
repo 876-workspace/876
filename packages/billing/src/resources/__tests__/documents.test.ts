@@ -5,7 +5,55 @@ import { create876Client } from '../../client'
 const BASE = 'https://billing.example.test'
 
 const quote = { object: 'quote' as const, id: 'quo_1', status: 'DRAFT' }
-const invoice = { object: 'invoice' as const, id: 'inv_1', status: 'DRAFT' }
+const invoice = {
+  object: 'invoice' as const,
+  id: 'inv_1',
+  number: 'INV-1',
+  status: 'DRAFT' as const,
+  customerId: 'cus_1',
+  currency: 'JMD',
+  billingReason: 'MANUAL',
+  subscriptionId: null,
+  salesOrderId: null,
+  priceListId: null,
+  salespersonId: null,
+  customerName: null,
+  customerEmail: null,
+  billingAddressSnapshot: null,
+  taxBehavior: 'EXCLUSIVE' as const,
+  subject: null,
+  orderNumber: null,
+  referenceNumber: null,
+  paymentTermName: null,
+  salespersonName: null,
+  notes: null,
+  terms: null,
+  issueAt: null,
+  dueAt: null,
+  servicePeriodStart: null,
+  servicePeriodEnd: null,
+  subtotalAmount: '0',
+  taxAmount: '0',
+  discountAmount: '0',
+  shippingAmount: '0',
+  adjustmentAmount: '0',
+  totalAmount: '0',
+  amountDue: '0',
+  amountPaid: '0',
+  amountCredited: '0',
+  customer: {
+    id: 'cus_1',
+    name: 'Ada',
+    companyName: null,
+    email: null,
+    phone: null,
+    addresses: [],
+  },
+  lines: [],
+  lateFeeAssessment: null,
+  paymentAllocations: [],
+  creditNoteAllocations: [],
+}
 const creditNote = {
   object: 'credit_note' as const,
   id: 'cn_1',
@@ -295,20 +343,18 @@ describe('document resources', () => {
   })
 
   it('preserves a quote application error without throwing', async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValue(
-        Response.json(
-          {
-            data: null,
-            error: {
-              code: 'billing/quote-not-found',
-              message: 'Quote not found.',
-            },
+    const fetch = vi.fn().mockResolvedValue(
+      Response.json(
+        {
+          data: null,
+          error: {
+            code: 'billing/quote-not-found',
+            message: 'Quote not found.',
           },
-          { status: 404 }
-        )
+        },
+        { status: 404 }
       )
+    )
     const result = await client(fetch).quotes.retrieve('missing')
 
     expect(result).toEqual({
@@ -322,20 +368,18 @@ describe('document resources', () => {
   })
 
   it('preserves a credit-note application error without throwing', async () => {
-    const fetch = vi
-      .fn()
-      .mockResolvedValue(
-        Response.json(
-          {
-            data: null,
-            error: {
-              code: 'billing/credit-note-invalid-state',
-              message: 'Credit note cannot be voided.',
-            },
+    const fetch = vi.fn().mockResolvedValue(
+      Response.json(
+        {
+          data: null,
+          error: {
+            code: 'billing/credit-note-invalid-state',
+            message: 'Credit note cannot be voided.',
           },
-          { status: 422 }
-        )
+        },
+        { status: 422 }
       )
+    )
     const result = await client(fetch).creditNotes.void('cn_1')
 
     expect(result).toEqual({

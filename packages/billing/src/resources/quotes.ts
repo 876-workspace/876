@@ -7,6 +7,7 @@ import {
   QuoteSchema,
 } from '../schemas'
 import { QuotePreferenceSchema } from '../types/quote-preference.schema'
+import { SalesOrderSchema } from '../types/sales-order.schema'
 import { SalesReceiptSchema } from '../types/sales-receipt.schema'
 import type {
   DeletedQuote,
@@ -22,6 +23,10 @@ import type {
   QuotePreference,
   QuotePreferenceUpdateParams,
 } from '../types/quote-preference'
+import type {
+  SalesOrder,
+  SalesOrderQuoteConversionParams,
+} from '../types/sales-order'
 import type {
   SalesReceipt,
   SalesReceiptQuoteConversionParams,
@@ -159,6 +164,23 @@ export function createQuotesResource(runtime: Runtime) {
           signal: options?.signal,
         },
         InvoiceSchema
+      )
+    },
+
+    convertToSalesOrder(
+      quoteId: string,
+      params: SalesOrderQuoteConversionParams = {},
+      options?: RequestOptions
+    ) {
+      return Request<SalesOrder>(
+        runtime,
+        {
+          method: 'POST',
+          path: lifecyclePath(quoteId, 'convert-to-sales-order'),
+          body: params,
+          signal: options?.signal,
+        },
+        SalesOrderSchema
       )
     },
 

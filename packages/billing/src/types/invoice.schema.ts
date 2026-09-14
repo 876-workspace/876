@@ -112,6 +112,7 @@ export const InvoiceDetailSchema = InvoiceSchema.extend({
   currency: z.string(),
   billingReason: z.string(),
   subscriptionId: z.string().nullable(),
+  salesOrderId: z.string().nullable(),
   priceListId: z.string().nullable(),
   salespersonId: z.string().nullable(),
   customerName: z.string().nullable(),

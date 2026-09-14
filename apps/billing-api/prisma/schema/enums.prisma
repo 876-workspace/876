@@ -142,6 +142,7 @@ enum IntervalUnit {
 enum DocumentType {
   QUOTE
   INVOICE
+  SALES_ORDER
   SALES_RECEIPT
   ESTIMATE
   PAYMENT
@@ -185,6 +186,7 @@ enum SalesReceiptStatus {
 enum InvoiceBillingReason {
   MANUAL
   QUOTE
+  SALES_ORDER
   ESTIMATE
   SUBSCRIPTION_CREATE
   SUBSCRIPTION_CYCLE

@@ -211,6 +211,13 @@ describe('Billing API v1 contract baseline', () => {
     '/invoices/{invoiceId}/make-recurring',
     '/integrations/organizations/{organizationId}/invoices/{invoiceId}/clone',
     '/integrations/organizations/{organizationId}/invoices/{invoiceId}/make-recurring',
+    '/sales-orders',
+    '/sales-orders/{salesOrderId}',
+    '/sales-orders/{salesOrderId}/confirm',
+    '/sales-orders/{salesOrderId}/cancel',
+    '/sales-orders/{salesOrderId}/complete',
+    '/quotes/{quoteId}/convert-to-sales-order',
+    '/sales-orders/{salesOrderId}/convert-to-invoice',
   ]
 
   it('does not document paths absent from the implementation inventory', () => {

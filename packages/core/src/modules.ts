@@ -51,6 +51,12 @@ export const FINANCE_MODULES = {
     description:
       'Prepare customer quotes before converting approved work into invoices.',
   },
+  salesOrders: {
+    key: 'sales-orders',
+    label: 'Sales orders',
+    description:
+      'Manage customer order commitments before invoicing or operational fulfillment.',
+  },
   payments: {
     key: 'payments',
     label: 'Payments',
@@ -129,6 +135,7 @@ export const BILLING_MODULE_REGISTRY = defineAppModuleRegistry({
   app: '876-billing',
   modules: [
     ...INVOICE_MODULE_REGISTRY.modules,
+    FINANCE_MODULES.salesOrders,
     FINANCE_MODULES.subscriptions,
     FINANCE_MODULES.banking,
     FINANCE_MODULES.purchases,
@@ -145,9 +152,9 @@ export const BILLING_MODULE_REGISTRY = defineAppModuleRegistry({
  * Billing is intentionally narrower: only canonical definitions that exactly
  * match its existing effective commercial gates are materialized here. Sales
  * and documents remain explicit legacy aggregates in the plan seed; granular
- * Billing identities such as `invoices`, `quotes`, `payments`, and `customers`
- * must not appear as selectable Billing plan grants until runtime entitlement
- * enforcement is wired to those exact keys.
+ * Billing identities such as `invoices`, `quotes`, `payments`, `customers`, and
+ * `sales-orders` must not appear as selectable Billing plan grants until runtime
+ * entitlement enforcement is wired to those exact keys.
  */
 export const INVOICE_COMMERCIAL_MODULE_KEYS = [
   'invoices',

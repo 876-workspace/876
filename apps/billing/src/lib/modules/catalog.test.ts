@@ -45,6 +45,7 @@ describe('BILLING_MODULE_KEYS', () => {
       'customers',
       'reports',
       'crm',
+      'sales-orders',
       'subscriptions',
       'banking',
       'credit-notes',

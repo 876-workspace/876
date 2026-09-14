@@ -47,6 +47,8 @@ const BILLING_KEYS = [
   'requests.create',
   'requests.edit',
   'requests.view',
+  'sales-orders.edit',
+  'sales-orders.view',
   'sales.create',
   'sales.delete',
   'sales.edit',
@@ -145,6 +147,7 @@ describe('billingPermissionCatalog', () => {
       'customers',
       'catalog',
       'sales',
+      'sales-orders',
       'subscriptions',
       'reports',
       'currencies',
@@ -169,17 +172,28 @@ describe('billingPermissionCatalog', () => {
 
     expect({
       customers: labels.get('customers'),
+      salesOrders: labels.get('sales-orders'),
       subscriptions: labels.get('subscriptions'),
       purchases: labels.get('purchases'),
       banking: labels.get('banking'),
       payments: labels.get('payments'),
     }).toEqual({
       customers: FINANCE_MODULES.customers.label,
+      salesOrders: FINANCE_MODULES.salesOrders.label,
       subscriptions: FINANCE_MODULES.subscriptions.label,
       purchases: FINANCE_MODULES.purchases.label,
       banking: FINANCE_MODULES.banking.label,
       payments: FINANCE_MODULES.payments.label,
     })
+  })
+
+  it('gives Sales Orders only view and edit permissions', () => {
+    expect(
+      billingPermissionCatalog.permissions
+        .filter((permission) => permission.moduleKey === 'sales-orders')
+        .map((permission) => permission.key)
+        .sort()
+    ).toEqual(['sales-orders.edit', 'sales-orders.view'])
   })
 
   it('marks exactly the delete actions dangerous', () => {
@@ -254,6 +268,14 @@ describe('invoicePermissionCatalog', () => {
     })
   })
 
+  it('does not expose the Billing-only Sales Orders module', () => {
+    expect(
+      invoicePermissionCatalog.modules.some(
+        (module) => module.key === 'sales-orders'
+      )
+    ).toBe(false)
+  })
+
   it('gives invoices and quotes an export action', () => {
     const exportable = invoicePermissionCatalog.permissions
       .filter((permission) => permission.action === 'export')
@@ -316,6 +338,7 @@ describe('appPermissionCatalogs registry', () => {
   it('covers every product app that seeds app-access', () => {
     expect(Object.keys(appPermissionCatalogs).sort()).toEqual([
       '876-billing',
+      '876-commerce',
       '876-couriers',
       '876-crm',
       '876-invoice',

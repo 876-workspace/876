@@ -32,6 +32,7 @@ import { createInternalDocumentsRouter } from '@/modules/documents/documents.int
 import { createDocumentsRouter } from '@/modules/documents/documents.routes'
 import { createQuoteLifecycleRouter } from '@/modules/documents/quote-lifecycle.routes'
 import { createRecurringInvoicesRouter } from '@/modules/documents/recurring-invoices.routes'
+import { createSalesOrdersRouter } from '@/modules/documents/sales-orders.routes'
 import { createSalesReceiptsRouter } from '@/modules/documents/sales-receipts.routes'
 import {
   activeConnectionAuthorization,
@@ -89,6 +90,7 @@ export function buildRoutes(): Router {
   root.use('/api/v1', createDocumentsRouter(resolveGuards))
   root.use('/api/v1', createQuoteLifecycleRouter(resolveGuards))
   root.use('/api/v1', createSalesReceiptsRouter(resolveGuards))
+  root.use('/api/v1', createSalesOrdersRouter(resolveGuards))
   root.use('/api/v1', createRecurringInvoicesRouter(resolveGuards))
   root.use('/api/v1', createTaxRouter(resolveGuards))
   root.use('/api/v1', createPaymentProvidersRouter(resolveGuards))
