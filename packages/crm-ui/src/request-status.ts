@@ -1,4 +1,4 @@
-import { requestStatusSchema, type RequestStatus } from '@876/crm'
+import { requestStatusSchema, type RequestStatus } from '@876/crm/contracts'
 import type { StatusFilterOption } from '@876/ui/status-filter-heading'
 
 const REQUEST_STATUSES: readonly RequestStatus[] = requestStatusSchema.options
