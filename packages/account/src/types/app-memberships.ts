@@ -34,6 +34,7 @@ export const sdk876AppMembershipSchema = z.strictObject({
   permission_grants: z.array(z.string()),
   permission_denies: z.array(z.string()),
   effective_permissions: z.array(z.string()),
+  entitled_modules: z.array(z.string()).optional(),
   title: z.string().nullable(),
   attributes: z.record(z.string(), z.unknown()).nullable(),
   assigned_by: z.string().nullable(),
