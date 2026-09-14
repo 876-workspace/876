@@ -18,16 +18,25 @@ import * as repository from './app-access.repository'
 
 const ENTERPRISE_SLUG = '876-enterprise'
 
+function samePermissions(left: readonly string[], right: readonly string[]) {
+  return (
+    left.length === right.length &&
+    left.every((permission, index) => permission === right[index])
+  )
+}
+
 /**
  * Copies an app's platform role templates into one organization.
  *
- * Idempotent by `(app, organization, key)`: an existing role is left exactly as
- * the organization has it, never overwritten from the template.
+ * Idempotent by `(app, organization, key)`. Custom roles and presentation
+ * fields are preserved. A live organization copy of a platform-managed system
+ * template synchronizes only its immutable permission set so additions to the
+ * canonical catalog do not leave existing organizations on stale access.
  */
 export async function materializeRoleTemplatesForApp(params: {
   organizationId: string
   appId: string
-}): Promise<{ seeded: number; skipped: number }> {
+}): Promise<{ seeded: number; synced: number; skipped: number }> {
   const app = await findAppForAccessById(params.appId)
   if (!app)
     throw new AppHttpError({
@@ -37,21 +46,48 @@ export async function materializeRoleTemplatesForApp(params: {
     })
 
   // 876 Enterprise is governed by the organization-role plane, not app roles.
-  if (app.slug === ENTERPRISE_SLUG) return { seeded: 0, skipped: 0 }
+  if (app.slug === ENTERPRISE_SLUG)
+    return { seeded: 0, synced: 0, skipped: 0 }
 
   const templates = await repository.listRoles(app.id, null)
   let seeded = 0
+  let synced = 0
   let skipped = 0
 
   for (const template of templates) {
-    if (
-      await repository.findRoleByKey(
-        app.id,
-        params.organizationId,
-        template.key
-      )
-    ) {
-      skipped += 1
+    const existing = await repository.findRoleByKey(
+      app.id,
+      params.organizationId,
+      template.key
+    )
+
+    if (existing) {
+      const canonicalSystemCopy =
+        template.isSystem &&
+        existing.isSystem &&
+        existing.templateKey === template.key
+
+      if (
+        canonicalSystemCopy &&
+        !samePermissions(existing.permissions, template.permissions)
+      ) {
+        const updated = await repository.updateRole(
+          existing.id,
+          app.id,
+          params.organizationId,
+          {
+            permissions: [...template.permissions],
+            updatedAt: BigInt(nowUnixSeconds()),
+          }
+        )
+        if (!updated)
+          throw new Error(
+            `Failed to synchronize system app role ${app.id}.${template.key}.`
+          )
+        synced += 1
+      } else {
+        skipped += 1
+      }
       continue
     }
 
@@ -74,5 +110,5 @@ export async function materializeRoleTemplatesForApp(params: {
     seeded += 1
   }
 
-  return { seeded, skipped }
+  return { seeded, synced, skipped }
 }
