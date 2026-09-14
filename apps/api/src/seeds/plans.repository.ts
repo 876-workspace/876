@@ -2,7 +2,7 @@ import { prisma } from '@/db/client'
 
 export type AppRow = { id: string; slug: string }
 export type FeatureRow = { id: string; slug: string }
-export type ProductRow = { id: string; slug: string }
+export type ProductRow = { id: string; slug: string; appId: string | null }
 export type ApplicationModuleRow = {
   id: string
   appId: string
@@ -27,7 +27,7 @@ export async function listFeatures(): Promise<FeatureRow[]> {
 
 export async function listProducts(): Promise<ProductRow[]> {
   const rows = await prisma.product.findMany({
-    select: { id: true, slug: true },
+    select: { id: true, slug: true, appId: true },
   })
   return rows
 }
@@ -150,7 +150,7 @@ export async function findProductBySlug(
 ): Promise<ProductRow | null> {
   return prisma.product.findUnique({
     where: { slug },
-    select: { id: true, slug: true },
+    select: { id: true, slug: true, appId: true },
   })
 }
 
