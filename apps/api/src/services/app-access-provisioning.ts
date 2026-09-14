@@ -13,9 +13,8 @@ const log = getLogger('app-access-provisioning')
 export async function materializeEntitledAppRoles(params: {
   organizationId: string
   appIds: readonly string[]
-}): Promise<{ seeded: number; synced: number; skipped: number; failed: number }> {
+}): Promise<{ seeded: number; skipped: number; failed: number }> {
   let seeded = 0
-  let synced = 0
   let skipped = 0
   let failed = 0
 
@@ -43,7 +42,6 @@ export async function materializeEntitledAppRoles(params: {
     }
 
     seeded += result.seeded
-    synced += result.synced
     skipped += result.skipped
 
     if (result.seeded > 0)
@@ -77,5 +75,5 @@ export async function materializeEntitledAppRoles(params: {
       )
   }
 
-  return { seeded, synced, skipped, failed }
+  return { seeded, skipped, failed }
 }
