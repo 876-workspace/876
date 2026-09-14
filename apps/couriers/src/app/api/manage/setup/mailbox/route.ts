@@ -2,21 +2,22 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { couriersErrorStatus, toCouriersTenant } from '@/lib/couriers'
+import { errorResponse } from '@/lib/errors'
+import { toCouriersTenant } from '@/lib/couriers'
 import { couriersOperator } from '@/lib/services/couriers'
 
 export const runtime = 'nodejs'
 
 export async function PATCH(request: NextRequest) {
   const ctx = await getManageContext()
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (!ctx.tenant) return apiJson({ error: 'No tenant.' }, { status: 404 })
+  if (!ctx) return errorResponse('auth/no-session')
+  if (!ctx.tenant) return errorResponse('tenant/not-found')
 
   let body: unknown
   try {
     body = await request.json()
   } catch {
-    return apiJson({ error: 'Invalid JSON.' }, { status: 400 })
+    return errorResponse('request/invalid-json')
   }
 
   const raw = (body as Record<string, unknown>).prefix
@@ -26,12 +27,7 @@ export async function PATCH(request: NextRequest) {
   const result = await couriersOperator.tenants.update(ctx.tenant.id, {
     mailbox_prefix: prefix,
   })
-  if (result.error) {
-    return apiJson(
-      { error: result.error.message },
-      { status: couriersErrorStatus(result.error), code: result.error.code }
-    )
-  }
+  if (result.error) return errorResponse(result.error.code)
 
   return apiJson({
     object: 'tenant',

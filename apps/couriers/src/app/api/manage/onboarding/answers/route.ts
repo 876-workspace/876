@@ -7,6 +7,7 @@ import { z } from 'zod'
 
 import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
+import { errorResponse } from '@/lib/errors'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 import { ONBOARDING_COUNTRY, ORGANIZATION_TARGET_KEY } from '@/lib/onboarding'
 
@@ -19,20 +20,18 @@ const AnswersSchema = z.strictObject({
 
 export async function PUT(request: NextRequest) {
   const ctx = await getManageContext()
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
-  if (ctx.role === 'staff')
-    return apiJson({ error: 'Insufficient permissions' }, { status: 403 })
+  if (!ctx) return errorResponse('auth/no-session')
+  if (ctx.role === 'staff') return errorResponse('auth/forbidden')
 
   let body: unknown
   try {
     body = await request.json()
   } catch {
-    return apiJson({ error: 'Invalid JSON.' }, { status: 400 })
+    return errorResponse('request/invalid-json')
   }
 
   const parsed = AnswersSchema.safeParse(body)
-  if (!parsed.success)
-    return apiJson({ error: 'Invalid onboarding answers.' }, { status: 422 })
+  if (!parsed.success) return errorResponse('onboarding/invalid-answers')
 
   const targetType: PlatformOnboardingTargetType = parsed.data.target
   const targetKey =
@@ -51,8 +50,7 @@ export async function PUT(request: NextRequest) {
     }
   )
 
-  if (result.error)
-    return apiJson({ error: 'Failed to save answers.' }, { status: 500 })
+  if (result.error) return errorResponse('onboarding/verification-failed')
 
   return apiJson({ data: result.data })
 }

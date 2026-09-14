@@ -17,6 +17,7 @@ vi.mock('@/lib/services/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 
+import { getError } from '@/lib/errors'
 import { POST } from './route'
 
 function request(body: string | Record<string, unknown>) {
@@ -73,7 +74,7 @@ describe('Couriers organization logo upload completion route', () => {
       expect(response.status).toBe(401)
       expect(body.error).toEqual({
         code: 'auth/no-session',
-        message: 'Unauthorized.',
+        message: getError('auth/no-session').message,
       })
       expect(mocks.complete).not.toHaveBeenCalled()
       expect(mocks.updateProfile).not.toHaveBeenCalled()
@@ -331,12 +332,12 @@ describe('Couriers organization logo upload completion route', () => {
       const response = await POST(request(validBody))
       const body = await response.json()
 
-      expect(response.status).toBe(502)
+      expect(response.status).toBe(404)
       expect(body).toEqual({
         data: null,
         error: {
           code: 'organization/not-found',
-          message: 'Organization not found.',
+          message: getError('organization/not-found').message,
         },
       })
       expect(mocks.complete).toHaveBeenCalledTimes(1)

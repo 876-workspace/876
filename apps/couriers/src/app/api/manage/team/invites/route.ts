@@ -6,8 +6,8 @@ import { z } from 'zod'
 
 import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
+import { errorResponse } from '@/lib/errors'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
-import { couriersErrorStatus } from '@/lib/couriers'
 import { getCouriers } from '@/lib/services/couriers'
 
 export const runtime = 'nodejs'
@@ -23,35 +23,24 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json()
   } catch {
-    return apiJson({ error: 'Invalid invite.' }, { status: 422 })
+    return errorResponse('team/invalid-invite')
   }
 
   const parsed = inviteSchema.safeParse(body)
-  if (!parsed.success)
-    return apiJson({ error: 'Invalid invite.' }, { status: 422 })
+  if (!parsed.success) return errorResponse('team/invalid-invite')
 
   const ctx = await getManageContext(parsed.data.orgSlug)
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
   if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
-    return apiJson(
-      { error: 'You do not have permission to invite users.' },
-      { status: 403, code: 'auth/forbidden' }
-    )
-  if (!ctx.tenant)
-    return apiJson({ error: 'Tenant not found.' }, { status: 404 })
+    return errorResponse('auth/forbidden')
+  if (!ctx.tenant) return errorResponse('tenant/not-found')
 
   const $876 = await getCouriers()
   const roleResult = await $876.roles.retrieve(parsed.data.roleId)
   if (roleResult.error) {
     if (roleResult.error.code.endsWith('/not-found'))
-      return apiJson({ error: 'Role not found.' }, { status: 404 })
-    return apiJson(
-      { error: roleResult.error.message },
-      {
-        status: couriersErrorStatus(roleResult.error),
-        code: roleResult.error.code,
-      }
-    )
+      return errorResponse('role/not-found')
+    return errorResponse(roleResult.error.code)
   }
 
   const platform = await getPlatformClient()
@@ -60,11 +49,7 @@ export async function POST(request: NextRequest) {
     role: roleResult.data.system_key === 'admin' ? 'admin' : 'staff',
     sourceAppSlug: COURIERS_APP_SLUG,
   })
-  if (result.error)
-    return apiJson(
-      { error: result.error.message },
-      { status: 502, code: result.error.code }
-    )
+  if (result.error) return errorResponse(result.error.code)
 
   return apiJson({ data: result.data }, { status: 201 })
 }

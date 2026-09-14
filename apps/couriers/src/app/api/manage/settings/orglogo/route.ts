@@ -1,21 +1,24 @@
 import 'server-only'
 
 import { apiJson } from '@876/core/api'
-import type { AppError } from '@876/core'
 import type { NextRequest } from 'next/server'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { getError } from '@/lib/errors'
+import { errorResponse } from '@/lib/errors'
+import { getAppError, getError } from '@/lib/errors'
 import { getFeatures } from '@/lib/features'
 import { storage } from '@/lib/services/storage'
 import { organizationLogoUploadStartSchema } from '@/types/storage'
 
 export const runtime = 'nodejs'
 
-function storageErrorResponse(error: AppError) {
+function storageErrorResponse(error: { code: string }) {
   const definition = getError(error.code)
 
-  return apiJson({ error }, { status: definition.httpStatus, code: error.code })
+  return apiJson(
+    { data: null, error: getAppError(error.code) },
+    { status: definition.httpStatus }
+  )
 }
 
 /** Opens a signed organization-logo upload after authorizing this org actor. */
@@ -26,7 +29,6 @@ export async function POST(request: NextRequest) {
   } catch {
     return storageErrorResponse({
       code: 'storage/invalid-request',
-      message: 'The upload request is invalid.',
     })
   }
 
@@ -34,20 +36,14 @@ export async function POST(request: NextRequest) {
   if (!parsed.success)
     return storageErrorResponse({
       code: 'storage/invalid-request',
-      message: 'The upload request is invalid.',
     })
 
   const { orgSlug, ...file } = parsed.data
 
   const ctx = await getManageContext(orgSlug)
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
   if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
-    return apiJson(
-      {
-        error: 'You do not have permission to edit the organization profile.',
-      },
-      { status: 403, code: 'auth/forbidden' }
-    )
+    return errorResponse('auth/forbidden')
 
   const features = await getFeatures({
     userId: ctx.userId,
@@ -56,7 +52,6 @@ export async function POST(request: NextRequest) {
   if (!features.storageOrgLogoUpload)
     return storageErrorResponse({
       code: 'storage/forbidden',
-      message: 'Organization logo uploads are not enabled.',
     })
 
   const result = await storage.uploads.create({

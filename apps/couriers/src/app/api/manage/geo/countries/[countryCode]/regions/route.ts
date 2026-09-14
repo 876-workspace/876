@@ -2,6 +2,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { getManageContext } from '@/lib/auth/manage-context'
+import { errorResponse } from '@/lib/errors'
 import { getPlatformClient } from '@/lib/services/platform'
 
 export const runtime = 'nodejs'
@@ -11,11 +12,11 @@ type Params = { params: Promise<{ countryCode: string }> }
 /** Pure transport for a country's subdivisions. See the countries route. */
 export async function GET(_request: NextRequest, { params }: Params) {
   const ctx = await getManageContext()
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
 
   const { countryCode } = await params
   if (!/^[A-Za-z]{2}$/.test(countryCode))
-    return apiJson({ error: 'Invalid country code.' }, { status: 400 })
+    return errorResponse('address/unknown-country')
 
   const platform = await getPlatformClient()
   const { data, error } = await platform.regions.list(countryCode.toUpperCase())

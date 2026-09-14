@@ -16,6 +16,7 @@ vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
 
+import { getError } from '@/lib/errors'
 import { POST } from './route'
 
 function request(body: string | Record<string, unknown>) {
@@ -78,7 +79,7 @@ describe('Couriers organization logo upload start route', () => {
         data: null,
         error: {
           code: 'auth/no-session',
-          message: 'Unauthorized.',
+          message: getError('auth/no-session').message,
         },
       })
       expect(mocks.getFeatures).not.toHaveBeenCalled()
@@ -123,7 +124,7 @@ describe('Couriers organization logo upload start route', () => {
         data: null,
         error: {
           code: 'storage/forbidden',
-          message: 'Organization logo uploads are not enabled.',
+          message: getError('storage/forbidden').message,
         },
       })
       expect(mocks.create).not.toHaveBeenCalled()

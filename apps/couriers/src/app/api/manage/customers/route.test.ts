@@ -12,6 +12,7 @@ vi.mock('@/lib/manage/customers', () => ({
   createManagedCustomer: mocks.createManagedCustomer,
 }))
 vi.mock('@/lib/features', () => ({ getFeatures: mocks.getFeatures }))
+import { getError } from '@/lib/errors'
 import { POST } from './route'
 function request(body: string | Record<string, unknown>) {
   return new NextRequest('http://couriers.test/api/manage/customers', {
@@ -67,7 +68,10 @@ describe('POST /api/manage/customers', () => {
     expect(response.status).toBe(401)
     expect(await response.json()).toEqual({
       data: null,
-      error: { code: 'auth/no-session', message: 'Unauthorized.' },
+      error: {
+        code: 'auth/no-session',
+        message: getError('auth/no-session').message,
+      },
     })
     expect(mocks.createManagedCustomer).not.toHaveBeenCalled()
   })

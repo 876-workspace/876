@@ -13,6 +13,7 @@ vi.mock('@/lib/services/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 
+import { getError } from '@/lib/errors'
 import { PATCH } from './route'
 
 function request(body: string | Record<string, unknown>) {
@@ -77,7 +78,10 @@ describe('Couriers organization profile route', () => {
     const body = await response.json()
 
     expect(response.status).toBe(401)
-    expect(body.error.message).toBe('Unauthorized.')
+    expect(body.error).toEqual({
+      code: 'auth/no-session',
+      message: getError('auth/no-session').message,
+    })
     expect(mocks.getPlatformClient).not.toHaveBeenCalled()
     expect(mocks.updateProfile).not.toHaveBeenCalled()
   })
@@ -138,7 +142,7 @@ describe('Couriers organization profile route', () => {
     expect(mocks.updateProfile).toHaveBeenCalledTimes(1)
   })
 
-  it('surfaces a platform error as a 502', async () => {
+  it('surfaces a platform error with its registered status', async () => {
     mocks.updateProfile.mockResolvedValue({
       data: null,
       error: { code: 'organization/not-found', message: 'Not found.' },
@@ -149,7 +153,10 @@ describe('Couriers organization profile route', () => {
     )
     const body = await response.json()
 
-    expect(response.status).toBe(502)
-    expect(body.error.code).toBe('organization/not-found')
+    expect(response.status).toBe(404)
+    expect(body.error).toEqual({
+      code: 'organization/not-found',
+      message: getError('organization/not-found').message,
+    })
   })
 })

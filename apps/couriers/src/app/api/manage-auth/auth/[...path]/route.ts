@@ -1,4 +1,3 @@
-import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import {
@@ -12,6 +11,7 @@ import {
 } from '@876/core/request-context'
 
 import { getRequestOrigin } from '@/lib/auth/request-origin'
+import { errorResponse } from '@/lib/errors'
 
 export const runtime = 'nodejs'
 
@@ -36,7 +36,7 @@ async function proxyAuthRequest(
   const { path } = await context.params
   const authPath = buildSafeBridgePath('/auth', path)
   if (!authPath) {
-    return apiJson({ error: 'Not found.' }, { status: 404 })
+    return errorResponse('error/not-found')
   }
 
   const headers = buildForwardHeaders(request)

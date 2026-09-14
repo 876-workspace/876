@@ -22,6 +22,7 @@ vi.mock('@/lib/couriers', () => ({
   toRoleView: (role: Record<string, unknown>) => role,
 }))
 
+import { getError } from '@/lib/errors'
 import { DELETE, PATCH } from './route'
 
 const context = { params: Promise.resolve({ id: 'role_dispatcher' }) }
@@ -93,7 +94,10 @@ describe('Couriers role route', () => {
       const body = await response.json()
 
       expect(response.status).toBe(401)
-      expect(body.error.message).toBe('Unauthorized.')
+      expect(body.error).toEqual({
+        code: 'auth/no-session',
+        message: getError('auth/no-session').message,
+      })
       expect(mocks.update).not.toHaveBeenCalled()
     })
 

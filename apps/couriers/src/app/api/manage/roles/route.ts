@@ -5,7 +5,8 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { couriersErrorStatus, toRoleView } from '@/lib/couriers'
+import { errorResponse } from '@/lib/errors'
+import { toRoleView } from '@/lib/couriers'
 import { getCouriers } from '@/lib/services/couriers'
 import { roleCreateParamsSchema } from '@/types/role'
 
@@ -20,31 +21,22 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json()
   } catch {
-    return apiJson({ error: 'Invalid role.' }, { status: 422 })
+    return errorResponse('role/invalid')
   }
 
   const parsed = createSchema.safeParse(body)
-  if (!parsed.success)
-    return apiJson({ error: 'Invalid role.' }, { status: 422 })
+  if (!parsed.success) return errorResponse('role/invalid')
 
   const { orgSlug, ...params } = parsed.data
   const ctx = await getManageContext(orgSlug)
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
   if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
-    return apiJson(
-      { error: 'You do not have permission to create roles.' },
-      { status: 403, code: 'auth/forbidden' }
-    )
-  if (!ctx.tenant)
-    return apiJson({ error: 'Tenant not found.' }, { status: 404 })
+    return errorResponse('auth/forbidden')
+  if (!ctx.tenant) return errorResponse('tenant/not-found')
 
   const $876 = await getCouriers()
   const result = await $876.roles.create(params)
-  if (result.error)
-    return apiJson(
-      { error: result.error.message },
-      { status: couriersErrorStatus(result.error), code: result.error.code }
-    )
+  if (result.error) return errorResponse(result.error.code)
 
   return apiJson({ data: toRoleView(result.data) }, { status: 201 })
 }

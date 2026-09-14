@@ -3,7 +3,7 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { getAppError, getError } from '@/lib/errors'
+import { errorResponse } from '@/lib/errors'
 import { billingIntegration } from '@/lib/services/billing'
 import { getCouriers } from '@/lib/services/couriers'
 
@@ -14,21 +14,13 @@ const REGISTRY_LIMIT = 20
 export async function GET(request: Request) {
   const orgSlug = new URL(request.url).searchParams.get('orgSlug')
   const q = new URL(request.url).searchParams.get('q')?.trim() ?? ''
-  if (!orgSlug)
-    return apiJson(
-      { error: getAppError('error/validation-failed') },
-      { status: getError('error/validation-failed').httpStatus }
-    )
+  if (!orgSlug) return errorResponse('error/validation-failed')
 
   const ctx = await getManageContext(orgSlug)
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
   if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
-    return apiJson(
-      { error: 'You do not have permission to manage customers.' },
-      { status: 403, code: 'auth/forbidden' }
-    )
-  if (!ctx.tenant)
-    return apiJson({ error: 'Tenant not found.' }, { status: 404 })
+    return errorResponse('auth/forbidden')
+  if (!ctx.tenant) return errorResponse('tenant/not-found')
   if (!q) return apiJson({ data: [] })
 
   const registry = await billingIntegration.customers.list(ctx.orgId, {
@@ -36,11 +28,7 @@ export async function GET(request: Request) {
     status: 'ACTIVE',
     limit: REGISTRY_LIMIT,
   })
-  if (registry.error)
-    return apiJson(
-      { error: getAppError('customer/registry-unavailable') },
-      { status: getError('customer/registry-unavailable').httpStatus }
-    )
+  if (registry.error) return errorResponse('customer/registry-unavailable')
   const couriers = await getCouriers()
   const profiles = await couriers.customers.list({
     limit: REGISTRY_LIMIT,
@@ -48,11 +36,7 @@ export async function GET(request: Request) {
       .map((customer) => customer.id)
       .join(','),
   })
-  if (profiles.error)
-    return apiJson(
-      { error: getAppError('customer/registry-unavailable') },
-      { status: getError('customer/registry-unavailable').httpStatus }
-    )
+  if (profiles.error) return errorResponse('customer/registry-unavailable')
   const enrolled = new Set(
     profiles.data.data.map((profile) => profile.billing_customer_id)
   )

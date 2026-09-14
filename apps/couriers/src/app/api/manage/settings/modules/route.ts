@@ -6,7 +6,7 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { couriersErrorStatus } from '@/lib/couriers'
+import { errorResponse } from '@/lib/errors'
 import { couriersOperator } from '@/lib/services/couriers'
 
 export const runtime = 'nodejs'
@@ -19,25 +19,16 @@ const toggleSchema = z.strictObject({
 
 export async function GET(request: NextRequest) {
   const orgSlug = request.nextUrl.searchParams.get('orgSlug')
-  if (!orgSlug)
-    return apiJson({ error: 'Organization is required.' }, { status: 422 })
+  if (!orgSlug) return errorResponse('settings/organization-required')
 
   const ctx = await getManageContext(orgSlug)
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
   if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
-    return apiJson(
-      { error: 'You do not have permission to view settings.' },
-      { status: 403, code: 'auth/forbidden' }
-    )
-  if (!ctx.tenant)
-    return apiJson({ error: 'Tenant not found.' }, { status: 404 })
+    return errorResponse('auth/forbidden')
+  if (!ctx.tenant) return errorResponse('tenant/not-found')
 
   const result = await couriersOperator.settings.list(ctx.tenant.id)
-  if (result.error)
-    return apiJson(
-      { error: result.error.message },
-      { status: couriersErrorStatus(result.error), code: result.error.code }
-    )
+  if (result.error) return errorResponse(result.error.code)
 
   return apiJson({ data: result.data })
 }
@@ -47,22 +38,17 @@ export async function PATCH(request: NextRequest) {
   try {
     body = await request.json()
   } catch {
-    return apiJson({ error: 'Invalid module state.' }, { status: 422 })
+    return errorResponse('settings/invalid-module-state')
   }
 
   const parsed = toggleSchema.safeParse(body)
-  if (!parsed.success)
-    return apiJson({ error: 'Invalid module state.' }, { status: 422 })
+  if (!parsed.success) return errorResponse('settings/invalid-module-state')
 
   const ctx = await getManageContext(parsed.data.orgSlug)
-  if (!ctx) return apiJson({ error: 'Unauthorized.' }, { status: 401 })
+  if (!ctx) return errorResponse('auth/no-session')
   if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
-    return apiJson(
-      { error: 'You do not have permission to edit settings.' },
-      { status: 403, code: 'auth/forbidden' }
-    )
-  if (!ctx.tenant)
-    return apiJson({ error: 'Tenant not found.' }, { status: 404 })
+    return errorResponse('auth/forbidden')
+  if (!ctx.tenant) return errorResponse('tenant/not-found')
 
   const result = await couriersOperator.settings.update(
     ctx.tenant.id,
@@ -71,11 +57,7 @@ export async function PATCH(request: NextRequest) {
       is_enabled: parsed.data.isEnabled,
     }
   )
-  if (result.error)
-    return apiJson(
-      { error: result.error.message },
-      { status: couriersErrorStatus(result.error), code: result.error.code }
-    )
+  if (result.error) return errorResponse(result.error.code)
 
   return apiJson({ data: result.data })
 }
