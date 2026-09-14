@@ -51,7 +51,10 @@ export function RequestTasksPanel({
       ? Math.floor(new Date(`${dueDate}T12:00:00`).getTime() / 1000)
       : null
     if (dueAt != null && Number.isNaN(dueAt)) {
-      setError({ code: 'crm/invalid-request', message: 'Choose a valid due date.' })
+      setError({
+        code: 'crm/invalid-request',
+        message: 'Choose a valid due date.',
+      })
       return
     }
 
@@ -85,17 +88,25 @@ export function RequestTasksPanel({
       </div>
 
       {error ? (
-        <AppError title="Task could not be added" error={error} variant="form" />
+        <AppError
+          title="Task could not be added"
+          error={error}
+          variant="form"
+        />
       ) : null}
 
       {tasks.length ? (
         <ul className="divide-y rounded-md border">
           {tasks.map((task) => (
-            <li key={task.id} className="flex items-center justify-between gap-3 p-3 text-sm">
+            <li
+              key={task.id}
+              className="flex items-center justify-between gap-3 p-3 text-sm"
+            >
               <div className="min-w-0">
                 <p className="truncate font-medium">{task.title}</p>
                 <p className="text-muted-foreground mt-1 text-xs">
-                  {task.assigneeId ?? 'Unassigned'} · {formatDueDate(task.dueAt)}
+                  {task.assigneeId ?? 'Unassigned'} ·{' '}
+                  {formatDueDate(task.dueAt)}
                 </p>
               </div>
               <Badge variant="secondary">{task.status}</Badge>

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { customerTabs } from './customer-tabs'
 
 describe('customerTabs', () => {
-  it('returns eight tabs anchored to the given base in order', () => {
+  it('returns nine tabs anchored to the given base in order', () => {
     const base = '/nkr-express/customers/cprof_123'
     const tabs = customerTabs(base)
 
@@ -14,6 +14,7 @@ describe('customerTabs', () => {
       { label: 'Deliveries', href: `${base}/deliveries` },
       { label: 'Invoices', href: `${base}/invoices` },
       { label: 'Payments', href: `${base}/payments` },
+      { label: 'Requests', href: `${base}/requests` },
       { label: 'Notes', href: `${base}/notes` },
       { label: 'Activity', href: `${base}/activity` },
     ])

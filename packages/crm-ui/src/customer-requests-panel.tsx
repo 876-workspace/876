@@ -24,10 +24,12 @@ export function CustomerRequestsPanel({
   state,
   requestHref,
   newRequestHref,
+  layout = 'pane',
 }: {
   state: CustomerRequestsPanelState
   requestHref: (requestId: string) => string
   newRequestHref?: string
+  layout?: 'pane' | 'inline'
 }) {
   return (
     <section className="space-y-4" aria-label="Customer requests">
@@ -46,13 +48,15 @@ export function CustomerRequestsPanel({
           <EmptyHeader>
             <EmptyTitle>No requests for this customer</EmptyTitle>
           </EmptyHeader>
-          <EmptyContent>
-            Create a request to start tracking customer work.
-          </EmptyContent>
+          <EmptyContent />
         </Empty>
       ) : null}
       {state.status === 'ready' ? (
-        <RequestRows requests={state.requests} requestHref={requestHref} />
+        <RequestRows
+          requests={state.requests}
+          requestHref={requestHref}
+          layout={layout}
+        />
       ) : null}
     </section>
   )
@@ -61,10 +65,40 @@ export function CustomerRequestsPanel({
 function RequestRows({
   requests,
   requestHref,
+  layout,
 }: {
   requests: readonly CrmRequest[]
   requestHref: (requestId: string) => string
+  layout: 'pane' | 'inline'
 }) {
+  if (layout === 'inline')
+    return (
+      <ul className="divide-y rounded-md border">
+        {requests.length === 0 ? (
+          <li className="text-muted-foreground px-4 py-8 text-center text-sm">
+            No requests for this customer
+          </li>
+        ) : (
+          requests.map((request) => (
+            <li key={request.id} className="p-3">
+              <Link
+                href={requestHref(request.id)}
+                aria-label={`Open request ${request.number}: ${request.subject}`}
+                className="flex items-center justify-between gap-3"
+              >
+                <span className="min-w-0 truncate font-medium">
+                  #{request.number} {request.subject}
+                </span>
+                <span className="text-muted-foreground shrink-0 text-xs">
+                  {request.status} · {request.priority.name}
+                </span>
+              </Link>
+            </li>
+          ))
+        )}
+      </ul>
+    )
+
   return (
     <ListPane>
       <ListPaneHeader>{requests.length} requests</ListPaneHeader>

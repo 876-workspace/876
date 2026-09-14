@@ -57,7 +57,9 @@ export function toRequestListRows({
       customerIsBusiness: customer?.customerKind === 'BUSINESS',
       assigneeName: assignee?.name ?? request.assigneeId ?? null,
       assigneeAvatar: assignee?.avatar ?? null,
-      teamName: request.teamId ? (teamsById.get(request.teamId)?.name ?? null) : null,
+      teamName: request.teamId
+        ? (teamsById.get(request.teamId)?.name ?? null)
+        : null,
       sourceApp: request.sourceApp,
       relatedResourceType: request.relatedResourceType,
       relatedResourceId: request.relatedResourceId,

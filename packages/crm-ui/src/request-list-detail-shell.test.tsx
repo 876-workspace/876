@@ -18,13 +18,39 @@ vi.mock('next/navigation', () => ({
 }))
 
 vi.mock('@876/ui/list-detail-shell', () => ({
-  ListDetailShell: ({ toolbar }: { toolbar: React.ReactNode }) => toolbar,
+  ListDetailShell: ({
+    toolbar,
+    list,
+    detail,
+  }: {
+    toolbar: React.ReactNode
+    list: React.ReactNode
+    detail: React.ReactNode
+  }) => (
+    <div data-slot="split-shell">
+      {toolbar}
+      {list}
+      {detail}
+    </div>
+  ),
   useListDetailRoute: () => ({ open: true }),
 }))
 
 import { RequestListDetailShell } from './request-list-detail-shell'
 
 describe('RequestListDetailShell', () => {
+  it('renders the list and detail in one split shell', () => {
+    render(
+      <RequestListDetailShell baseHref="/requests" list={<div>list</div>}>
+        <div>detail</div>
+      </RequestListDetailShell>
+    )
+
+    const shell = document.querySelector('[data-slot="split-shell"]')
+    expect(shell).toHaveTextContent('list')
+    expect(shell).toHaveTextContent('detail')
+  })
+
   it('keeps Add and the standard actions visible beside an open request', async () => {
     const user = userEvent.setup()
     render(

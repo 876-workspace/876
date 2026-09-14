@@ -3,6 +3,7 @@ import { branches } from './branches'
 import { customers } from './customers'
 import { geo } from './geo'
 import { roles } from './roles'
+import { requests } from './requests'
 import { team } from './team'
 import { warehouses } from './warehouses'
 
@@ -12,6 +13,7 @@ export const client = {
   customers,
   geo,
   roles,
+  requests,
   team,
   warehouses,
 }
@@ -21,6 +23,7 @@ export { branches } from './branches'
 export { customers } from './customers'
 export { geo } from './geo'
 export { roles } from './roles'
+export { requests } from './requests'
 export { team } from './team'
 export { warehouses } from './warehouses'
 export type { ClientResult } from '@/types/api'

@@ -47,7 +47,10 @@ export function RequestComposer({
   customerOptions?: readonly RequestComposerCustomerOption[]
   onSubmit: (
     input: RequestComposerInput
-  ) => void | RequestComposerSubmitResult | Promise<RequestComposerSubmitResult | void>
+  ) =>
+    | void
+    | RequestComposerSubmitResult
+    | Promise<RequestComposerSubmitResult | void>
   onCancel: () => void
 }) {
   const [saving, setSaving] = useState(false)

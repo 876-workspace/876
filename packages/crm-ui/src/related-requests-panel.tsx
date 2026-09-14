@@ -24,7 +24,9 @@ export function RelatedRequestsPanel({
   if (state.status === 'empty')
     return (
       <Empty>
-        <EmptyHeader><EmptyTitle>No related requests</EmptyTitle></EmptyHeader>
+        <EmptyHeader>
+          <EmptyTitle>No related requests</EmptyTitle>
+        </EmptyHeader>
         <EmptyContent>Requests about this record appear here.</EmptyContent>
       </Empty>
     )
