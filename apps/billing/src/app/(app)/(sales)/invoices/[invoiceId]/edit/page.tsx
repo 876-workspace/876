@@ -1,11 +1,13 @@
 import { redirect } from 'next/navigation'
 
 import { formatMinorUnits } from '@876/billing-ui/document/document-line-items-editor'
-import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 import { resolveInvoice } from '@/app/(app)/_lib/detail-data'
+import { toDocumentTaxRateOptions } from '@876/billing-ui/document/document-tax-rate-options'
+import { DocumentFormPage } from '@876/billing-ui/document/document-form-layout'
 import { DocumentCreateForm } from '@/features/documents/components/document-create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
+import { service } from '@/lib/service'
 
 import { getInvoiceEditability } from '../_lib/invoice-editability'
 
@@ -18,15 +20,15 @@ export default async function EditInvoicePage({
 }) {
   const { invoiceId } = await params
   const context = await requirePagePermission('sales:write')
-  const invoice = await resolveInvoice(context.tenant.id, invoiceId)
+  const [invoice, taxRates] = await Promise.all([
+    resolveInvoice(context.tenant.id, invoiceId),
+    service.taxRates.list(context.tenant.id),
+  ])
   if (!invoice || !getInvoiceEditability(invoice.status).editable)
     redirect(`/invoices/${encodeURIComponent(invoiceId)}`)
 
   return (
-    <Page>
-      <PageHeader>
-        <PageTitle>Edit Invoice</PageTitle>
-      </PageHeader>
+    <DocumentFormPage title="Edit Invoice">
       <DocumentCreateForm
         kind="invoice"
         items={[]}
@@ -34,6 +36,7 @@ export default async function EditInvoicePage({
         defaultCurrency={invoice.currency}
         returnUrl="/invoices"
         mode="edit"
+        taxRates={toDocumentTaxRateOptions(taxRates)}
         initialDocument={{
           invoiceId: invoice.id,
           status: invoice.status,
@@ -59,6 +62,6 @@ export default async function EditInvoicePage({
           })),
         }}
       />
-    </Page>
+    </DocumentFormPage>
   )
 }

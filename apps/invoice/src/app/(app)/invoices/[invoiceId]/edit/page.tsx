@@ -1,13 +1,14 @@
 import { notFound, redirect } from 'next/navigation'
 
-import { Page, PageHeader, PageTitle } from '@876/ui/page'
 import { formatMinorUnits } from '@876/billing-ui/document/document-line-items-editor'
 
 import { getInvoiceContext } from '@/lib/auth/context'
 import { requireAppPermission } from '@/lib/auth/guards'
 import { getBilling } from '@/lib/services/billing'
 
+import { DocumentFormPage } from '@876/billing-ui/document/document-form-layout'
 import { DocumentCreateForm } from '@/features/documents/components/document-create-form'
+import { loadDocumentTaxRates } from '@/features/documents/document-create-data'
 import {
   getInvoiceEditability,
   type InvoiceStatus,
@@ -34,13 +35,11 @@ export default async function EditInvoicePage({
   if (!getInvoiceEditability(status).editable)
     redirect(`/invoices/${encodeURIComponent(invoiceId)}`)
   return (
-    <Page>
-      <PageHeader>
-        <PageTitle>Edit Invoice</PageTitle>
-      </PageHeader>
+    <DocumentFormPage title="Edit Invoice">
       <DocumentCreateForm
         kind="invoice"
         mode="edit"
+        taxRates={loadDocumentTaxRates(context.orgId)}
         initialDocument={{
           invoiceId: invoice.id,
           status,
@@ -74,6 +73,6 @@ export default async function EditInvoicePage({
           })),
         }}
       />
-    </Page>
+    </DocumentFormPage>
   )
 }

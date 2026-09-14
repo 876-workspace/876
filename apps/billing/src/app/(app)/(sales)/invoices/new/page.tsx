@@ -1,5 +1,5 @@
-import { Page, PageHeader, PageTitle } from '@876/ui/page'
-
+import { toDocumentTaxRateOptions } from '@876/billing-ui/document/document-tax-rate-options'
+import { DocumentFormPage } from '@876/billing-ui/document/document-form-layout'
 import { DocumentCreateForm } from '@/features/documents/components/document-create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatPriceCadence } from '@/lib/format'
@@ -10,23 +10,21 @@ export const metadata = { title: 'New Invoice' }
 export default async function NewInvoicePage() {
   const context = await requirePagePermission('sales:write')
 
-  const [items, prices, priceLists, currencies, salespeople] =
+  const [items, prices, priceLists, currencies, salespeople, taxRates] =
     await Promise.all([
       service.items.list(context.tenant.id),
       service.prices.list(context.tenant.id, true),
       service.priceLists.list(context.tenant.id, true),
       service.currencies.list(context.tenant.id),
       service.salespeople.list(context.tenant.id),
+      service.taxRates.list(context.tenant.id),
     ])
 
   return (
-    <Page>
-      <PageHeader>
-        <PageTitle>New Invoice</PageTitle>
-      </PageHeader>
-
+    <DocumentFormPage title="New Invoice">
       <DocumentCreateForm
         kind="invoice"
+        taxRates={toDocumentTaxRateOptions(taxRates)}
         defaultCurrency={context.tenant.defaultCurrency}
         returnUrl="/invoices"
         items={[
@@ -72,7 +70,7 @@ export default async function NewInvoicePage() {
           decimalPlaces: currency.decimalPlaces,
         }))}
       />
-    </Page>
+    </DocumentFormPage>
   )
 }
 

@@ -140,3 +140,67 @@ describe('SalesReceiptCreateForm line payload', () => {
     })
   })
 })
+
+describe('prepareDocumentLine tax rates and blank rates', () => {
+  it('calculates tax from the chosen rate on the discounted subtotal', () => {
+    expect(
+      prepareDocumentLine(
+        line({
+          quantity: '2',
+          unitAmount: '100.00',
+          discountAmount: '20.00',
+          taxRateId: 'txr_gct',
+          taxRate: '15.0000',
+          taxAmount: '999.00',
+        }),
+        2
+      )
+    ).toEqual({
+      description: 'Consulting',
+      quantity: 2,
+      unitAmount: '10000',
+      discountAmount: '2000',
+      taxAmount: '2700',
+    })
+  })
+
+  it('uses the typed tax amount when no rate is chosen', () => {
+    expect(prepareDocumentLine(line({ taxAmount: '12.34' }), 2)).toEqual({
+      description: 'Consulting',
+      quantity: 1,
+      unitAmount: '10000',
+      discountAmount: '0',
+      taxAmount: '1234',
+    })
+  })
+
+  it('rejects a blank rate on a free-text line', () => {
+    expect(prepareDocumentLine(line({ unitAmount: '   ' }), 2)).toBeNull()
+  })
+
+  it('accepts an explicitly typed zero rate', () => {
+    expect(prepareDocumentLine(line({ unitAmount: '0' }), 2)).toEqual({
+      description: 'Consulting',
+      quantity: 1,
+      unitAmount: '0',
+      discountAmount: '0',
+      taxAmount: '0',
+    })
+  })
+
+  it('accepts a blank rate on a price-list line priced by the server', () => {
+    expect(
+      prepareDocumentLine(
+        line({ unitAmount: '', priceId: 'price_1', resolvedSubtotal: '80.00' }),
+        2,
+        true
+      )
+    ).toEqual({
+      priceId: 'price_1',
+      description: 'Consulting',
+      quantity: 1,
+      discountAmount: '0',
+      taxAmount: '0',
+    })
+  })
+})

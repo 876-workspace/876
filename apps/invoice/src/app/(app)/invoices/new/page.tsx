@@ -1,9 +1,10 @@
-import { Page, PageHeader, PageTitle } from '@876/ui/page'
 import { redirect } from 'next/navigation'
 
+import { DocumentFormPage } from '@876/billing-ui/document/document-form-layout'
 import { DocumentCreateForm } from '@/features/documents/components/document-create-form'
 import {
   loadDocumentItems,
+  loadDocumentTaxRates,
   loadInitialDocumentCustomer,
   type DocumentCreateSearchParams,
 } from '@/features/documents/document-create-data'
@@ -23,15 +24,13 @@ export default async function NewInvoicePage({
   const initialCustomer = loadInitialDocumentCustomer(invoice, searchParams)
 
   return (
-    <Page>
-      <PageHeader className="mb-4">
-        <PageTitle>New Invoice</PageTitle>
-      </PageHeader>
+    <DocumentFormPage title="New Invoice">
       <DocumentCreateForm
         kind="invoice"
+        taxRates={loadDocumentTaxRates(invoice.organizationId)}
         items={items}
         initialCustomer={initialCustomer}
       />
-    </Page>
+    </DocumentFormPage>
   )
 }

@@ -1,9 +1,10 @@
-import { Page, PageHeader, PageTitle } from '@876/ui/page'
 import { redirect } from 'next/navigation'
 
+import { DocumentFormPage } from '@876/billing-ui/document/document-form-layout'
 import { DocumentCreateForm } from '@/features/documents/components/document-create-form'
 import {
   loadDocumentItems,
+  loadDocumentTaxRates,
   loadInitialDocumentCustomer,
   type DocumentCreateSearchParams,
 } from '@/features/documents/document-create-data'
@@ -20,15 +21,13 @@ export default async function NewQuotePage({
   if (!invoice) redirect('/no-access')
 
   return (
-    <Page>
-      <PageHeader className="mb-4">
-        <PageTitle>New Quote</PageTitle>
-      </PageHeader>
+    <DocumentFormPage title="New Quote">
       <DocumentCreateForm
         kind="quote"
+        taxRates={loadDocumentTaxRates(invoice.organizationId)}
         items={loadDocumentItems(invoice)}
         initialCustomer={loadInitialDocumentCustomer(invoice, searchParams)}
       />
-    </Page>
+    </DocumentFormPage>
   )
 }

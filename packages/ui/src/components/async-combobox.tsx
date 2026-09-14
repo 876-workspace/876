@@ -188,8 +188,19 @@ export function AsyncCombobox({
       filter={null}
       value={value === '' ? null : value}
       inputValue={query === '' && value !== '' ? selectedLabel : query}
-      onInputValueChange={setQuery}
+      // Base UI writes the chosen item into the box. Our items are plain
+      // string values, so without a label it wrote the id; and a written query
+      // would also kick off a pointless search for the chosen record. On a
+      // selection, clear the query so the box shows the host's selectedLabel.
+      itemToStringLabel={(item: string) =>
+        visible.find((option) => option.value === item)?.label ??
+        (item === value ? selectedLabel : '')
+      }
+      onInputValueChange={(next, details) =>
+        setQuery(details.reason === 'item-press' ? '' : next)
+      }
       onValueChange={(next) => {
+        setQuery('')
         const selected = typeof next === 'string' ? next : ''
         onValueChange(
           selected,

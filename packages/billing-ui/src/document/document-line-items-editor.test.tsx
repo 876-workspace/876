@@ -595,3 +595,115 @@ describe('DocumentLineItemsEditor — catalogue and percentage discount', () => 
     })
   })
 })
+
+describe('DocumentLineItemsEditor tax rates and layout', () => {
+  const taxRates = [
+    { id: 'txr_gct', label: 'GCT [15%]', rate: '15.0000' },
+    { id: 'txr_low', label: 'Reduced [10%]', rate: '10' },
+  ]
+
+  it('replaces the typed tax amount with a rate picker when rates are supplied', () => {
+    renderEditor({ taxRates })
+    const tax = screen.getByLabelText('Line 1 tax')
+    expect(tax.tagName).toBe('SELECT')
+    expect(
+      screen.getByRole('option', { name: 'GCT [15%]' })
+    ).toBeInTheDocument()
+  })
+
+  it('stores the chosen rate on the line', () => {
+    const { onChange } = renderEditor({ taxRates })
+
+    fireEvent.change(screen.getByLabelText('Line 1 tax'), {
+      target: { value: 'txr_gct' },
+    })
+
+    expect(onChange).toHaveBeenCalledTimes(1)
+    expect(onChange).toHaveBeenCalledWith([
+      {
+        ...draft(),
+        taxRateId: 'txr_gct',
+        taxRate: '15.0000',
+        taxAmount: '0',
+      },
+    ])
+  })
+
+  it('clears the rate when No tax is chosen', () => {
+    const { onChange } = renderEditor({
+      taxRates,
+      lines: [draft({ taxRateId: 'txr_gct', taxRate: '15.0000' })],
+    })
+
+    fireEvent.change(screen.getByLabelText('Line 1 tax'), {
+      target: { value: '' },
+    })
+
+    expect(onChange).toHaveBeenCalledWith([
+      { ...draft(), taxRateId: null, taxRate: null, taxAmount: '0' },
+    ])
+  })
+
+  it('calculates line tax from the rate on the discounted subtotal', () => {
+    renderEditor({
+      taxRates,
+      lines: [
+        draft({
+          discountAmount: '1000.00',
+          taxRateId: 'txr_gct',
+          taxRate: '15.0000',
+          taxAmount: '9999',
+        }),
+      ],
+    })
+
+    // 2 × 1500 − 1000 = 2000; 15% of that is 300.
+    expect(screen.getByTestId('total-tax')).toHaveTextContent('J$300.00')
+    expect(screen.getByTestId('line-total-0')).toHaveTextContent('J$2300.00')
+  })
+
+  it('omits the built-in totals when the host renders its own', () => {
+    renderEditor({ showTotals: false })
+    expect(screen.queryByTestId('total-total')).not.toBeInTheDocument()
+  })
+
+  it('folds document-level amounts into the reported totals', async () => {
+    const onTotalsChange = vi.fn()
+    renderEditor({
+      showTotals: false,
+      discountAmount: 50000n,
+      shippingAmount: 10000n,
+      adjustmentAmount: -500n,
+      onTotalsChange,
+    })
+
+    await waitFor(() => expect(onTotalsChange).toHaveBeenCalled())
+    const snapshot = onTotalsChange.mock.lastCall?.[0]
+    expect(snapshot?.status).toBe('ready')
+    expect(snapshot?.totals.totalAmount).toBe(259500n)
+  })
+
+  it('renders the table heading when a title is given', () => {
+    renderEditor({ title: 'Item table' })
+    expect(
+      screen.getByRole('heading', { name: 'Item table' })
+    ).toBeInTheDocument()
+  })
+
+  it('numbers each row and marks the row a totals error names', () => {
+    renderEditor({
+      lines: [draft(), draft({ id: 'line-2', discountAmount: '99999.00' })],
+    })
+    const rows = screen.getAllByRole('row').slice(1)
+    expect(rows[0]).toHaveTextContent(/^1/)
+    expect(rows[1]).toHaveTextContent(/^2/)
+    expect(rows[0]).not.toHaveAttribute('aria-invalid')
+    expect(rows[1]).toHaveAttribute('aria-invalid', 'true')
+  })
+
+  it('labels the discount amount option with the document currency', () => {
+    renderEditor({ allowPercentageDiscount: true, currency: 'JMD' })
+    expect(screen.getByRole('option', { name: 'JMD' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: '%' })).toBeInTheDocument()
+  })
+})

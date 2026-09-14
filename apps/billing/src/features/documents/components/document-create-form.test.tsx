@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -229,9 +229,7 @@ describe('DocumentCreateForm', () => {
         'A line discount cannot exceed the line subtotal.'
       )
     ).toBeVisible()
-    expect(
-      screen.getByRole('button', { name: 'Save draft invoice' })
-    ).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Save as draft' })).toBeDisabled()
     expect(mocks.invoiceCreate).not.toHaveBeenCalled()
   })
 
@@ -240,11 +238,11 @@ describe('DocumentCreateForm', () => {
     renderForm()
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'Save draft invoice' })
+        screen.getByRole('button', { name: 'Save as draft' })
       ).toBeEnabled()
     )
 
-    await user.click(screen.getByRole('button', { name: 'Save draft invoice' }))
+    await user.click(screen.getByRole('button', { name: 'Save as draft' }))
 
     expect(
       await screen.findByText('Select the customer this document is for.')
@@ -257,7 +255,7 @@ describe('DocumentCreateForm', () => {
     renderForm()
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'Save draft invoice' })
+        screen.getByRole('button', { name: 'Save as draft' })
       ).toBeEnabled()
     )
     await user.type(
@@ -267,7 +265,7 @@ describe('DocumentCreateForm', () => {
     await user.click(
       await screen.findByRole('option', { name: /Kingston Studio/ })
     )
-    await user.click(screen.getByRole('button', { name: 'Save draft invoice' }))
+    await user.click(screen.getByRole('button', { name: 'Save as draft' }))
 
     expect(
       await screen.findByText(
@@ -282,7 +280,7 @@ describe('DocumentCreateForm', () => {
     renderForm()
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'Save draft invoice' })
+        screen.getByRole('button', { name: 'Save as draft' })
       ).toBeEnabled()
     )
     await fillValidLine(user)
@@ -292,7 +290,7 @@ describe('DocumentCreateForm', () => {
     )
     await user.type(screen.getByLabelText('Line 1 discount'), '10')
 
-    await user.click(screen.getByRole('button', { name: 'Save draft invoice' }))
+    await user.click(screen.getByRole('button', { name: 'Save as draft' }))
 
     await waitFor(() =>
       expect(mocks.invoiceCreate).toHaveBeenCalledWith({
@@ -314,6 +312,10 @@ describe('DocumentCreateForm', () => {
             taxAmount: '0',
           },
         ],
+        dueAt: Math.floor(
+          Date.parse(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`) /
+            1000
+        ),
         salespersonId: null,
         orderNumber: null,
         referenceNumber: null,
@@ -331,12 +333,12 @@ describe('DocumentCreateForm', () => {
     renderForm()
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: 'Save draft invoice' })
+        screen.getByRole('button', { name: 'Save as draft' })
       ).toBeEnabled()
     )
     await fillValidLine(user)
 
-    await user.click(screen.getByRole('button', { name: 'Save draft invoice' }))
+    await user.click(screen.getByRole('button', { name: 'Save as draft' }))
 
     await waitFor(() =>
       expect(mocks.push).toHaveBeenCalledWith('/invoices/in_123')
@@ -413,9 +415,9 @@ describe('DocumentCreateForm', () => {
       await screen.findByRole('button', { name: 'Save invoice' })
     )
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Invoice could not be updated.'
-    )
+    expect(
+      await screen.findByText('Invoice could not be updated.')
+    ).toBeInTheDocument()
     expect(screen.getByLabelText('Line 1 description')).toHaveValue(
       'Consulting'
     )
@@ -439,6 +441,108 @@ describe('DocumentCreateForm', () => {
       notes: 'Original note',
       terms: 'Net 30',
       referenceNumber: 'REF-1',
+    })
+  })
+
+  describe('due dates, adjustments, and tax rates', () => {
+    it('submits the due date implied by the chosen payment terms', async () => {
+      const user = userEvent.setup()
+      renderForm()
+      await fillValidLine(user)
+      fireEvent.change(screen.getByLabelText('Invoice date'), {
+        target: { value: '2026-09-13' },
+      })
+      fireEvent.change(screen.getByLabelText('Payment terms'), {
+        target: { value: 'end-of-month' },
+      })
+
+      await user.click(screen.getByRole('button', { name: 'Save as draft' }))
+
+      await waitFor(() => expect(mocks.invoiceCreate).toHaveBeenCalledTimes(1))
+      expect(mocks.invoiceCreate.mock.calls[0]?.[0]).toMatchObject({
+        issueAt: 1_789_257_600,
+        dueAt: 1_790_726_400,
+      })
+    })
+
+    it('submits the typed quote expiry date', async () => {
+      const user = userEvent.setup()
+      renderForm({ kind: 'quote', returnUrl: '/quotes' })
+      await fillValidLine(user)
+      fireEvent.change(screen.getByLabelText('Quote date'), {
+        target: { value: '2026-09-13' },
+      })
+      fireEvent.change(screen.getByLabelText('Expiry date'), {
+        target: { value: '2026-09-27' },
+      })
+
+      await user.click(screen.getByRole('button', { name: 'Save as draft' }))
+
+      await waitFor(() => expect(mocks.quoteCreate).toHaveBeenCalledTimes(1))
+      expect(mocks.quoteCreate.mock.calls[0]?.[0]).toMatchObject({
+        issueAt: 1_789_257_600,
+        expiresAt: 1_790_467_200,
+      })
+      expect(mocks.invoiceCreate).not.toHaveBeenCalled()
+    })
+
+    it('sends document discount and shipping from the totals panel', async () => {
+      const user = userEvent.setup()
+      renderForm()
+      await fillValidLine(user)
+      await user.type(screen.getByLabelText('Discount'), '25')
+      await user.type(screen.getByLabelText('Shipping'), '5.50')
+
+      await waitFor(() =>
+        expect(screen.getByTestId('total-total')).toHaveTextContent(
+          'JMD 105.50'
+        )
+      )
+      await user.click(screen.getByRole('button', { name: 'Save as draft' }))
+
+      await waitFor(() => expect(mocks.invoiceCreate).toHaveBeenCalledTimes(1))
+      expect(mocks.invoiceCreate.mock.calls[0]?.[0]).toMatchObject({
+        discountAmount: '2500',
+        shippingAmount: '550',
+        adjustmentAmount: '0',
+      })
+    })
+
+    it('submits tax calculated from the chosen line tax rate', async () => {
+      const user = userEvent.setup()
+      renderForm({
+        taxRates: [{ id: 'txr_gct', label: 'GCT [15%]', rate: '15.0000' }],
+      })
+      await fillValidLine(user)
+      fireEvent.change(screen.getByLabelText('Line 1 tax'), {
+        target: { value: 'txr_gct' },
+      })
+
+      await user.click(screen.getByRole('button', { name: 'Save as draft' }))
+
+      await waitFor(() => expect(mocks.invoiceCreate).toHaveBeenCalledTimes(1))
+      expect(mocks.invoiceCreate.mock.calls[0]?.[0].lines).toEqual([
+        {
+          description: 'Consulting',
+          quantity: 1,
+          unitAmount: '12500',
+          discountAmount: '0',
+          taxAmount: '1875',
+        },
+      ])
+    })
+
+    it('shows the running total and quantity in the footer', async () => {
+      const user = userEvent.setup()
+      renderForm()
+      await fillValidLine(user)
+      await user.clear(screen.getByLabelText('Line 1 quantity'))
+      await user.type(screen.getByLabelText('Line 1 quantity'), '3')
+
+      await waitFor(() =>
+        expect(screen.getByText('Total amount: JMD 375.00')).toBeInTheDocument()
+      )
+      expect(screen.getByText('Total quantity: 3')).toBeInTheDocument()
     })
   })
 })

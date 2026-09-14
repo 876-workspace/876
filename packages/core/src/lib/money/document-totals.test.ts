@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest'
 
 import {
   calculateDocumentTotals,
+  calculateTax,
   calculateLineSubtotal,
   formatMinorUnits,
   parseDecimalToMinorUnits,
+  parsePercentRate,
   resolvePercentageDiscount,
   toMinorUnits,
   MAX_PERCENT_BASIS_POINTS,
@@ -537,5 +539,50 @@ describe('resolvePercentageDiscount', () => {
 
   it('scales percentages by basis points, not by hundredths', () => {
     expect(PERCENT_SCALE).toBe(10_000n)
+  })
+})
+
+describe('parsePercentRate', () => {
+  it.each([
+    ['15', 150_000n],
+    ['16.5000', 165_000n],
+    ['0.00005', 1n],
+    ['0.00004', 0n],
+  ])('reads %s at six-decimal scale', (input, expected) => {
+    expect(parsePercentRate(input)).toBe(expected)
+  })
+
+  it.each([null, '', '-15', 'abc', '15%', '1.2.3'])(
+    'reads %s as zero',
+    (input) => {
+      expect(parsePercentRate(input)).toBe(0n)
+    }
+  )
+})
+
+describe('calculateTax', () => {
+  it('charges an exclusive rate on top of the amount', () => {
+    expect(calculateTax(1_000_000n, '15')).toBe(150_000n)
+  })
+
+  it('rounds half-up to the minor unit', () => {
+    expect(calculateTax(333n, '15')).toBe(50n)
+    expect(calculateTax(330n, '15')).toBe(50n)
+    expect(calculateTax(329n, '15')).toBe(49n)
+  })
+
+  it('extracts the tax contained in an inclusive amount', () => {
+    expect(calculateTax(115_000n, '15', true)).toBe(15_000n)
+  })
+
+  it('charges nothing on a zero or negative amount', () => {
+    expect(calculateTax(0n, '15')).toBe(0n)
+    expect(calculateTax(-500n, '15')).toBe(0n)
+  })
+
+  it('charges nothing for an unreadable or zero rate', () => {
+    expect(calculateTax(10_000n, null)).toBe(0n)
+    expect(calculateTax(10_000n, '0')).toBe(0n)
+    expect(calculateTax(10_000n, 'fifteen')).toBe(0n)
   })
 })
