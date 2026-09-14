@@ -136,15 +136,14 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 ## Sub-Agent Rules
 
 - **Background execution is authorized** (user, 2026-07-26: _"run codex in the background always going further"_, refined to _"in the background only if they make sense, you make that decision"_). This supersedes the previous foreground-only requirement, which permitted exactly this written exception. Use judgement: background genuinely long-running work (a Codex run, a CI poll) and keep quick checks in the foreground. Either way you must still read and verify the output — a delegation you never inspect is not delegation.
-- **Read `.claude/rules/cli.md` before spawning any sub-agent or CLI.** It is the canonical routing rule for which model handles which task class:
-  - **Code exploration/research** → a Sonnet sub-agent at high reasoning depth, briefed with the exact question, why it's needed, and the expected return shape (file:line citations, exact shapes) — this is the highest-token category, so a shallow one-line brief undermines the whole point of delegating it.
-  - **Advanced/critical implementation** → an Opus sub-agent at high reasoning depth.
-  - **General, routine updates** → an Opus sub-agent at medium reasoning depth.
-  - **Design decisions and the highest-stakes/security-sensitive code** → **Fable, executed directly by the primary agent, never delegated to a sub-agent** at medium/high effort. A low-effort Fable sub-agent is the only exception, and only after asking the user first.
-  - **Docs-only work** → `agy` on a **Gemini** model (its Claude/GPT quota is a separate, easily exhausted bucket — check `agy -p "/quota"` first) or `opencode`/Command Code with DeepSeek V4. Always pass `--print-timeout`; it defaults to 5 minutes and kills longer runs with exit code 0.
-  - **Trivial/mechanical/mass-simple changes** (e.g. a renamed function and all its call sites) → orchestrate `opencode` or Command Code with DeepSeek V4, run in parallel across non-overlapping file sets.
-  - See `.claude/rules/cli.md` for the exact non-interactive invocation of each CLI.
-  - For the exact Codex/agy invocation commands, briefing format, and split ratio, see the `sub-agent-delegation` skill.
+- **Claude is the orchestrator by default** (user, 2026-09-14): it writes briefs, dispatches the code to delegate CLIs, monitors, verifies, splits PRs, merges and deploys. Claude writes code itself only for design/security-critical work and small fixes found in verification. Claude `Agent` sub-agents are not the default delegate.
+- **Read `.claude/rules/cli.md` before delegating.** It is the canonical routing and spend-order rule:
+  - **Cheap/easy work** (copying an existing pattern, docs, renames, mechanical sweeps, tests for stable code) → free and prepaid pools first, rotating models as daily limits hit: **Cline free models → opencode free models → Command Code (DeepSeek V4.1 Flash, prepaid — use it up)**.
+  - **Tougher implementation** → **Codex `gpt-5.6-terra` at medium** by default; `high` for genuinely hard briefs.
+  - **Design decisions and security-sensitive code** → the primary agent directly, never delegated.
+  - **Gemini/`agy` is out** as of 2026-09-14.
+  - At most **two local delegates at once** (7 GB host; five parallel runs were OOM-killed).
+  - Free-tier models over-read: briefs must name exact files, paste the excerpts they need, and set a read budget.
 
 ## Boundaries
 

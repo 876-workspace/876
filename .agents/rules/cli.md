@@ -1,65 +1,104 @@
 # Sub-Agent & CLI Model Routing
 
 Read this before spawning any sub-agent or driving any external CLI (Codex,
-`agy`, `opencode`, Command Code) for a delegated chunk of work. It defines
-**which model/tool handles which class of task**, and how to invoke each CLI
-non-interactively. See `.claude/rules/implementation-tracker.md` for tracking
-multi-file delegated work, and the root `CLAUDE.md` "Sub-Agent Rules" section
-for the background-execution rule.
+Cline, `opencode`, Command Code, `agy`, Muse Code) for a delegated chunk of work.
+It defines the **default operating mode**, **which model/tool handles which class
+of task**, **how to spend every free and prepaid quota before paying for more**,
+and how to invoke each CLI non-interactively. See
+`.claude/rules/implementation-tracker.md` for tracking multi-file delegated work.
 
-## Available tooling — verified, do not re-probe
+## Default operating mode — Claude orchestrates, CLIs write the code
 
-This inventory exists so a session knows what it can reach **without spending
-turns probing**. Trust it; re-verify only if a command actually fails.
+Unless the user explicitly says otherwise, **Claude runs as the orchestrator**
+(user, 2026-09-14: _"always go for an orchestrator pattern unless instructed
+otherwise"_). The orchestrator:
 
-| Tool                    | Command                                                                      | Auth state            | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ----------------------- | ---------------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Codex**               | `codex exec -m <model>`                                                      | ready                 | Four models are installed: **`gpt-5.6-sol`**, **`gpt-5.6-luna`**, **`gpt-5.6-terra`**, **`gpt-5.6-pro`** (full list: `~/.codex/models_cache.json`). `~/.codex/config.toml` sets the defaults, which as of 2026-08-27 are **`gpt-5.6-luna` at `model_reasoning_effort = "medium"`** — **not** terra/high, as this table claimed until then. Always pass `-m` explicitly rather than relying on the default, and pass `-c model_reasoning_effort=<low\|medium\|high>` when you want something other than the configured effort. The config also sets `approval_policy = "never"` and `sandbox_mode = "danger-full-access"`, so `--dangerously-bypass-approvals-and-sandbox` runs unattended. |
-| **opencode**            | `opencode run -m deepseek/deepseek-v4-pro`                                   | ready                 | Trivial/mechanical tier. See below.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| **Command Code**        | `command-code -p --yolo`                                                     | ready                 | Alternative to opencode, same tier.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| **Cline CLI**           | `cline -c <dir> -m <model> --thinking none -t <secs> "<prompt>" < /dev/null` | ready (v3.0.61)       | Free models, trivial/mechanical tier and easy renames. **Always the fastest setting: `--thinking none`** except Muse (see below). Non-interactive by default (act mode, auto-approve on).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| **Muse Code** (Meta)    | `muse exec --trust-workspace`                                                | ready                 | Fast, high-quality module ports. **Cannot run any command in this container** — see below. Always pass `--trust-workspace`, or it silently skips the project rules.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| **agy** (Antigravity)   | `agy`                                                                        | ready                 | **High capacity on Gemini models, small and easily exhausted on Claude/GPT models — separate quota buckets.** Check with `agy -p "/quota"` before delegating. Prefer it for high-volume non-critical work, on Gemini. Capable but literal: it needs step-by-step instructions with a worked example, and its output must always be reviewed. Models via `agy models`.                                                                                                                                                                                                                                                                                                                      |
-| **Cloudflare Wrangler** | `npx wrangler`                                                               | **authenticated**     | OAuth as `raheemforschool@gmail.com`, account `b033115f2e5e7382047b69539b971105`. Scopes include `workers:write`, `workers_scripts:write`, `workers_kv:write`, `workers_routes:write`. Can deploy Workers, read/set secrets, and `wrangler tail` live logs.                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| **GitHub CLI**          | `gh`                                                                         | **authenticated**     | Account `876-workspace`, scopes `repo`, `workflow`, `read:org`, `gist`. Can open/merge PRs, dispatch workflows, read Actions logs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| **Sentry**              | `sentry`                                                                     | **authenticated**     | v0.38.0 at `~/.local/bin/sentry`, org **`efesto`** (Efesto-Technologies), team `efesto-technologies`. Token auto-refreshes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ~~sentry-cli~~          | `sentry-cli`                                                                 | **NOT authenticated** | v3.6.2 at `/usr/local/bin/sentry-cli`, **no auth token**. This is a _different, unusable_ binary — always use `sentry`, never `sentry-cli`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| **Docker**              | —                                                                            | **UNAVAILABLE**       | No binary, no daemon. This is why Cloudflare **Container** services (`876-api`, `876-billing-api`, `876-storage-api`) cannot be deployed locally — their image build must run in GitHub Actions.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+1. explores just enough to write precise briefs (file paths, the reference
+   implementation to copy, exact scope, verification commands);
+2. writes each brief to `plans/<run>/briefs/<tool>/…` and dispatches it to the
+   **cheapest tool that can do the job** (routing table below);
+3. monitors the runs, reads every report and diff, runs verification itself;
+4. fixes small defects directly, splits the work into focused PRs, merges, deploys.
+
+Claude writes code itself only for security-critical/design-critical work
+(auth, key handling, sessions, provisioning — see "Fable is never delegated"),
+for small surgical fixes found during verification, or when every delegate tier is
+unavailable. Claude `Agent` sub-agents are **not** the default delegate — use them
+only when the user asks, or for read-only exploration no CLI can do.
+
+## Spend order — exhaust free and prepaid quota first
+
+The user's standing instruction (2026-09-14): _"always use and exhaust [the free
+models] whenever you see fit to capitalize on free usage … use the hell out of
+Command Code … look at all models by all the CLIs and use them up."_
+
+| Order | Pool                                                            | What it costs                        | Use it for                                                                                                                                                                       |
+| ----- | --------------------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | **Cline free models** (daily limits per model)                  | free                                 | cheap/easy work, UI copies of an existing pattern, docs, renames, tests for existing code                                                                                        |
+| 2     | **opencode free models**                                        | free                                 | same tier, second free pool                                                                                                                                                      |
+| 3     | **Command Code** — DeepSeek V4.1 Flash (and the `:free` models) | prepaid $1/month, extremely generous | same tier, and anything the free pools are out of — **use it up**                                                                                                                |
+| 4     | **Codex** — `gpt-5.6-terra` at **medium** by default            | ChatGPT plan quota                   | tougher implementation: cross-layer features, service + SDK + UI changes, hard bugs; `high` only when the brief is genuinely hard, `gpt-5.6-luna` when the user asks for cheaper |
+| 5     | Claude (this session)                                           | most expensive                       | orchestration, design/security-critical code, verification                                                                                                                       |
+
+Rules:
+
+- **Rotate, don't stop, when a model hits its daily limit.** A free model that
+  answers with a limit/quota/"promotion ended" error, or exits having written
+  nothing, is switched for the next model in the same pool, then the next pool.
+  Record which model finished the run in the report and `plan.md`.
+- **Probe before a long run** (one-word prompt, costs nothing) when a model may be
+  exhausted — see each CLI's probe command below.
+- **Gemini (`agy`) is currently out** (2026-09-14). Do not route work to it until
+  the user says it is back.
+- **Memory is the real concurrency limit.** This host has 7 GB RAM and runs the
+  dev server; five parallel delegates OOM-killed every run on 2026-09-14. Run
+  **at most two local delegates at once**, and tell every delegate to run one
+  verification command at a time.
+
+## Available tooling — verified 2026-09-14, do not re-probe
+
+| Tool                    | Command                                                                                                                          | Notes                                                                                                                                                       |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Cline**               | `cline -c <dir> -m <model> --thinking none -t <secs> "<prompt>" < /dev/null`                                                     | Free pool #1. Headless act mode, auto-approve. **Reads a lot** — see "Briefing the free tier".                                                              |
+| **opencode**            | `opencode run -m <model> [--variant <effort>] --auto "<prompt>" < /dev/null`                                                     | Free pool #2. An invalid flag prints help and exits 0 with no changes — check the diff.                                                                     |
+| **Command Code**        | `command-code -p --yolo --skip-onboarding -m <model> --max-turns <n> "<prompt>" < /dev/null`                                     | Prepaid; DeepSeek V4.1 Flash is the workhorse. `--effort low\|medium\|high`, `--output-format json` for an NDJSON stream. `--list-models` shows ~70 models. |
+| **Codex**               | `codex exec -m gpt-5.6-terra -c model_reasoning_effort=medium --dangerously-bypass-approvals-and-sandbox "<prompt>" < /dev/null` | Models: `gpt-5.6-terra`, `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-5.5`, plus `gpt-6-astra` and `gpt-reserve` (not yet evaluated). Always pass `-m` and effort.   |
+| **Muse Code** (Meta)    | `muse exec --trust-workspace`                                                                                                    | Cannot run commands in this container — see its section.                                                                                                    |
+| **agy** (Antigravity)   | `agy`                                                                                                                            | **Gemini out as of 2026-09-14.**                                                                                                                            |
+| **Cloudflare Wrangler** | `npx wrangler`                                                                                                                   | authenticated (legacy; apps deploy on Vercel now)                                                                                                           |
+| **GitHub CLI**          | `gh`                                                                                                                             | authenticated as `876-workspace`                                                                                                                            |
+| **Sentry**              | `sentry`                                                                                                                         | authenticated, org `efesto`. Never `sentry-cli` (unauthenticated).                                                                                          |
+| **Docker**              | —                                                                                                                                | unavailable                                                                                                                                                 |
 
 **MCP servers** (`.mcp.json`, repo root): `sentry` — HTTP, `https://mcp.sentry.dev/mcp`.
 
-Two traps worth remembering:
+Traps worth remembering:
 
-- **`sentry` vs `sentry-cli` are not the same tool.** Only `sentry` is
-  authenticated. Reaching for `sentry-cli` wastes a turn on an auth error.
 - **Never write a `pgrep` guard whose own pattern matches the command line it
-  runs in.** `until ! pgrep -f "sentry project create"; do …; done` inside a
-  script that then calls `sentry project create` matches _itself_ and hangs
-  forever. Match on the binary path instead (e.g. `pgrep -f "bin/codex"`).
+  runs in.** Match `cod[e]x exec`, `[c]line -c`, `[o]pencode run`,
+  `[c]ommand-code -p`, never a bare string that appears in the monitor itself.
+- **Exit code 0 means nothing.** Cline, opencode, Command Code and Codex all exit
+  0 after refusing, stalling, hitting a quota, or writing nothing. Judge by
+  `git status`/`git diff` and the report file.
 
 ## Routing table
 
-| Task class                                                                                                                               | Model / tool                                                                                                                           | Execution mode                                                                                       |
-| ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Code exploration / research (find files, trace a symbol, map a subsystem before implementing)                                            | **Sonnet, high reasoning**                                                                                                             | Sub-agent (`Agent` tool, `model: sonnet`), detailed brief (below)                                    |
-| Advanced/critical implementation (cross-cutting, architecturally sensitive, hard bugs)                                                   | **Opus, high reasoning**                                                                                                               | Sub-agent (`Agent` tool, `model: opus`)                                                              |
-| General updates (routine feature work, moderate scope, not exploration or high-stakes design)                                            | **Opus, medium reasoning**                                                                                                             | Sub-agent (`Agent` tool, `model: opus`)                                                              |
-| Well-specified module port (a bounded chunk with a reference module to copy and a mechanical way to check the result)                    | **Muse Code**, high reasoning                                                                                                          | Foreground or background CLI — **you run every verification**, it cannot                             |
-| Large multi-phase feature the user is willing to relay by hand (a whole standard, a cross-cutting refactor, anything wanting many tests) | **GPT web** (ChatGPT, GPT-5.6 high)                                                                                                    | **Human-relayed**: you write a brief file, the user pastes it, it pushes to the branch. See below.   |
-| Design decisions / highest-stakes or security-sensitive code (auth, key handling, provisioning, anything that must simply be _right_)    | **Fable, high reasoning**                                                                                                              | **Direct execution by the primary agent — never a sub-agent.** See "Fable is never delegated" below. |
-| Docs-only work (`.md`/`.mdx`, OpenAPI `docs.py` prose, README, rule files)                                                               | **Cline** (free models) **or** `agy`, Sonnet 4.6 Thinking (existing) **or** `opencode`/Command Code with **DeepSeek V4**               | Foreground CLI                                                                                       |
-| Trivial / mechanical / mass-simple edits (rename a function and fix every call site, bulk find-replace, boilerplate scaffolding)         | **Cline** (free models, max speed) **or** opencode / Command Code with DeepSeek V4 — orchestrate in parallel for independent file sets | Foreground CLI                                                                                       |
+| Task class                                                                                                                  | First choice                                                                   | Fallback                                                        |
+| --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| Copy an existing pattern into another app (a settings page, a list/detail section, route handlers mirroring another app)    | Cline free model                                                               | opencode free → Command Code DeepSeek V4.1 Flash                |
+| Trivial / mechanical / mass-simple edits (renames, bulk find-replace, boilerplate) — split across non-overlapping file sets | Command Code DeepSeek V4.1 Flash (parallel runs)                               | Cline / opencode free                                           |
+| Docs-only work (`.md`, rule files, README, OpenAPI prose)                                                                   | Cline free model                                                               | Command Code DeepSeek V4.1 Flash                                |
+| Tests for existing, stable code                                                                                             | Command Code DeepSeek V4.1 Flash                                               | Cline free                                                      |
+| General feature work spanning a few layers                                                                                  | Codex `gpt-5.6-terra` medium                                                   | Command Code `deepseek/deepseek-v4-pro` or `moonshotai/kimi-k3` |
+| Advanced implementation (service + SDK + UI + migrations, hard bugs)                                                        | Codex `gpt-5.6-terra` high                                                     | Codex `gpt-5.6-sol`                                             |
+| Well-specified module port with a mechanical check                                                                          | Muse Code                                                                      | Codex terra medium                                              |
+| Large multi-phase feature the user will relay by hand                                                                       | GPT web (see section)                                                          | Codex terra                                                     |
+| Code exploration / research the orchestrator cannot cheaply do itself                                                       | the orchestrator's own `rg`/`sed`; a Sonnet `Agent` only if explicitly allowed | —                                                               |
+| Design decisions / security-critical code (auth, key handling, sessions, provisioning, deletion)                            | **the orchestrator itself** — never delegated                                  | —                                                               |
 
-**Reasoning-effort note:** the `Agent` tool's `model` parameter only selects
-the model (`sonnet` / `opus` / `haiku` / `fable`) — it has no separate
-"reasoning effort" dial the way `codex exec -c model_reasoning_effort=` or
-`opencode run --variant` do. For Claude sub-agents, express the desired
-depth in the brief itself: tell an exploration sub-agent to "search
-exhaustively, check every call site, read full files, cite `file:line` for
-every claim" for a high-effort pass; tell a general-update sub-agent to
-"make the obvious, scoped change without re-deriving the whole subsystem"
-for a medium-effort pass. The model choice (Sonnet vs Opus vs Fable) is the
-primary lever; the brief's thoroughness instructions are the secondary one.
+**Reasoning-effort note:** the `Agent` tool's `model` parameter only selects the
+model; express depth in the brief. For CLIs pass the effort flag explicitly
+(`-c model_reasoning_effort=`, `--variant`, `--effort`, `--thinking`).
 
 ## Code exploration on Sonnet (high effort) — matching orchestrator-quality results
 
@@ -108,12 +147,12 @@ good enough.
   effort, that is a signal the primary agent (you) should be doing the work
   itself, not delegating it.
 
-## Codex — model and effort are chosen per task, not assumed
+## Codex — the tier for tougher work
 
-See the root `CLAUDE.md` "Sub-Agent Delegation (Codex)" section for the
-60/40 Claude-led/Codex-assisted workflow, briefing format, and the
-`codex exec` invocation. Codex remains the default for non-trivial
-well-scoped implementation chunks that don't need Opus/Fable-level judgment.
+Default: **`gpt-5.6-terra` at `medium`** (user, 2026-09-14). Raise to `high` for a
+genuinely hard brief (cross-service, migrations, security-adjacent); use
+`gpt-5.6-luna` when the user asks for a cheaper run. Codex is not for work the
+free tier can do from a precise brief.
 
 **Always pass `-m` explicitly.** The configured default has changed at least
 once without this file noticing, so a bare `codex exec` is a guess about which
@@ -132,7 +171,7 @@ and check the test **count** moved, not just that the suite is green — the sam
 run reported success having written none of the ten tests its brief required.
 Verify the work, not the summary.
 
-## `agy` (Antigravity) — high-capacity **Gemini** tier for non-critical work
+## `agy` (Antigravity) — Gemini tier (OUT as of 2026-09-14; do not route work here)
 
 Antigravity is the default tool for high-volume work that does not need to be
 correct on the first try: documentation, Markdown, placeholder scaffolding,
@@ -442,106 +481,95 @@ signature it loosened to make a test easier.
 **It pushes while you work.** Fetch before you commit, `git rebase` onto its
 commits, and never force-push over them.
 
-## Cline CLI — free models, trivial work, easy renames, docs
+## Briefing the free tier — they read too much
 
-Cline (`cline`, v3.0.61) runs headless by default: a positional prompt starts
-act mode with tool auto-approval on. Use it for mechanical renames, bulk
-find-replace, scaffolding, and docs. Its output is reviewed like any delegate's.
+Cline (and to a lesser degree opencode and Command Code) **spends most of a run
+reading**: watched manually on 2026-09-14, a Cline run on a one-page settings
+brief read files for ~15 minutes and wrote three small files before stopping.
+A brief that says "read the reference implementation" invites it to read the
+whole subtree. For the free tier the brief must do the reading for it:
+
+- **Name every file to create or edit, by exact path**, and every file to copy
+  from — no globs, no "look around".
+- **Paste the short excerpts it needs** (the import lines, the props of the
+  shared component, the route-handler skeleton) instead of pointing at a file.
+- Give a **read budget**: "read at most these N files, then start writing".
+- Order the work so the **first deliverable is written early** (the page file
+  before its tests), so a run that stalls still leaves something reviewable.
+- Keep each brief to **one PR-sized unit**; split anything larger across runs.
+- Require the report file; a run that ends without one did not finish.
+
+## Cline — free pool #1
 
 ```bash
-cline -c /root/projects/876 -m deepseek/deepseek-v4-flash --thinking none \
-  -t 3000 "$(cat plans/<run>/briefs/cline/<brief>.md)" < /dev/null > /dev/null 2>&1
+cline -c /root/projects/876 -m <model> --thinking none -t 3600 \
+  "$(cat plans/<run>/briefs/cline/<brief>.md)" < /dev/null > /dev/null 2>&1
 ```
 
-- **Always run at maximum speed: `--thinking none`.** The one exception is Muse,
-  whose endpoint rejects disabled reasoning — pass `--thinking low` for it.
-- `-c <dir>` sets the working directory; `-t <seconds>` is a hard timeout
-  (default is none — always set one); `< /dev/null` so it never waits on stdin.
-- Harmless noise on every run: `error: hook dispatch failed: session.hook requires
-a valid hook event payload`. It does not affect the task.
-- `cline config` and other subcommands need a TTY and fail headless.
-- **A run can finish with no edits and no error.** On 2026-09-13 the first
-  `cli.md` run exited cleanly having changed nothing; the identical retry worked.
-  Check `git diff` before trusting it, and add `--json | tail -3` (kept in a
-  shell variable, never a file) to read the terminal `run_result`.
+- `--thinking none` for speed; models with mandatory reasoning (Muse) take
+  `--thinking low`.
+- `-c <dir>` working directory, `-t <secs>` hard timeout (always set),
+  `< /dev/null` so it never waits on stdin.
+- Harmless noise: `error: hook dispatch failed: session.hook requires a valid hook event payload`.
+- `cline config` and other subcommands need a TTY.
 
-### Free models (verified 2026-09-13)
+Free models (2026-09-14, each has its own **daily limit** — rotate):
 
-Every model below answered a headless prompt on 2026-09-13:
+| Model id                                | Notes                                                                     |
+| --------------------------------------- | ------------------------------------------------------------------------- |
+| `cline-free/deepseek-v4.1-flash`        | fast, 1M context; the default                                             |
+| `cline-free/muse-spark-1.3-contributor` | strongest free coder; hit its daily limit on 2026-09-14; `--thinking low` |
+| `z-ai/glm-5.3-flash`                    | fast multimodal                                                           |
+| `cline-free/solar-pro4`                 | documents and coding                                                      |
+| `poolside/laguna-s-2.1:free`            | coding agent                                                              |
 
-| Model id                                | Notes                                        |
-| --------------------------------------- | -------------------------------------------- |
-| `deepseek/deepseek-v4-flash`            | Default: fastest, 1M context                 |
-| `z-ai/glm-5.3-flash`                    | Fast multimodal                              |
-| `cline-free/solar-pro4`                 | Documents and coding                         |
-| `cline-free/longcat-2.0`                | Agentic coding                               |
-| `poolside/laguna-s-2.1:free`            | Coding agent                                 |
-| `cline-free/muse-spark-1.3-contributor` | Needs `--thinking low` (reasoning mandatory) |
-
-The free roster rotates. Promotions end without notice — `cline-free/deepseek-v4-flash`
-and `cline-free/glm-5` from the Cline changelog both answer `Free model promotion
-ended`. Read the live list rather than trusting this table:
+The roster rotates; read the live list instead of trusting this table:
 
 ```bash
 cd "$(npm root -g)/cline" && node --input-type=module -e \
   "import('@cline/core').then(async m => console.log((await m.fetchClineRecommendedModels()).free.map(x => x.id)))"
 ```
 
-Same rules as every delegate: explicit file scope, the verification commands,
-no commits, no run logs, and judge the result by `git diff` and your own checks.
+Probe a model (≈2 s, costs nothing): add `--json "Reply with OK" | tail -1` and
+read `run_result.finishReason` / `text`. A limit shows as an error result.
 
-## `opencode` — trivial/mechanical work and docs, DeepSeek V4
-
-Use `opencode` for mass-simple, low-risk edits: renaming a function and
-updating every call site, bulk mechanical refactors, boilerplate scaffolding,
-and docs when `agy` isn't a better fit. Prefer **DeepSeek V4** models:
+## opencode — free pool #2
 
 ```bash
-opencode run -m deepseek/deepseek-v4-pro --variant <low|medium|high> \
-  --auto "<task prompt>" < /dev/null
+opencode run -m opencode/<model> [--variant <low|medium|high|max>] --auto \
+  "$(cat plans/<run>/briefs/opencode/<brief>.md)" < /dev/null > /dev/null 2>&1
 ```
 
-- `deepseek/deepseek-v4-pro` for anything needing real reasoning (a
-  multi-file rename with type-checked call sites); `deepseek/deepseek-v4-flash`
-  for pure mechanical find-replace with no ambiguity.
-- `--variant` sets reasoning depth (`low`/`medium`/`high`) — use `medium` for
-  most mechanical work, `high` only if the mechanical change has edge cases
-  (overloads, shadowed names) worth reasoning about.
-- `--auto` auto-approves permissions that are not explicitly denied — use it
-  for unattended/scripted runs. `--dangerously-skip-permissions` and `-q` /
-  `--quiet` do not exist on this CLI; an invalid flag makes opencode print its
-  help text and exit 0 with no files changed, so a "successful" run with no
-  diff should be checked for a flag error before being trusted.
-- Always redirect `< /dev/null` so opencode never blocks on stdin.
-- The stealth free model `opencode/big-pickle` (GLM-4.6, 200k context) is an
-  acceptable substitute for DeepSeek V4 on the same trivial/docs tier when
-  available — `opencode run --model opencode/big-pickle "<prompt>"` — but
-  DeepSeek V4 is the default choice per this rule.
-- Give each `opencode` task an explicit file scope and the verification
-  command (`pnpm --filter <pkg> typecheck`); scope parallel tasks to
-  non-overlapping files exactly like Codex briefs.
+Free models (2026-09-14): `opencode/muse-spark-1.3-contributor-free`,
+`opencode/muse-spark-1.2-contributor-free`, `opencode/big-pickle`,
+`opencode/mimo-v2.5-free`, `opencode/nemotron-3-ultra-free`,
+`opencode/nemotron-3.5-lightning-free`, `opencode/ling-3.0-flash-fin-free`.
+List live: `opencode models | grep -i free`.
 
-## Command Code — alternative CLI for trivial work and docs, DeepSeek V4
+- muse-spark-1.3 at `--variant max` delivered the Couriers settings sidebar and
+  users/roles split (69 tests) cleanly on 2026-09-14 — the best free option for
+  UI work when its quota is available.
+- `--dangerously-skip-permissions` and `-q` do not exist on this CLI.
 
-Command Code (`commandcode.ai`) is an equivalent alternative to `opencode`
-for the same trivial-mechanical/docs tier, supporting DeepSeek V4 among other
-providers. Drive it headlessly:
+## Command Code — prepaid pool, use it up
 
 ```bash
-command-code -p --yolo -m deepseek/deepseek-v4-pro "<task prompt>" < /dev/null
+command-code -p --yolo --skip-onboarding -m deepseek/deepseek-v4.1-flash \
+  --max-turns 150 "$(cat plans/<run>/briefs/command-code/<brief>.md)" < /dev/null > /dev/null 2>&1
 ```
 
-- `-p` / `--print` runs headless mode: executes once, prints to stdout, exits
-  — the non-interactive form to use from scripts/orchestration.
-- `--yolo` (equivalent in intent to Codex's
-  `--dangerously-bypass-approvals-and-sandbox`) skips permission prompts so
-  file writes/edits/shell commands aren't blocked. **Only use it in this
-  repo's workspace-write context, never against untrusted input.**
-  `--dangerously-skip-permissions` is the more explicit alias if `--yolo`
-  is unavailable in the installed version — check `command-code --help` if
-  either flag errors.
-- Always redirect `< /dev/null`.
-- Same non-overlapping-file-scope and no-commit rules as Codex/`opencode`.
+- The user pays $1/month for **extremely generous DeepSeek V4.1 Flash** usage.
+  Treat it as the default workhorse for every cheap task the free pools cannot
+  take, and for parallel mechanical sweeps split by file set.
+- Other useful models on the same plan: `deepseek/deepseek-v4-pro` (more
+  reasoning), `moonshotai/kimi-k3`, `zai-org/glm-5.3`, `qwen/qwen3.8-max`, and the
+  free ones `meituan/longcat-2.0:free`, `poolside/laguna-s-2.1-free`.
+  `command-code --list-models` shows all ~70 (it also lists Claude, GPT and
+  Gemini models — do not route premium models through it without asking).
+- `--max-turns` defaults to 100 and exits 8 at the cap; raise it for real work.
+- `--effort low|medium|high` where the model supports it.
+- Never use `-w/--worktree` (no worktrees for delegates).
+- Probe: `command-code -p "Reply with OK" -m <model> --max-turns 1 --skip-onboarding < /dev/null`.
 
 ## Never redirect a delegated run's stdout to a file in the repo
 
