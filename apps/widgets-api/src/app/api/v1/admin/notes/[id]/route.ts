@@ -1,4 +1,4 @@
-import { apiError } from '@876/core/api'
+import { invalidJsonResponse } from '@/lib/errors'
 
 import { requireWidgetsService } from '@/lib/auth/service-key'
 import { serviceResponse } from '@/lib/http'
@@ -18,7 +18,7 @@ export async function PATCH(request: Request, context: Ctx) {
   try {
     body = await request.json()
   } catch {
-    return apiError('Invalid JSON body.', { status: 400 })
+    return invalidJsonResponse()
   }
 
   const record =

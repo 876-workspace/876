@@ -1,5 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 
+import { getError, isErrorCode } from '@876/core'
+
 /**
  * Wrap JSON responses in the canonical `{ data, error }` envelope.
  *
@@ -40,7 +42,7 @@ function isEnvelope(
   )
 }
 
-function errorMessage(source: unknown): string {
+function errorMessage(source: unknown, code: string): string {
   if (typeof source === 'string') return source
   if (typeof source === 'object' && source !== null) {
     const record = source as Record<string, unknown>
@@ -48,6 +50,9 @@ function errorMessage(source: unknown): string {
     if (typeof record.error_description === 'string')
       return record.error_description
   }
+  // Fully unknown shapes resolve the registered message for a known code so
+  // the envelope never authors its own public copy.
+  if (isErrorCode(code)) return getError(code).message
   return 'An error occurred.'
 }
 
@@ -57,7 +62,7 @@ function errorCode(source: unknown, status: number): string {
     const record = source as Record<string, unknown>
     if (typeof record.code === 'string') return record.code
   }
-  return status === 404 ? 'error/not-found' : 'error/http'
+  return status === 404 ? 'error/not-found' : 'error/unknown'
 }
 
 /** Normalize an error and strip the server-only HTTP status metadata. */
@@ -73,8 +78,9 @@ function clientSafeError(
   for (const key of ['httpStatus', 'http_status', 'status', 'status_code']) {
     delete normalized[key]
   }
-  normalized.code = errorCode(source, status)
-  normalized.message = errorMessage(source)
+  const code = errorCode(source, status)
+  normalized.code = code
+  normalized.message = errorMessage(source, code)
 
   return normalized
 }
@@ -101,11 +107,12 @@ export function envelopePayload(payload: unknown, status: number): unknown {
   // payload rather than from the string. That is what lets an RFC 6749 body —
   // `{ error: "invalid_grant", error_description: "..." }` — keep its
   // description instead of reporting the code twice.
+  const fallbackCode = errorCode(rawError, status)
   return {
     data: null,
     error: {
-      code: errorCode(rawError, status),
-      message: errorMessage(isRecord ? payload : rawError),
+      code: fallbackCode,
+      message: errorMessage(isRecord ? payload : rawError, fallbackCode),
     },
   }
 }

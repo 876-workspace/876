@@ -23,25 +23,27 @@ describe('validateEntryText', () => {
       expect(result).toEqual(
         expect.objectContaining({
           data: null,
-          status: 400,
-          code: 'widgets/invalid-title',
+          error: expect.objectContaining({
+            code: 'widgets/invalid-title',
+            httpStatus: 400,
+          }),
         })
       )
-      expect(result?.error).toMatch(/titles must be between 1 and/i)
+      expect(result?.error.message).toMatch(/titles must be between 1 and/i)
     })
 
     it('when title is empty, then rejects with widgets/invalid-title', () => {
       const result = validateEntryText('', 'body')
 
-      expect(result?.code).toBe('widgets/invalid-title')
-      expect(result?.status).toBe(400)
+      expect(result?.error.code).toBe('widgets/invalid-title')
+      expect(result?.error.httpStatus).toBe(400)
     })
 
     it('when title exceeds the maximum length, then rejects with widgets/invalid-title', () => {
       const result = validateEntryText('x'.repeat(MAX_TITLE_LENGTH + 1), 'body')
 
-      expect(result?.code).toBe('widgets/invalid-title')
-      expect(result?.error).toContain(String(MAX_TITLE_LENGTH))
+      expect(result?.error.code).toBe('widgets/invalid-title')
+      expect(result?.error.message).toContain(String(MAX_TITLE_LENGTH))
     })
   })
 
@@ -55,11 +57,13 @@ describe('validateEntryText', () => {
       expect(result).toEqual(
         expect.objectContaining({
           data: null,
-          status: 400,
-          code: 'widgets/invalid-body',
+          error: expect.objectContaining({
+            code: 'widgets/invalid-body',
+            httpStatus: 400,
+          }),
         })
       )
-      expect(result?.error).toContain(String(MAX_BODY_LENGTH))
+      expect(result?.error.message).toContain(String(MAX_BODY_LENGTH))
     })
   })
 
@@ -112,9 +116,11 @@ describe('parseColor', () => {
       expect(result).toEqual(
         expect.objectContaining({
           data: null,
-          status: 400,
-          code: 'widgets/invalid-color',
-          error: 'Invalid note color.',
+          error: expect.objectContaining({
+            code: 'widgets/invalid-color',
+            httpStatus: 400,
+            message: 'Invalid note color.',
+          }),
         })
       )
     }

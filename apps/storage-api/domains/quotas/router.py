@@ -133,9 +133,5 @@ async def retrieve_quota(
         updated_at=int(time.time()),
     )
     if quota is None and usage_rows[0].files_count == 0 and usage_rows[0].bytes_used == 0:
-        raise AppHTTPException(
-            code="storage/quota-not-found",
-            message="No storage quota exists for that subject.",
-            http_status_code=status.HTTP_404_NOT_FOUND,
-        )
+        raise AppHTTPException(code="storage/quota-not-found")
     return _serialize_usage(quota, usage_rows[0])

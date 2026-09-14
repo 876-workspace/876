@@ -150,6 +150,24 @@ good enough.
   effort, that is a signal the primary agent (you) should be doing the work
   itself, not delegating it.
 
+## Muse Spark 1.3 contributor through Codex — unlimited
+
+Codex is configured with a `muse` provider profile (`~/.codex/muse.config.toml`:
+`model_provider = "muse"`, `model = "muse-spark-1.3-contributor"`,
+`model_reasoning_effort = "xhigh"`). Usage is **unlimited** (user, 2026-09-14),
+so it sits beside the free pools as a first choice for cheap and medium work,
+reviews, and fix passes.
+
+```bash
+codex exec -p muse --dangerously-bypass-approvals-and-sandbox \
+  "$(cat plans/<run>/briefs/codex/<brief>.md)" < /dev/null > /dev/null 2>&1
+```
+
+- `-p muse` selects the profile; do not also pass `-m`, which overrides it.
+- Probe: `codex exec -p muse --dangerously-bypass-approvals-and-sandbox "Reply with exactly OK" < /dev/null`
+  (verified 2026-09-14; an unrelated Cloudflare MCP auth error line is noise).
+- Same rules as any Codex run: exit 0 proves nothing — judge by the diff and report.
+
 ## Codex — the tier for tougher work
 
 **`gpt-6-astra` is never chosen by the orchestrator.** It is the most capable GPT

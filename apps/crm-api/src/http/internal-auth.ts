@@ -2,6 +2,8 @@ import { createHash, timingSafeEqual } from 'node:crypto'
 
 import type { NextFunction, Request, Response } from 'express'
 
+import { sendCrmError } from './result.js'
+
 /**
  * Compares two secrets in constant time. Both sides are hashed first so the
  * comparison is length-independent — `timingSafeEqual` throws on differing
@@ -24,10 +26,7 @@ export function requireInternal(
   const expected = process.env.CRM_INTERNAL_KEY
   const provided = req.header('x-internal-key')?.trim()
   if (!expected || !provided || !secretsMatch(provided, expected))
-    return res.status(401).json({
-      data: null,
-      error: { code: 'crm/unauthorized', message: 'Unauthorized.' },
-    })
+    return sendCrmError(res, 'crm/unauthorized')
 
   next()
 }

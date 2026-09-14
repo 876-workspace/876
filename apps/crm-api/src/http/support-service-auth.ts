@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 
 import { secretsMatch } from './internal-auth.js'
+import { sendCrmError } from './result.js'
 
 const SERVICE_APP_HEADER = 'x-876-service-app'
 const SERVICE_KEY_HEADER = 'x-876-service-key'
@@ -38,10 +39,7 @@ export function requireSupportService(
   )[appSlug]
 
   if (!configured || !secretsMatch(provided, configured))
-    return res.status(401).json({
-      data: null,
-      error: { code: 'crm/unauthorized', message: 'Unauthorized.' },
-    })
+    return sendCrmError(res, 'crm/unauthorized')
 
   res.locals.crmServiceAppSlug = appSlug
   next()

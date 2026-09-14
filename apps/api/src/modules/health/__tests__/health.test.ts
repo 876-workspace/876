@@ -1,6 +1,8 @@
 import request from 'supertest'
 import { describe, expect, it, vi } from 'vitest'
 
+import { getError } from '@876/core'
+
 // Importing `@/app` pulls in every module, and therefore `@/db/client`, which
 // builds a real Prisma client at import. Nothing here touches the database —
 // /health is deliberately connection-free — but constructing the client is
@@ -59,13 +61,16 @@ describe('GET /health', () => {
 })
 
 describe('unmatched routes', () => {
-  it('returns an enveloped 404 naming the method and path', async () => {
+  it('returns the registered not-found envelope', async () => {
     const response = await request(createApp()).get('/does-not-exist')
 
     expect(response.status).toBe(404)
     expect(response.body).toEqual({
       data: null,
-      error: { code: 'error/not-found', message: 'Cannot GET /does-not-exist' },
+      error: {
+        code: 'error/not-found',
+        message: getError('error/not-found').message,
+      },
     })
   })
 

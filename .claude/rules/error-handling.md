@@ -115,7 +115,17 @@ Before a new app or resource family is complete:
 `apps/crm-api` is the reference implementation of the value contract, and Console
 and CRM are migrated on the UI side.
 
-`apps/api`, `apps/billing-api`, and `apps/couriers-api` still throw registered
+`apps/work-api` returns registered errors as values end to end (guards send
+error envelopes directly; `WorkHttpError` is deleted).
+
+`apps/commerce-api`, `apps/widgets-api`, and `apps/storage-api` resolve every
+terminal error (validation, malformed JSON, internal, not-found, auth) through
+their registries. Commerce, Widgets, and Storage service layers return values.
+
+`apps/couriers-api` resolves its terminal middleware through the registry, but
+module services still throw registered errors to the central middleware.
+
+`apps/api` and `apps/billing-api` still throw registered
 errors to their central error middleware. Those call sites are a **pending
 migration, not defects to fix opportunistically** — converting one service's
 throwing boundary halfway leaves callers that neither check a return value nor

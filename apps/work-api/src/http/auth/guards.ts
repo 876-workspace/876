@@ -1,6 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from 'express'
+import { getError, isError, type Error as WorkErrorValue } from '@876/core'
 import type { WorkSecurity, GuardResolver } from '../api-router.js'
-import { WorkHttpError } from '../work-http-error.js'
+import { sendWorkResult } from '../result.js'
 import {
   readBearerToken,
   readCredentials,
@@ -21,18 +22,21 @@ export type AuthRepository = {
   ): Promise<ConnectionAuthorization | null>
 }
 function middleware(
-  handler: (req: Request) => Promise<WorkPrincipal> | WorkPrincipal
+  handler: (
+    req: Request
+  ) => Promise<WorkPrincipal | WorkErrorValue> | WorkPrincipal | WorkErrorValue
 ): RequestHandler {
-  return (req: Request, _res: Response, next: NextFunction) => {
-    Promise.resolve(handler(req)).then((principal) => {
-      setPrincipal(req, principal)
+  return (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(handler(req)).then((result) => {
+      if (isError(result)) return sendWorkResult(res, result)
+      setPrincipal(req, result)
       next()
     }, next)
   }
 }
-function singleCredential(req: Request): Credential {
+function singleCredential(req: Request): Credential | WorkErrorValue {
   const credentials = readCredentials(req)
-  if (credentials.length !== 1) throw new WorkHttpError('work/unauthorized')
+  if (credentials.length !== 1) return getError('work/unauthorized')
   return credentials[0]!
 }
 function basePrincipal(kind: WorkPrincipal['kind']): WorkPrincipal {
@@ -47,36 +51,37 @@ function basePrincipal(kind: WorkPrincipal['kind']): WorkPrincipal {
     platformAdmin: false,
   }
 }
-function internalPrincipal(req: Request): WorkPrincipal {
+function internalPrincipal(req: Request): WorkPrincipal | WorkErrorValue {
   const credential = singleCredential(req)
+  if (isError(credential)) return credential
   const configured = process.env.WORK_INTERNAL_KEY
   if (
     credential.kind !== 'internal' ||
     !configured ||
     !secretsMatch(credential.value, configured)
   )
-    throw new WorkHttpError('work/unauthorized')
+    return getError('work/unauthorized')
   return { ...basePrincipal('internal'), platformAdmin: true }
 }
-function schedulerPrincipal(req: Request): WorkPrincipal {
+function schedulerPrincipal(req: Request): WorkPrincipal | WorkErrorValue {
   const token = readBearerToken(req)
   const configured = process.env.WORK_CRON_SECRET
   if (!token || !configured || !secretsMatch(token, configured))
-    throw new WorkHttpError('work/unauthorized')
+    return getError('work/unauthorized')
   return basePrincipal('scheduler')
 }
 async function activeTenant(
   repository: AuthRepository,
   organizationId: string
-): Promise<TenantAuthorization> {
+): Promise<TenantAuthorization | WorkErrorValue> {
   const tenant = await repository.tenantByOrganizationId(organizationId)
-  if (!tenant?.active) throw new WorkHttpError('work/tenant-not-found')
+  if (!tenant?.active) return getError('work/tenant-not-found')
   return tenant
 }
-function organizationIdFrom(req: Request) {
+function organizationIdFrom(req: Request): string | WorkErrorValue {
   const raw = req.params.organizationId
   const organizationId = Array.isArray(raw) ? raw[0] : raw
-  if (!organizationId) throw new WorkHttpError('work/invalid-request')
+  if (!organizationId) return getError('work/invalid-request')
   return organizationId
 }
 export function createGuardResolver(options: {
@@ -89,10 +94,14 @@ export function createGuardResolver(options: {
     return [
       middleware(async (req) => {
         const organizationId = organizationIdFrom(req)
+        if (isError(organizationId)) return organizationId
         const credential = singleCredential(req)
+        if (isError(credential)) return credential
         if (credential.kind === 'internal') {
           const internal = internalPrincipal(req)
+          if (isError(internal)) return internal
           const tenant = await activeTenant(options.repository, organizationId)
+          if (isError(tenant)) return tenant
           return { ...internal, tenantId: tenant.id, organizationId }
         }
         let app
@@ -100,15 +109,16 @@ export function createGuardResolver(options: {
           app = await options.identity.appForApiKey(credential.value)
         } catch (error) {
           if (error instanceof IdentityUnavailableError)
-            throw new WorkHttpError('work/identity-unavailable')
+            return getError('work/identity-unavailable')
           throw error
         }
-        if (!app) throw new WorkHttpError('work/invalid-api-key')
+        if (!app) return getError('work/invalid-api-key')
         const tenant = await activeTenant(options.repository, organizationId)
+        if (isError(tenant)) return tenant
         const accessToken = readBearerToken(req)
         if (accessToken) {
           if (!security.sessionPermissions?.length)
-            throw new WorkHttpError('work/session-forbidden')
+            return getError('work/session-forbidden')
           let access
           try {
             access = await options.identity.sessionAccess({
@@ -119,10 +129,10 @@ export function createGuardResolver(options: {
             })
           } catch (error) {
             if (error instanceof IdentityUnavailableError)
-              throw new WorkHttpError('work/identity-unavailable')
+              return getError('work/identity-unavailable')
             throw error
           }
-          if (!access) throw new WorkHttpError('work/session-forbidden')
+          if (!access) return getError('work/session-forbidden')
 
           const permissionsRequired = security.sessionPermissions ?? []
           const allowed =
@@ -139,7 +149,7 @@ export function createGuardResolver(options: {
             access.status !== 'ACTIVE' ||
             !allowed
           )
-            throw new WorkHttpError('work/session-forbidden')
+            return getError('work/session-forbidden')
           return {
             kind: 'session',
             tenantId: tenant.id,
@@ -156,7 +166,7 @@ export function createGuardResolver(options: {
           app.id
         )
         if (!connection?.scopes.has(security.scope))
-          throw new WorkHttpError('work/connection-forbidden')
+          return getError('work/connection-forbidden')
         return {
           kind: 'app_api_key',
           tenantId: tenant.id,

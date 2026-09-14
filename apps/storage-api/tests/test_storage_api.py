@@ -440,7 +440,7 @@ def test_authenticated_routes_reject_empty_or_wrong_internal_key(
     assert response.json() == {
         "error": {
             "code": "storage/unauthorized",
-            "message": "The storage service credential is invalid.",
+            "message": "The storage credential is invalid.",
         }
     }
     assert provider.create_upload_calls == []

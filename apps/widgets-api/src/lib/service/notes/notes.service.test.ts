@@ -224,8 +224,10 @@ describe('Notepad notes service', () => {
       expect(result).toEqual(
         expect.objectContaining({
           data: null,
-          code: 'widgets/invalid-title',
-          status: 400,
+          error: expect.objectContaining({
+            code: 'widgets/invalid-title',
+            httpStatus: 400,
+          }),
         })
       )
       expect(prismaRef.current!.notepadNote.create).not.toHaveBeenCalled()
@@ -241,8 +243,10 @@ describe('Notepad notes service', () => {
       expect(result).toEqual(
         expect.objectContaining({
           data: null,
-          code: 'widgets/missing-owner',
-          status: 400,
+          error: expect.objectContaining({
+            code: 'widgets/missing-owner',
+            httpStatus: 400,
+          }),
         })
       )
       expect(prismaRef.current!.notepadNote.create).not.toHaveBeenCalled()
@@ -320,8 +324,10 @@ describe('Notepad notes service', () => {
       expect(result).toEqual(
         expect.objectContaining({
           data: null,
-          code: 'widgets/note-not-found',
-          status: 404,
+          error: expect.objectContaining({
+            code: 'widgets/note-not-found',
+            httpStatus: 404,
+          }),
         })
       )
       expect(prismaRef.current!.notepadNote.update).not.toHaveBeenCalled()
@@ -339,7 +345,7 @@ describe('Notepad notes service', () => {
       })
 
       if (result.error === null) throw new Error('Expected update to fail.')
-      expect(result.code).toBe('widgets/note-not-found')
+      expect(result.error.code).toBe('widgets/note-not-found')
       expect(prismaRef.current!.notepadNote.update).not.toHaveBeenCalled()
     })
 
@@ -353,7 +359,7 @@ describe('Notepad notes service', () => {
       })
 
       if (result.error === null) throw new Error('Expected update to fail.')
-      expect(result.code).toBe('widgets/invalid-title')
+      expect(result.error.code).toBe('widgets/invalid-title')
       expect(prismaRef.current!.notepadNote.update).not.toHaveBeenCalled()
     })
   })
@@ -423,7 +429,7 @@ describe('Notepad notes service', () => {
       })
 
       if (result.error === null) throw new Error('Expected delete to fail.')
-      expect(result.code).toBe('widgets/note-not-found')
+      expect(result.error.code).toBe('widgets/note-not-found')
       expect(prismaRef.current!.notepadNote.delete).not.toHaveBeenCalled()
     })
   })

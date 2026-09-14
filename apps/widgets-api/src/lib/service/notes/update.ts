@@ -19,7 +19,7 @@ export async function updateNote(params: {
     where: { id: params.id },
   })
   if (!existing || existing.ownerAccountId !== params.ownerAccountId)
-    return err('Notepad entry not found.', 404, 'widgets/note-not-found')
+    return err('widgets/note-not-found')
 
   const title = params.title ?? existing.title
   const body = params.body ?? existing.body
@@ -63,8 +63,7 @@ export async function adminUpdateNote(params: {
   const existing = await prisma.notepadNote.findUnique({
     where: { id: params.id },
   })
-  if (!existing)
-    return err('Notepad entry not found.', 404, 'widgets/note-not-found')
+  if (!existing) return err('widgets/note-not-found')
 
   const title = params.title ?? existing.title
   const body = params.body ?? existing.body

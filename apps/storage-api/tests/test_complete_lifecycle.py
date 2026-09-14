@@ -222,11 +222,7 @@ def test_read_url_provider_error_is_surfaced(storage_harness: StorageHarness) ->
 
     async def boom(params: CreateReadUrlInput) -> CreateReadUrlOutput:
         storage_harness.provider.create_read_calls.append(params)
-        raise AppHTTPException(
-            code="storage/provider-error",
-            message="The storage provider could not complete the request.",
-            http_status_code=502,
-        )
+        raise AppHTTPException("storage/provider-error")
 
     storage_harness.provider.create_read_url = boom  # type: ignore[method-assign]
 

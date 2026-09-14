@@ -28,8 +28,8 @@ OPAQUE_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,254}$")
 TOKEN_PATTERN = re.compile(r"^[a-z][a-z0-9-]{0,127}$")
 
 
-def _error(code: str, message: str, http_status_code: int) -> AppHTTPException:
-    return AppHTTPException(code=code, message=message, http_status_code=http_status_code)
+def _error(code: str) -> AppHTTPException:
+    return AppHTTPException(code=code)
 
 
 def _link_not_found() -> AppHTTPException:
@@ -40,11 +40,7 @@ def _link_not_found() -> AppHTTPException:
     holder enumerate which items, invoices, or conversations in another
     organization carry media.
     """
-    return _error(
-        "storage/resource-link-not-found",
-        "The resource link was not found.",
-        status.HTTP_404_NOT_FOUND,
-    )
+    return _error("storage/resource-link-not-found")
 
 
 def _serialize(row: ResourceLink) -> ResourceLinkResponse:
@@ -74,37 +70,17 @@ async def create_resource_link(
         body.actor_user_id,
     )
     if not all(OPAQUE_ID_PATTERN.fullmatch(value) for value in opaque_ids):
-        raise _error(
-            "storage/invalid-request",
-            "The resource link contains an invalid opaque identifier.",
-            status.HTTP_400_BAD_REQUEST,
-        )
+        raise _error("storage/invalid-request")
     if not TOKEN_PATTERN.fullmatch(body.resource_type) or not TOKEN_PATTERN.fullmatch(body.relation):
-        raise _error(
-            "storage/invalid-request",
-            "Resource type and relation must use kebab-case tokens.",
-            status.HTTP_400_BAD_REQUEST,
-        )
+        raise _error("storage/invalid-request")
 
     file_row = await FileRepository(db).get_by_id(body.file_id)
     if file_row is None:
-        raise _error(
-            "storage/file-not-found",
-            "The file was not found.",
-            status.HTTP_404_NOT_FOUND,
-        )
+        raise _error("storage/file-not-found")
     if file_row.status != "ready":
-        raise _error(
-            "storage/file-not-ready",
-            "Only a verified ready file can be linked to a resource.",
-            status.HTTP_409_CONFLICT,
-        )
+        raise _error("storage/file-not-ready")
     if file_row.owner_type != body.owner_type or file_row.owner_id != body.owner_id:
-        raise _error(
-            "storage/forbidden",
-            "The file does not belong to the asserted owner.",
-            status.HTTP_403_FORBIDDEN,
-        )
+        raise _error("storage/forbidden")
 
     # The owner in the body is the caller's own claim about the file. Matching it
     # proves the caller guessed the owner correctly, not that it is that owner —
@@ -167,11 +143,7 @@ async def delete_resource_link(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> DeletedResourceLinkResponse:
     if not OPAQUE_ID_PATTERN.fullmatch(link_id):
-        raise _error(
-            "storage/invalid-request",
-            "The resource link identifier is invalid.",
-            status.HTTP_400_BAD_REQUEST,
-        )
+        raise _error("storage/invalid-request")
     links = ResourceLinkRepository(db)
     row = await links.get_by_id(link_id)
     if row is None:

@@ -17,8 +17,7 @@ export async function createNote(params: {
 }): Promise<ServiceResult<NotepadNoteResource>> {
   const validation = validateEntryText(params.title, params.body)
   if (validation) return validation
-  if (!params.ownerAccountId.trim())
-    return err('Owner account is required.', 400, 'widgets/missing-owner')
+  if (!params.ownerAccountId.trim()) return err('widgets/missing-owner')
 
   const collectionId =
     params.collectionId === undefined ? null : params.collectionId

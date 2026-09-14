@@ -17,7 +17,7 @@ export async function updateCollection(params: {
     include: { _count: { select: { notes: true } } },
   })
   if (!existing || existing.ownerAccountId !== params.ownerAccountId)
-    return err('Collection not found.', 404, 'widgets/collection-not-found')
+    return err('widgets/collection-not-found')
 
   if (params.name !== undefined) {
     const validation = validateCollectionName(params.name)
@@ -37,12 +37,7 @@ export async function updateCollection(params: {
 
     return ok(serializeCollection(row, row._count.notes))
   } catch (error) {
-    if (isUniqueViolation(error))
-      return err(
-        'A collection with this name already exists.',
-        409,
-        'widgets/collection-name-taken'
-      )
+    if (isUniqueViolation(error)) return err('widgets/collection-name-taken')
     throw error
   }
 }

@@ -1,6 +1,8 @@
 import request from 'supertest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { getError } from '@876/core'
+
 const APP_KEY = '876_app_secret_test_key_for_couriers_api'
 const ADMIN_HEADERS = {
   'X-876-API-Key': APP_KEY,
@@ -140,7 +142,7 @@ describe('Envelope & error contract (Goldbergyoni 1.3, 2.10, 2.11)', () => {
     // Assert
     expect(res.status).toBe(404)
     expect(res.body.error.code).toBe('error/not-found')
-    expect(res.body.error.message).toBe('Not found.')
+    expect(res.body.error.message).toBe(getError('error/not-found').message)
     expect(res.body.data).toBeNull()
   })
 

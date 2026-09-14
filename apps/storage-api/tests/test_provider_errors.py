@@ -23,11 +23,7 @@ from tests.test_storage_api import AUTH_HEADERS, make_uploaded_object, open_uplo
 async def test_open_upload_surfaces_provider_error(storage_harness: StorageHarness) -> None:
     async def boom(params: CreateUploadUrlInput) -> CreateUploadUrlOutput:
         storage_harness.provider.create_upload_calls.append(params)
-        raise AppHTTPException(
-            code="storage/provider-error",
-            message="The storage provider could not complete the request.",
-            http_status_code=502,
-        )
+        raise AppHTTPException("storage/provider-error")
 
     storage_harness.provider.create_upload_url = boom  # type: ignore[method-assign]
 
@@ -47,11 +43,7 @@ def test_complete_surfaces_provider_error_on_head(storage_harness: StorageHarnes
 
     async def boom(params: HeadObjectInput) -> HeadObjectOutput:
         storage_harness.provider.head_calls.append(params)
-        raise AppHTTPException(
-            code="storage/provider-error",
-            message="The storage provider could not complete the request.",
-            http_status_code=502,
-        )
+        raise AppHTTPException("storage/provider-error")
 
     storage_harness.provider.head_object = boom  # type: ignore[method-assign]
 
@@ -73,11 +65,7 @@ def test_verification_failure_still_marks_failed_if_delete_also_fails(
 
     async def boom_delete(params: DeleteObjectInput) -> DeleteObjectOutput:
         storage_harness.provider.delete_calls.append(params)
-        raise AppHTTPException(
-            code="storage/provider-error",
-            message="The storage provider could not complete the request.",
-            http_status_code=502,
-        )
+        raise AppHTTPException("storage/provider-error")
 
     storage_harness.provider.delete_object = boom_delete  # type: ignore[method-assign]
 

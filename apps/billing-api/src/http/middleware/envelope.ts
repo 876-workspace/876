@@ -1,5 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 
+import { getError, isErrorCode } from '@876/core'
+
 const rawPaths = new Set([
   '/docs',
   '/health',
@@ -32,20 +34,24 @@ function normalizeError(
   for (const key of ['httpStatus', 'http_status', 'status', 'status_code']) {
     delete record[key]
   }
+  const code =
+    typeof record.code === 'string'
+      ? record.code
+      : status === 404
+        ? 'error/not-found'
+        : 'error/unknown'
+  const message =
+    typeof record.message === 'string'
+      ? record.message
+      : typeof source === 'string'
+        ? source
+        : isErrorCode(code)
+          ? getError(code).message
+          : 'An error occurred.'
   return {
     ...record,
-    code:
-      typeof record.code === 'string'
-        ? record.code
-        : status === 404
-          ? 'error/not-found'
-          : 'error/http',
-    message:
-      typeof record.message === 'string'
-        ? record.message
-        : typeof source === 'string'
-          ? source
-          : 'An error occurred.',
+    code,
+    message,
   }
 }
 

@@ -12,7 +12,7 @@ export async function assertOwnedCollection(params: {
     where: { id: params.collectionId },
   })
   if (!collection || collection.ownerAccountId !== params.ownerAccountId)
-    return err('Collection not found.', 404, 'widgets/collection-not-found')
+    return err('widgets/collection-not-found')
 
   return null
 }

@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express'
 
 import { secretsMatch } from './internal-auth.js'
 import { parseSupportServiceKeys } from './support-service-auth.js'
+import { sendCrmError } from './result.js'
 
 const SERVICE_APP_HEADER = 'x-876-service-app'
 const SERVICE_KEY_HEADER = 'x-876-service-key'
@@ -14,10 +15,7 @@ const SERVICE_APPS = new Set([
 ])
 
 function unauthorized(res: Response) {
-  return res.status(401).json({
-    data: null,
-    error: { code: 'crm/unauthorized', message: 'Unauthorized.' },
-  })
+  return sendCrmError(res, 'crm/unauthorized')
 }
 
 /** Authenticates a first-party caller without sharing CRM's operational key. */
@@ -33,7 +31,8 @@ export function requireServiceApp(
     appSlug
   ]
 
-  if (!configured || !secretsMatch(provided, configured)) return unauthorized(res)
+  if (!configured || !secretsMatch(provided, configured))
+    return unauthorized(res)
 
   res.locals.crmServiceAppSlug = appSlug
   next()

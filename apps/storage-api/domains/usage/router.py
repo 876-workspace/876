@@ -125,11 +125,7 @@ async def recompute_usage(
     elif body.subject_type is not None and body.subject_id is not None:
         subjects = [(body.subject_type, body.subject_id)]
     else:
-        raise AppHTTPException(
-            code="storage/invalid-request",
-            message="Provide either a subject_type and subject_id, or all=true.",
-            http_status_code=status.HTTP_400_BAD_REQUEST,
-        )
+        raise AppHTTPException(code="storage/invalid-request")
 
     results = [
         await repository.recompute(subject_type=subject_type, subject_id=subject_id, now=now)

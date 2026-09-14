@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto'
 
-import { apiError } from '@876/core/api'
+import { widgetsErrorResponse } from '@/lib/errors'
 
 export type WidgetHost =
   'console' | 'billing' | 'couriers' | 'enterprise' | '876'
@@ -43,7 +43,7 @@ export function requireWidgetsService(
       actorUserId: null,
       isAdmin: false,
       sourceHost: null,
-      response: apiError('Widgets API is not configured.', { status: 503 }),
+      response: widgetsErrorResponse('widgets/not-configured'),
     }
 
   const presented = request.headers.get('x-internal-key')
@@ -52,7 +52,7 @@ export function requireWidgetsService(
       actorUserId: null,
       isAdmin: false,
       sourceHost: null,
-      response: apiError('Unauthorized.', { status: 401 }),
+      response: widgetsErrorResponse('widgets/unauthorized'),
     }
 
   const actorUserId = request.headers.get('x-876-actor-user-id')?.trim()
@@ -61,7 +61,7 @@ export function requireWidgetsService(
       actorUserId: null,
       isAdmin: false,
       sourceHost: null,
-      response: apiError('Missing actor identity.', { status: 400 }),
+      response: widgetsErrorResponse('widgets/missing-actor'),
     }
 
   const role = request.headers.get('x-876-widget-role')
@@ -71,9 +71,7 @@ export function requireWidgetsService(
       actorUserId: null,
       isAdmin: false,
       sourceHost: null,
-      response: apiError('Widget administrator access is required.', {
-        status: 403,
-      }),
+      response: widgetsErrorResponse('widgets/admin-required'),
     }
 
   const rawHost = request.headers.get('x-876-widget-host')?.trim()

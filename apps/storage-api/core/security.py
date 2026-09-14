@@ -2,7 +2,7 @@ import hashlib
 import hmac
 from typing import Annotated
 
-from fastapi import Header, Request, status
+from fastapi import Header, Request
 
 from core.errors import AppHTTPException
 
@@ -19,11 +19,7 @@ async def require_internal_key(
 ) -> None:
     configured = request.app.state.settings.internal_key
     if not configured or not x_internal_key or not _secret_matches(x_internal_key, configured):
-        raise AppHTTPException(
-            code="storage/unauthorized",
-            message="The storage service credential is invalid.",
-            http_status_code=status.HTTP_401_UNAUTHORIZED,
-        )
+        raise AppHTTPException(code="storage/unauthorized")
 
 
 async def require_scheduler_key(
@@ -38,8 +34,4 @@ async def require_scheduler_key(
         or not x_scheduler_key
         or not _secret_matches(x_scheduler_key, configured)
     ):
-        raise AppHTTPException(
-            code="storage/unauthorized",
-            message="The storage scheduler credential is invalid.",
-            http_status_code=status.HTTP_401_UNAUTHORIZED,
-        )
+        raise AppHTTPException(code="storage/unauthorized")
