@@ -171,6 +171,48 @@ export function resolvePercentageDiscount(
   return (subtotalAmount * basisPoints) / PERCENT_SCALE
 }
 
+/** A tax or percentage rate at six-decimal scale: 15% is `150_000n`. */
+export const RATE_SCALE = 1_000_000n
+
+/**
+ * Reads a percentage rate such as `"15"` or `"16.5000"` at `RATE_SCALE`,
+ * rounding half-up on the fifth decimal. Anything negative or unreadable is
+ * zero, because a rate row that cannot be read must not charge anything.
+ */
+export function parsePercentRate(value: string | null): bigint {
+  if (!value) return 0n
+  const match = value.trim().match(/^([+-]?)(\d+)(?:\.(\d+))?$/)
+  if (!match || match[1] === '-') return 0n
+  const whole = BigInt(match[2]!)
+  const fraction = `${match[3] ?? ''}00000`
+  let result = whole * 10_000n + BigInt(fraction.slice(0, 4))
+  if (Number(fraction[4]) >= 5) result += 1n
+  return result
+}
+
+/**
+ * Tax on an amount at a percentage rate, rounded half-up to the minor unit.
+ *
+ * This is the one definition shared by the Billing engine and the document
+ * editor, so the tax a person sees while drafting is the tax that is billed.
+ * An inclusive rate returns the tax already contained in `amount`.
+ */
+export function calculateTax(
+  amount: bigint,
+  rate: string | null,
+  inclusive = false
+): bigint {
+  const scaledRate = parsePercentRate(rate)
+  if (amount <= 0n || scaledRate <= 0n) return 0n
+  if (inclusive) {
+    const net =
+      (amount * RATE_SCALE + (RATE_SCALE + scaledRate) / 2n) /
+      (RATE_SCALE + scaledRate)
+    return amount - net
+  }
+  return (amount * scaledRate + RATE_SCALE / 2n) / RATE_SCALE
+}
+
 /**
  * Rolls lines up into document totals, enforcing the same invariants the
  * Billing service enforces.

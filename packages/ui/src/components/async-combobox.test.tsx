@@ -1,3 +1,4 @@
+import * as React from 'react'
 import '@testing-library/jest-dom/vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -257,5 +258,65 @@ describe('AsyncCombobox', () => {
     await user.click(screen.getByRole('combobox', { name: 'Customer' }))
 
     await waitFor(() => expect(onSearch).not.toHaveBeenCalled())
+  })
+
+  describe('after a selection', () => {
+    function StatefulHost({
+      onSearch,
+    }: {
+      onSearch: React.ComponentProps<typeof AsyncCombobox>['onSearch']
+    }) {
+      const [value, setValue] = React.useState('')
+      const [label, setLabel] = React.useState('')
+      return (
+        <AsyncCombobox
+          ariaLabel="Customer"
+          value={value}
+          selectedLabel={label}
+          onValueChange={(next, option) => {
+            setValue(next)
+            setLabel(option?.label ?? '')
+          }}
+          onSearch={onSearch}
+          debounceMs={0}
+        />
+      )
+    }
+
+    it('shows the chosen label in the box, never the option value', async () => {
+      const user = userEvent.setup()
+      render(<StatefulHost onSearch={vi.fn().mockResolvedValue(CUSTOMERS)} />)
+      const input = screen.getByRole('combobox', { name: 'Customer' })
+
+      await user.type(input, 'ale')
+      await user.click(
+        await screen.findByRole('option', { name: /Alejandra Reyes/ })
+      )
+
+      await waitFor(() => expect(input).toHaveValue('Alejandra Reyes'))
+      expect(input).not.toHaveValue('cus_1')
+    })
+
+    it('does not search again for the label it just filled in', async () => {
+      const user = userEvent.setup()
+      const onSearch = vi.fn().mockResolvedValue(CUSTOMERS)
+      render(<StatefulHost onSearch={onSearch} />)
+
+      await user.type(screen.getByRole('combobox', { name: 'Customer' }), 'ale')
+      await user.click(
+        await screen.findByRole('option', { name: /Alejandra Reyes/ })
+      )
+      await waitFor(() =>
+        expect(screen.getByRole('combobox', { name: 'Customer' })).toHaveValue(
+          'Alejandra Reyes'
+        )
+      )
+
+      expect(onSearch).not.toHaveBeenCalledWith(
+        'Alejandra Reyes',
+        expect.anything()
+      )
+      expect(onSearch).not.toHaveBeenCalledWith('cus_1', expect.anything())
+    })
   })
 })

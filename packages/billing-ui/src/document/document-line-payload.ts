@@ -1,5 +1,6 @@
 import {
   calculateLineSubtotal,
+  calculateTax,
   MAX_PERCENT_BASIS_POINTS,
   resolvePercentageDiscount,
 } from '@876/core/money'
@@ -14,7 +15,10 @@ export function prepareDocumentLine(
   usePriceList = false
 ) {
   const quantity = Number(line.quantity)
-  const unitAmount = parseMinorAmountInput(line.unitAmount, decimalPlaces, true)
+  // A blank rate is a line nobody finished, not a free line; 0 must be typed.
+  const unitAmount = line.unitAmount.trim()
+    ? parseMinorAmountInput(line.unitAmount, decimalPlaces, true)
+    : null
   const discountInput = parseMinorAmountInput(
     line.discountAmount || '0',
     line.discountType === 'PERCENTAGE' ? 2 : decimalPlaces,
@@ -52,6 +56,13 @@ export function prepareDocumentLine(
       : discountInput
   if (BigInt(discountAmount) > lineSubtotal) return null
 
+  const resolvedTaxAmount = line.taxRate
+    ? calculateTax(
+        lineSubtotal - BigInt(discountAmount),
+        line.taxRate
+      ).toString()
+    : taxAmount
+
   return {
     ...(line.itemId ? { itemId: line.itemId } : {}),
     ...(line.variantId ? { variantId: line.variantId } : {}),
@@ -60,6 +71,6 @@ export function prepareDocumentLine(
     quantity,
     ...(usePriceList && line.priceId ? {} : { unitAmount }),
     discountAmount,
-    taxAmount,
+    taxAmount: resolvedTaxAmount,
   }
 }

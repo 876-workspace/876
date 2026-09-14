@@ -55,6 +55,26 @@
       "types": "./src/document/document-line-payload.ts",
       "default": "./src/document/document-line-payload.ts"
     },
+    "./document/document-totals-summary": {
+      "types": "./src/document/document-totals-summary.tsx",
+      "default": "./src/document/document-totals-summary.tsx"
+    },
+    "./document/document-payment-terms": {
+      "types": "./src/document/document-payment-terms.tsx",
+      "default": "./src/document/document-payment-terms.tsx"
+    },
+    "./document/document-form-footer": {
+      "types": "./src/document/document-form-footer.tsx",
+      "default": "./src/document/document-form-footer.tsx"
+    },
+    "./document/document-form-layout": {
+      "types": "./src/document/document-form-layout.tsx",
+      "default": "./src/document/document-form-layout.tsx"
+    },
+    "./document/document-tax-rate-options": {
+      "types": "./src/document/document-tax-rate-options.ts",
+      "default": "./src/document/document-tax-rate-options.ts"
+    },
     "./quote-lifecycle-actions": {
       "types": "./src/quote-lifecycle-actions.tsx",
       "default": "./src/quote-lifecycle-actions.tsx"

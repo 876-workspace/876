@@ -1,7 +1,5 @@
-import Link from 'next/link'
-import { ChevronRightIcon } from '@876/ui/icons'
-import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
-
+import { toDocumentTaxRateOptions } from '@876/billing-ui/document/document-tax-rate-options'
+import { DocumentFormPage } from '@876/billing-ui/document/document-form-layout'
 import { DocumentCreateForm } from '@/features/documents/components/document-create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatPriceCadence } from '@/lib/format'
@@ -12,36 +10,19 @@ export const metadata = { title: 'New Quote' }
 export default async function NewQuotePage() {
   const context = await requirePagePermission('sales:write')
 
-  const [items, prices, priceLists, currencies] = await Promise.all([
+  const [items, prices, priceLists, currencies, taxRates] = await Promise.all([
     service.items.list(context.tenant.id),
     service.prices.list(context.tenant.id, true),
     service.priceLists.list(context.tenant.id, true),
     service.currencies.list(context.tenant.id),
+    service.taxRates.list(context.tenant.id),
   ])
 
   return (
-    <Page>
-      <nav className="mb-5 flex items-center gap-1.5 text-sm">
-        <Link
-          href="/quotes"
-          className="text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Quotes
-        </Link>
-        <ChevronRightIcon className="text-muted-foreground size-4" />
-        <span className="font-medium">New Quote</span>
-      </nav>
-
-      <PageHeader>
-        <PageTitle>New Quote</PageTitle>
-        <PageDescription>
-          Prepare an itemized proposal for the customer to review before it
-          becomes an invoice.
-        </PageDescription>
-      </PageHeader>
-
+    <DocumentFormPage title="New Quote">
       <DocumentCreateForm
         kind="quote"
+        taxRates={toDocumentTaxRateOptions(taxRates)}
         defaultCurrency={context.tenant.defaultCurrency}
         returnUrl="/quotes"
         items={[
@@ -81,7 +62,7 @@ export default async function NewQuotePage() {
           decimalPlaces: currency.decimalPlaces,
         }))}
       />
-    </Page>
+    </DocumentFormPage>
   )
 }
 

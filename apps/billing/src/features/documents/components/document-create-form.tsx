@@ -8,26 +8,44 @@ import {
   formatMinorUnits,
   type DocumentItemOption,
   type DocumentLineDraft,
+  type DocumentTaxRateOption,
   type DocumentTotalsSnapshot,
 } from '@876/billing-ui/document/document-line-items-editor'
 import { prepareDocumentLine } from '@876/billing-ui/document/document-line-payload'
+import {
+  DocumentFormFooter,
+  documentFooterTotal,
+  documentTotalQuantity,
+} from '@876/billing-ui/document/document-form-footer'
+import {
+  DocumentFormBand,
+  DocumentFormSection,
+  DocumentFormSummaryGrid,
+  DocumentNotesField,
+  DocumentTermsField,
+} from '@876/billing-ui/document/document-form-layout'
+import {
+  DocumentPaymentTermsControl,
+  resolveTermDueDate,
+  type DocumentPaymentTerm,
+} from '@876/billing-ui/document/document-payment-terms'
+import {
+  DocumentTotalsSummary,
+  parseDocumentAdjustments,
+  type DocumentAdjustmentDraft,
+} from '@876/billing-ui/document/document-totals-summary'
+import { AppError } from '@876/ui/app-error'
+import { AsyncCombobox } from '@876/ui/async-combobox'
 import { Button } from '@876/ui/button'
+import { FormRow } from '@876/ui/form-row'
 import { Input } from '@876/ui/input'
-import { Label } from '@876/ui/label'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
-import { AsyncCombobox, type AsyncComboboxOption } from '@876/ui/async-combobox'
 import { Textarea } from '@876/ui/textarea'
 import { cn } from '@876/ui/lib/utils'
 
 import { emptyDocumentLine } from '../document-create-model'
 import { client } from '@/lib/client'
-import {
-  formatMinorAmountInput,
-  parseMinorAmountInput,
-  parseSignedMinorAmountInput,
-  minorAmountInputStep,
-  zeroMinorAmountInput,
-} from '@/lib/format'
+import { formatMinorAmountInput } from '@/lib/format'
 import type { DocumentCustomerOption } from '@/types/customer'
 import type { InvoiceStatus, InvoiceUpdateInput } from '@/types/invoice'
 import { toDocumentCustomerOption } from '@/lib/customers/document-recipient'
@@ -41,6 +59,12 @@ export interface InvoiceDocumentInitial {
   status: InvoiceStatus
   values: InvoiceUpdateInput
   lines: DocumentLineDraft[]
+}
+
+const EMPTY_ADJUSTMENTS: DocumentAdjustmentDraft = {
+  discount: '',
+  shipping: '',
+  adjustment: '',
 }
 
 function todayInputValue() {
@@ -58,6 +82,7 @@ interface DocumentCreateFormProps {
   items: DocumentItemOption[]
   priceLists?: SelectOption[]
   salespeople?: SelectOption[]
+  taxRates?: DocumentTaxRateOption[]
   currencies: CurrencyOption[]
   defaultCurrency: string
   returnUrl: string
@@ -75,6 +100,7 @@ export function DocumentCreateForm(props: DocumentCreateFormProps) {
     return (
       <InvoiceEditMode
         initialDocument={props.initialDocument}
+        taxRates={props.taxRates}
         onSubmit={props.onSubmit}
       />
     )
@@ -87,6 +113,7 @@ function DocumentCreateMode({
   items,
   priceLists = [],
   salespeople = [],
+  taxRates,
   currencies,
   defaultCurrency,
   returnUrl,
@@ -101,11 +128,16 @@ function DocumentCreateMode({
   const [salespersonId, setSalespersonId] = useState('')
   const [priceListId, setPriceListId] = useState('')
   const [issueDate, setIssueDate] = useState(todayInputValue)
+  const [term, setTerm] = useState<DocumentPaymentTerm>('due-on-receipt')
   const [endDate, setEndDate] = useState(() =>
-    futureInputValue(kind === 'quote' ? 14 : 30)
+    kind === 'quote' ? futureInputValue(14) : todayInputValue()
   )
+  const [orderNumber, setOrderNumber] = useState('')
+  const [referenceNumber, setReferenceNumber] = useState('')
+  const [subject, setSubject] = useState('')
   const [notes, setNotes] = useState('')
   const [terms, setTerms] = useState('')
+  const [adjustments, setAdjustments] = useState(EMPTY_ADJUSTMENTS)
   const [lines, setLines] = useState<DocumentLineDraft[]>([
     emptyDocumentLine('line-1'),
   ])
@@ -120,6 +152,12 @@ function DocumentCreateMode({
         : 'Invoice'
   const decimalPlaces =
     currencies.find((option) => option.value === currency)?.decimalPlaces ?? 2
+  const parsedAdjustments =
+    kind === 'invoice'
+      ? parseDocumentAdjustments(adjustments, decimalPlaces)
+      : { discount: 0n, shipping: 0n, adjustment: 0n }
+  const formatAmount = (amount: bigint) =>
+    `${currency} ${formatMinorUnits(amount, decimalPlaces)}`
   const editorItems = useMemo(
     () =>
       items.map((item) => ({
@@ -229,9 +267,16 @@ function DocumentCreateMode({
     )
   }
 
+  function handleIssueDateChange(value: string) {
+    setIssueDate(value)
+    if (kind === 'invoice') {
+      const due = resolveTermDueDate(term, value)
+      if (due) setEndDate(due)
+    }
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const formData = new FormData(event.currentTarget)
     if (!customerId) {
       setError('Select the customer this document is for.')
       return
@@ -257,38 +302,18 @@ function DocumentCreateMode({
     }
 
     const issueAt = dateInputToUnix(issueDate)
-    const endAt = kind === 'quote' ? dateInputToUnix(endDate) : null
-    if (
-      issueAt === null ||
-      (kind === 'quote' && (endAt === null || endAt < issueAt))
-    ) {
-      setError('Enter a valid expiry date on or after the quote date.')
+    const endAt = dateInputToUnix(endDate)
+    if (issueAt === null || endAt === null || endAt < issueAt) {
+      setError(
+        kind === 'quote'
+          ? 'Enter a valid expiry date on or after the quote date.'
+          : 'Enter a valid due date on or after the invoice date.'
+      )
       return
     }
 
-    const invoiceDiscount = parseMinorAmountInput(
-      String(formData.get('invoiceDiscount') ?? '0'),
-      decimalPlaces,
-      true
-    )
-    const shippingAmount = parseMinorAmountInput(
-      String(formData.get('shippingAmount') ?? '0'),
-      decimalPlaces,
-      true
-    )
-    const adjustmentAmount = parseSignedMinorAmountInput(
-      String(formData.get('adjustmentAmount') ?? '0'),
-      decimalPlaces
-    )
-    if (
-      kind === 'invoice' &&
-      (invoiceDiscount === null ||
-        shippingAmount === null ||
-        adjustmentAmount === null)
-    ) {
-      setError(
-        'Enter valid invoice discount, shipping, and adjustment amounts.'
-      )
+    if (!parsedAdjustments) {
+      setError('Enter valid discount, shipping, and adjustment amounts.')
       return
     }
 
@@ -305,25 +330,23 @@ function DocumentCreateMode({
       }
       const result =
         kind === 'quote'
-          ? await client.quotes.create({ ...common, expiresAt: endAt! })
+          ? await client.quotes.create({ ...common, expiresAt: endAt })
           : kind === 'sales-order'
             ? await client.salesOrders.create({
                 ...common,
                 salespersonId: salespersonId || null,
-                referenceNumber:
-                  String(formData.get('referenceNumber') ?? '').trim() || null,
+                referenceNumber: referenceNumber.trim() || null,
               })
             : await client.invoices.create({
                 ...common,
+                dueAt: endAt,
                 salespersonId: salespersonId || null,
-                orderNumber:
-                  String(formData.get('orderNumber') ?? '').trim() || null,
-                referenceNumber:
-                  String(formData.get('referenceNumber') ?? '').trim() || null,
-                subject: String(formData.get('subject') ?? '').trim() || null,
-                discountAmount: invoiceDiscount!,
-                shippingAmount: shippingAmount!,
-                adjustmentAmount: adjustmentAmount!,
+                orderNumber: orderNumber.trim() || null,
+                referenceNumber: referenceNumber.trim() || null,
+                subject: subject.trim() || null,
+                discountAmount: parsedAdjustments.discount.toString(),
+                shippingAmount: parsedAdjustments.shipping.toString(),
+                adjustmentAmount: parsedAdjustments.adjustment.toString(),
               })
       if (result.error || !result.data) {
         setError(
@@ -338,277 +361,234 @@ function DocumentCreateMode({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-6xl space-y-6">
-      <section className="876-card overflow-hidden">
-        <header className="bg-muted/35 border-border flex items-center justify-between gap-4 border-b px-5 py-3 sm:px-6">
-          <h2 className="text-base font-semibold text-balance">
-            Draft {title.toLowerCase()}
-          </h2>
-          <p className="text-muted-foreground text-right font-mono text-xs">
-            Number assigned on save
-          </p>
-        </header>
-
-        <div className="grid lg:grid-cols-[minmax(0,1.35fr)_minmax(22rem,0.85fr)]">
-          <div className="p-5 sm:p-6">
-            <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-wide uppercase">
-              {kind === 'quote' ? 'Prepared for' : 'Bill to'}
-            </p>
-            <CustomerPicker
+    <form onSubmit={handleSubmit} className="flex flex-col">
+      <DocumentFormBand>
+        <FormRow htmlFor={`billing-${kind}-customer`} label="Customer" required>
+          <div className="max-w-2xl">
+            <AsyncCombobox
               id={`billing-${kind}-customer`}
+              ariaLabel="Customer"
               value={customerId}
               selectedLabel={selectedCustomer?.label ?? ''}
-              onSearch={searchCustomers}
-              onValueChange={(value, customer) => {
+              onValueChange={(value, option) => {
+                const customer =
+                  (option?.raw as DocumentCustomerOption | undefined) ?? null
                 setCustomerId(value)
                 setSelectedCustomer(customer)
                 handlePriceListChange(customer?.priceListId ?? '')
               }}
+              onSearch={searchCustomers}
+              placeholder="Select or search a customer"
+              emptyMessage="No customers found."
+              disabled={isPending}
             />
             {selectedCustomer ? (
               <CustomerRecipientDetails customer={selectedCustomer} />
-            ) : (
-              <p className="text-muted-foreground border-border mt-4 border-t pt-4 text-sm text-pretty">
-                Customer contact and billing address appear here after
-                selection.
-              </p>
-            )}
-          </div>
-
-          <div className="border-border grid content-start gap-4 border-t p-5 sm:grid-cols-2 sm:p-6 lg:border-t-0 lg:border-l">
-            <div className="space-y-2">
-              <Label htmlFor={`billing-${kind}-issue-date`}>
-                {kind === 'quote' ? 'Quote date' : 'Invoice date'}
-              </Label>
-              <Input
-                id={`billing-${kind}-issue-date`}
-                type="date"
-                value={issueDate}
-                onChange={(event) => setIssueDate(event.target.value)}
-              />
-            </div>
-            {kind === 'quote' ? (
-              <div className="space-y-2">
-                <Label htmlFor="billing-quote-end-date">Expires on</Label>
-                <Input
-                  id="billing-quote-end-date"
-                  type="date"
-                  value={endDate}
-                  min={issueDate}
-                  onChange={(event) => setEndDate(event.target.value)}
-                />
-              </div>
             ) : null}
-            <SelectField
-              id={`billing-${kind}-currency`}
-              label="Currency"
-              value={currency}
-              options={currencies}
-              onChange={setCurrency}
+          </div>
+        </FormRow>
+      </DocumentFormBand>
+
+      <DocumentFormSection>
+        <FormRow label={`${title} #`}>
+          <Input
+            aria-label={`${title} number`}
+            value="Assigned on save"
+            readOnly
+            tabIndex={-1}
+            className={`${FIELD_WIDTH} text-muted-foreground`}
+          />
+        </FormRow>
+        {kind === 'invoice' ? (
+          <FormRow htmlFor="billing-invoice-order-number" label="Order number">
+            <Input
+              id="billing-invoice-order-number"
+              value={orderNumber}
+              onChange={(event) => setOrderNumber(event.target.value)}
+              maxLength={120}
+              disabled={isPending}
+              className={FIELD_WIDTH}
             />
-            <SelectField
-              id={`billing-${kind}-price-list`}
-              label="Price list (optional)"
-              value={priceListId}
-              options={priceLists}
-              onChange={handlePriceListChange}
+          </FormRow>
+        ) : null}
+        <FormRow
+          htmlFor={`billing-${kind}-issue-date`}
+          label={`${title} date`}
+          required
+        >
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,28rem)_minmax(0,30rem)] xl:items-center">
+            <Input
+              id={`billing-${kind}-issue-date`}
+              type="date"
+              value={issueDate}
+              onChange={(event) => handleIssueDateChange(event.target.value)}
+              disabled={isPending}
             />
             {kind === 'invoice' ? (
-              <>
-                <div className="sm:col-span-2">
-                  <SelectField
-                    id="billing-invoice-salesperson"
-                    label="Salesperson (optional)"
-                    value={salespersonId}
-                    options={salespeople}
-                    onChange={setSalespersonId}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="billing-invoice-order-number">
-                    Order number
-                  </Label>
-                  <Input
-                    id="billing-invoice-order-number"
-                    name="orderNumber"
-                    maxLength={120}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="billing-invoice-reference-number">
-                    Reference
-                  </Label>
-                  <Input
-                    id="billing-invoice-reference-number"
-                    name="referenceNumber"
-                    maxLength={120}
-                  />
-                </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="billing-invoice-subject">Subject</Label>
-                  <Input
-                    id="billing-invoice-subject"
-                    name="subject"
-                    maxLength={300}
-                  />
-                </div>
-              </>
+              <DocumentPaymentTermsControl
+                idPrefix="billing-invoice"
+                issueDate={issueDate}
+                term={term}
+                dueDate={endDate}
+                disabled={isPending}
+                onChange={(next) => {
+                  setTerm(next.term)
+                  setEndDate(next.dueDate)
+                }}
+              />
             ) : null}
-            <div className="border-border flex items-center justify-between gap-4 border-t pt-3 sm:col-span-2">
-              <p className="text-muted-foreground text-xs">Payment terms</p>
-              <p className="text-right text-sm font-medium">
-                {kind === 'invoice'
-                  ? 'Due on receipt · set when finalized'
-                  : 'Set when converted to an invoice'}
-              </p>
-            </div>
           </div>
-        </div>
-      </section>
+        </FormRow>
+        {kind === 'quote' ? (
+          <FormRow htmlFor="billing-quote-end-date" label="Expiry date">
+            <Input
+              id="billing-quote-end-date"
+              type="date"
+              value={endDate}
+              min={issueDate}
+              onChange={(event) => setEndDate(event.target.value)}
+              disabled={isPending}
+              className={FIELD_WIDTH}
+            />
+          </FormRow>
+        ) : null}
+      </DocumentFormSection>
 
-      <section className="876-card space-y-4 overflow-hidden p-5 sm:p-6">
-        <div>
-          <h2 className="text-base font-semibold text-balance">Line items</h2>
-          <p className="text-muted-foreground mt-1 text-sm text-pretty">
-            Add every product or service included in this {kind}.
-          </p>
-        </div>
+      <DocumentFormSection>
+        {kind === 'invoice' ? (
+          <SelectRow
+            id="billing-invoice-salesperson"
+            label="Salesperson"
+            placeholder="Select a salesperson"
+            value={salespersonId}
+            options={salespeople}
+            onChange={setSalespersonId}
+            disabled={isPending}
+          />
+        ) : null}
+        <SelectRow
+          id={`billing-${kind}-currency`}
+          label="Currency"
+          value={currency}
+          options={currencies}
+          onChange={setCurrency}
+          disabled={isPending}
+        />
+        <SelectRow
+          id={`billing-${kind}-price-list`}
+          label="Price list"
+          ariaLabel="Price list (optional)"
+          placeholder="No price list"
+          value={priceListId}
+          options={priceLists}
+          onChange={handlePriceListChange}
+          disabled={isPending}
+        />
+        {kind === 'invoice' ? (
+          <>
+            <FormRow
+              htmlFor="billing-invoice-reference-number"
+              label="Reference"
+            >
+              <Input
+                id="billing-invoice-reference-number"
+                value={referenceNumber}
+                onChange={(event) => setReferenceNumber(event.target.value)}
+                maxLength={120}
+                disabled={isPending}
+                className={FIELD_WIDTH}
+              />
+            </FormRow>
+            <FormRow htmlFor="billing-invoice-subject" label="Subject">
+              <Textarea
+                id="billing-invoice-subject"
+                value={subject}
+                onChange={(event) => setSubject(event.target.value)}
+                maxLength={300}
+                rows={2}
+                placeholder="Let your customer know what this invoice is for"
+                disabled={isPending}
+                className="max-w-2xl"
+              />
+            </FormRow>
+          </>
+        ) : null}
+      </DocumentFormSection>
+
+      <DocumentFormSection className="space-y-6">
         <DocumentLineItemsEditor
+          title="Item table"
+          bleed
           lines={lines}
           items={editorItems}
           enforceItemStock={kind === 'invoice'}
-          onSearchItems={async (query, signal) => {
-            const result = await client.items.list(
-              { q: query, limit: 20 },
-              { signal }
-            )
-            if (result.error || !result.data)
-              throw new Error('catalogue search failed')
-
-            return Promise.all(
-              result.data.data.map(async (item) => {
-                const variants =
-                  item.variantMode === 'variant'
-                    ? await client.items.listVariants(item.id)
-                    : null
-                if (variants?.error) throw new Error('variant search failed')
-
-                return {
-                  value: item.id,
-                  label: item.name,
-                  itemId: item.id,
-                  priceId: null,
-                  defaultAmount: item.defaultSellingAmount ?? null,
-                  currency: item.defaultSellingCurrency ?? null,
-                  trackStock: item.trackStock,
-                  stockQuantity: item.stockQuantity,
-                  allowOutOfStock: item.allowOutOfStock,
-                  variants: variants?.data?.data.map((variant) => ({
-                    id: variant.id,
-                    label:
-                      variant.options
-                        .map((option) => option.value)
-                        .join(' / ') || variant.name,
-                    sku: variant.sku,
-                    defaultAmount:
-                      variant.defaultSellingAmount ??
-                      item.defaultSellingAmount ??
-                      null,
-                    trackStock: item.trackStock,
-                    stockQuantity: variant.stockQuantity,
-                    allowOutOfStock: item.allowOutOfStock,
-                  })),
-                }
-              })
-            )
-          }}
+          onSearchItems={searchCatalogue}
           minorUnitDigits={decimalPlaces}
-          formatAmount={(amount) =>
-            `${currency} ${formatMinorUnits(amount, decimalPlaces)}`
-          }
+          formatAmount={formatAmount}
+          currency={currency}
           allowPercentageDiscount
+          taxRates={taxRates}
           priceListActive={Boolean(priceListId)}
+          discountAmount={parsedAdjustments?.discount}
+          shippingAmount={parsedAdjustments?.shipping}
+          adjustmentAmount={parsedAdjustments?.adjustment}
+          showTotals={false}
           onChange={setLines}
           onTotalsChange={setTotalsSnapshot}
         />
-      </section>
 
-      <section className="876-card grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
-        <div className="space-y-2">
-          <Label htmlFor={`billing-${kind}-notes`}>Customer note</Label>
-          <Textarea
+        <DocumentFormSummaryGrid>
+          <DocumentNotesField
             id={`billing-${kind}-notes`}
             value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-            placeholder="Thank you for your business."
-            rows={4}
+            onChange={setNotes}
+            disabled={isPending}
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor={`billing-${kind}-terms`}>Terms and conditions</Label>
-          <Textarea
-            id={`billing-${kind}-terms`}
-            value={terms}
-            onChange={(event) => setTerms(event.target.value)}
-            placeholder="Payment terms or conditions shown on the document."
-            rows={4}
+          <DocumentTotalsSummary
+            snapshot={totalsSnapshot}
+            formatAmount={formatAmount}
+            currency={currency}
+            idPrefix={`billing-${kind}`}
+            adjustments={
+              kind === 'invoice'
+                ? {
+                    values: adjustments,
+                    onChange: (patch) =>
+                      setAdjustments((current) => ({ ...current, ...patch })),
+                    disabled: isPending,
+                  }
+                : undefined
+            }
           />
-        </div>
-      </section>
+        </DocumentFormSummaryGrid>
+      </DocumentFormSection>
 
-      {kind === 'invoice' ? (
-        <section className="876-card space-y-4 p-5 sm:p-6">
-          <div>
-            <h2 className="font-semibold text-balance">Invoice adjustments</h2>
-            <p className="text-muted-foreground mt-1 text-xs text-pretty">
-              Header adjustments are snapshotted separately for reporting and
-              reconciliation.
-            </p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="billing-invoice-discount">Invoice discount</Label>
-              <Input
-                id="billing-invoice-discount"
-                name="invoiceDiscount"
-                type="number"
-                min="0"
-                step={minorAmountInputStep(decimalPlaces)}
-                defaultValue={zeroMinorAmountInput(decimalPlaces)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="billing-invoice-shipping">Shipping</Label>
-              <Input
-                id="billing-invoice-shipping"
-                name="shippingAmount"
-                type="number"
-                min="0"
-                step={minorAmountInputStep(decimalPlaces)}
-                defaultValue={zeroMinorAmountInput(decimalPlaces)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="billing-invoice-adjustment">Adjustment</Label>
-              <Input
-                id="billing-invoice-adjustment"
-                name="adjustmentAmount"
-                type="number"
-                step={minorAmountInputStep(decimalPlaces)}
-                defaultValue={zeroMinorAmountInput(decimalPlaces)}
-              />
-            </div>
-          </div>
-        </section>
-      ) : null}
+      <DocumentTermsField
+        id={`billing-${kind}-terms`}
+        value={terms}
+        onChange={setTerms}
+        disabled={isPending}
+      />
 
       {error ? (
-        <p role="alert" className="text-destructive text-sm">
-          {error}
-        </p>
+        <AppError
+          error={{ code: `${kind}/create-failed`, message: error }}
+          variant="form"
+          className="mt-4"
+        />
       ) : null}
 
-      <div className="flex flex-wrap justify-end gap-2 pb-6">
+      <DocumentFormFooter
+        totalAmount={documentFooterTotal(totalsSnapshot, formatAmount)}
+        totalQuantity={documentTotalQuantity(lines)}
+      >
+        <Button
+          type="submit"
+          variant="info"
+          disabled={isPending || totalsSnapshot?.status !== 'ready'}
+        >
+          {isPending ? 'Saving…' : 'Save as draft'}
+        </Button>
         <Button
           type="button"
           variant="outline"
@@ -617,22 +597,18 @@ function DocumentCreateMode({
         >
           Cancel
         </Button>
-        <Button
-          type="submit"
-          disabled={isPending || totalsSnapshot?.status !== 'ready'}
-        >
-          {isPending ? 'Saving…' : `Save draft ${title.toLowerCase()}`}
-        </Button>
-      </div>
+      </DocumentFormFooter>
     </form>
   )
 }
 
 function InvoiceEditMode({
   initialDocument,
+  taxRates,
   onSubmit,
 }: {
   initialDocument: InvoiceDocumentInitial
+  taxRates?: DocumentTaxRateOption[]
   onSubmit?: (
     params: InvoiceUpdateInput
   ) => Promise<{ data: unknown; error: { message: string } | null }>
@@ -643,6 +619,7 @@ function InvoiceEditMode({
   const [issueDate, setIssueDate] = useState(
     toEditDate(initialDocument.values.issueAt)
   )
+  const [term, setTerm] = useState<DocumentPaymentTerm>('custom')
   const [dueDate, setDueDate] = useState(
     toEditDate(initialDocument.values.dueAt)
   )
@@ -658,6 +635,7 @@ function InvoiceEditMode({
   const [lines, setLines] = useState(initialDocument.lines)
   const [totals, setTotals] = useState<DocumentTotalsSnapshot | null>(null)
   const restricted = initialDocument.status !== 'DRAFT'
+  const detailHref = `/invoices/${initialDocument.invoiceId}`
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -706,117 +684,199 @@ function InvoiceEditMode({
         setError(result.error.message)
         return
       }
-      router.push(`/invoices/${initialDocument.invoiceId}`)
+      router.push(detailHref)
       router.refresh()
     })
   }
 
   return (
-    <form onSubmit={submit} className="mx-auto max-w-6xl space-y-6">
-      <section className="876-card grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
+    <form onSubmit={submit} className="flex flex-col">
+      <DocumentFormSection className="pt-0">
         {!restricted ? (
-          <EditDateField
-            id="billing-invoice-edit-date"
-            label="Invoice date"
-            value={issueDate}
-            onChange={setIssueDate}
-            disabled={isPending}
-          />
-        ) : null}
-        <EditDateField
-          id="billing-invoice-edit-due-date"
-          label="Due date"
-          value={dueDate}
-          onChange={setDueDate}
-          disabled={isPending}
-        />
-        {!restricted ? (
-          <EditTextField
-            id="billing-invoice-edit-order-number"
+          <FormRow
+            htmlFor="billing-invoice-edit-order-number"
             label="Order number"
-            value={orderNumber}
-            onChange={setOrderNumber}
+          >
+            <Input
+              id="billing-invoice-edit-order-number"
+              value={orderNumber}
+              onChange={(event) => setOrderNumber(event.target.value)}
+              maxLength={120}
+              disabled={isPending}
+              className={FIELD_WIDTH}
+            />
+          </FormRow>
+        ) : null}
+        <FormRow
+          htmlFor={
+            restricted
+              ? 'billing-invoice-edit-due-date'
+              : 'billing-invoice-edit-date'
+          }
+          label={restricted ? 'Due date' : 'Invoice date'}
+        >
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,28rem)_minmax(0,30rem)] xl:items-center">
+            {!restricted ? (
+              <Input
+                id="billing-invoice-edit-date"
+                type="date"
+                aria-label="Invoice date"
+                value={issueDate}
+                onChange={(event) => {
+                  setIssueDate(event.target.value)
+                  const due = resolveTermDueDate(term, event.target.value)
+                  if (due) setDueDate(due)
+                }}
+                disabled={isPending}
+              />
+            ) : null}
+            <DocumentPaymentTermsControl
+              idPrefix="billing-invoice-edit"
+              issueDate={issueDate}
+              term={term}
+              dueDate={dueDate}
+              disabled={isPending}
+              onChange={(next) => {
+                setTerm(next.term)
+                setDueDate(next.dueDate)
+              }}
+            />
+          </div>
+        </FormRow>
+      </DocumentFormSection>
+
+      <DocumentFormSection>
+        <FormRow htmlFor="billing-invoice-edit-reference" label="Reference">
+          <Input
+            id="billing-invoice-edit-reference"
+            value={referenceNumber}
+            onChange={(event) => setReferenceNumber(event.target.value)}
             maxLength={120}
             disabled={isPending}
+            className={FIELD_WIDTH}
           />
-        ) : null}
-        <EditTextField
-          id="billing-invoice-edit-reference"
-          label="Reference"
-          value={referenceNumber}
-          onChange={setReferenceNumber}
-          maxLength={120}
-          disabled={isPending}
-        />
+        </FormRow>
         {!restricted ? (
-          <EditTextField
-            id="billing-invoice-edit-subject"
-            label="Subject"
-            value={subject}
-            onChange={setSubject}
-            maxLength={300}
-            disabled={isPending}
-          />
+          <FormRow htmlFor="billing-invoice-edit-subject" label="Subject">
+            <Textarea
+              id="billing-invoice-edit-subject"
+              value={subject}
+              onChange={(event) => setSubject(event.target.value)}
+              maxLength={300}
+              rows={2}
+              disabled={isPending}
+              className="max-w-2xl"
+            />
+          </FormRow>
         ) : null}
-      </section>
-      {!restricted ? (
-        <section className="876-card space-y-4 p-5 sm:p-6">
-          <div>
-            <h2 className="text-base font-semibold">Line items</h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Edit the products and services included in this invoice.
-            </p>
-          </div>
+      </DocumentFormSection>
+
+      <DocumentFormSection className="space-y-6">
+        {!restricted ? (
           <DocumentLineItemsEditor
+            title="Item table"
+            bleed
             lines={lines}
             onChange={setLines}
             onTotalsChange={setTotals}
             formatAmount={formatMinorUnits}
+            taxRates={taxRates}
+            allowPercentageDiscount
+            showTotals={false}
             enforceItemStock
           />
-        </section>
-      ) : null}
-      <section className="876-card grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
-        <div className="space-y-2">
-          <Label htmlFor="billing-invoice-edit-notes">Customer note</Label>
-          <Textarea
+        ) : null}
+        <DocumentFormSummaryGrid>
+          <DocumentNotesField
             id="billing-invoice-edit-notes"
             value={notes}
-            onChange={(event) => setNotes(event.target.value)}
+            onChange={setNotes}
             disabled={isPending}
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="billing-invoice-edit-terms">
-            Terms and conditions
-          </Label>
-          <Textarea
-            id="billing-invoice-edit-terms"
-            value={terms}
-            onChange={(event) => setTerms(event.target.value)}
-            disabled={isPending}
-          />
-        </div>
-      </section>
+          {!restricted ? (
+            <DocumentTotalsSummary
+              snapshot={totals}
+              formatAmount={formatMinorUnits}
+            />
+          ) : null}
+        </DocumentFormSummaryGrid>
+      </DocumentFormSection>
+
+      <DocumentTermsField
+        id="billing-invoice-edit-terms"
+        value={terms}
+        onChange={setTerms}
+        disabled={isPending}
+      />
+
       {error ? (
-        <p role="alert" className="text-destructive text-sm">
-          {error}
-        </p>
+        <AppError
+          error={{ code: 'invoice/update-failed', message: error }}
+          variant="form"
+          className="mt-4"
+        />
       ) : null}
-      <div className="flex justify-end gap-2 pb-6">
+
+      <DocumentFormFooter
+        totalAmount={
+          restricted ? '—' : documentFooterTotal(totals, formatMinorUnits)
+        }
+        totalQuantity={restricted ? 0 : documentTotalQuantity(lines)}
+      >
+        <Button type="submit" variant="info" disabled={isPending}>
+          {isPending ? 'Saving…' : 'Save invoice'}
+        </Button>
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push(`/invoices/${initialDocument.invoiceId}`)}
+          onClick={() => router.push(detailHref)}
           disabled={isPending}
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending ? 'Saving…' : 'Save invoice'}
-        </Button>
-      </div>
+      </DocumentFormFooter>
     </form>
+  )
+}
+
+const FIELD_WIDTH = 'max-w-md'
+
+async function searchCatalogue(query: string, signal: AbortSignal) {
+  const result = await client.items.list({ q: query, limit: 20 }, { signal })
+  if (result.error || !result.data) throw new Error('catalogue search failed')
+
+  return Promise.all(
+    result.data.data.map(async (item) => {
+      const variants =
+        item.variantMode === 'variant'
+          ? await client.items.listVariants(item.id)
+          : null
+      if (variants?.error) throw new Error('variant search failed')
+
+      return {
+        value: item.id,
+        label: item.name,
+        itemId: item.id,
+        priceId: null,
+        defaultAmount: item.defaultSellingAmount ?? null,
+        currency: item.defaultSellingCurrency ?? null,
+        trackStock: item.trackStock,
+        stockQuantity: item.stockQuantity,
+        allowOutOfStock: item.allowOutOfStock,
+        variants: variants?.data?.data.map((variant) => ({
+          id: variant.id,
+          label:
+            variant.options.map((option) => option.value).join(' / ') ||
+            variant.name,
+          sku: variant.sku,
+          defaultAmount:
+            variant.defaultSellingAmount ?? item.defaultSellingAmount ?? null,
+          trackStock: item.trackStock,
+          stockQuantity: variant.stockQuantity,
+          allowOutOfStock: item.allowOutOfStock,
+        })),
+      }
+    })
   )
 }
 
@@ -824,127 +884,43 @@ function toEditDate(value: number | null | undefined) {
   return value ? new Date(value * 1_000).toISOString().slice(0, 10) : ''
 }
 
-function EditDateField({
+function SelectRow({
   id,
   label,
-  value,
-  onChange,
-  disabled,
-}: {
-  id: string
-  label: string
-  value: string
-  onChange: (value: string) => void
-  disabled: boolean
-}) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
-      <Input
-        id={id}
-        type="date"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        disabled={disabled}
-      />
-    </div>
-  )
-}
-
-function EditTextField({
-  id,
-  label,
-  value,
-  onChange,
-  maxLength,
-  disabled,
-}: {
-  id: string
-  label: string
-  value: string
-  onChange: (value: string) => void
-  maxLength: number
-  disabled: boolean
-}) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
-      <Input
-        id={id}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        maxLength={maxLength}
-        disabled={disabled}
-      />
-    </div>
-  )
-}
-
-function CustomerPicker({
-  id,
-  value,
-  selectedLabel,
-  onSearch,
-  onValueChange,
-}: {
-  id: string
-  value: string
-  selectedLabel: string
-  onSearch: (
-    query: string,
-    signal: AbortSignal
-  ) => Promise<AsyncComboboxOption[]>
-  onValueChange: (value: string, option: DocumentCustomerOption | null) => void
-}) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>Customer</Label>
-      <AsyncCombobox
-        id={id}
-        ariaLabel="Customer"
-        value={value}
-        selectedLabel={selectedLabel}
-        onValueChange={(next, option) =>
-          onValueChange(next, (option?.raw as DocumentCustomerOption) ?? null)
-        }
-        onSearch={onSearch}
-        placeholder="Search customers…"
-        emptyMessage="No customers found."
-      />
-    </div>
-  )
-}
-
-function SelectField({
-  id,
-  label,
+  ariaLabel,
+  placeholder = 'Select…',
   value,
   options,
   onChange,
+  disabled,
 }: {
   id: string
   label: string
+  ariaLabel?: string
+  placeholder?: string
   value: string
   options: SelectOption[]
   onChange: (value: string) => void
+  disabled: boolean
 }) {
   return (
-    <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
+    <FormRow htmlFor={id} label={label}>
       <NativeSelect
         id={id}
+        aria-label={ariaLabel}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full"
+        disabled={disabled}
+        className={cn('w-full', FIELD_WIDTH)}
       >
-        <NativeSelectOption value="">Select…</NativeSelectOption>
+        <NativeSelectOption value="">{placeholder}</NativeSelectOption>
         {options.map((option) => (
           <NativeSelectOption key={option.value} value={option.value}>
             {option.label}
           </NativeSelectOption>
         ))}
       </NativeSelect>
-    </div>
+    </FormRow>
   )
 }
 
@@ -963,36 +939,34 @@ function CustomerRecipientDetails({
     .join(', ')
 
   return (
-    <div className="border-border mt-4 grid gap-4 border-t pt-4 sm:grid-cols-2">
+    <div className="mt-4 grid gap-6 text-sm sm:grid-cols-2">
       <div>
         <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
           Recipient
         </p>
         {customer.organizationName ? (
-          <p className="mt-1.5 text-sm font-semibold text-balance">
+          <p className="mt-1.5 font-medium text-balance">
             {customer.organizationName}
           </p>
         ) : null}
         {customer.contactName ? (
           <p
             className={cn(
-              customer.organizationName
-                ? 'mt-0.5 text-sm'
-                : 'mt-1.5 text-sm font-semibold'
+              customer.organizationName ? 'mt-0.5' : 'mt-1.5 font-medium'
             )}
           >
             {customer.contactName}
           </p>
         ) : null}
         {customer.email || customer.phone ? (
-          <p className="text-muted-foreground mt-1.5 text-xs">
+          <p className="text-muted-foreground mt-1 text-xs">
             {[customer.email, customer.phone].filter(Boolean).join(' · ')}
           </p>
         ) : null}
       </div>
       <div>
         <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-          Primary billing address
+          Billing address
         </p>
         {customer.address ? (
           <div className="mt-1.5 text-xs leading-5">
@@ -1008,7 +982,7 @@ function CustomerRecipientDetails({
           </div>
         ) : (
           <p className="text-muted-foreground mt-1.5 text-xs">
-            No primary billing address on file.
+            No billing address on file.
           </p>
         )}
       </div>

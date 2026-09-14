@@ -18,6 +18,13 @@ vi.mock('next/navigation', () => ({
 }))
 
 vi.mock('@/lib/invoice', () => ({ getInvoice: mockGetInvoice }))
+vi.mock('@/lib/services/billing', () => ({
+  getBilling: vi.fn().mockResolvedValue({
+    taxRates: {
+      list: vi.fn().mockResolvedValue({ data: { data: [] }, error: null }),
+    },
+  }),
+}))
 
 const NewQuotePage = (await import('./page')).default
 
@@ -40,10 +47,11 @@ describe('NewQuotePage', () => {
 
     expect(screen.getByRole('heading', { name: 'New Quote' })).not.toBeNull()
     expect(
-      await screen.findByRole('button', { name: 'Add quote' })
+      await screen.findByRole('button', { name: 'Save as draft' })
     ).not.toBeNull()
     expect(screen.queryByRole('heading', { name: 'New Invoice' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Add invoice' })).toBeNull()
+    expect(screen.getByLabelText('Expiry date')).not.toBeNull()
+    expect(screen.queryByLabelText('Payment terms')).toBeNull()
     // The customer picker is a server-backed typeahead now, so the page must
     // NOT prefetch a customer list — that was the bandwidth waste this change
     // removed.

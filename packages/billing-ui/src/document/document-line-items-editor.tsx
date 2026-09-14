@@ -3,6 +3,7 @@
 import { useEffect, useMemo, type ReactNode } from 'react'
 import {
   calculateDocumentTotals,
+  calculateTax,
   formatMinorUnits,
   parseDecimalToMinorUnits,
   resolvePercentageDiscount,
@@ -11,10 +12,13 @@ import {
 } from '@876/core/money'
 import { Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
-import { Plus, Trash } from '@876/ui/icons'
+import { Plus, X } from '@876/ui/icons'
+import { cn } from '@876/ui/lib/utils'
 import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { AsyncCombobox, type AsyncComboboxOption } from '@876/ui/async-combobox'
 import { SearchableSelect } from '@876/ui/searchable-select'
+
+import { DocumentTotalsSummary } from './document-totals-summary'
 
 /**
  * One editable row. Amounts are the raw strings the person typed, so a
@@ -39,6 +43,14 @@ export interface DocumentLineDraft {
   quantity: string
   unitAmount: string
   taxAmount?: string
+  /** The organization tax rate charged on this line, when one was chosen. */
+  taxRateId?: string | null
+  /**
+   * That rate as a percentage string (`"15.00"`). Carried on the line so the
+   * tax is computed from the line itself, identically in the editor and the
+   * payload, without a lookup.
+   */
+  taxRate?: string | null
   /**
    * The raw typed discount. Read as a percentage when `discountType` is
    * `PERCENTAGE`, and as a money amount otherwise.
@@ -68,6 +80,14 @@ export interface DocumentItemOption {
   stockQuantity?: number | null
   allowOutOfStock?: boolean
   variants?: readonly DocumentItemVariantOption[]
+}
+
+/** An exclusive organization tax rate a line may be charged at. */
+export interface DocumentTaxRateOption {
+  id: string
+  label: string
+  /** Percentage string, e.g. `"15.00"`. */
+  rate: string
 }
 
 export interface DocumentItemVariantOption {
@@ -143,6 +163,31 @@ export interface DocumentLineItemsEditorProps {
 
   /** Adds the percent/amount toggle to the discount cell. */
   allowPercentageDiscount?: boolean
+
+  /**
+   * Organization tax rates. Passing them turns the Tax column into a rate
+   * picker whose amount is calculated; omitting them keeps a typed amount.
+   */
+  taxRates?: readonly DocumentTaxRateOption[]
+
+  /**
+   * Renders the running totals under the table. A host that places
+   * `DocumentTotalsSummary` itself — beside notes, with editable adjustments —
+   * turns this off.
+   */
+  showTotals?: boolean
+
+  /** Heading in the table's header bar. */
+  title?: string
+
+  /** Labels the amount option of the discount toggle, e.g. `JMD`. */
+  currency?: string
+
+  /**
+   * Runs the table edge to edge of the page, its first and last cells aligned
+   * to the page gutter. For full-width document editors.
+   */
+  bleed?: boolean
 }
 
 export interface DocumentLineColumn {
@@ -212,11 +257,18 @@ function resolveLine(line: DocumentLineDraft, minorUnitDigits: number) {
       ? unitAmount * BigInt(quantity)
       : 0n)
 
+  const discountAmount = resolveLineDiscount(
+    line,
+    subtotalAmount,
+    minorUnitDigits
+  )
+
   return {
     subtotalAmount,
-    taxAmount:
-      parseDecimalToMinorUnits(line.taxAmount ?? '', minorUnitDigits) ?? 0n,
-    discountAmount: resolveLineDiscount(line, subtotalAmount, minorUnitDigits),
+    taxAmount: line.taxRate
+      ? calculateTax(subtotalAmount - discountAmount, line.taxRate)
+      : (parseDecimalToMinorUnits(line.taxAmount ?? '', minorUnitDigits) ?? 0n),
+    discountAmount,
   }
 }
 
@@ -313,6 +365,11 @@ export function DocumentLineItemsEditor({
   enforceItemStock = false,
   priceListActive = false,
   allowPercentageDiscount = false,
+  taxRates,
+  showTotals = true,
+  title,
+  currency,
+  bleed = false,
 }: DocumentLineItemsEditorProps) {
   const resolved = useMemo(
     () => lines.map((line) => resolveLine(line, minorUnitDigits)),
@@ -412,102 +469,165 @@ export function DocumentLineItemsEditor({
     })
   }
 
+  const invalidLine =
+    snapshot.status === 'invalid' ? snapshot.lineIndex : undefined
+  const cell = 'border-border border-l px-2 py-2 align-top'
+  const quietControl =
+    'hover:border-border focus-visible:border-ring h-9 border-transparent bg-transparent shadow-none dark:bg-transparent'
+  const quietSelect =
+    '[&_select]:hover:border-border [&_select]:border-transparent [&_select]:bg-transparent [&_select]:shadow-none'
+  const gutterStart = bleed ? 'pl-[var(--876-shell-gutter)]' : 'pl-3'
+  const gutterEnd = bleed ? 'pr-[var(--876-shell-gutter)]' : 'pr-2'
+  const headCell = 'border-border border-l px-3 py-2.5 font-semibold'
+
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[44rem] text-sm">
-          <thead>
-            <tr className="text-muted-foreground border-b text-left text-xs">
-              {items ? (
-                <th className="w-48 py-2 pr-3 font-medium">Item</th>
-              ) : null}
-              <th className="py-2 pr-3 font-medium">Description</th>
-              <th className="w-24 py-2 pr-3 text-right font-medium">Qty</th>
-              <th className="w-32 py-2 pr-3 text-right font-medium">Rate</th>
-              <th className="w-32 py-2 pr-3 text-right font-medium">
-                Discount
-              </th>
-              <th className="w-32 py-2 pr-3 text-right font-medium">Tax</th>
-              {extraColumns.map((column) => (
+      <div
+        className={cn(
+          'border-border overflow-hidden',
+          bleed ? '-mx-[var(--876-shell-gutter)] border-y' : 'rounded-lg border'
+        )}
+      >
+        {title ? (
+          <div
+            className={cn(
+              'border-border border-b py-3.5',
+              bleed ? 'px-[var(--876-shell-gutter)]' : 'px-4'
+            )}
+          >
+            <h2 className="text-sm font-semibold">{title}</h2>
+          </div>
+        ) : null}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[52rem] text-sm">
+            <thead>
+              <tr className="text-muted-foreground border-border border-b text-left text-[11px] font-semibold tracking-wide uppercase">
                 <th
-                  key={column.key}
-                  className={`py-2 pr-3 font-medium ${
-                    column.align === 'right' ? 'text-right' : ''
-                  }`}
+                  className={cn(
+                    'w-12 py-2.5 pr-2 text-left font-semibold',
+                    gutterStart
+                  )}
                 >
-                  {column.header}
+                  #
                 </th>
-              ))}
-              <th className="w-32 py-2 pr-3 text-right font-medium">Amount</th>
-              {readOnly ? null : <th className="w-10 py-2" />}
-            </tr>
-          </thead>
-          <tbody>
-            {lines.map((line, index) => (
-              <tr key={line.id} className="border-b last:border-0">
-                {items ? (
-                  <td className="py-2 pr-3">
-                    {onSearchItems ? (
-                      <AsyncCombobox
-                        id={`line-${line.id}-item`}
-                        ariaLabel={`Line ${index + 1} item`}
-                        value={line.selectionId ?? ''}
-                        selectedLabel={
-                          items.find(
-                            (entry) => entry.value === line.selectionId
-                          )?.label ??
-                          line.description ??
-                          ''
-                        }
-                        disabled={readOnly}
-                        placeholder="Search catalogue…"
-                        minChars={0}
-                        initialOptions={toCatalogueOptions(items)}
-                        onSearch={async (query, signal) =>
-                          toCatalogueOptions(await onSearchItems(query, signal))
-                        }
-                        emptyMessage="No catalogue matches. Keep typing to bill it as a one-off."
-                        onValueChange={(value, option) =>
-                          selectItem(
-                            index,
-                            value,
-                            (option?.raw as DocumentItemOption | undefined) ??
-                              null
-                          )
-                        }
-                      />
-                    ) : (
-                      <SearchableSelect
-                        id={`line-${line.id}-item`}
-                        ariaLabel={`Line ${index + 1} item`}
-                        value={line.selectionId ?? ''}
-                        disabled={readOnly}
-                        placeholder="One-off line"
-                        searchPlaceholder="Search catalogue…"
-                        options={[
-                          { value: '', label: 'One-off line' },
-                          ...items,
-                        ]}
-                        onValueChange={(value) => selectItem(index, value)}
-                      />
+                <th className={headCell}>Item details</th>
+                <th className={cn(headCell, 'w-24 text-right')}>Qty</th>
+                <th className={cn(headCell, 'w-36 text-right')}>Rate</th>
+                <th
+                  className={cn(
+                    headCell,
+                    'text-right',
+                    allowPercentageDiscount ? 'w-44' : 'w-32'
+                  )}
+                >
+                  Discount
+                </th>
+                <th
+                  className={cn(
+                    headCell,
+                    taxRates ? 'w-48 text-left' : 'w-32 text-right'
+                  )}
+                >
+                  Tax
+                </th>
+                {extraColumns.map((column) => (
+                  <th
+                    key={column.key}
+                    className={cn(
+                      headCell,
+                      column.align === 'right' && 'text-right'
                     )}
-                    {items?.find((entry) => entry.value === line.selectionId)
-                      ?.variants?.length ? (
-                      <NativeSelect
-                        aria-label={`Line ${index + 1} variant`}
-                        className="mt-2 w-full"
-                        value={line.variantId ?? ''}
-                        disabled={readOnly}
-                        onChange={(event) =>
-                          selectVariant(index, event.target.value)
-                        }
-                      >
-                        <NativeSelectOption value="">
-                          Choose variant
-                        </NativeSelectOption>
-                        {items
-                          .find((entry) => entry.value === line.selectionId)
-                          ?.variants?.map((variant) => (
+                  >
+                    {column.header}
+                  </th>
+                ))}
+                <th className={cn(headCell, 'w-36 text-right')}>Amount</th>
+                {readOnly ? null : <th className={cn('w-12', gutterEnd)} />}
+              </tr>
+            </thead>
+            <tbody>
+              {lines.map((line, index) => {
+                const selectedItem = items?.find(
+                  (entry) => entry.value === line.selectionId
+                )
+
+                return (
+                  <tr
+                    key={line.id}
+                    aria-invalid={invalidLine === index || undefined}
+                    className={cn(
+                      'border-border border-b last:border-0',
+                      invalidLine === index && 'bg-destructive/5'
+                    )}
+                  >
+                    <td
+                      className={cn(
+                        'text-muted-foreground py-4 pr-2 align-top text-xs tabular-nums',
+                        gutterStart
+                      )}
+                    >
+                      {index + 1}
+                    </td>
+                    <td className={cn(cell, 'space-y-1')}>
+                      {items ? (
+                        onSearchItems ? (
+                          <AsyncCombobox
+                            id={`line-${line.id}-item`}
+                            ariaLabel={`Line ${index + 1} item`}
+                            value={line.selectionId ?? ''}
+                            selectedLabel={
+                              selectedItem?.label ?? line.description ?? ''
+                            }
+                            disabled={readOnly}
+                            placeholder="Type or click to select an item"
+                            className={quietControl}
+                            minChars={0}
+                            initialOptions={toCatalogueOptions(items)}
+                            onSearch={async (query, signal) =>
+                              toCatalogueOptions(
+                                await onSearchItems(query, signal)
+                              )
+                            }
+                            emptyMessage="No catalogue matches. Keep typing to bill it as a one-off."
+                            onValueChange={(value, option) =>
+                              selectItem(
+                                index,
+                                value,
+                                (option?.raw as
+                                  DocumentItemOption | undefined) ?? null
+                              )
+                            }
+                          />
+                        ) : (
+                          <SearchableSelect
+                            id={`line-${line.id}-item`}
+                            ariaLabel={`Line ${index + 1} item`}
+                            value={line.selectionId ?? ''}
+                            disabled={readOnly}
+                            placeholder="One-off line"
+                            searchPlaceholder="Search catalogue…"
+                            options={[
+                              { value: '', label: 'One-off line' },
+                              ...items,
+                            ]}
+                            onValueChange={(value) => selectItem(index, value)}
+                          />
+                        )
+                      ) : null}
+                      {selectedItem?.variants?.length ? (
+                        <NativeSelect
+                          aria-label={`Line ${index + 1} variant`}
+                          className={cn('w-full', quietSelect)}
+                          value={line.variantId ?? ''}
+                          disabled={readOnly}
+                          onChange={(event) =>
+                            selectVariant(index, event.target.value)
+                          }
+                        >
+                          <NativeSelectOption value="">
+                            Choose variant
+                          </NativeSelectOption>
+                          {selectedItem.variants.map((variant) => (
                             <NativeSelectOption
                               key={variant.id}
                               value={variant.id}
@@ -519,140 +639,192 @@ export function DocumentLineItemsEditor({
                                 : ''}
                             </NativeSelectOption>
                           ))}
-                      </NativeSelect>
-                    ) : null}
-                  </td>
-                ) : null}
-                <td className="py-2 pr-3">
-                  <Input
-                    aria-label={`Line ${index + 1} description`}
-                    value={line.description}
-                    disabled={readOnly}
-                    onChange={(event) =>
-                      update(index, { description: event.target.value })
-                    }
-                  />
-                </td>
-                <td className="py-2 pr-3">
-                  <Input
-                    aria-label={`Line ${index + 1} quantity`}
-                    inputMode="numeric"
-                    className="text-right tabular-nums"
-                    value={line.quantity}
-                    disabled={readOnly}
-                    onChange={(event) =>
-                      update(index, { quantity: event.target.value })
-                    }
-                  />
-                </td>
-                <td className="py-2 pr-3">
-                  <Input
-                    aria-label={`Line ${index + 1} rate`}
-                    inputMode="decimal"
-                    className="text-right tabular-nums"
-                    value={line.unitAmount}
-                    disabled={
-                      readOnly || (priceListActive && Boolean(line.priceId))
-                    }
-                    onChange={(event) =>
-                      update(index, {
-                        unitAmount: event.target.value,
-                        resolvedSubtotal: null,
-                      })
-                    }
-                  />
-                </td>
-                <td className="py-2 pr-3">
-                  <div className="flex items-center gap-1">
-                    <Input
-                      aria-label={`Line ${index + 1} discount`}
-                      inputMode="decimal"
-                      className="text-right tabular-nums"
-                      value={line.discountAmount ?? ''}
-                      disabled={readOnly}
-                      onChange={(event) =>
-                        update(index, { discountAmount: event.target.value })
-                      }
-                    />
-                    {allowPercentageDiscount ? (
-                      <NativeSelect
-                        aria-label={`Line ${index + 1} discount type`}
-                        className="w-20"
-                        value={line.discountType ?? 'AMOUNT'}
+                        </NativeSelect>
+                      ) : null}
+                      <Input
+                        aria-label={`Line ${index + 1} description`}
+                        placeholder={
+                          items ? 'Add a description' : 'Item or service'
+                        }
+                        className={cn(
+                          quietControl,
+                          items && 'text-muted-foreground h-8 text-xs'
+                        )}
+                        value={line.description}
                         disabled={readOnly}
                         onChange={(event) =>
+                          update(index, { description: event.target.value })
+                        }
+                      />
+                    </td>
+                    <td className={cell}>
+                      <Input
+                        aria-label={`Line ${index + 1} quantity`}
+                        inputMode="numeric"
+                        className={cn(quietControl, 'text-right tabular-nums')}
+                        value={line.quantity}
+                        disabled={readOnly}
+                        onChange={(event) =>
+                          update(index, { quantity: event.target.value })
+                        }
+                      />
+                    </td>
+                    <td className={cell}>
+                      <Input
+                        aria-label={`Line ${index + 1} rate`}
+                        inputMode="decimal"
+                        placeholder="0.00"
+                        className={cn(quietControl, 'text-right tabular-nums')}
+                        value={line.unitAmount}
+                        disabled={
+                          readOnly || (priceListActive && Boolean(line.priceId))
+                        }
+                        onChange={(event) =>
                           update(index, {
-                            discountType: event.target
-                              .value as DocumentLineDiscountType,
+                            unitAmount: event.target.value,
+                            resolvedSubtotal: null,
                           })
                         }
+                      />
+                    </td>
+                    <td className={cell}>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          aria-label={`Line ${index + 1} discount`}
+                          inputMode="decimal"
+                          placeholder="0"
+                          className={cn(
+                            quietControl,
+                            'text-right tabular-nums'
+                          )}
+                          value={line.discountAmount ?? ''}
+                          disabled={readOnly}
+                          onChange={(event) =>
+                            update(index, {
+                              discountAmount: event.target.value,
+                            })
+                          }
+                        />
+                        {allowPercentageDiscount ? (
+                          <NativeSelect
+                            aria-label={`Line ${index + 1} discount type`}
+                            className={cn('w-[4.5rem] shrink-0', quietSelect)}
+                            value={line.discountType ?? 'AMOUNT'}
+                            disabled={readOnly}
+                            onChange={(event) =>
+                              update(index, {
+                                discountType: event.target
+                                  .value as DocumentLineDiscountType,
+                              })
+                            }
+                          >
+                            <NativeSelectOption value="PERCENTAGE">
+                              %
+                            </NativeSelectOption>
+                            <NativeSelectOption value="AMOUNT">
+                              {currency ?? 'Amt'}
+                            </NativeSelectOption>
+                          </NativeSelect>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td className={cell}>
+                      {taxRates ? (
+                        <NativeSelect
+                          aria-label={`Line ${index + 1} tax`}
+                          className={cn('w-full', quietSelect)}
+                          value={line.taxRateId ?? ''}
+                          disabled={readOnly}
+                          onChange={(event) => {
+                            const rate = taxRates.find(
+                              (option) => option.id === event.target.value
+                            )
+                            update(index, {
+                              taxRateId: rate?.id ?? null,
+                              taxRate: rate?.rate ?? null,
+                              taxAmount: '0',
+                            })
+                          }}
+                        >
+                          <NativeSelectOption value="">
+                            Select a tax
+                          </NativeSelectOption>
+                          {taxRates.map((rate) => (
+                            <NativeSelectOption key={rate.id} value={rate.id}>
+                              {rate.label}
+                            </NativeSelectOption>
+                          ))}
+                        </NativeSelect>
+                      ) : (
+                        <Input
+                          aria-label={`Line ${index + 1} tax`}
+                          inputMode="decimal"
+                          placeholder="0.00"
+                          className={cn(
+                            quietControl,
+                            'text-right tabular-nums'
+                          )}
+                          value={line.taxAmount ?? ''}
+                          disabled={readOnly}
+                          onChange={(event) =>
+                            update(index, { taxAmount: event.target.value })
+                          }
+                        />
+                      )}
+                    </td>
+                    {extraColumns.map((column) => (
+                      <td
+                        key={column.key}
+                        className={cn(
+                          cell,
+                          column.align === 'right' && 'text-right'
+                        )}
                       >
-                        <NativeSelectOption value="AMOUNT">
-                          Amount
-                        </NativeSelectOption>
-                        <NativeSelectOption value="PERCENTAGE">
-                          Percent
-                        </NativeSelectOption>
-                      </NativeSelect>
-                    ) : null}
-                  </div>
-                </td>
-                <td className="py-2 pr-3">
-                  <Input
-                    aria-label={`Line ${index + 1} tax`}
-                    inputMode="decimal"
-                    className="text-right tabular-nums"
-                    value={line.taxAmount ?? ''}
-                    disabled={readOnly}
-                    onChange={(event) =>
-                      update(index, { taxAmount: event.target.value })
-                    }
-                  />
-                </td>
-                {extraColumns.map((column) => (
-                  <td
-                    key={column.key}
-                    className={`py-2 pr-3 ${
-                      column.align === 'right' ? 'text-right' : ''
-                    }`}
-                  >
-                    {column.render(line, index)}
-                  </td>
-                ))}
-                <td
-                  className="py-2 pr-3 text-right tabular-nums"
-                  data-testid={`line-total-${index}`}
-                >
-                  {formatAmount(
-                    snapshot.status === 'ready'
-                      ? (snapshot.totals.lines[index]?.totalAmount ?? 0n)
-                      : 0n
-                  )}
-                </td>
-                {readOnly ? null : (
-                  <td className="py-2">
-                    <div className="flex items-center justify-end gap-1">
-                      {renderRowActions?.(line, index)}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label={`Remove line ${index + 1}`}
-                        onClick={() =>
-                          onChange(
-                            lines.filter((_, position) => position !== index)
-                          )
-                        }
-                      >
-                        <Trash className="size-4" />
-                      </Button>
-                    </div>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                        {column.render(line, index)}
+                      </td>
+                    ))}
+                    <td
+                      className={cn(
+                        cell,
+                        'px-3 py-4 text-right font-semibold tabular-nums'
+                      )}
+                      data-testid={`line-total-${index}`}
+                    >
+                      {formatAmount(
+                        snapshot.status === 'ready'
+                          ? (snapshot.totals.lines[index]?.totalAmount ?? 0n)
+                          : 0n
+                      )}
+                    </td>
+                    {readOnly ? null : (
+                      <td className={cn('py-2 align-top', gutterEnd)}>
+                        <div className="flex items-center justify-end gap-1 pt-0.5">
+                          {renderRowActions?.(line, index)}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            className="text-muted-foreground hover:text-destructive"
+                            aria-label={`Remove line ${index + 1}`}
+                            onClick={() =>
+                              onChange(
+                                lines.filter(
+                                  (_, position) => position !== index
+                                )
+                              )
+                            }
+                          >
+                            <X className="size-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {readOnly ? null : (
@@ -672,62 +844,21 @@ export function DocumentLineItemsEditor({
         </Button>
       )}
 
-      <dl className="ml-auto max-w-xs space-y-1 text-sm">
-        <Total
-          label="Subtotal"
-          value={
-            snapshot.status === 'ready' ? snapshot.totals.subtotalAmount : null
-          }
-          formatAmount={formatAmount}
-        />
-        <Total
-          label="Tax"
-          value={snapshot.status === 'ready' ? snapshot.totals.taxAmount : null}
-          formatAmount={formatAmount}
-        />
-        <Total
-          label="Total"
-          value={
-            snapshot.status === 'ready' ? snapshot.totals.totalAmount : null
-          }
-          formatAmount={formatAmount}
-          emphasis
-        />
-      </dl>
-
       {snapshot.status === 'invalid' ? (
         <p role="alert" className="text-destructive text-sm">
           {snapshot.message}
         </p>
       ) : null}
 
-      {footer}
-    </div>
-  )
-}
+      {showTotals ? (
+        <DocumentTotalsSummary
+          snapshot={snapshot}
+          formatAmount={formatAmount}
+          className="ml-auto max-w-sm"
+        />
+      ) : null}
 
-function Total({
-  label,
-  value,
-  formatAmount,
-  emphasis = false,
-}: {
-  label: string
-  value: bigint | null
-  formatAmount: (minorUnits: bigint) => string
-  emphasis?: boolean
-}) {
-  return (
-    <div className="flex items-center justify-between gap-6">
-      <dt className={emphasis ? 'font-medium' : 'text-muted-foreground'}>
-        {label}
-      </dt>
-      <dd
-        className={`tabular-nums ${emphasis ? 'font-medium' : ''}`}
-        data-testid={`total-${label.toLowerCase()}`}
-      >
-        {value === null ? '—' : formatAmount(value)}
-      </dd>
+      {footer}
     </div>
   )
 }
