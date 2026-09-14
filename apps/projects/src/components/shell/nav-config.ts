@@ -19,7 +19,7 @@ export const navConfig = defineNavigation([
         href: '/projects',
         icon: 'projects',
         colorClassName: 'text-purple-500 dark:text-purple-400',
-        requires: { permission: 'projects.view' },
+        requires: { module: 'projects', permission: 'projects.view' },
       },
       {
         key: 'issues',
@@ -27,7 +27,7 @@ export const navConfig = defineNavigation([
         href: '/issues',
         icon: 'issues',
         colorClassName: 'text-amber-500 dark:text-amber-400',
-        requires: { permission: 'issues.view' },
+        requires: { module: 'issues', permission: 'issues.view' },
       },
       {
         key: 'board',
@@ -35,7 +35,7 @@ export const navConfig = defineNavigation([
         href: '/board',
         icon: 'board',
         colorClassName: 'text-teal-500 dark:text-teal-400',
-        requires: { permission: 'issues.view' },
+        requires: { module: 'issues', permission: 'issues.view' },
       },
     ],
   },
