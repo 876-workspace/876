@@ -3,8 +3,13 @@ import { notFound, redirect } from 'next/navigation'
 import { PaymentDetailCard } from '@876/billing-ui/payment-detail-card'
 import { DetailCard, DetailCardBody } from '@876/ui/detail-card'
 
-import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
+import {
+  canAccess,
+  hasAccessFeature,
+  resolveAccessContext,
+} from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
+import { INVOICE_REQUESTS_SLUG } from '@/lib/features'
 import { formatDate, formatMoney } from '@/lib/format'
 import { getBilling } from '@/lib/services/billing'
 import { RelatedRequestsClient } from '../../_components/related-requests-client'
@@ -46,6 +51,9 @@ export default async function PaymentDetailPage({ params }: Props) {
   )
   const canEdit =
     access.status === 'ok' && canAccess(access.context, 'payments.edit')
+  const requestsEnabled =
+    access.status === 'ok' &&
+    hasAccessFeature(access.context, INVOICE_REQUESTS_SLUG)
   const canRefund =
     canEdit &&
     (payment.status === 'SUCCEEDED' ||
@@ -93,17 +101,19 @@ export default async function PaymentDetailPage({ params }: Props) {
       }
       refundHref={canRefund ? `/payments/${payment.id}/refund` : undefined}
     >
-      <RelatedRequestsClient
-        customerId={payment.customer.id}
-        resourceType="payment"
-        resourceId={payment.id}
-        snapshot={{
-          number: payment.number,
-          amount: String(payment.amount),
-          currency: payment.currency,
-          status: payment.status,
-        }}
-      />
+      {requestsEnabled ? (
+        <RelatedRequestsClient
+          customerId={payment.customer.id}
+          resourceType="payment"
+          resourceId={payment.id}
+          snapshot={{
+            number: payment.number,
+            amount: String(payment.amount),
+            currency: payment.currency,
+            status: payment.status,
+          }}
+        />
+      ) : null}
     </PaymentDetailCard>
   )
 }
