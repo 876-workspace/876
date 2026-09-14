@@ -42,9 +42,11 @@ function prop(
   return { ...base, ...overrides }
 }
 
-function baseFinanceResources(options: {
-  countryCode?: string | null
-} = {}): ProvisioningResourceInput[] {
+function baseFinanceResources(
+  options: {
+    countryCode?: string | null
+  } = {}
+): ProvisioningResourceInput[] {
   const workspaceProperties = [
     prop('baseCurrency', 'reference', {
       referenceNamespace: 'currency',
@@ -128,6 +130,28 @@ function minimalFinanceDraft(
   }
 }
 
+function appRoleResource(
+  roleKey: string,
+  position: number,
+  overrides: { propertyKeys?: Record<string, string> } = {}
+): ProvisioningResourceInput {
+  const key = (name: string) => overrides.propertyKeys?.[name] ?? name
+  return {
+    resourceType: 'app-role',
+    key: `876-couriers:${roleKey}`,
+    position,
+    properties: [
+      prop(key('app-slug'), 'string', { stringValue: '876-couriers' }),
+      prop(key('role-key'), 'string', { stringValue: roleKey }),
+      prop('name', 'string', { stringValue: roleKey }),
+      prop('permissions', 'string', { stringValue: 'customers.view' }),
+      prop(key('is-default'), 'boolean', { booleanValue: roleKey === 'staff' }),
+      prop(key('is-system'), 'boolean', { booleanValue: true }),
+      prop('position', 'integer', { integerValue: position }),
+    ],
+  }
+}
+
 describe('resourceRegistry', () => {
   it('returns the registered catalog for each target family', () => {
     const billingResources = APPLICATION_RESOURCES['876-billing']
@@ -136,16 +160,19 @@ describe('resourceRegistry', () => {
 
     expect(resourceRegistry('finance', '')).toBe(FINANCE_RESOURCES)
     expect(resourceRegistry('organization', '')).toBe(ORGANIZATION_RESOURCES)
-    // application registries include the shared app_role entry merged in
+    // application registries include the shared canonical app-role entry
     expect(resourceRegistry('application', '876-billing')).toMatchObject(
       billingResources
     )
     expect(resourceRegistry('application', '876-billing')).toHaveProperty(
+      'app-role'
+    )
+    expect(resourceRegistry('application', '876-billing')).not.toHaveProperty(
       'app_role'
     )
-    // unknown apps still get the standard app_role entry
+    // unknown apps still get the standard app-role entry
     expect(resourceRegistry('application', 'unknown-app')).toHaveProperty(
-      'app_role'
+      'app-role'
     )
   })
 })
@@ -161,16 +188,16 @@ describe('catalogDefinitions', () => {
       minimumItems: 1,
       maximumItems: 1,
     })
-    expect(workspace?.fields.find((field) => field.key === 'countryCode')).toMatchObject(
-      {
-        required: false,
-        valueType: 'reference',
-        referenceNamespace: 'country',
-      }
-    )
-    expect(workspace?.fields.find((field) => field.key === 'baseCurrency')).toMatchObject(
-      { required: true, referenceNamespace: 'currency' }
-    )
+    expect(
+      workspace?.fields.find((field) => field.key === 'countryCode')
+    ).toMatchObject({
+      required: false,
+      valueType: 'reference',
+      referenceNamespace: 'country',
+    })
+    expect(
+      workspace?.fields.find((field) => field.key === 'baseCurrency')
+    ).toMatchObject({ required: true, referenceNamespace: 'currency' })
     expect(
       workspace?.fields.find((field) => field.key === 'defaultLanguage')
     ).toMatchObject({ required: true, referenceNamespace: 'language' })
@@ -180,7 +207,9 @@ describe('catalogDefinitions', () => {
     const definitions = catalogDefinitions('finance', '')
 
     expect(
-      definitions.find((definition) => definition.resourceType === 'tax_authority')
+      definitions.find(
+        (definition) => definition.resourceType === 'tax_authority'
+      )
     ).toMatchObject({ minimumItems: 0, multiple: true })
     expect(
       definitions.find(
@@ -259,7 +288,7 @@ describe('catalogDefinitions', () => {
 
   it('keeps billing document preferences optional', () => {
     const definitions = catalogDefinitions('application', '876-billing')
-    // billing gets document_preference (app-specific) + app_role (standard for all apps)
+    // billing gets document_preference (app-specific) + app-role (standard for all apps)
     expect(definitions).toHaveLength(2)
     const docPref = definitions.find(
       (d) => d.resourceType === 'document_preference'
@@ -270,11 +299,53 @@ describe('catalogDefinitions', () => {
       minimumItems: 0,
       maximumItems: null,
     })
-    expect(definitions.find((d) => d.resourceType === 'app_role')).toBeDefined()
+    expect(definitions.find((d) => d.resourceType === 'app-role')).toBeDefined()
+    expect(
+      definitions.find((d) => d.resourceType === 'app_role')
+    ).toBeUndefined()
   })
 })
 
 describe('validateDraft', () => {
+  it('accepts canonical app-role resources on an application target', () => {
+    const issues = validateDraft('application', '876-couriers', {
+      financeDependency: 'embedded',
+      financeScopes: ['billing.taxes.read'],
+      resources: [
+        appRoleResource('super-admin', 0),
+        appRoleResource('admin', 1),
+        appRoleResource('staff', 2),
+      ],
+    })
+
+    expect(
+      issues.filter((issue) =>
+        ['unknown_resource_type', 'missing_property'].includes(issue.code)
+      )
+    ).toEqual([])
+  })
+
+  it('rejects legacy snake_case app-role property keys as missing', () => {
+    const legacyKeys = {
+      'app-slug': 'app_slug',
+      'role-key': 'role_key',
+      'is-default': 'is_default',
+      'is-system': 'is_system',
+    }
+    const issues = validateDraft('application', '876-couriers', {
+      financeDependency: 'none',
+      resources: [
+        appRoleResource('super-admin', 0, { propertyKeys: legacyKeys }),
+      ],
+    })
+
+    expect(issues).toContainEqual(
+      expect.objectContaining({
+        code: 'missing_property',
+        path: 'resources.0.properties.app-slug',
+      })
+    )
+  })
   it('passes a basic finance draft without tax resources', () => {
     expect(validateDraft('finance', '', minimalFinanceDraft())).toEqual([])
   })

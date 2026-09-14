@@ -1,6 +1,9 @@
 import type { ProvisioningDraftReplaceParams as ProvisioningWireDraftReplace } from '@876/core/types/provisioning'
 
-import { validateAppRoleProvisioningResources } from './app-role-provisioning-catalog'
+import {
+  APP_ROLE_PROVISIONING_RESOURCE_TYPE,
+  validateAppRoleProvisioningResources,
+} from './app-role-provisioning-catalog'
 import type {
   FinanceDependency,
   ProvisioningDraftReplace,
@@ -378,13 +381,13 @@ const APP_ROLE_RESOURCE = resource(
   true,
   3,
   {
-    app_slug: field('App slug', 'string'),
-    role_key: field('Role key', 'string', { unique: true }),
+    'app-slug': field('App slug', 'string'),
+    'role-key': field('Role key', 'string', { unique: true }),
     name: field('Name', 'string'),
     description: field('Description', 'string', { required: false }),
     permissions: field('Permissions', 'string'),
-    is_default: field('Default role', 'boolean'),
-    is_system: field('System role', 'boolean'),
+    'is-default': field('Default role', 'boolean'),
+    'is-system': field('System role', 'boolean'),
     position: field('Position', 'integer'),
   }
 )
@@ -395,10 +398,13 @@ export function resourceRegistry(
 ): Record<string, Resource> {
   if (targetType === 'finance') return FINANCE_RESOURCES
   if (targetType === 'organization') return ORGANIZATION_RESOURCES
-  if (targetKey === ENTERPRISE_APP_SLUG) return APPLICATION_RESOURCES[targetKey] ?? {}
+  if (targetKey === ENTERPRISE_APP_SLUG)
+    return APPLICATION_RESOURCES[targetKey] ?? {}
+  // Published profiles store roles under the canonical `app-role` type; a
+  // registry keyed on the legacy spelling rejected every re-validated draft.
   return {
     ...(APPLICATION_RESOURCES[targetKey] ?? {}),
-    app_role: APP_ROLE_RESOURCE,
+    [APP_ROLE_PROVISIONING_RESOURCE_TYPE]: APP_ROLE_RESOURCE,
   }
 }
 
@@ -437,7 +443,9 @@ function stringProperty(
   resource: ProvisioningResourceInput,
   key: string
 ): string | null {
-  const property = resource.properties.find((candidate) => candidate.key === key)
+  const property = resource.properties.find(
+    (candidate) => candidate.key === key
+  )
   return property?.valueType === 'string' ? property.stringValue : null
 }
 
@@ -531,7 +539,8 @@ export function validateDraft(
       const effectiveFrom = stringProperty(resource, 'effectiveFrom')
       const effectiveUntil = stringProperty(resource, 'effectiveUntil')
       const fromValid = !effectiveFrom || ISO_DATE_PATTERN.test(effectiveFrom)
-      const untilValid = !effectiveUntil || ISO_DATE_PATTERN.test(effectiveUntil)
+      const untilValid =
+        !effectiveUntil || ISO_DATE_PATTERN.test(effectiveUntil)
 
       if (!fromValid)
         issues.push({
@@ -669,5 +678,9 @@ export function validateProvisioningWireDraft(
   targetKey: string,
   draft: ProvisioningWireDraftReplace
 ): ProvisioningValidationIssue[] {
-  return validateDraft(targetType, targetKey, provisioningDraftForCatalog(draft))
+  return validateDraft(
+    targetType,
+    targetKey,
+    provisioningDraftForCatalog(draft)
+  )
 }
