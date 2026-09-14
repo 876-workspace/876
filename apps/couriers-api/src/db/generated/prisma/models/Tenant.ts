@@ -252,6 +252,7 @@ export type TenantWhereInput = {
   domains?: Prisma.DomainListRelationFilter
   mailboxes?: Prisma.MailboxListRelationFilter
   packages?: Prisma.PackageListRelationFilter
+  packageCategories?: Prisma.PackageCategoryListRelationFilter
   roles?: Prisma.RoleListRelationFilter
   teamMembers?: Prisma.TeamMemberListRelationFilter
   organizationModules?: Prisma.OrganizationModuleListRelationFilter
@@ -275,6 +276,7 @@ export type TenantOrderByWithRelationInput = {
   domains?: Prisma.DomainOrderByRelationAggregateInput
   mailboxes?: Prisma.MailboxOrderByRelationAggregateInput
   packages?: Prisma.PackageOrderByRelationAggregateInput
+  packageCategories?: Prisma.PackageCategoryOrderByRelationAggregateInput
   roles?: Prisma.RoleOrderByRelationAggregateInput
   teamMembers?: Prisma.TeamMemberOrderByRelationAggregateInput
   organizationModules?: Prisma.OrganizationModuleOrderByRelationAggregateInput
@@ -301,6 +303,7 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   domains?: Prisma.DomainListRelationFilter
   mailboxes?: Prisma.MailboxListRelationFilter
   packages?: Prisma.PackageListRelationFilter
+  packageCategories?: Prisma.PackageCategoryListRelationFilter
   roles?: Prisma.RoleListRelationFilter
   teamMembers?: Prisma.TeamMemberListRelationFilter
   organizationModules?: Prisma.OrganizationModuleListRelationFilter
@@ -354,6 +357,7 @@ export type TenantCreateInput = {
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
@@ -377,6 +381,7 @@ export type TenantUncheckedCreateInput = {
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
@@ -400,6 +405,7 @@ export type TenantUpdateInput = {
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
@@ -423,6 +429,7 @@ export type TenantUncheckedUpdateInput = {
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
@@ -465,6 +472,11 @@ export type TenantUncheckedUpdateManyInput = {
 export type TenantScalarRelationFilter = {
   is?: Prisma.TenantWhereInput
   isNot?: Prisma.TenantWhereInput
+}
+
+export type TenantNullableScalarRelationFilter = {
+  is?: Prisma.TenantWhereInput | null
+  isNot?: Prisma.TenantWhereInput | null
 }
 
 export type TenantCountOrderByAggregateInput = {
@@ -622,6 +634,22 @@ export type TenantUpdateOneRequiredWithoutModulePreferencesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutModulePreferencesInput, Prisma.TenantUpdateWithoutModulePreferencesInput>, Prisma.TenantUncheckedUpdateWithoutModulePreferencesInput>
 }
 
+export type TenantCreateNestedOneWithoutPackageCategoriesInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutPackageCategoriesInput, Prisma.TenantUncheckedCreateWithoutPackageCategoriesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutPackageCategoriesInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneWithoutPackageCategoriesNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutPackageCategoriesInput, Prisma.TenantUncheckedCreateWithoutPackageCategoriesInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutPackageCategoriesInput
+  upsert?: Prisma.TenantUpsertWithoutPackageCategoriesInput
+  disconnect?: Prisma.TenantWhereInput | boolean
+  delete?: Prisma.TenantWhereInput | boolean
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutPackageCategoriesInput, Prisma.TenantUpdateWithoutPackageCategoriesInput>, Prisma.TenantUncheckedUpdateWithoutPackageCategoriesInput>
+}
+
 export type TenantCreateNestedOneWithoutPackagesInput = {
   create?: Prisma.XOR<Prisma.TenantCreateWithoutPackagesInput, Prisma.TenantUncheckedCreateWithoutPackagesInput>
   connectOrCreate?: Prisma.TenantCreateOrConnectWithoutPackagesInput
@@ -698,6 +726,7 @@ export type TenantCreateWithoutAddressesInput = {
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
@@ -720,6 +749,7 @@ export type TenantUncheckedCreateWithoutAddressesInput = {
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
@@ -758,6 +788,7 @@ export type TenantUpdateWithoutAddressesInput = {
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
@@ -780,6 +811,7 @@ export type TenantUncheckedUpdateWithoutAddressesInput = {
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
@@ -802,6 +834,7 @@ export type TenantCreateWithoutBranchesInput = {
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
@@ -824,6 +857,7 @@ export type TenantUncheckedCreateWithoutBranchesInput = {
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
@@ -862,6 +896,7 @@ export type TenantUpdateWithoutBranchesInput = {
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
@@ -884,6 +919,7 @@ export type TenantUncheckedUpdateWithoutBranchesInput = {
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
@@ -906,6 +942,7 @@ export type TenantCreateWithoutCustomerAddressesInput = {
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
@@ -928,6 +965,7 @@ export type TenantUncheckedCreateWithoutCustomerAddressesInput = {
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
@@ -966,6 +1004,7 @@ export type TenantUpdateWithoutCustomerAddressesInput = {
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
@@ -988,6 +1027,7 @@ export type TenantUncheckedUpdateWithoutCustomerAddressesInput = {
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
@@ -1010,6 +1050,7 @@ export type TenantCreateWithoutCustomersInput = {
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
@@ -1032,6 +1073,7 @@ export type TenantUncheckedCreateWithoutCustomersInput = {
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
@@ -1070,6 +1112,7 @@ export type TenantUpdateWithoutCustomersInput = {
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
@@ -1092,6 +1135,7 @@ export type TenantUncheckedUpdateWithoutCustomersInput = {
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
@@ -1114,6 +1158,7 @@ export type TenantCreateWithoutDomainsInput = {
   customerAddresses?: Prisma.CustomerAddressCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
@@ -1136,6 +1181,7 @@ export type TenantUncheckedCreateWithoutDomainsInput = {
   customerAddresses?: Prisma.CustomerAddressUncheckedCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
@@ -1174,6 +1220,7 @@ export type TenantUpdateWithoutDomainsInput = {
   customerAddresses?: Prisma.CustomerAddressUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
@@ -1196,6 +1243,7 @@ export type TenantUncheckedUpdateWithoutDomainsInput = {
   customerAddresses?: Prisma.CustomerAddressUncheckedUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
@@ -1218,6 +1266,7 @@ export type TenantCreateWithoutMailboxesInput = {
   customerAddresses?: Prisma.CustomerAddressCreateNestedManyWithoutTenantInput
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
@@ -1240,6 +1289,7 @@ export type TenantUncheckedCreateWithoutMailboxesInput = {
   customerAddresses?: Prisma.CustomerAddressUncheckedCreateNestedManyWithoutTenantInput
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
@@ -1278,6 +1328,7 @@ export type TenantUpdateWithoutMailboxesInput = {
   customerAddresses?: Prisma.CustomerAddressUpdateManyWithoutTenantNestedInput
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
@@ -1300,6 +1351,7 @@ export type TenantUncheckedUpdateWithoutMailboxesInput = {
   customerAddresses?: Prisma.CustomerAddressUncheckedUpdateManyWithoutTenantNestedInput
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
@@ -1323,6 +1375,7 @@ export type TenantCreateWithoutOrganizationModulesInput = {
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
@@ -1345,6 +1398,7 @@ export type TenantUncheckedCreateWithoutOrganizationModulesInput = {
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
@@ -1383,6 +1437,7 @@ export type TenantUpdateWithoutOrganizationModulesInput = {
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
@@ -1405,6 +1460,7 @@ export type TenantUncheckedUpdateWithoutOrganizationModulesInput = {
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
@@ -1427,6 +1483,7 @@ export type TenantCreateWithoutModulePreferencesInput = {
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
@@ -1449,6 +1506,7 @@ export type TenantUncheckedCreateWithoutModulePreferencesInput = {
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
@@ -1487,6 +1545,7 @@ export type TenantUpdateWithoutModulePreferencesInput = {
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
@@ -1509,9 +1568,118 @@ export type TenantUncheckedUpdateWithoutModulePreferencesInput = {
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutPackageCategoriesInput = {
+  id?: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix?: string | null
+  status?: $Enums.TenantStatus
+  createdAt: number
+  updatedAt: number
+  addresses?: Prisma.AddressCreateNestedManyWithoutTenantInput
+  branches?: Prisma.BranchCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  customers?: Prisma.CourierCustomerProfileCreateNestedManyWithoutTenantInput
+  customerAddresses?: Prisma.CustomerAddressCreateNestedManyWithoutTenantInput
+  domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
+  mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
+  packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutPackageCategoriesInput = {
+  id?: string
+  orgId: string
+  slug: string
+  name: string
+  mailboxPrefix?: string | null
+  status?: $Enums.TenantStatus
+  createdAt: number
+  updatedAt: number
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutTenantInput
+  branches?: Prisma.BranchUncheckedCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  customers?: Prisma.CourierCustomerProfileUncheckedCreateNestedManyWithoutTenantInput
+  customerAddresses?: Prisma.CustomerAddressUncheckedCreateNestedManyWithoutTenantInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
+  mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
+  packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutPackageCategoriesInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutPackageCategoriesInput, Prisma.TenantUncheckedCreateWithoutPackageCategoriesInput>
+}
+
+export type TenantUpsertWithoutPackageCategoriesInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutPackageCategoriesInput, Prisma.TenantUncheckedUpdateWithoutPackageCategoriesInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutPackageCategoriesInput, Prisma.TenantUncheckedCreateWithoutPackageCategoriesInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutPackageCategoriesInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutPackageCategoriesInput, Prisma.TenantUncheckedUpdateWithoutPackageCategoriesInput>
+}
+
+export type TenantUpdateWithoutPackageCategoriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mailboxPrefix?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  addresses?: Prisma.AddressUpdateManyWithoutTenantNestedInput
+  branches?: Prisma.BranchUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  customers?: Prisma.CourierCustomerProfileUpdateManyWithoutTenantNestedInput
+  customerAddresses?: Prisma.CustomerAddressUpdateManyWithoutTenantNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
+  mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
+  packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutPackageCategoriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  orgId?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  mailboxPrefix?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutTenantNestedInput
+  branches?: Prisma.BranchUncheckedUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  customers?: Prisma.CourierCustomerProfileUncheckedUpdateManyWithoutTenantNestedInput
+  customerAddresses?: Prisma.CustomerAddressUncheckedUpdateManyWithoutTenantNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
+  mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
+  packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
+  teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
+  organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
+  modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutPackagesInput = {
@@ -1530,6 +1698,7 @@ export type TenantCreateWithoutPackagesInput = {
   customerAddresses?: Prisma.CustomerAddressCreateNestedManyWithoutTenantInput
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
@@ -1552,6 +1721,7 @@ export type TenantUncheckedCreateWithoutPackagesInput = {
   customerAddresses?: Prisma.CustomerAddressUncheckedCreateNestedManyWithoutTenantInput
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
@@ -1590,6 +1760,7 @@ export type TenantUpdateWithoutPackagesInput = {
   customerAddresses?: Prisma.CustomerAddressUpdateManyWithoutTenantNestedInput
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
@@ -1612,6 +1783,7 @@ export type TenantUncheckedUpdateWithoutPackagesInput = {
   customerAddresses?: Prisma.CustomerAddressUncheckedUpdateManyWithoutTenantNestedInput
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
@@ -1635,6 +1807,7 @@ export type TenantCreateWithoutRolesInput = {
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
   modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
@@ -1657,6 +1830,7 @@ export type TenantUncheckedCreateWithoutRolesInput = {
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
   modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
@@ -1695,6 +1869,7 @@ export type TenantUpdateWithoutRolesInput = {
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
   modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
@@ -1717,6 +1892,7 @@ export type TenantUncheckedUpdateWithoutRolesInput = {
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
   modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
@@ -1739,6 +1915,7 @@ export type TenantCreateWithoutTeamMembersInput = {
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
   modulePreferences?: Prisma.ModulePreferenceCreateNestedManyWithoutTenantInput
@@ -1761,6 +1938,7 @@ export type TenantUncheckedCreateWithoutTeamMembersInput = {
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
   modulePreferences?: Prisma.ModulePreferenceUncheckedCreateNestedManyWithoutTenantInput
@@ -1799,6 +1977,7 @@ export type TenantUpdateWithoutTeamMembersInput = {
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
   modulePreferences?: Prisma.ModulePreferenceUpdateManyWithoutTenantNestedInput
@@ -1821,6 +2000,7 @@ export type TenantUncheckedUpdateWithoutTeamMembersInput = {
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
   modulePreferences?: Prisma.ModulePreferenceUncheckedUpdateManyWithoutTenantNestedInput
@@ -1842,6 +2022,7 @@ export type TenantCreateWithoutWarehousesInput = {
   domains?: Prisma.DomainCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleCreateNestedManyWithoutTenantInput
@@ -1864,6 +2045,7 @@ export type TenantUncheckedCreateWithoutWarehousesInput = {
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutTenantInput
   mailboxes?: Prisma.MailboxUncheckedCreateNestedManyWithoutTenantInput
   packages?: Prisma.PackageUncheckedCreateNestedManyWithoutTenantInput
+  packageCategories?: Prisma.PackageCategoryUncheckedCreateNestedManyWithoutTenantInput
   roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
   teamMembers?: Prisma.TeamMemberUncheckedCreateNestedManyWithoutTenantInput
   organizationModules?: Prisma.OrganizationModuleUncheckedCreateNestedManyWithoutTenantInput
@@ -1902,6 +2084,7 @@ export type TenantUpdateWithoutWarehousesInput = {
   domains?: Prisma.DomainUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUpdateManyWithoutTenantNestedInput
@@ -1924,6 +2107,7 @@ export type TenantUncheckedUpdateWithoutWarehousesInput = {
   domains?: Prisma.DomainUncheckedUpdateManyWithoutTenantNestedInput
   mailboxes?: Prisma.MailboxUncheckedUpdateManyWithoutTenantNestedInput
   packages?: Prisma.PackageUncheckedUpdateManyWithoutTenantNestedInput
+  packageCategories?: Prisma.PackageCategoryUncheckedUpdateManyWithoutTenantNestedInput
   roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   teamMembers?: Prisma.TeamMemberUncheckedUpdateManyWithoutTenantNestedInput
   organizationModules?: Prisma.OrganizationModuleUncheckedUpdateManyWithoutTenantNestedInput
@@ -1944,6 +2128,7 @@ export type TenantCountOutputType = {
   domains: number
   mailboxes: number
   packages: number
+  packageCategories: number
   roles: number
   teamMembers: number
   organizationModules: number
@@ -1959,6 +2144,7 @@ export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   domains?: boolean | TenantCountOutputTypeCountDomainsArgs
   mailboxes?: boolean | TenantCountOutputTypeCountMailboxesArgs
   packages?: boolean | TenantCountOutputTypeCountPackagesArgs
+  packageCategories?: boolean | TenantCountOutputTypeCountPackageCategoriesArgs
   roles?: boolean | TenantCountOutputTypeCountRolesArgs
   teamMembers?: boolean | TenantCountOutputTypeCountTeamMembersArgs
   organizationModules?: boolean | TenantCountOutputTypeCountOrganizationModulesArgs
@@ -2034,6 +2220,13 @@ export type TenantCountOutputTypeCountPackagesArgs<ExtArgs extends runtime.Types
 /**
  * TenantCountOutputType without action
  */
+export type TenantCountOutputTypeCountPackageCategoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PackageCategoryWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
 export type TenantCountOutputTypeCountRolesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.RoleWhereInput
 }
@@ -2077,6 +2270,7 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   domains?: boolean | Prisma.Tenant$domainsArgs<ExtArgs>
   mailboxes?: boolean | Prisma.Tenant$mailboxesArgs<ExtArgs>
   packages?: boolean | Prisma.Tenant$packagesArgs<ExtArgs>
+  packageCategories?: boolean | Prisma.Tenant$packageCategoriesArgs<ExtArgs>
   roles?: boolean | Prisma.Tenant$rolesArgs<ExtArgs>
   teamMembers?: boolean | Prisma.Tenant$teamMembersArgs<ExtArgs>
   organizationModules?: boolean | Prisma.Tenant$organizationModulesArgs<ExtArgs>
@@ -2127,6 +2321,7 @@ export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   domains?: boolean | Prisma.Tenant$domainsArgs<ExtArgs>
   mailboxes?: boolean | Prisma.Tenant$mailboxesArgs<ExtArgs>
   packages?: boolean | Prisma.Tenant$packagesArgs<ExtArgs>
+  packageCategories?: boolean | Prisma.Tenant$packageCategoriesArgs<ExtArgs>
   roles?: boolean | Prisma.Tenant$rolesArgs<ExtArgs>
   teamMembers?: boolean | Prisma.Tenant$teamMembersArgs<ExtArgs>
   organizationModules?: boolean | Prisma.Tenant$organizationModulesArgs<ExtArgs>
@@ -2147,6 +2342,7 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     domains: Prisma.$DomainPayload<ExtArgs>[]
     mailboxes: Prisma.$MailboxPayload<ExtArgs>[]
     packages: Prisma.$PackagePayload<ExtArgs>[]
+    packageCategories: Prisma.$PackageCategoryPayload<ExtArgs>[]
     roles: Prisma.$RolePayload<ExtArgs>[]
     teamMembers: Prisma.$TeamMemberPayload<ExtArgs>[]
     organizationModules: Prisma.$OrganizationModulePayload<ExtArgs>[]
@@ -2563,6 +2759,7 @@ export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.T
   domains<T extends Prisma.Tenant$domainsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$domainsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DomainPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   mailboxes<T extends Prisma.Tenant$mailboxesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$mailboxesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MailboxPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   packages<T extends Prisma.Tenant$packagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$packagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PackagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  packageCategories<T extends Prisma.Tenant$packageCategoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$packageCategoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PackageCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   roles<T extends Prisma.Tenant$rolesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$rolesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   teamMembers<T extends Prisma.Tenant$teamMembersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$teamMembersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TeamMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   organizationModules<T extends Prisma.Tenant$organizationModulesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$organizationModulesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrganizationModulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3186,6 +3383,30 @@ export type Tenant$packagesArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.PackageScalarFieldEnum | Prisma.PackageScalarFieldEnum[]
+}
+
+/**
+ * Tenant.packageCategories
+ */
+export type Tenant$packageCategoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PackageCategory
+   */
+  select?: Prisma.PackageCategorySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PackageCategory
+   */
+  omit?: Prisma.PackageCategoryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PackageCategoryInclude<ExtArgs> | null
+  where?: Prisma.PackageCategoryWhereInput
+  orderBy?: Prisma.PackageCategoryOrderByWithRelationInput | Prisma.PackageCategoryOrderByWithRelationInput[]
+  cursor?: Prisma.PackageCategoryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PackageCategoryScalarFieldEnum | Prisma.PackageCategoryScalarFieldEnum[]
 }
 
 /**

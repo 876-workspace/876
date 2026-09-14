@@ -60,6 +60,7 @@ export const ModelName = {
   Mailbox: 'Mailbox',
   OrganizationModule: 'OrganizationModule',
   ModulePreference: 'ModulePreference',
+  PackageCategory: 'PackageCategory',
   Package: 'Package',
   Role: 'Role',
   TeamMember: 'TeamMember',
@@ -226,6 +227,24 @@ export const ModulePreferenceScalarFieldEnum = {
 } as const
 
 export type ModulePreferenceScalarFieldEnum = (typeof ModulePreferenceScalarFieldEnum)[keyof typeof ModulePreferenceScalarFieldEnum]
+
+
+export const PackageCategoryScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  provisioningKey: 'provisioningKey',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  icon: 'icon',
+  sortOrder: 'sortOrder',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type PackageCategoryScalarFieldEnum = (typeof PackageCategoryScalarFieldEnum)[keyof typeof PackageCategoryScalarFieldEnum]
 
 
 export const PackageScalarFieldEnum = {

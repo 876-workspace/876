@@ -65,6 +65,11 @@ export type OrganizationModule = Prisma.OrganizationModuleModel
  */
 export type ModulePreference = Prisma.ModulePreferenceModel
 /**
+ * Model PackageCategory
+ * 
+ */
+export type PackageCategory = Prisma.PackageCategoryModel
+/**
  * Model Package
  * 
  */
