@@ -247,7 +247,7 @@ describe('package categories', () => {
     expect(response.status).toBe(422)
     expect(response.body.error).toEqual({
       code: 'request/invalid',
-      message: 'The request is invalid.',
+      message: 'The request is invalid. Please check the submitted values.',
     })
     expect(packageCategory.findFirst).not.toHaveBeenCalled()
     expect(packageCategory.create).not.toHaveBeenCalled()
