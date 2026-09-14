@@ -1,3 +1,4 @@
+import { z } from 'zod'
 import { listObject } from '@/http/envelope'
 import { createApiRouter, type GuardResolver } from '@/http/api-router'
 import {
@@ -75,7 +76,15 @@ import {
 } from '@/modules/mailboxes'
 import * as tenantsService from '@/modules/tenants'
 import { tenantSchema } from '@/modules/tenants'
-import { idParamsSchema, type IdParams } from '@/modules/team'
+
+// `/v1/me` resolves the tenant from the caller, so its paths carry no
+// `:tenantId`. Team's tenant-scoped params schema rejects every request here.
+const idParamsSchema = z.strictObject({ id: z.string().min(1) })
+const mailboxParamsSchema = idParamsSchema.extend({
+  mailboxId: z.string().min(1),
+})
+type IdParams = z.infer<typeof idParamsSchema>
+type MailboxParams = z.infer<typeof mailboxParamsSchema>
 
 /**
  * Application-context Couriers routes. The tenant is resolved from the
@@ -439,7 +448,7 @@ export function createMeRouter(resolveGuards: GuardResolver) {
     operationId: 'me-customers-mailboxes-update',
     summary: 'Update one of the caller’s own customers’ mailboxes',
     request: {
-      params: idParamsSchema,
+      params: mailboxParamsSchema,
       body: mailboxUpdateBodySchema,
     },
     responses: {
@@ -450,8 +459,7 @@ export function createMeRouter(resolveGuards: GuardResolver) {
     },
     handler: async (req, res) => {
       const tenant = req.tenant!
-      const { id } = req.valid.params as IdParams
-      const mailboxId = String(req.params.mailboxId)
+      const { id, mailboxId } = req.valid.params as MailboxParams
       res
         .status(200)
         .json(
