@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import { RequestListDetailShell } from '@876/crm-ui/request-list-detail-shell'
 
 import {
+  hasPermission,
   requireBillingFeature,
   requirePagePermission,
 } from '@/lib/auth/billing-context'
@@ -20,7 +21,7 @@ export default async function CustomerRequestsLayout({
   children: ReactNode
   params: Promise<{ customerId: string }>
 }) {
-  const [, , { customerId }] = await Promise.all([
+  const [context, , { customerId }] = await Promise.all([
     requirePagePermission('customers:read'),
     requireBillingFeature('requests'),
     params,
@@ -31,6 +32,7 @@ export default async function CustomerRequestsLayout({
     <div className="flex h-full min-h-0 flex-col">
       <RequestListDetailShell
         baseHref={baseHref}
+        canCreate={hasPermission(context, 'customers:write')}
         list={
           <Suspense fallback={<CustomerRequestListSkeleton />}>
             <CustomerRequestList customerId={customerId} baseHref={baseHref} />
