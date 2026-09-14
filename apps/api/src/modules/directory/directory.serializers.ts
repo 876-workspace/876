@@ -21,8 +21,8 @@ export type DirectoryAddressRow = {
   state: string
   postalCode: string | null
   country: string
-  latitude: number
-  longitude: number
+  latitude: number | null
+  longitude: number | null
   createdAt: bigint
   updatedAt: bigint
 }

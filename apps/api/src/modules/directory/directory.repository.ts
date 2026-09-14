@@ -41,8 +41,8 @@ export function addressCreateData(input: DirectoryAddressCreate, now: bigint) {
     state: input.state,
     postalCode: input.postal_code ?? null,
     country: input.country,
-    latitude: input.latitude,
-    longitude: input.longitude,
+    latitude: input.latitude ?? null,
+    longitude: input.longitude ?? null,
     createdAt: now,
     updatedAt: now,
   }

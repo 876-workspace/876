@@ -82,8 +82,9 @@ export const directoryAddressSchema = z
     state: z.string(),
     postal_code: z.string().nullable(),
     country: z.string(),
-    latitude: z.number(),
-    longitude: z.number(),
+    /** Null until a trusted geocode exists; never fabricated from a street address. */
+    latitude: z.number().nullable(),
+    longitude: z.number().nullable(),
     created_at: z.number().int(),
     updated_at: z.number().int(),
   })
@@ -101,8 +102,8 @@ export const directoryAddressCreateSchema = z.strictObject({
   state: z.string().min(1),
   postal_code: z.string().nullish(),
   country: z.string().length(2).default('JM'),
-  latitude: z.number().min(-90).max(90),
-  longitude: z.number().min(-180).max(180),
+  latitude: z.number().min(-90).max(90).nullish(),
+  longitude: z.number().min(-180).max(180).nullish(),
 })
 
 export type DirectoryAddressCreate = z.infer<

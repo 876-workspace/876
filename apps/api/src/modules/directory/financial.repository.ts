@@ -40,7 +40,9 @@ import {
 
 // --- Banks ---
 
-export function countryExists(countryCode: string): Promise<{ code: string } | null> {
+export function countryExists(
+  countryCode: string
+): Promise<{ code: string } | null> {
   return prisma.country.findUnique({
     where: { code: countryCode },
     select: { code: true },
@@ -115,6 +117,14 @@ export function createBank(data: {
   logoUrl: string | null
   headOffice: string | null
   website: string | null
+  generalPhone: string | null
+  supportPhone: string | null
+  supportEmail: string | null
+  complaintsEmail: string | null
+  contactUrl: string | null
+  sourceUrl: string | null
+  sourceAsOf: string | null
+  lastVerifiedAt: bigint | null
 }): Promise<BankRow> {
   const now = BigInt(nowUnixSeconds())
 
@@ -260,8 +270,14 @@ export function createBankBranch(
     name: string
     transitNumber: string
     routingNumber: string | null
+    rawAddress: string | null
     contactNumber: string | null
     operatingHours: string | null
+    branchType: string | null
+    status: string | null
+    sourceUrl: string | null
+    sourceAsOf: string | null
+    lastVerifiedAt: bigint | null
     address: DirectoryAddressCreate
   }
 ): Promise<BankBranchRow> {
@@ -274,8 +290,14 @@ export function createBankBranch(
       name: data.name,
       transitNumber: data.transitNumber,
       routingNumber: data.routingNumber,
+      rawAddress: data.rawAddress,
       contactNumber: data.contactNumber,
       operatingHours: data.operatingHours,
+      branchType: data.branchType,
+      status: data.status,
+      sourceUrl: data.sourceUrl,
+      sourceAsOf: data.sourceAsOf,
+      lastVerifiedAt: data.lastVerifiedAt,
       createdAt: now,
       updatedAt: now,
       directoryAddress: { create: addressCreateData(data.address, now) },
@@ -470,10 +492,20 @@ export function listCreditUnions(
 }
 
 export function createCreditUnion(data: {
+  code: string | null
   name: string
   shortName: string | null
   logoUrl: string | null
   headquarters: string | null
+  website: string | null
+  generalPhone: string | null
+  supportPhone: string | null
+  supportEmail: string | null
+  complaintsEmail: string | null
+  contactUrl: string | null
+  sourceUrl: string | null
+  sourceAsOf: string | null
+  lastVerifiedAt: bigint | null
 }): Promise<CreditUnionRow> {
   const now = BigInt(nowUnixSeconds())
 
@@ -568,10 +600,18 @@ export function listCreditUnionBranches(
 export function createCreditUnionBranch(
   creditUnionId: string,
   data: {
+    code: string | null
     name: string
+    rawAddress: string | null
     contactNumber: string | null
     email: string | null
-    address: DirectoryAddressCreate
+    operatingHours: string | null
+    branchType: string | null
+    status: string | null
+    sourceUrl: string | null
+    sourceAsOf: string | null
+    lastVerifiedAt: bigint | null
+    address: DirectoryAddressCreate | null
   }
 ): Promise<CreditUnionBranchRow> {
   const now = BigInt(nowUnixSeconds())
@@ -580,15 +620,43 @@ export function createCreditUnionBranch(
     data: {
       id: generateId('creditUnionBranch'),
       creditUnion: { connect: { id: creditUnionId } },
+      code: data.code,
       name: data.name,
+      rawAddress: data.rawAddress,
       contactNumber: data.contactNumber,
       email: data.email,
+      operatingHours: data.operatingHours,
+      branchType: data.branchType,
+      status: data.status,
+      sourceUrl: data.sourceUrl,
+      sourceAsOf: data.sourceAsOf,
+      lastVerifiedAt: data.lastVerifiedAt,
       createdAt: now,
       updatedAt: now,
-      directoryAddress: { create: addressCreateData(data.address, now) },
+      ...(data.address
+        ? { directoryAddress: { create: addressCreateData(data.address, now) } }
+        : {}),
     },
     select: CREDIT_UNION_BRANCH_SELECT,
   })
+}
+
+function completeAddressForCreate(
+  address: DirectoryAddressUpdate
+): DirectoryAddressCreate | null {
+  if (address.line1 == null || address.city == null || address.state == null)
+    return null
+
+  return {
+    line1: address.line1,
+    line2: address.line2 ?? null,
+    city: address.city,
+    state: address.state,
+    postal_code: address.postal_code ?? null,
+    country: address.country ?? 'JM',
+    latitude: address.latitude ?? null,
+    longitude: address.longitude ?? null,
+  }
 }
 
 export async function updateCreditUnionBranch(
@@ -598,11 +666,12 @@ export async function updateCreditUnionBranch(
 ): Promise<CreditUnionBranchRow | null> {
   const exists = await prisma.creditUnionBranch.findUnique({
     where: { id: branchId },
-    select: { id: true },
+    select: { id: true, addressId: true },
   })
   if (!exists) return null
 
   const now = BigInt(nowUnixSeconds())
+  const addressForCreate = address ? completeAddressForCreate(address) : null
 
   return prisma.creditUnionBranch.update({
     where: { id: branchId },
@@ -610,7 +679,15 @@ export async function updateCreditUnionBranch(
       ...data,
       updatedAt: now,
       ...(address
-        ? { directoryAddress: { update: addressUpdateData(address, now) } }
+        ? exists.addressId
+          ? { directoryAddress: { update: addressUpdateData(address, now) } }
+          : addressForCreate
+            ? {
+                directoryAddress: {
+                  create: addressCreateData(addressForCreate, now),
+                },
+              }
+            : {}
         : {}),
     },
     select: CREDIT_UNION_BRANCH_SELECT,
