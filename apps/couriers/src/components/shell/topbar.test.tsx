@@ -156,6 +156,11 @@ describe('Couriers topbar wrappers', () => {
       },
       {
         group: 'Navigation',
+        title: 'Requests',
+        href: '/island-logistics/requests',
+      },
+      {
+        group: 'Navigation',
         title: 'Packages',
         href: '/island-logistics/packages',
       },
