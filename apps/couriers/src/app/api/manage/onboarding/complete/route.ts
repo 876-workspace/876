@@ -7,8 +7,9 @@ import { getPlatformClient } from '@/lib/services/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
-import { couriersOperator } from '@/lib/services/couriers'
 import { ONBOARDING_COUNTRY, ORGANIZATION_TARGET_KEY } from '@/lib/onboarding'
+import { loadCouriersProvisioningManifest } from '@/lib/provisioning/manifest'
+import { couriersOperator } from '@/lib/services/couriers'
 
 export const runtime = 'nodejs'
 
@@ -63,6 +64,10 @@ export async function POST() {
   })
   if (prov.error) return errorResponse('onboarding/activation-failed')
 
+  const provisioning = await loadCouriersProvisioningManifest().catch(() => null)
+  if (!provisioning)
+    return errorResponse('onboarding/provisioning-unavailable')
+
   let tenantId = ctx.tenant?.id
   if (!tenantId) {
     const created = await couriersOperator.tenants.create({
@@ -75,6 +80,22 @@ export async function POST() {
 
     tenantId = created.data.id
   }
+
+  const reconciled = await couriersOperator.packageCategories.reconcile(
+    tenantId,
+    {
+      revision: provisioning.revision,
+      categories: provisioning.packageCategories.map((category) => ({
+        key: category.key,
+        name: category.name,
+        description: category.description,
+        icon: category.icon,
+        sort_order: category.sortOrder,
+        is_active: category.isActive,
+      })),
+    }
+  )
+  if (reconciled.error) return errorResponse('onboarding/provisioning-failed')
 
   if (mailboxPrefix) {
     const updated = await couriersOperator.tenants.update(tenantId, {
