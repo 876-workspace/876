@@ -7,6 +7,10 @@ const slugSchema = z
   .max(80)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 
+const queryBooleanSchema = z.enum(['true', 'false']).transform((value) =>
+  value === 'true'
+)
+
 export const packageCategorySchema = z
   .object({
     object: z.literal('package_category'),
@@ -35,7 +39,7 @@ export const packageCategoryParamsSchema = tenantParamsSchema.extend({
 
 export const listPackageCategoriesQuerySchema = z
   .strictObject({
-    is_active: z.coerce.boolean().optional(),
+    is_active: queryBooleanSchema.optional(),
     limit: z.coerce.number().int().min(1).max(100).default(100),
     starting_after: z.string().min(1).optional(),
     ending_before: z.string().min(1).optional(),
