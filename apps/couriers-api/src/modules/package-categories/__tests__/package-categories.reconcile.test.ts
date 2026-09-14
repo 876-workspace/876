@@ -68,6 +68,25 @@ afterEach(() => {
 })
 
 describe('package category reconciliation route', () => {
+  it('requires the admin guard chain', async () => {
+    const response = await request(createApp())
+      .post('/v1/tenants/ten_reyes/package-categories/reconcile')
+      .send({
+        revision: 7,
+        categories: [
+          {
+            key: 'electronics',
+            name: 'Electronics',
+            sort_order: 40,
+            is_active: true,
+          },
+        ],
+      })
+
+    expect(response.status).toBe(401)
+    expect(packageCategory.findFirst).not.toHaveBeenCalled()
+  })
+
   it('reconciles a published provisioning revision without overwriting an existing category', async () => {
     const response = await request(createApp())
       .post('/v1/tenants/ten_reyes/package-categories/reconcile')
