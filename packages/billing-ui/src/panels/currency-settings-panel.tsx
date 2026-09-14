@@ -22,6 +22,10 @@ export interface CurrencySettingsPanelProps {
   currencies: CurrencySettingsItem[]
   canManage: boolean
   onEnable: (currency: string) => Promise<MutationResult>
+  onUpdate: (
+    currency: string,
+    params: Pick<CurrencySettingsItem, 'name' | 'symbol' | 'decimalPlaces'>
+  ) => Promise<MutationResult>
   onDisable: (currency: string) => Promise<MutationResult>
   onSetDefault: (currency: string) => Promise<MutationResult>
   onSuccess: () => void
@@ -32,6 +36,7 @@ export function CurrencySettingsPanel({
   currencies,
   canManage,
   onEnable,
+  onUpdate,
   onDisable,
   onSetDefault,
   onSuccess,
@@ -40,6 +45,7 @@ export function CurrencySettingsPanel({
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [showForm, setShowForm] = useState(false)
+  const [editingCurrency, setEditingCurrency] = useState<string | null>(null)
 
   function run(action: () => Promise<MutationResult>, done?: () => void) {
     setError(null)
@@ -114,6 +120,22 @@ export function CurrencySettingsPanel({
         </form>
       ) : null}
 
+      {editingCurrency ? (
+        <CurrencyEditForm
+          currency={currencies.find(
+            (currency) => currency.code === editingCurrency
+          )}
+          disabled={isPending}
+          onCancel={() => setEditingCurrency(null)}
+          onSubmit={(params) =>
+            run(
+              () => onUpdate(editingCurrency, params),
+              () => setEditingCurrency(null)
+            )
+          }
+        />
+      ) : null}
+
       {error ? (
         <div
           role="alert"
@@ -127,7 +149,6 @@ export function CurrencySettingsPanel({
         {currencies.length === 0 ? (
           <div className="px-5 py-12 text-center">
             <CalculatorIcon className="text-muted-foreground mx-auto size-6" />
-            <p className="mt-3 text-sm font-medium">No currencies enabled</p>
           </div>
         ) : (
           <div className="divide-border divide-y">
@@ -158,6 +179,14 @@ export function CurrencySettingsPanel({
                 </div>
                 {canManage ? (
                   <div className="flex flex-wrap gap-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={isPending}
+                      onClick={() => setEditingCurrency(currency.code)}
+                    >
+                      Edit
+                    </Button>
                     {!currency.isDefault && currency.isEnabled ? (
                       <Button
                         size="sm"
@@ -190,5 +219,76 @@ export function CurrencySettingsPanel({
         )}
       </div>
     </section>
+  )
+}
+
+function CurrencyEditForm({
+  currency,
+  disabled,
+  onCancel,
+  onSubmit,
+}: {
+  currency: CurrencySettingsItem | undefined
+  disabled: boolean
+  onCancel: () => void
+  onSubmit: (
+    params: Pick<CurrencySettingsItem, 'name' | 'symbol' | 'decimalPlaces'>
+  ) => void
+}) {
+  const [name, setName] = useState(currency?.name ?? '')
+  const [symbol, setSymbol] = useState(currency?.symbol ?? '')
+  const [decimalPlaces, setDecimalPlaces] = useState(
+    String(currency?.decimalPlaces ?? 2)
+  )
+
+  if (!currency) return null
+
+  return (
+    <form
+      className="876-card border-876-blue/25 grid gap-3 p-5 sm:grid-cols-3"
+      onSubmit={(event) => {
+        event.preventDefault()
+        onSubmit({
+          name: name.trim(),
+          symbol: symbol.trim() || null,
+          decimalPlaces: Number(decimalPlaces),
+        })
+      }}
+    >
+      <Input
+        aria-label={`${currency.code} currency name`}
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+        required
+      />
+      <Input
+        aria-label={`${currency.code} currency symbol`}
+        value={symbol}
+        onChange={(event) => setSymbol(event.target.value)}
+        maxLength={16}
+      />
+      <Input
+        aria-label={`${currency.code} decimal places`}
+        type="number"
+        min="0"
+        max="4"
+        value={decimalPlaces}
+        onChange={(event) => setDecimalPlaces(event.target.value)}
+        required
+      />
+      <div className="flex gap-2 sm:col-span-3">
+        <Button type="submit" disabled={disabled}>
+          {disabled ? 'Saving…' : 'Save changes'}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={disabled}
+          onClick={onCancel}
+        >
+          Cancel
+        </Button>
+      </div>
+    </form>
   )
 }

@@ -41,6 +41,7 @@ export function PaymentModeSettingsPanel({
   const [showForm, setShowForm] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [editingMode, setEditingMode] = useState<PaymentMode | null>(null)
 
   function run(action: () => Promise<MutationResult>, done?: () => void) {
     setError(null)
@@ -108,6 +109,19 @@ export function PaymentModeSettingsPanel({
           </Button>
         </form>
       ) : null}
+      {editingMode ? (
+        <PaymentModeEditForm
+          mode={editingMode}
+          disabled={isPending}
+          onCancel={() => setEditingMode(null)}
+          onSubmit={(name) =>
+            run(
+              () => onUpdate(editingMode.id, { name }),
+              () => setEditingMode(null)
+            )
+          }
+        />
+      ) : null}
       {error ? (
         <div
           role="alert"
@@ -120,7 +134,6 @@ export function PaymentModeSettingsPanel({
         {modes.length === 0 ? (
           <div className="px-5 py-12 text-center">
             <CreditCard className="text-muted-foreground mx-auto size-6" />
-            <p className="mt-3 font-medium">No payment modes</p>
           </div>
         ) : (
           <div className="divide-border divide-y">
@@ -151,30 +164,44 @@ export function PaymentModeSettingsPanel({
                       : 'Retained for payment history.'}
                   </p>
                 </div>
-                {canManage && !mode.isDefault ? (
+                {canManage ? (
                   <div className="flex flex-wrap gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled={isPending || !mode.isActive}
-                      onClick={() =>
-                        run(() => onUpdate(mode.id, { isDefault: true }))
-                      }
-                    >
-                      Make default
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled={isPending}
-                      onClick={() =>
-                        run(() =>
-                          onUpdate(mode.id, { isActive: !mode.isActive })
-                        )
-                      }
-                    >
-                      {mode.isActive ? 'Archive' : 'Restore'}
-                    </Button>
+                    {!mode.isSystem ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={isPending}
+                        onClick={() => setEditingMode(mode)}
+                      >
+                        Edit
+                      </Button>
+                    ) : null}
+                    {!mode.isDefault ? (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={isPending || !mode.isActive}
+                          onClick={() =>
+                            run(() => onUpdate(mode.id, { isDefault: true }))
+                          }
+                        >
+                          Make default
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={isPending}
+                          onClick={() =>
+                            run(() =>
+                              onUpdate(mode.id, { isActive: !mode.isActive })
+                            )
+                          }
+                        >
+                          {mode.isActive ? 'Archive' : 'Restore'}
+                        </Button>
+                      </>
+                    ) : null}
                     {canDelete(mode) ? (
                       <Button
                         size="sm"
@@ -193,5 +220,47 @@ export function PaymentModeSettingsPanel({
         )}
       </div>
     </section>
+  )
+}
+
+function PaymentModeEditForm({
+  mode,
+  disabled,
+  onCancel,
+  onSubmit,
+}: {
+  mode: PaymentMode
+  disabled: boolean
+  onCancel: () => void
+  onSubmit: (name: string) => void
+}) {
+  const [name, setName] = useState(mode.name)
+
+  return (
+    <form
+      className="876-card border-876-blue/25 flex flex-wrap gap-3 p-5"
+      onSubmit={(event) => {
+        event.preventDefault()
+        onSubmit(name.trim())
+      }}
+    >
+      <Input
+        aria-label="Payment mode edit name"
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+        required
+      />
+      <Button type="submit" disabled={disabled}>
+        {disabled ? 'Saving…' : 'Save changes'}
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        disabled={disabled}
+        onClick={onCancel}
+      >
+        Cancel
+      </Button>
+    </form>
   )
 }

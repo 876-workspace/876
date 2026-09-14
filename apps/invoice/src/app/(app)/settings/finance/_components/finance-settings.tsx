@@ -32,6 +32,7 @@ export function CurrenciesPanel({
       }))}
       canManage={canManage}
       onEnable={(currency) => client.currencies.enable(currency)}
+      onUpdate={client.currencies.update}
       onDisable={client.currencies.disable}
       onSetDefault={(currency) => client.currencies.setDefault(currency)}
       onSuccess={refresh}

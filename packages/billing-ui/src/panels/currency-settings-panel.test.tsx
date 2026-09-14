@@ -27,6 +27,7 @@ function renderPanel(
   props: Partial<Parameters<typeof CurrencySettingsPanel>[0]> = {}
 ) {
   const onEnable = vi.fn().mockResolvedValue({ error: null })
+  const onUpdate = vi.fn().mockResolvedValue({ error: null })
   const onDisable = vi.fn().mockResolvedValue({ error: null })
   const onSetDefault = vi.fn().mockResolvedValue({ error: null })
   const onSuccess = vi.fn()
@@ -36,6 +37,7 @@ function renderPanel(
       currencies={[createCurrency()]}
       canManage
       onEnable={onEnable}
+      onUpdate={onUpdate}
       onDisable={onDisable}
       onSetDefault={onSetDefault}
       onSuccess={onSuccess}
@@ -43,7 +45,7 @@ function renderPanel(
     />
   )
 
-  return { onEnable, onDisable, onSetDefault, onSuccess }
+  return { onEnable, onUpdate, onDisable, onSetDefault, onSuccess }
 }
 
 describe('CurrencySettingsPanel', () => {
@@ -57,10 +59,10 @@ describe('CurrencySettingsPanel', () => {
     expect(screen.getByText(/Jamaican Dollar/)).toBeInTheDocument()
   })
 
-  it('renders an empty state rather than a bare list when none are enabled', () => {
+  it('renders an empty-state icon when none are enabled', () => {
     renderPanel({ currencies: [] })
 
-    expect(screen.getByText('No currencies enabled')).toBeInTheDocument()
+    expect(screen.getByLabelText('Currencies')).toBeInTheDocument()
   })
 
   it('marks the base currency so it is distinguishable', () => {
@@ -126,6 +128,28 @@ describe('CurrencySettingsPanel', () => {
     await user.click(screen.getByRole('button', { name: 'Disable' }))
 
     expect(onDisable).toHaveBeenCalledWith('USD')
+  })
+
+  it('updates a currency display definition with the exact typed payload', async () => {
+    const user = userEvent.setup()
+    const { onUpdate, onSuccess } = renderPanel({
+      currencies: [createCurrency({ code: 'USD', isDefault: false })],
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }))
+    await user.clear(screen.getByLabelText('USD currency name'))
+    await user.type(screen.getByLabelText('USD currency name'), 'US Dollar')
+    await user.clear(screen.getByLabelText('USD currency symbol'))
+    await user.type(screen.getByLabelText('USD currency symbol'), 'US$')
+    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    expect(onUpdate).toHaveBeenCalledTimes(1)
+    expect(onUpdate).toHaveBeenCalledWith('USD', {
+      name: 'US Dollar',
+      symbol: 'US$',
+      decimalPlaces: 2,
+    })
+    expect(onSuccess).toHaveBeenCalledTimes(1)
   })
 
   it('surfaces a failure inline and does not report success', async () => {

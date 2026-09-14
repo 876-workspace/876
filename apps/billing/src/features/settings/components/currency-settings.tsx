@@ -22,6 +22,7 @@ export function CurrencySettings({
       currencies={enabled}
       canManage={canManage}
       onEnable={(currency) => client.currencies.enable({ currency })}
+      onUpdate={client.currencies.update}
       onDisable={client.currencies.remove}
       onSetDefault={(currency) => client.currencies.setDefault({ currency })}
       onSuccess={() => router.refresh()}
