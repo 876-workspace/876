@@ -63,28 +63,28 @@ Promote CRM Requests from a customer-only finance-app capability into a first-cl
 - [x] P4 — Extract generic contextual-sidebar mechanics and refactor Console onto them without changing behavior.
 - [x] P5 — Declare Billing/Invoice Requests sidebar contexts while preserving existing dropdown navigation.
 - [x] P6 — Promote the rich request queue presentation and pure row mapping into `@876/crm-ui`; migrate Console to the shared list.
-- [ ] P7 — Complete Billing Requests workspace.
+- [x] P7 — Complete Billing Requests workspace.
   - [x] `/requests` organization queue with validated, service-side status filtering.
   - [x] `/requests/[requestId]` global record context.
   - [x] `/requests/[requestId]/tasks` and `/activity` reuse shared Billing CRM host adapters.
   - [x] Reuse shared request record UI and separate close target from tab base.
-  - [ ] `/requests/new` with explicit customer selection and reuse of the existing customer create endpoint/composer.
-  - [ ] `/requests/customers` contextual index.
-  - [ ] `/requests/forms` contextual index.
-  - [ ] Enforce `billing-requests` on request mutation API routes, not just pages/navigation.
-- [ ] P8 — Complete Invoice Requests workspace.
+  - [x] `/requests/new` with explicit customer selection and reuse of the existing customer create endpoint/composer.
+  - [x] `/requests/customers` contextual index.
+  - [x] `/requests/forms` contextual index.
+  - [x] Enforce `billing-requests` on request mutation API routes, not just pages/navigation.
+- [x] P8 — Complete Invoice Requests workspace.
   - [x] `/requests` organization queue with validated, service-side status filtering.
   - [x] `/requests/[requestId]` global record context.
   - [x] `/requests/[requestId]/tasks` and `/activity` reuse shared Invoice CRM host adapters.
   - [x] Reuse shared request record UI and separate close target from tab base.
-  - [ ] `/requests/new` with explicit customer selection and reuse of the existing customer create endpoint/composer.
-  - [ ] `/requests/customers` contextual index.
-  - [ ] `/requests/forms` contextual index.
-  - [ ] Enforce `invoice-requests` on request mutation API routes, not just pages/navigation.
+  - [x] `/requests/new` with explicit customer selection and reuse of the existing customer create endpoint/composer.
+  - [x] `/requests/customers` contextual index.
+  - [x] `/requests/forms` contextual index.
+  - [x] Enforce `invoice-requests` on request mutation API routes, not just pages/navigation.
 - [ ] P9 — Work-off degradation and mobile navigation parity.
   - [x] Core Requests list/detail/create remains independent from Work entitlements.
   - [ ] Gate/hide Work-backed request subresources when Work capability is unavailable instead of coupling core Requests to Work.
-  - [ ] Apply the Requests contextual navigation behavior to the current mobile navigation path without changing unrelated app navigation.
+  - [x] Apply the Requests contextual navigation behavior to the current mobile navigation path without changing unrelated app navigation.
 - [ ] P10 — Add/finish tests and review the complete branch diff for duplicated behavior, stale compatibility code, navigation regressions, access-control drift, invalid imports, and swallowed errors.
 - [ ] P11 — Write GPT-Web final report, complete handoff/verification notes, and mark plan complete.
 
