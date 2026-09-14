@@ -22,19 +22,19 @@ const KEY_PATTERN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
 
 describe('canonical application module registry', () => {
   it('keeps Invoice module identity in the expected declaration order', () => {
-    expect(
-      INVOICE_MODULE_REGISTRY.modules.map((module) => module.key)
-    ).toEqual([
-      'invoices',
-      'quotes',
-      'payments',
-      'expenses',
-      'items',
-      'sales-receipts',
-      'time-tracking',
-      'customers',
-      'requests',
-    ])
+    expect(INVOICE_MODULE_REGISTRY.modules.map((module) => module.key)).toEqual(
+      [
+        'invoices',
+        'quotes',
+        'payments',
+        'expenses',
+        'items',
+        'sales-receipts',
+        'time-tracking',
+        'customers',
+        'requests',
+      ]
+    )
   })
 
   it('reuses the same shared module definitions in Billing and Invoice', () => {
@@ -74,7 +74,13 @@ describe('canonical application module registry', () => {
     const keys = PROJECTS_MODULE_REGISTRY.modules.map((module) => module.key)
 
     expect(keys).toEqual(['projects', 'issues', 'reports'])
-    for (const key of ['dashboard', 'comments', 'labels', 'members', 'settings'])
+    for (const key of [
+      'dashboard',
+      'comments',
+      'labels',
+      'members',
+      'settings',
+    ])
       expect(keys).not.toContain(key)
   })
 
@@ -130,12 +136,12 @@ describe('canonical application module registry', () => {
   })
 
   it('materializes Requests commercially for both finance apps', () => {
-    expect(new Set<string>(INVOICE_COMMERCIAL_MODULE_KEYS).has('requests')).toBe(
-      true
-    )
-    expect(new Set<string>(BILLING_COMMERCIAL_MODULE_KEYS).has('requests')).toBe(
-      true
-    )
+    expect(
+      new Set<string>(INVOICE_COMMERCIAL_MODULE_KEYS).has('requests')
+    ).toBe(true)
+    expect(
+      new Set<string>(BILLING_COMMERCIAL_MODULE_KEYS).has('requests')
+    ).toBe(true)
   })
 
   it('exposes only Billing keys with existing effective commercial semantics', () => {
@@ -168,7 +174,9 @@ describe('canonical application module registry', () => {
   })
 
   it('resolves Projects and Commerce canonical modules by app and key', () => {
-    expect(findAppModule('876-projects', 'issues')).toBe(PROJECTS_MODULES.issues)
+    expect(findAppModule('876-projects', 'issues')).toBe(
+      PROJECTS_MODULES.issues
+    )
     expect(findAppModule('876-commerce', 'catalog')).toBe(
       COMMERCE_MODULE_REGISTRY.modules[0]
     )

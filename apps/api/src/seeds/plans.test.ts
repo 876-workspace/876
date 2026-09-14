@@ -260,11 +260,7 @@ describe('canonical plan module seed definitions', () => {
       repository.createApplicationModule.mock.calls
         .filter(([params]) => params.appId === 'app_billing')
         .map(([params]) => params.key)
-    ).toEqual([
-      ...BILLING_COMMERCIAL_MODULE_KEYS,
-      'sales',
-      'documents',
-    ])
+    ).toEqual([...BILLING_COMMERCIAL_MODULE_KEYS, 'sales', 'documents'])
   })
 
   it('does not restore a removed Requests grant after the module already exists', async () => {

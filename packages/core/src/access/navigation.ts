@@ -54,7 +54,10 @@ export function navRequirementPasses(
 ): boolean {
   if (!requirement) return true
 
-  if (requirement.module !== undefined && !hasModule(context, requirement.module))
+  if (
+    requirement.module !== undefined &&
+    !hasModule(context, requirement.module)
+  )
     return false
 
   if (

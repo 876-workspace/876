@@ -28,9 +28,13 @@ describe('Projects surface catalog', () => {
   })
 
   it('reuses canonical identity for real application modules', () => {
-    const surfaces = new Map(PROJECTS_SURFACES.map((entry) => [entry.key, entry]))
+    const surfaces = new Map(
+      PROJECTS_SURFACES.map((entry) => [entry.key, entry])
+    )
 
-    expect(surfaces.get('projects')?.label).toBe(PROJECTS_MODULES.projects.label)
+    expect(surfaces.get('projects')?.label).toBe(
+      PROJECTS_MODULES.projects.label
+    )
     expect(surfaces.get('issues')?.description).toBe(
       PROJECTS_MODULES.issues.description
     )

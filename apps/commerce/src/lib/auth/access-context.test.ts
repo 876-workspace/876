@@ -6,7 +6,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react')>()
-  return { ...actual, cache: <T extends (...args: never[]) => unknown>(fn: T) => fn }
+  return {
+    ...actual,
+    cache: <T extends (...args: never[]) => unknown>(fn: T) => fn,
+  }
 })
 vi.mock('@/lib/services/account', () => ({
   getAccount: vi.fn(async () => ({

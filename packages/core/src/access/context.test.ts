@@ -40,7 +40,9 @@ describe('hasModule', () => {
       modules: 'projects',
     } as unknown as AccessContext
 
-    expect(hasModule(missing as unknown as AccessContext, 'projects')).toBe(false)
+    expect(hasModule(missing as unknown as AccessContext, 'projects')).toBe(
+      false
+    )
     expect(hasModule(malformed, 'projects')).toBe(false)
     expect(hasModule(null as unknown as AccessContext, 'projects')).toBe(false)
   })

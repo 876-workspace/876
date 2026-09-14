@@ -18,7 +18,9 @@ vi.mock('../app-access.repository', () => ({
   createRole: collaborators.createRole,
 }))
 vi.mock('@/platform/ids', () => ({ generateId: () => 'rol_new' }))
-vi.mock('@/platform/timestamps', () => ({ nowUnixSeconds: () => 1_789_350_000 }))
+vi.mock('@/platform/timestamps', () => ({
+  nowUnixSeconds: () => 1_789_350_000,
+}))
 
 const { materializeRoleTemplatesForApp } =
   await import('../app-access-role-templates.service')
@@ -63,9 +65,11 @@ beforeEach(() => {
   collaborators.findAppForAccessById.mockResolvedValue(APP)
   collaborators.listRoles.mockResolvedValue([template])
   collaborators.findRoleByKey.mockResolvedValue(null)
-  collaborators.updateRole.mockResolvedValue(organizationRole({
-    permissions: [...template.permissions],
-  }))
+  collaborators.updateRole.mockResolvedValue(
+    organizationRole({
+      permissions: [...template.permissions],
+    })
+  )
   collaborators.createRole.mockResolvedValue(organizationRole())
 })
 

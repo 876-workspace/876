@@ -9,7 +9,9 @@ describe('projectsPermissionCatalog', () => {
   })
 
   it('declares exactly the eight permission groups in declaration order', () => {
-    expect(projectsPermissionCatalog.modules.map((module) => module.key)).toEqual([
+    expect(
+      projectsPermissionCatalog.modules.map((module) => module.key)
+    ).toEqual([
       'dashboard',
       'projects',
       'issues',
@@ -85,6 +87,8 @@ describe('projectsPermissionCatalog', () => {
   })
 
   it('registers projectsPermissionCatalog in appPermissionCatalogs under 876-projects', () => {
-    expect(appPermissionCatalogs['876-projects']).toBe(projectsPermissionCatalog)
+    expect(appPermissionCatalogs['876-projects']).toBe(
+      projectsPermissionCatalog
+    )
   })
 })

@@ -1,8 +1,4 @@
-import {
-  COMMERCE_MODULES,
-  FINANCE_MODULES,
-  PROJECTS_MODULES,
-} from '../modules'
+import { COMMERCE_MODULES, FINANCE_MODULES, PROJECTS_MODULES } from '../modules'
 import { defineAppPermissionCatalog } from './index'
 import type { AppPermission, AppPermissionCatalog } from './types'
 

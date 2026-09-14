@@ -46,8 +46,7 @@ export async function materializeRoleTemplatesForApp(params: {
     })
 
   // 876 Enterprise is governed by the organization-role plane, not app roles.
-  if (app.slug === ENTERPRISE_SLUG)
-    return { seeded: 0, synced: 0, skipped: 0 }
+  if (app.slug === ENTERPRISE_SLUG) return { seeded: 0, synced: 0, skipped: 0 }
 
   const templates = await repository.listRoles(app.id, null)
   let seeded = 0

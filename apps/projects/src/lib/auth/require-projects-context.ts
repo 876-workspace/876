@@ -2,7 +2,11 @@ import 'server-only'
 
 import { redirect } from 'next/navigation'
 
-import { canAccess, canAccessModule, resolveAccessContext } from './access-context'
+import {
+  canAccess,
+  canAccessModule,
+  resolveAccessContext,
+} from './access-context'
 import { getProjectsContextResult } from './context'
 
 export async function requireProjectsContext() {
@@ -37,8 +41,10 @@ export async function requireAppAccess(requirement: {
   const outcome = await resolveAccessContext(context.userId, context.orgId)
 
   if (outcome.status === 'unavailable') redirect('/unavailable')
-  if (!canAccessModule(outcome.context, requirement.module)) redirect('/no-access')
-  if (!canAccess(outcome.context, requirement.permission)) redirect('/no-access')
+  if (!canAccessModule(outcome.context, requirement.module))
+    redirect('/no-access')
+  if (!canAccess(outcome.context, requirement.permission))
+    redirect('/no-access')
 
   return outcome.context
 }
