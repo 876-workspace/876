@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express'
 import { ZodError } from 'zod'
 
-import { AppHttpError, isAppHttpError } from '@/http/errors'
+import { appError, isAppHttpError } from '@/http/errors'
 import { getLogger } from '@/platform/logger'
 
 const log = getLogger('http.error')
@@ -37,14 +37,15 @@ export function errorHandler(
 
   if (error instanceof ZodError) {
     const first = error.issues[0]
-    res.status(422).json({
-      data: null,
-      error: {
-        code: 'request/invalid',
-        message: first?.message ?? 'Invalid request.',
-        ...(first?.path.length ? { param: first.path.join('.') } : {}),
-      },
-    })
+    // Field-specific validation text stays in the message; code, status, and
+    // param routing always come from the registry.
+    const validationError = appError(
+      'request/invalid',
+      first?.message ? { message: first.message } : undefined
+    )
+    const body = validationError.toClientError()
+    if (first?.path.length) body.param = first.path.join('.')
+    res.status(validationError.httpStatus).json({ data: null, error: body })
     return
   }
 
@@ -54,12 +55,10 @@ export function errorHandler(
     'body' in error &&
     typeof (error as { status?: number }).status === 'number'
   ) {
-    res.status(400).json({
+    const jsonError = appError('request/invalid-json')
+    res.status(jsonError.httpStatus).json({
       data: null,
-      error: {
-        code: 'request/invalid-json',
-        message: 'Request body is not valid JSON.',
-      },
+      error: jsonError.toClientError(),
     })
     return
   }
@@ -70,23 +69,18 @@ export function errorHandler(
     { err: error, path: req.path, method: req.method },
     'request_unhandled_error'
   )
-  res.status(500).json({
+  const internalError = appError('auth/internal-error')
+  res.status(internalError.httpStatus).json({
     data: null,
-    error: { code: 'auth/internal-error', message: 'Internal error.' },
+    error: internalError.toClientError(),
   })
 }
 
 /** 404 for an unmatched route. Registered after all routers, before the error handler. */
 export function notFoundHandler(
-  req: Request,
+  _req: Request,
   _res: Response,
   next: NextFunction
 ): void {
-  next(
-    new AppHttpError({
-      code: 'error/not-found',
-      message: `Cannot ${req.method} ${req.path}`,
-      httpStatus: 404,
-    })
-  )
+  next(appError('error/not-found'))
 }
