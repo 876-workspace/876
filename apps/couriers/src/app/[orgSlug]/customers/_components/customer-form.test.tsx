@@ -172,11 +172,17 @@ describe('CustomerForm', () => {
     )
     expect(screen.getByRole('combobox', { name: 'Branch' })).toBeRequired()
   })
-  it('does not expose a customer type choice', () => {
+  it('does not expose a customer type choice when adding a customer', () => {
     render(
-      <CustomerForm orgSlug="nkr-express" branches={[]} customer={customer()} />
+      <CustomerForm
+        orgSlug="nkr-express"
+        branches={[{ id: 'br_kingston', name: 'Kingston' }]}
+      />
     )
     expect(screen.queryByRole('radio')).not.toBeInTheDocument()
+    expect(screen.queryByText('Business')).not.toBeInTheDocument()
+    expect(screen.queryByText('Type')).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/first name/i)).toBeInTheDocument()
     expect(mocks.create).not.toHaveBeenCalled()
     expect(mocks.update).not.toHaveBeenCalled()
   })
@@ -199,7 +205,11 @@ describe('CustomerForm', () => {
       />
     )
 
-    expect(screen.getAllByRole('combobox')[2]?.textContent).toBe('🇯🇲\u2002+1')
+    expect(
+      screen
+        .getAllByRole('combobox')
+        .find((element) => element.textContent?.includes('+'))?.textContent
+    ).toBe('🇯🇲\u2002+1')
   })
   it('splits a stored Jamaican number and submits it unchanged', async () => {
     render(
@@ -711,7 +721,11 @@ describe('CustomerForm', () => {
         branches={[{ id: 'br_kingston', name: 'Kingston' }]}
       />
     )
-    expect(screen.getAllByRole('combobox')[2]?.textContent).toBe('🇯🇲\u2002+1')
+    expect(
+      screen
+        .getAllByRole('combobox')
+        .find((element) => element.textContent?.includes('+'))?.textContent
+    ).toBe('🇯🇲\u2002+1')
     // New customer phone is blank but dialCode is +1, not empty
   })
 

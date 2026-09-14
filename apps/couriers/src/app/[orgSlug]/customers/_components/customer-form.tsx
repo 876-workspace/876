@@ -304,25 +304,6 @@ export function CustomerForm({ orgSlug, branches, customer }: Props) {
             />
           </FormRow>
         ) : null}
-        {!customer && !selectedRegistryCustomer ? (
-          <FormRow label="Type" className={customerFormRowClassName}>
-            <Select
-              value={newCustomerKind}
-              onValueChange={(value) =>
-                setNewCustomerKind(value as typeof newCustomerKind)
-              }
-              disabled={isPending}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="INDIVIDUAL">Individual</SelectItem>
-                <SelectItem value="BUSINESS">Business</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormRow>
-        ) : null}
         {(customer?.customerKind ?? newCustomerKind) === 'INDIVIDUAL' ? (
           <FormRow
             label="Name"
