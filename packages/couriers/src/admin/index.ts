@@ -86,13 +86,19 @@ export type {
   ListPackageCategoriesParams,
   PackageCategory,
   PackageCategoryList,
+  PackageCategoryReconciliation,
+  ProvisionedPackageCategory,
+  ReconcilePackageCategoriesBody,
   UpdatePackageCategoryBody,
 } from './types/package-category.schema'
 export {
   createPackageCategoryBodySchema,
   deletedPackageCategorySchema,
   packageCategoryListSchema,
+  packageCategoryReconciliationSchema,
   packageCategorySchema,
+  provisionedPackageCategorySchema,
+  reconcilePackageCategoriesBodySchema,
   updatePackageCategoryBodySchema,
 } from './types/package-category.schema'
 export type {
