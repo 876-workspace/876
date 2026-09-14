@@ -15,9 +15,10 @@ import Link from 'next/link'
 import { WorkWidgetContextSetter } from '@876/widgets/react'
 
 import { getInvoiceContext } from '@/lib/auth/context'
-import { canAccess } from '@/lib/auth/access-context'
+import { canAccess, hasAccessFeature } from '@/lib/auth/access-context'
 import { requireAppPermission } from '@/lib/auth/guards'
 import { createInvoiceWorkContext } from '@/lib/auth/work-widget-context'
+import { INVOICE_REQUESTS_SLUG } from '@/lib/features'
 import { getBilling } from '@/lib/services/billing'
 import { getPlatformClient } from '@/lib/services/platform'
 import { formatDate, formatMoney } from '@/lib/format'
@@ -63,6 +64,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
   const invoice = result.data
   const canWrite = canAccess(access, 'invoices.edit')
   const canRecordPayment = canAccess(access, 'payments.create')
+  const requestsEnabled = hasAccessFeature(access, INVOICE_REQUESTS_SLUG)
   const recordPaymentHref = `/invoices/${encodeURIComponent(invoice.id)}/payments/new`
 
   const { number, status, recurringInvoiceId } = invoice
@@ -189,17 +191,19 @@ export default async function InvoiceDetailPage({ params }: Props) {
                 </>
               }
             />
-            <RelatedRequestsClient
-              customerId={invoice.customerId}
-              resourceType="invoice"
-              resourceId={invoice.id}
-              snapshot={{
-                number: invoice.number,
-                amount: String(invoice.totalAmount),
-                currency: invoice.currency,
-                status: invoice.status,
-              }}
-            />
+            {requestsEnabled ? (
+              <RelatedRequestsClient
+                customerId={invoice.customerId}
+                resourceType="invoice"
+                resourceId={invoice.id}
+                snapshot={{
+                  number: invoice.number,
+                  amount: String(invoice.totalAmount),
+                  currency: invoice.currency,
+                  status: invoice.status,
+                }}
+              />
+            ) : null}
           </div>
         </DetailCardBody>
       </DetailCard>
