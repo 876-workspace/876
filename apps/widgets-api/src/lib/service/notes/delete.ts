@@ -11,7 +11,7 @@ export async function deleteNote(params: {
     where: { id: params.id },
   })
   if (!existing || existing.ownerAccountId !== params.ownerAccountId)
-    return err('Notepad entry not found.', 404, 'widgets/note-not-found')
+    return err('widgets/note-not-found')
 
   await prisma.notepadNote.delete({ where: { id: existing.id } })
 
@@ -25,8 +25,7 @@ export async function adminDeleteNote(params: {
   const existing = await prisma.notepadNote.findUnique({
     where: { id: params.id },
   })
-  if (!existing)
-    return err('Notepad entry not found.', 404, 'widgets/note-not-found')
+  if (!existing) return err('widgets/note-not-found')
 
   await prisma.$transaction(async (tx) => {
     await tx.notepadNote.delete({ where: { id: existing.id } })

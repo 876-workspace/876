@@ -10,7 +10,7 @@ export async function deleteCollection(params: {
     where: { id: params.id },
   })
   if (!existing || existing.ownerAccountId !== params.ownerAccountId)
-    return err('Collection not found.', 404, 'widgets/collection-not-found')
+    return err('widgets/collection-not-found')
 
   // FK onDelete: SetNull rehomes notes to Unfiled; delete in a transaction
   // so the collection row and any note nulling stay consistent.

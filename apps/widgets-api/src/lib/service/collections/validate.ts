@@ -6,11 +6,7 @@ import { MAX_COLLECTION_NAME_LENGTH } from './types'
 export function validateCollectionName(name: string): ServiceErr | null {
   const trimmed = name.trim()
   if (trimmed.length === 0 || trimmed.length > MAX_COLLECTION_NAME_LENGTH)
-    return err(
-      `Collection names must be between 1 and ${MAX_COLLECTION_NAME_LENGTH} characters.`,
-      400,
-      'widgets/invalid-collection-name'
-    )
+    return err('widgets/invalid-collection-name')
   return null
 }
 

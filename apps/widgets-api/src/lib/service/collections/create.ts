@@ -13,8 +13,7 @@ export async function createCollection(params: {
 }): Promise<ServiceResult<NotepadCollectionResource>> {
   const validation = validateCollectionName(params.name)
   if (validation) return validation
-  if (!params.ownerAccountId.trim())
-    return err('Owner account is required.', 400, 'widgets/missing-owner')
+  if (!params.ownerAccountId.trim()) return err('widgets/missing-owner')
 
   const name = params.name.trim()
   const now = unixSeconds()
@@ -33,12 +32,7 @@ export async function createCollection(params: {
 
     return ok(serializeCollection(row, 0))
   } catch (error) {
-    if (isUniqueViolation(error))
-      return err(
-        'A collection with this name already exists.',
-        409,
-        'widgets/collection-name-taken'
-      )
+    if (isUniqueViolation(error)) return err('widgets/collection-name-taken')
     throw error
   }
 }
