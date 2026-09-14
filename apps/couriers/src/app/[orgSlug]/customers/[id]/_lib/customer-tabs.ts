@@ -8,6 +8,7 @@ export function customerTabs(base: string): RouteTabItem[] {
     { label: 'Deliveries', href: `${base}/deliveries` },
     { label: 'Invoices', href: `${base}/invoices` },
     { label: 'Payments', href: `${base}/payments` },
+    { label: 'Requests', href: `${base}/requests` },
     { label: 'Notes', href: `${base}/notes` },
     { label: 'Activity', href: `${base}/activity` },
   ]
