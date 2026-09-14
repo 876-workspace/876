@@ -17,7 +17,8 @@ function tenantRow(overrides: Record<string, unknown> = {}) {
   }
 }
 
-const { tenant, apiKey } = vi.hoisted(() => ({
+const { tenant, apiKey, courierCustomerProfile } = vi.hoisted(() => ({
+  courierCustomerProfile: { findFirst: vi.fn() },
   tenant: {
     findUnique: vi.fn(),
     findMany: vi.fn(),
@@ -35,6 +36,7 @@ vi.mock('@/db/client', () => ({
   prisma: {
     tenant,
     apiKey,
+    courierCustomerProfile,
     $transaction: vi.fn(async (arg: unknown) =>
       typeof arg === 'function'
         ? (arg as (tx: unknown) => unknown)({})
@@ -116,5 +118,21 @@ describe('GET /v1/me/tenant', () => {
       .get('/v1/me/tenant')
       .set({ 'X-876-API-Key': APP_KEY })
     expect(response.status).toBe(401)
+  })
+})
+
+describe('GET /v1/me/customers/:id', () => {
+  // Regression: the route validated params with a tenant-scoped schema, so a
+  // path without `:tenantId` failed with request/invalid on every request.
+  it('validates the id without requiring a tenantId path param', async () => {
+    courierCustomerProfile.findFirst.mockResolvedValue(null)
+
+    const response = await request(createApp())
+      .get('/v1/me/customers/cmu1n1t6b000204jyqu6rdn3v')
+      .set(bearerHeaders())
+
+    expect(response.status).toBe(404)
+    expect(response.body.error.code).not.toBe('request/invalid')
+    expect(courierCustomerProfile.findFirst).toHaveBeenCalledTimes(1)
   })
 })
