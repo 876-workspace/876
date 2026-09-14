@@ -43,6 +43,10 @@
       "types": "./src/request-forms-list.tsx",
       "default": "./src/request-forms-list.tsx"
     },
+    "./request-customers-list": {
+      "types": "./src/request-customers-list.tsx",
+      "default": "./src/request-customers-list.tsx"
+    },
     "./request-record-shell": {
       "types": "./src/request-record-shell.tsx",
       "default": "./src/request-record-shell.tsx"
