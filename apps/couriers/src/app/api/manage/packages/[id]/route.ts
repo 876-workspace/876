@@ -23,7 +23,10 @@ export async function PATCH(request: NextRequest, { params }: Props) {
 
   const ctx = await getManageContext(envelope.data.orgSlug)
   if (!ctx) return errorResponse('auth/no-session')
-  if (ctx.accessStatus === 'blocked') return errorResponse('auth/account-on-hold')
+  if (ctx.accessStatus === 'blocked')
+    return errorResponse('auth/account-on-hold')
+  if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
+    return errorResponse('auth/forbidden')
   if (!ctx.tenant) return errorResponse('tenant/not-found')
 
   const payload = { ...(body as Record<string, unknown>) }

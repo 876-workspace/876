@@ -20,7 +20,10 @@ export async function POST(request: NextRequest) {
 
   const ctx = await getManageContext(envelope.data.orgSlug)
   if (!ctx) return errorResponse('auth/no-session')
-  if (ctx.accessStatus === 'blocked') return errorResponse('auth/account-on-hold')
+  if (ctx.accessStatus === 'blocked')
+    return errorResponse('auth/account-on-hold')
+  if (ctx.role !== 'super-admin' && ctx.role !== 'admin')
+    return errorResponse('auth/forbidden')
   if (!ctx.tenant) return errorResponse('tenant/not-found')
 
   const params = { ...(body as Record<string, unknown>) }
@@ -28,7 +31,10 @@ export async function POST(request: NextRequest) {
   const parsed = createPackageBodySchema.safeParse(params)
   if (!parsed.success) return errorResponse('request/invalid')
 
-  const result = await couriersOperator.packages.create(ctx.tenant.id, parsed.data)
+  const result = await couriersOperator.packages.create(
+    ctx.tenant.id,
+    parsed.data
+  )
   if (result.error) return errorResponse(result.error.code)
 
   return apiJson({ data: result.data }, { status: 201 })
