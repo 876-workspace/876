@@ -85,7 +85,10 @@ export function PackageForm({
     }
 
     const parsedWeight = actualWeight.trim() ? Number(actualWeight) : null
-    if (parsedWeight !== null && (!Number.isFinite(parsedWeight) || parsedWeight <= 0)) {
+    if (
+      parsedWeight !== null &&
+      (!Number.isFinite(parsedWeight) || parsedWeight <= 0)
+    ) {
       setError('Actual weight must be greater than zero.')
       return
     }
@@ -161,7 +164,9 @@ export function PackageForm({
       <FormRow label="Category" className={rowClassName}>
         <Select
           value={categoryId || 'none'}
-          onValueChange={(value) => setCategoryId(value === 'none' ? '' : value)}
+          onValueChange={(value) =>
+            setCategoryId(!value || value === 'none' ? '' : value)
+          }
           disabled={pending}
         >
           <SelectTrigger className="w-full">
@@ -181,7 +186,9 @@ export function PackageForm({
       <FormRow label="Branch" className={rowClassName}>
         <Select
           value={branchId || 'none'}
-          onValueChange={(value) => setBranchId(value === 'none' ? '' : value)}
+          onValueChange={(value) =>
+            setBranchId(!value || value === 'none' ? '' : value)
+          }
           disabled={pending}
         >
           <SelectTrigger className="w-full">
@@ -199,22 +206,38 @@ export function PackageForm({
       </FormRow>
 
       <FormRow label="Status" required className={rowClassName}>
-        <Select value={status} onValueChange={(value) => setStatus(value as typeof status)} disabled={pending}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+        <Select
+          value={status}
+          onValueChange={(value) => setStatus(value as typeof status)}
+          disabled={pending}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             {STATUS_OPTIONS.map(([value, label]) => (
-              <SelectItem key={value} value={value}>{label}</SelectItem>
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </FormRow>
 
       <FormRow label="Package type" required className={rowClassName}>
-        <Select value={packageType} onValueChange={(value) => setPackageType(value as typeof packageType)} disabled={pending}>
-          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+        <Select
+          value={packageType}
+          onValueChange={(value) => setPackageType(value as typeof packageType)}
+          disabled={pending}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             {TYPE_OPTIONS.map(([value, label]) => (
-              <SelectItem key={value} value={value}>{label}</SelectItem>
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -265,7 +288,10 @@ export function PackageForm({
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={pending || (!pkg && customers.length === 0)}>
+        <Button
+          type="submit"
+          disabled={pending || (!pkg && customers.length === 0)}
+        >
           {pending ? 'Saving…' : pkg ? 'Save changes' : 'Add package'}
         </Button>
       </div>

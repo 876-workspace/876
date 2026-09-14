@@ -34,7 +34,7 @@ export function PackagesSection({
             <StatusFilterHeading
               label="Packages"
               value={status}
-              options={PACKAGE_STATUS_OPTIONS}
+              options={[...PACKAGE_STATUS_OPTIONS]}
             />
           }
           primaryLabel="Add"
