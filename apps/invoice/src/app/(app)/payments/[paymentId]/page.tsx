@@ -53,7 +53,10 @@ export default async function PaymentDetailPage({ params }: Props) {
     access.status === 'ok' && canAccess(access.context, 'payments.edit')
   const requestsEnabled =
     access.status === 'ok' &&
-    hasAccessFeature(access.context, INVOICE_REQUESTS_SLUG)
+    hasAccessFeature(access.context, INVOICE_REQUESTS_SLUG) &&
+    canAccess(access.context, 'requests.view')
+  const canCreateRequest =
+    access.status === 'ok' && canAccess(access.context, 'requests.create')
   const canRefund =
     canEdit &&
     (payment.status === 'SUCCEEDED' ||
@@ -112,6 +115,7 @@ export default async function PaymentDetailPage({ params }: Props) {
             currency: payment.currency,
             status: payment.status,
           }}
+          canCreate={canCreateRequest}
         />
       ) : null}
     </PaymentDetailCard>
