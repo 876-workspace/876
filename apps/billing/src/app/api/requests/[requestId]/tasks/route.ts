@@ -3,7 +3,7 @@ import { apiJson } from '@876/core/api'
 import { supportResponseStatus, taskStatusSchema } from '@876/crm'
 import { z } from 'zod'
 
-import { getWorkspaceContext, hasPermission } from '@/lib/auth/billing-context'
+import { requireRequestApiAccess } from '@/lib/auth/request-api-access'
 import { getCrm } from '@/lib/services/crm'
 
 const createBodySchema = z.strictObject({
@@ -26,27 +26,18 @@ function invalidRequest() {
   )
 }
 
-async function requireRequestPermission(permission: 'customers:read' | 'customers:write') {
-  const context = await getWorkspaceContext()
-  if (!context || !hasPermission(context, permission))
-    return {
-      response: apiJson(
-        { data: null, error: { code: 'auth/forbidden', message: 'Forbidden.' } },
-        { status: 403 }
-      ),
-    }
-  return { response: null, context }
-}
-
 export async function GET(
   _request: Request,
   route: RouteContext<'/api/requests/[requestId]/tasks'>
 ) {
-  const access = await requireRequestPermission('customers:read')
+  const access = await requireRequestApiAccess('customers:read')
   if (access.response) return access.response
 
   const { requestId } = await route.params
-  const result = await getCrm().requestTasks.list(access.context.orgId, requestId)
+  const result = await getCrm().requestTasks.list(
+    access.context.orgId,
+    requestId
+  )
   return apiJson(result, {
     status: supportResponseStatus(result.error?.code, 200),
   })
@@ -56,7 +47,7 @@ export async function POST(
   request: Request,
   route: RouteContext<'/api/requests/[requestId]/tasks'>
 ) {
-  const access = await requireRequestPermission('customers:write')
+  const access = await requireRequestApiAccess('customers:write')
   if (access.response) return access.response
 
   const { requestId } = await route.params
