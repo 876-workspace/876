@@ -3,7 +3,7 @@
 - Run ID: `2026-09-14-couriers-package-categories`
 - Branch: `feature/couriers-package-categories-v2`
 - Base: `main` @ `debb9b1e97f794802001db4923dafb3ea2430c94`
-- Status: `IN_PROGRESS`
+- Status: `COMPLETED` (PR open; migration pending deploy)
 
 ## Overview
 
@@ -59,9 +59,10 @@ Display names remain tenant-editable.
 | Delegate | Brief | Status |
 | --- | --- | --- |
 | GPT Web | [`briefs/gpt-web/2026-09-14-package-categories.md`](./briefs/gpt-web/2026-09-14-package-categories.md) | HANDED OFF (see tracker.md) |
-| Codex gpt-5.6-terra medium | [`briefs/codex/2026-09-14-packages-edit-filter-portal.md`](./briefs/codex/2026-09-14-packages-edit-filter-portal.md) | IN_PROGRESS |
-| Codex muse profile | [`briefs/codex-muse/2026-09-14-package-categories-settings.md`](./briefs/codex-muse/2026-09-14-package-categories-settings.md) | IN_PROGRESS |
-| Cline | [`briefs/cline/2026-09-14-package-categories-docs.md`](./briefs/cline/2026-09-14-package-categories-docs.md) | QUEUED |
+| Codex gpt-5.6-terra medium | [`briefs/codex/2026-09-14-packages-edit-filter-portal.md`](./briefs/codex/2026-09-14-packages-edit-filter-portal.md) | DONE |
+| Codex muse profile | [`briefs/codex-muse/2026-09-14-package-categories-settings.md`](./briefs/codex-muse/2026-09-14-package-categories-settings.md) | DONE |
+| Codex muse (user-run) | [`briefs/codex-muse/2026-09-14-packages-category-filter-fix.md`](./briefs/codex-muse/2026-09-14-packages-category-filter-fix.md) | DONE |
+| Cline | [`briefs/cline/2026-09-14-package-categories-docs.md`](./briefs/cline/2026-09-14-package-categories-docs.md) | DONE |
 
 ## Execution reports
 
@@ -147,3 +148,7 @@ Pending implementation and verification.
 - Security fix: managed package create/update routes lacked the admin/super-admin role check every other manage mutation route enforces.
 - Green after fixes: couriers-api typecheck/lint/boundaries/test (356), `@876/couriers` test (155), `@876/core` test (1148), `@876/api` typecheck, couriers-app typecheck, app-structure.
 - Pre-existing on `main`, not this branch: `@876/core` lint errors in `access/*.weird.test.ts`; couriers-app `api-envelope-routes.test.ts` failures for `manage/items` routes.
+
+## Final report
+
+See [`reports/orchestrator/2026-09-14-final-report.md`](./reports/orchestrator/2026-09-14-final-report.md).

@@ -3,7 +3,7 @@
 - Run ID: `2026-09-14-couriers-package-categories`
 - Active branch: `feature/couriers-package-categories-v2`
 - Base: `main` @ `debb9b1e97f794802001db4923dafb3ea2430c94`
-- Status: `HANDOFF_READY`
+- Status: `COMPLETE` — see reports/orchestrator/2026-09-14-final-report.md
 - Last updated: 2026-09-14
 - Handoff owner: local orchestrator
 
