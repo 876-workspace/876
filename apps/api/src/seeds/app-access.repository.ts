@@ -64,6 +64,28 @@ export async function upsertPermission(params: {
   return 'created'
 }
 
+async function syncOrganizationSystemRolePermissions(params: {
+  appId: string
+  key: string
+  permissions: string[]
+  now: bigint
+}) {
+  await prisma.appRole.updateMany({
+    where: {
+      appId: params.appId,
+      organizationId: { not: null },
+      key: params.key,
+      templateKey: params.key,
+      isSystem: true,
+      deletedAt: null,
+    },
+    data: {
+      permissions: params.permissions,
+      updatedAt: params.now,
+    },
+  })
+}
+
 export async function upsertTemplateRole(params: {
   id: string
   appId: string
@@ -90,6 +112,13 @@ export async function upsertTemplateRole(params: {
         updatedAt: params.now,
       },
     })
+    if (params.isSystem)
+      await syncOrganizationSystemRolePermissions({
+        appId: params.appId,
+        key: params.key,
+        permissions: params.permissions,
+        now: params.now,
+      })
     return 'updated'
   }
 
@@ -110,6 +139,13 @@ export async function upsertTemplateRole(params: {
       updatedAt: params.now,
     },
   })
+  if (params.isSystem)
+    await syncOrganizationSystemRolePermissions({
+      appId: params.appId,
+      key: params.key,
+      permissions: params.permissions,
+      now: params.now,
+    })
   return 'created'
 }
 
