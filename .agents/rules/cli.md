@@ -168,6 +168,30 @@ codex exec -p muse --dangerously-bypass-approvals-and-sandbox \
   (verified 2026-09-14; an unrelated Cloudflare MCP auth error line is noise).
 - Same rules as any Codex run: exit 0 proves nothing — judge by the diff and report.
 
+## OpenRouter free models through Codex
+
+Codex has an `openrouter` provider (`[model_providers.openrouter]` in
+`~/.codex/config.toml`, `env_key = "OPENROUTER_API_KEY"`, `wire_api = "responses"`)
+and an `openrouter` profile in `~/.codex/openrouter.config.toml`
+(default model `nex-agi/nex-n2.5-pro:free`). Use only `:free` models; they sit
+beside the Cline/opencode free pools for cheap work.
+
+```bash
+codex exec -p openrouter -m <vendor/model:free> --dangerously-bypass-approvals-and-sandbox \
+  "$(cat plans/<run>/briefs/codex/<brief>.md)" < /dev/null > /dev/null 2>&1
+```
+
+- `OPENROUTER_API_KEY` must be exported (root `.env`, `~/.bashrc`/`~/.zshrc`);
+  otherwise Codex fails with `Missing environment variable: OPENROUTER_API_KEY`.
+- Profiles live in `~/.codex/<name>.config.toml` (Codex 0.154+). A
+  `[profiles.<name>]` table or `profile = ` line in `config.toml` makes
+  `-p <name>` refuse to load — never add one.
+- `-m` overrides the profile model, so pass it to pick another free model.
+  List them: `curl -s https://openrouter.ai/api/v1/models | jq -r '.data[].id' | grep ':free$'`.
+- "Model metadata not found" is a harmless warning. Free models have
+  per-day request limits — rotate on a 429 like the other free pools.
+- Probe: `codex exec -p openrouter --dangerously-bypass-approvals-and-sandbox "Reply with exactly OK" < /dev/null`.
+
 ## Codex — the tier for tougher work
 
 **`gpt-6-astra` is never chosen by the orchestrator.** It is the most capable GPT
