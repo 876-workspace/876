@@ -78,6 +78,9 @@ export default async function PortalPackageDetailPage({
               {packageItem.mailbox ? (
                 <Detail label="Mailbox">{packageItem.mailbox.number}</Detail>
               ) : null}
+              <Detail label="Category">
+                {packageItem.category?.name ?? '—'}
+              </Detail>
               {packageItem.description ? (
                 <Detail label="Description">{packageItem.description}</Detail>
               ) : null}

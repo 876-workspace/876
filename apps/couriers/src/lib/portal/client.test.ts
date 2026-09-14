@@ -2,7 +2,11 @@ import { describe, expect, it, vi } from 'vitest'
 
 import type { CouriersClient, PortalPackage } from '@876/couriers'
 
-import { listAllPortalPackages, toPortalPackageListItem } from './client'
+import {
+  listAllPortalPackages,
+  toPortalPackageDetail,
+  toPortalPackageListItem,
+} from './client'
 
 function createPackage(id: string): PortalPackage {
   return {
@@ -12,6 +16,11 @@ function createPackage(id: string): PortalPackage {
     customer_id: 'cprof_kimani',
     branch_id: 'br_kingston',
     mailbox_id: 'mbx_rsj1001',
+    category: {
+      id: 'pcat_fragile',
+      name: 'Fragile',
+      slug: 'fragile',
+    },
     tracking_num: `tracking_${id}`,
     status: 'READY_FOR_PICKUP',
     package_type: 'CARTON',
@@ -42,6 +51,16 @@ describe('portal client', () => {
       status: 'READY_FOR_PICKUP',
       description: 'Package pkg_1001',
       createdAt: 1_784_419_200,
+    })
+  })
+
+  it('preserves the serialized package category in the portal detail view', () => {
+    expect(toPortalPackageDetail(createPackage('pkg_1001'))).toMatchObject({
+      category: {
+        id: 'pcat_fragile',
+        name: 'Fragile',
+        slug: 'fragile',
+      },
     })
   })
 

@@ -90,6 +90,7 @@ export function toPortalPackageDetail(packageItem: PortalPackage) {
     carrier: packageItem.carrier,
     branch: packageItem.branch,
     mailbox: packageItem.mailbox,
+    category: packageItem.category,
   }
 }
 
