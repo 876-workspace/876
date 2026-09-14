@@ -9,9 +9,17 @@ model BankBranch {
   name             String            @db.VarChar
   transitNumber    String            @map("transit_number") @db.VarChar
   routingNumber    String?           @map("routing_number") @db.VarChar
+  rawAddress       String?           @map("raw_address") @db.VarChar
   addressId        String?           @map("address_id") @db.VarChar
   contactNumber    String?           @map("contact_number") @db.VarChar
   operatingHours   String?           @map("operating_hours") @db.VarChar
+  /** Controlled value from src/platform/financial-directory-vocabulary.ts. */
+  branchType       String?           @map("branch_type") @db.VarChar
+  /** Null means "not verified yet", never "assumed active". */
+  status           String?           @db.VarChar
+  sourceUrl        String?           @map("source_url") @db.VarChar
+  sourceAsOf       String?           @map("source_as_of") @db.VarChar(10)
+  lastVerifiedAt   BigInt?           @map("last_verified_at")
   deletedAt        BigInt?           @map("deleted_at")
   deletedBy        String?           @map("deleted_by") @db.VarChar
   deletionReason   String?           @map("deletion_reason")

@@ -9,8 +9,9 @@ model DirectoryAddress {
   state               String               @db.VarChar
   postalCode          String?              @map("postal_code") @db.VarChar
   country             String               @default("JM") @db.VarChar(2)
-  latitude            Float
-  longitude           Float
+  /** Null until a trusted geocode exists; never fabricated from a street address. */
+  latitude            Float?
+  longitude           Float?
   createdAt           BigInt               @map("created_at")
   updatedAt           BigInt               @map("updated_at")
   bankBranches        BankBranch[]

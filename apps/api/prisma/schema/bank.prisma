@@ -15,6 +15,16 @@ model Bank {
   logoUrl         String?       @map("logo_url") @db.VarChar
   headOffice      String?       @map("head_office") @db.VarChar
   website         String?       @db.VarChar
+  generalPhone    String?       @map("general_phone") @db.VarChar
+  supportPhone    String?       @map("support_phone") @db.VarChar
+  supportEmail    String?       @map("support_email") @db.VarChar
+  complaintsEmail String?       @map("complaints_email") @db.VarChar
+  contactUrl      String?       @map("contact_url") @db.VarChar
+  sourceUrl       String?       @map("source_url") @db.VarChar
+  /** Source publication date (YYYY-MM-DD), copied from the cited source. */
+  sourceAsOf      String?       @map("source_as_of") @db.VarChar(10)
+  /** Unix seconds; null until a human verifies the record against its source. */
+  lastVerifiedAt  BigInt?       @map("last_verified_at")
   deletedAt       BigInt?       @map("deleted_at")
   deletedBy       String?       @map("deleted_by") @db.VarChar
   deletionReason  String?       @map("deletion_reason")
