@@ -3,7 +3,8 @@ import { Suspense } from 'react'
 
 import { RequestListDetailShell } from '@876/crm-ui/request-list-detail-shell'
 
-import { requireAppPermission } from '@/lib/auth/guards'
+import { requireAppCapability } from '@/lib/auth/guards'
+import { INVOICE_REQUESTS_SLUG } from '@/lib/features'
 
 import {
   CustomerRequestList,
@@ -17,8 +18,13 @@ export default async function CustomerRequestsLayout({
   children: ReactNode
   params: Promise<{ customerId: string }>
 }) {
-  await requireAppPermission('requests.view')
-  const { customerId } = await params
+  const [, { customerId }] = await Promise.all([
+    requireAppCapability({
+      permission: 'requests.view',
+      feature: INVOICE_REQUESTS_SLUG,
+    }),
+    params,
+  ])
   const baseHref = `/customers/${encodeURIComponent(customerId)}/requests`
 
   return (
