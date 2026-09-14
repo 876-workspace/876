@@ -135,9 +135,14 @@ async function isActive(token: string, claims: ProviderClaims) {
   activeTokens.delete(key)
 
   const introspection = await introspect(token)
-  const active =
-    introspection.active === true && introspection.sub === claims.sub
-  if (!active) return false
+  if (introspection.active !== true) {
+    log.warn({ reason: 'session_inactive' }, 'oauth.jwt.rejected')
+    return false
+  }
+  if (introspection.sub !== claims.sub) {
+    log.warn({ reason: 'subject_mismatch' }, 'oauth.jwt.rejected')
+    return false
+  }
 
   if (activeTokens.size >= ACTIVE_CACHE_MAX_ENTRIES) {
     const oldest = activeTokens.keys().next().value
@@ -183,13 +188,25 @@ async function introspect(token: string): Promise<Introspection> {
     throw identityUnavailable()
   }
 
-  const payload: unknown = await response.json().catch(() => null)
-  if (payload === null || typeof payload !== 'object') {
+  const body: unknown = await response.json().catch(() => null)
+  const payload = unwrapEnvelope(body)
+  if (payload === null) {
     log.error({ reason: 'invalid-response' }, 'oauth.introspection.failed')
     throw identityUnavailable()
   }
 
-  return payload as Introspection
+  return payload
+}
+
+/** The identity API answers `{ data, error }`; accept a bare RFC 7662 body too. */
+function unwrapEnvelope(body: unknown): Introspection | null {
+  if (body === null || typeof body !== 'object' || Array.isArray(body))
+    return null
+  if (!('data' in body) || !('error' in body)) return body as Introspection
+
+  const { data, error } = body as { data: unknown; error: unknown }
+  if (error !== null || data === null || typeof data !== 'object') return null
+  return data as Introspection
 }
 
 function identityUnavailable(cause?: unknown) {
