@@ -1,12 +1,12 @@
 import type { Request, Response } from 'express'
 
+import { getError, isError, type Error as WorkErrorValue } from '@876/core'
 import { getPrincipal } from '../../http/auth/principal.js'
 import {
   sendWorkError,
   sendWorkList,
   sendWorkResult,
 } from '../../http/result.js'
-import { WorkHttpError } from '../../http/work-http-error.js'
 import * as account from './sync-account.service.js'
 import * as run from './sync-run.service.js'
 import * as service from './sync-connections.service.js'
@@ -26,9 +26,9 @@ function sessionUser(req: Request) {
   return principal.kind === 'session' ? principal.userId : null
 }
 
-function requireSessionUser(req: Request) {
+function requireSessionUser(req: Request): string | WorkErrorValue {
   const userId = sessionUser(req)
-  if (!userId) throw new WorkHttpError('work/session-forbidden')
+  if (!userId) return getError('work/session-forbidden')
   return userId
 }
 
@@ -61,7 +61,11 @@ export async function retrieveConnection(req: Request, res: Response) {
   const result = await service.retrieve(organizationId, connectionId)
   if (!result) return sendWorkError(res, 'work/sync-connection-not-found')
   const actingUserId = sessionUser(req)
-  if (actingUserId && !('httpStatus' in result) && result.userId !== actingUserId)
+  if (
+    actingUserId &&
+    !('httpStatus' in result) &&
+    result.userId !== actingUserId
+  )
     return sendWorkError(res, 'work/sync-connection-not-found')
   return sendWorkResult(res, result)
 }
@@ -100,11 +104,7 @@ export async function deleteConnection(req: Request, res: Response) {
   const actingUserId = sessionUser(req)
   if (actingUserId) {
     const current = await service.retrieve(organizationId, connectionId)
-    if (
-      !current ||
-      'httpStatus' in current ||
-      current.userId !== actingUserId
-    )
+    if (!current || 'httpStatus' in current || current.userId !== actingUserId)
       return sendWorkError(res, 'work/sync-connection-not-found')
   }
   const result = await service.remove(organizationId, connectionId)
@@ -114,11 +114,13 @@ export async function deleteConnection(req: Request, res: Response) {
 
 export async function setupConnection(req: Request, res: Response) {
   const { organizationId } = organizationParamsSchema.parse(req.params)
+  const actingUserId = requireSessionUser(req)
+  if (isError(actingUserId)) return sendWorkResult(res, actingUserId)
   return sendWorkResult(
     res,
     await account.setup(
       organizationId,
-      requireSessionUser(req),
+      actingUserId,
       setupConnectionBodySchema.parse(req.body)
     ),
     201
@@ -129,13 +131,11 @@ export async function authorizeConnection(req: Request, res: Response) {
   const { organizationId, connectionId } = connectionParamsSchema.parse(
     req.params
   )
+  const actingUserId = requireSessionUser(req)
+  if (isError(actingUserId)) return sendWorkResult(res, actingUserId)
   return sendWorkResult(
     res,
-    await account.authorize(
-      organizationId,
-      connectionId,
-      requireSessionUser(req)
-    )
+    await account.authorize(organizationId, connectionId, actingUserId)
   )
 }
 
@@ -143,10 +143,12 @@ export async function listRemoteCalendars(req: Request, res: Response) {
   const { organizationId, connectionId } = connectionParamsSchema.parse(
     req.params
   )
+  const actingUserId = requireSessionUser(req)
+  if (isError(actingUserId)) return sendWorkResult(res, actingUserId)
   const result = await account.remoteCalendars(
     organizationId,
     connectionId,
-    requireSessionUser(req)
+    actingUserId
   )
   if ('httpStatus' in result) return sendWorkResult(res, result)
   return sendWorkList(
@@ -160,10 +162,12 @@ export async function listCalendarLinks(req: Request, res: Response) {
   const { organizationId, connectionId } = connectionParamsSchema.parse(
     req.params
   )
+  const actingUserId = requireSessionUser(req)
+  if (isError(actingUserId)) return sendWorkResult(res, actingUserId)
   const result = await account.listLinks(
     organizationId,
     connectionId,
-    requireSessionUser(req)
+    actingUserId
   )
   if ('httpStatus' in result) return sendWorkResult(res, result)
   return sendWorkList(
@@ -177,12 +181,14 @@ export async function linkCalendar(req: Request, res: Response) {
   const { organizationId, connectionId } = connectionParamsSchema.parse(
     req.params
   )
+  const actingUserId = requireSessionUser(req)
+  if (isError(actingUserId)) return sendWorkResult(res, actingUserId)
   return sendWorkResult(
     res,
     await account.linkCalendar(
       organizationId,
       connectionId,
-      requireSessionUser(req),
+      actingUserId,
       linkCalendarBodySchema.parse(req.body)
     ),
     201
@@ -192,13 +198,15 @@ export async function linkCalendar(req: Request, res: Response) {
 export async function unlinkCalendar(req: Request, res: Response) {
   const { organizationId, connectionId, mappingId } =
     calendarLinkParamsSchema.parse(req.params)
+  const actingUserId = requireSessionUser(req)
+  if (isError(actingUserId)) return sendWorkResult(res, actingUserId)
   return sendWorkResult(
     res,
     await account.unlinkCalendar(
       organizationId,
       connectionId,
       mappingId,
-      requireSessionUser(req)
+      actingUserId
     )
   )
 }
@@ -208,13 +216,17 @@ export async function syncConnection(req: Request, res: Response) {
     req.params
   )
   const principal = getPrincipal(req)
+  if (principal.kind === 'session') {
+    const actingUserId = requireSessionUser(req)
+    if (isError(actingUserId)) return sendWorkResult(res, actingUserId)
+    return sendWorkResult(
+      res,
+      await run.syncConnection(organizationId, connectionId, actingUserId)
+    )
+  }
   return sendWorkResult(
     res,
-    await run.syncConnection(
-      organizationId,
-      connectionId,
-      principal.kind === 'session' ? requireSessionUser(req) : undefined
-    )
+    await run.syncConnection(organizationId, connectionId, undefined)
   )
 }
 
@@ -222,13 +234,26 @@ export async function syncCalendarLink(req: Request, res: Response) {
   const { organizationId, connectionId, mappingId } =
     calendarLinkParamsSchema.parse(req.params)
   const principal = getPrincipal(req)
+  if (principal.kind === 'session') {
+    const actingUserId = requireSessionUser(req)
+    if (isError(actingUserId)) return sendWorkResult(res, actingUserId)
+    return sendWorkResult(
+      res,
+      await run.syncCalendarLink(
+        organizationId,
+        connectionId,
+        mappingId,
+        actingUserId
+      )
+    )
+  }
   return sendWorkResult(
     res,
     await run.syncCalendarLink(
       organizationId,
       connectionId,
       mappingId,
-      principal.kind === 'session' ? requireSessionUser(req) : undefined
+      undefined
     )
   )
 }
