@@ -4,12 +4,17 @@ import {
   APP_MODULE_REGISTRIES,
   BILLING_COMMERCIAL_MODULE_KEYS,
   BILLING_MODULE_REGISTRY,
+  COMMERCE_COMMERCIAL_MODULE_KEYS,
+  COMMERCE_MODULE_REGISTRY,
   defineAppModuleRegistry,
   FINANCE_MODULES,
   findAppModule,
   getAppModuleRegistry,
   INVOICE_COMMERCIAL_MODULE_KEYS,
   INVOICE_MODULE_REGISTRY,
+  PROJECTS_COMMERCIAL_MODULE_KEYS,
+  PROJECTS_MODULE_REGISTRY,
+  PROJECTS_MODULES,
 } from './modules'
 
 const KEY_PATTERN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
@@ -72,6 +77,53 @@ describe('canonical application module registry', () => {
     expect(billingKeys.length).toBeGreaterThan(invoiceKeys.length)
   })
 
+  it('registers Projects around product capabilities rather than every permission domain', () => {
+    // ARRANGE
+    const expected = ['projects', 'issues', 'reports']
+
+    // ACT
+    const keys = PROJECTS_MODULE_REGISTRY.modules.map((module) => module.key)
+
+    // ASSERT
+    expect(keys).toEqual(expected)
+    expect(keys).not.toContain('dashboard')
+    expect(keys).not.toContain('comments')
+    expect(keys).not.toContain('labels')
+    expect(keys).not.toContain('members')
+    expect(keys).not.toContain('settings')
+  })
+
+  it('registers the stable Commerce capability vocabulary in declaration order', () => {
+    // ARRANGE
+    const expected = [
+      'catalog',
+      'orders',
+      'customers',
+      'inventory',
+      'storefront',
+      'checkout',
+      'payments',
+      'discounts',
+      'shipping',
+      'fulfillment',
+      'returns',
+      'markets',
+      'marketing',
+      'analytics',
+      'pos',
+      'b2b',
+      'subscriptions',
+      'channels',
+      'automation',
+    ]
+
+    // ACT
+    const keys = COMMERCE_MODULE_REGISTRY.modules.map((module) => module.key)
+
+    // ASSERT
+    expect(keys).toEqual(expected)
+  })
+
   it('uses canonical kebab-case keys with unique keys per app', () => {
     // ARRANGE
     const registries = Object.values(APP_MODULE_REGISTRIES)
@@ -90,6 +142,8 @@ describe('canonical application module registry', () => {
     expect(results).toEqual([
       { app: '876-billing', canonical: true, unique: true },
       { app: '876-invoice', canonical: true, unique: true },
+      { app: '876-projects', canonical: true, unique: true },
+      { app: '876-commerce', canonical: true, unique: true },
     ])
   })
 
@@ -119,6 +173,32 @@ describe('canonical application module registry', () => {
     expect(keys).toEqual(expected)
   })
 
+  it('commercializes only implemented Projects module gates', () => {
+    // ARRANGE
+    const expected = ['projects', 'issues']
+
+    // ACT
+    const keys = [...PROJECTS_COMMERCIAL_MODULE_KEYS]
+
+    // ASSERT
+    expect(keys).toEqual(expected)
+    expect(keys).not.toContain(PROJECTS_MODULES.reports.key)
+  })
+
+  it('does not make Commerce capabilities sellable by declaring their identity', () => {
+    // ARRANGE
+    const registryKeys = COMMERCE_MODULE_REGISTRY.modules.map(
+      (module) => module.key
+    )
+
+    // ACT
+    const commercialKeys = [...COMMERCE_COMMERCIAL_MODULE_KEYS]
+
+    // ASSERT
+    expect(registryKeys.length).toBe(19)
+    expect(commercialKeys).toEqual([])
+  })
+
   it('resolves registered apps and modules without fallback definitions', () => {
     // ARRANGE
     const expectedModule = FINANCE_MODULES.invoices
@@ -130,6 +210,20 @@ describe('canonical application module registry', () => {
     // ASSERT
     expect(registry).toBe(INVOICE_MODULE_REGISTRY)
     expect(definition).toBe(expectedModule)
+  })
+
+  it('resolves Projects and Commerce canonical modules by app and key', () => {
+    // ARRANGE
+    const expectedProject = PROJECTS_MODULES.issues
+    const expectedCommerce = COMMERCE_MODULE_REGISTRY.modules[0]
+
+    // ACT
+    const project = findAppModule('876-projects', 'issues')
+    const commerce = findAppModule('876-commerce', 'catalog')
+
+    // ASSERT
+    expect(project).toBe(expectedProject)
+    expect(commerce).toBe(expectedCommerce)
   })
 
   it('returns undefined for unknown apps and module keys', () => {
