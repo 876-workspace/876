@@ -20,9 +20,11 @@ import {
 export function ItemsSection({
   list,
   children,
+  orgSlug,
 }: {
   list: ReactNode
   children: ReactNode
+  orgSlug: string
 }) {
   // A layout receives no `searchParams`, so the active filter is read here on
   // the client, where it stays current across navigations.
@@ -41,6 +43,9 @@ export function ItemsSection({
             />
           }
           refresh
+          primaryLabel="Add"
+          primaryVariant="info"
+          primaryHref={`/${orgSlug}/items/new`}
           dropdownActions={ITEMS_DROPDOWN_ACTIONS}
         />
       }
