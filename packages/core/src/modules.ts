@@ -174,7 +174,8 @@ export const COMMERCE_MODULES = {
   inventory: {
     key: 'inventory',
     label: 'Inventory',
-    description: 'Manage stock availability, locations, and inventory movement.',
+    description:
+      'Manage stock availability, locations, and inventory movement.',
   },
   storefront: {
     key: 'storefront',
@@ -206,7 +207,8 @@ export const COMMERCE_MODULES = {
   fulfillment: {
     key: 'fulfillment',
     label: 'Fulfillment',
-    description: 'Manage picking, packing, shipment, and fulfillment lifecycle.',
+    description:
+      'Manage picking, packing, shipment, and fulfillment lifecycle.',
   },
   returns: {
     key: 'returns',
@@ -323,6 +325,22 @@ export const COMMERCE_MODULE_REGISTRY = defineAppModuleRegistry({
 /**
  * Modules that may be materialized into Core's commercial entitlement plane.
  * Canonical identity alone never makes a capability plan-selectable.
+ *
+ * Invoice currently has no competing aggregate commercial taxonomy, so its
+ * implemented registry modules can be sold directly.
+ *
+ * Billing is intentionally narrower: only canonical definitions that exactly
+ * match its existing effective commercial gates are materialized here. Sales
+ * and documents remain explicit legacy aggregates in the plan seed; granular
+ * Billing identities such as `invoices`, `quotes`, `payments`, `customers`, and
+ * `sales-orders` must not appear as selectable Billing plan grants until runtime
+ * entitlement enforcement is wired to those exact keys.
+ *
+ * Requests is deliberately present in both projections because this work wires
+ * its exact app-scoped feature gate in both finance hosts.
+ *
+ * Projects' `reports` remains canonical but is not commercial until its surface
+ * exists. Commerce remains empty until a capability has runtime entitlement semantics.
  */
 export const INVOICE_COMMERCIAL_MODULE_KEYS = [
   'invoices',

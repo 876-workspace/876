@@ -144,7 +144,12 @@ const CANONICAL_COMMERCIAL_MODULES = [
 ]
 
 /**
- * Registry-backed commercial modules plus transitional legacy modules.
+ * Registry-backed finance modules plus transitional legacy commercial modules.
+ *
+ * Billing's `sales` and `documents` keys are intentionally retained until their
+ * existing feature/entitlement semantics can be migrated explicitly. They are
+ * not aliases for the finer canonical finance modules.
+ *
  * Commerce intentionally contributes no rows yet: declaring a capability in
  * code does not make an unimplemented capability plan-selectable.
  */
@@ -224,10 +229,12 @@ export async function seedPlatformPlanModules(): Promise<PlanSeedSummary> {
       : null
 
     if (!applicationModule) {
-      const explicitlyIncluded = definition.includedPlanSlugs.flatMap((slug) => {
-        const product = productsBySlug.get(slug)
-        return product ? [product] : []
-      })
+      const explicitlyIncluded = definition.includedPlanSlugs.flatMap(
+        (slug) => {
+          const product = productsBySlug.get(slug)
+          return product ? [product] : []
+        }
+      )
       const currentAppPlans = definition.includeCurrentAppPlans
         ? products.filter((product) => product.appId === app.id)
         : []
@@ -244,6 +251,8 @@ export async function seedPlatformPlanModules(): Promise<PlanSeedSummary> {
         productId: product.id,
       }))
 
+      // A failed grant must roll back its new module, so a retry can still
+      // distinguish bootstrap from an operator's later grant removal.
       await createApplicationModule({
         id: generateId('applicationModule'),
         appId: app.id,
