@@ -33,6 +33,8 @@ export async function PATCH(request: Request, context: RouteContext) {
   )
   if (!body.success) return invalidRequest('finance/invalid-payment-mode')
 
+  // Images are set only through the verified upload route; the strict schema
+  // rejects a caller-supplied image file or URL here.
   const { orgSlug, ...params } = body.data
   const access = await requireFinanceAccess(orgSlug)
   if (access.response) return access.response

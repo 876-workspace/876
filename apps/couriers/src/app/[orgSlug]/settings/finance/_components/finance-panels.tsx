@@ -67,6 +67,9 @@ export function PaymentModesPanel({
       onCreate={(params) => financePaymentModes.create(orgSlug, params)}
       onUpdate={(id, params) => financePaymentModes.update(orgSlug, id, params)}
       onDelete={(id) => financePaymentModes.remove(orgSlug, id)}
+      onUploadImage={(id, file) =>
+        financePaymentModes.uploadImage(orgSlug, id, file)
+      }
       onSuccess={refresh}
     />
   )
