@@ -53,6 +53,10 @@ export default async function InvoiceDetailPage({ params }: Props) {
 
   const canWrite = context.permissions.includes('sales:write')
   const canRecordPayment = context.permissions.includes('payments:write')
+  const canViewRequests =
+    features.productFeatures.requests &&
+    context.permissions.includes('customers:read')
+  const canCreateRequest = context.permissions.includes('customers:write')
   const recordPaymentHref = `/invoices/${encodeURIComponent(invoice.id)}/payments/new`
   const recurringInvoiceId =
     typeof invoice.recurringInvoiceId === 'string'
@@ -175,7 +179,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
             </>
           }
         />
-        {features.productFeatures.requests ? (
+        {canViewRequests ? (
           <RelatedRequestsClient
             customerId={invoice.customerId}
             resourceType="invoice"
@@ -186,6 +190,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
               currency: invoice.currency,
               status: invoice.status,
             }}
+            canCreate={canCreateRequest}
           />
         ) : null}
       </div>
