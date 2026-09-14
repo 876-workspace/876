@@ -75,6 +75,19 @@ export const provisionedPackageCategorySchema = z.strictObject({
   is_active: z.boolean().default(true),
 })
 
+export const reconcilePackageCategoriesBodySchema = z.strictObject({
+  revision: z.number().int().min(1),
+  categories: z.array(provisionedPackageCategorySchema).min(1).max(100),
+})
+
+export const packageCategoryReconciliationSchema = z
+  .object({
+    object: z.literal('package_category_reconciliation'),
+    revision: z.number().int().min(1),
+    reconciled: z.number().int().min(0),
+  })
+  .meta({ id: 'PackageCategoryReconciliation' })
+
 export type PackageCategory = z.infer<typeof packageCategorySchema>
 export type TenantParams = z.infer<typeof tenantParamsSchema>
 export type PackageCategoryParams = z.infer<typeof packageCategoryParamsSchema>
@@ -89,4 +102,10 @@ export type UpdatePackageCategoryBody = z.infer<
 >
 export type ProvisionedPackageCategory = z.infer<
   typeof provisionedPackageCategorySchema
+>
+export type ReconcilePackageCategoriesBody = z.infer<
+  typeof reconcilePackageCategoriesBodySchema
+>
+export type PackageCategoryReconciliation = z.infer<
+  typeof packageCategoryReconciliationSchema
 >
