@@ -3,7 +3,7 @@
 - Run ID: `2026-09-13-app-module-runtime-convergence`
 - Branch: `feature/app-module-runtime-convergence`
 - Base: `main` @ `65d3f77500061fd3efeb40a175c13ae5fe9e0af6`
-- Status: `IN_PROGRESS`
+- Status: `COMPLETED`
 
 ## Overview
 
@@ -110,15 +110,15 @@ Primary expected files:
 ## Phases
 
 - [x] Phase 0 — read binding rules, inspect current module/access ownership, create branch.
-- [ ] Phase 1 — add canonical Projects and Commerce registries plus registry tests.
-- [ ] Phase 2 — align Projects/Commerce permission catalogs with canonical identity without forcing 1:1 module-permission equivalence.
-- [ ] Phase 3 — generalize commercial-module seeding and materialize Projects only where runtime semantics exist; keep Commerce commercial projection intentionally empty.
-- [ ] Phase 4 — extend shared `AccessContext` and navigation requirement primitives with effective modules plus tests.
-- [ ] Phase 5 — migrate Projects module catalog/access/navigation to canonical modules and shared runtime semantics.
-- [ ] Phase 6 — bring Commerce app-access resolution/navigation onto the shared permission/module model without building commerce domain features.
-- [ ] Phase 7 — review Console registry/materialization behavior and add safeguards/tests only if needed.
-- [ ] Phase 8 — adversarial diff review for duplicate catalogs, authorization widening, commercial over-materialization, compatibility residue, and swallowed errors.
-- [ ] Phase 9 — write final GPT-Web report, update tracker/handoff, and record verification commands as not executed.
+- [x] Phase 1 — add canonical Projects and Commerce registries plus registry tests.
+- [x] Phase 2 — align Projects/Commerce permission catalogs with canonical identity without forcing 1:1 module-permission equivalence.
+- [x] Phase 3 — generalize commercial-module seeding and materialize Projects only where runtime semantics exist; keep Commerce commercial projection intentionally empty.
+- [x] Phase 4 — extend shared `AccessContext` and navigation requirement primitives with effective modules plus tests.
+- [x] Phase 5 — migrate Projects module catalog/access/navigation to canonical modules and shared runtime semantics.
+- [x] Phase 6 — bring Commerce app-access resolution/navigation onto the shared permission/module model without building commerce domain features.
+- [x] Phase 7 — review Console registry/materialization behavior and add safeguards/tests only if needed.
+- [x] Phase 8 — adversarial diff review for duplicate catalogs, authorization widening, commercial over-materialization, compatibility residue, and swallowed errors.
+- [x] Phase 9 — write final GPT-Web report, update tracker/handoff, and record verification commands as not executed.
 
 ## Verification commands for orchestrator
 
@@ -144,9 +144,10 @@ Run focused Prettier over touched paths before final integration.
 
 ## Reports
 
-| Tool    | Report                                                         | Status  |
-| ------- | -------------------------------------------------------------- | ------- |
-| GPT Web | `reports/gpt-web/2026-09-13-app-module-runtime-convergence.md` | Pending |
+| Tool                          | Report                                     | Status |
+| ----------------------------- | ------------------------------------------ | ------ |
+| GPT Web                       | tracker.md (inline)                        | Done   |
+| Codex (gpt-5.6-terra, medium) | `reports/codex/2026-09-14-review-fixes.md` | Done   |
 
 ## Handoff state
 
