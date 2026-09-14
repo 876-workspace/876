@@ -11,6 +11,7 @@ import { createCustomerAddressesRouter } from '@/modules/customer-addresses'
 import { createCustomersRouter } from '@/modules/customers'
 import { createMailboxesRouter } from '@/modules/mailboxes'
 import { createOrganizationLocationsRouter } from '@/modules/organization-locations'
+import { createPackageCategoriesRouter } from '@/modules/package-categories'
 import { createPackagesRouter } from '@/modules/packages'
 import { createPortalRouter } from '@/modules/portal'
 import { createTeamRouter } from '@/modules/team'
@@ -32,6 +33,7 @@ export function buildRoutes(): Router {
   root.use(createCustomerAddressesRouter(resolveGuards))
   root.use(createMailboxesRouter(resolveGuards))
   root.use(createOrganizationLocationsRouter(resolveGuards))
+  root.use(createPackageCategoriesRouter(resolveGuards))
   root.use(createPackagesRouter(resolveGuards))
   root.use(...createPortalRouter(resolveGuards))
   root.use(...createTeamRouter(resolveGuards))
