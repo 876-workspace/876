@@ -7,10 +7,10 @@ import { HttpStatus } from '../../types/errors.js'
 describe('CRM catalog - exhaustive contract', () => {
   const allCodes = Object.keys(CRM_ERRORS) as CrmErrorCode[]
 
-  it('contains exactly 42 registered CRM error codes', () => {
+  it('contains exactly 43 registered CRM error codes', () => {
     // A bare count is a deliberate tripwire: adding or removing a public error
     // code changes a client contract, so it should never pass unnoticed.
-    expect(allCodes.length).toBe(42)
+    expect(allCodes.length).toBe(43)
   })
 
   it('distinguishes each way a Work call can fail', () => {

@@ -152,6 +152,10 @@ export const CRM_ERRORS = {
     message: 'This organization has no CRM workspace yet.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
+  'crm/unauthorized': {
+    message: 'Unauthorized.',
+    httpStatus: HttpStatus.UNAUTHORIZED,
+  },
   'crm/work-forbidden': {
     message:
       'The acting user is not permitted to perform this Work operation; grant the required permission to continue.',

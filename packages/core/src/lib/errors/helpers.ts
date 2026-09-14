@@ -147,6 +147,10 @@ function getFallbackErrorCode(code: string): ErrorCode {
   if (code.startsWith('feature/')) return 'feature/internal-error'
   if (code.startsWith('crm/')) return 'crm/internal'
   if (code.startsWith('work/')) return 'work/internal'
+  if (code.startsWith('request/')) return 'request/invalid'
+  if (code.startsWith('error/')) return 'error/unknown'
+  if (code.startsWith('integration-key/')) return 'integration-key/invalid'
+  if (code.startsWith('auth/')) return 'auth/unknown-error'
 
   return 'auth/unknown-error'
 }
