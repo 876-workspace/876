@@ -151,6 +151,36 @@ export const PROJECTS_MODULES = {
   },
 } as const satisfies Record<string, AppModuleDefinition>
 
+/** Stable product capability identity for 876 Couriers. */
+export const COURIERS_MODULES = {
+  customerPortal: {
+    key: 'customer-portal',
+    label: 'Customer portal',
+    description:
+      'Give customers access to their courier accounts and shipments.',
+  },
+  deliveries: {
+    key: 'deliveries',
+    label: 'Deliveries',
+    description: 'Manage courier deliveries and delivery status.',
+  },
+  preAlerts: {
+    key: 'pre-alerts',
+    label: 'Pre-alerts',
+    description: 'Manage customer pre-alerts for incoming packages.',
+  },
+  packages: {
+    key: 'packages',
+    label: 'Packages',
+    description: 'Track packages through warehouse and delivery operations.',
+  },
+  customers: {
+    key: 'customers',
+    label: 'Customers',
+    description: 'Manage courier customer accounts and delivery details.',
+  },
+} as const satisfies Record<string, AppModuleDefinition>
+
 /**
  * Commerce capability identity. This is the product vocabulary, not a promise
  * that every capability is implemented or commercially selectable today.
@@ -297,6 +327,17 @@ export const PROJECTS_MODULE_REGISTRY = defineAppModuleRegistry({
   ],
 })
 
+export const COURIERS_MODULE_REGISTRY = defineAppModuleRegistry({
+  app: '876-couriers',
+  modules: [
+    COURIERS_MODULES.customerPortal,
+    COURIERS_MODULES.deliveries,
+    COURIERS_MODULES.preAlerts,
+    COURIERS_MODULES.packages,
+    COURIERS_MODULES.customers,
+  ],
+})
+
 export const COMMERCE_MODULE_REGISTRY = defineAppModuleRegistry({
   app: '876-commerce',
   modules: [
@@ -341,6 +382,8 @@ export const COMMERCE_MODULE_REGISTRY = defineAppModuleRegistry({
  *
  * Projects' `reports` remains canonical but is not commercial until its surface
  * exists. Commerce remains empty until a capability has runtime entitlement semantics.
+ * Couriers materializes every canonical module because each has a current
+ * entitlement meaning in its product surface.
  */
 export const INVOICE_COMMERCIAL_MODULE_KEYS = [
   'invoices',
@@ -364,6 +407,14 @@ export const BILLING_COMMERCIAL_MODULE_KEYS = [
 
 export const PROJECTS_COMMERCIAL_MODULE_KEYS = ['projects', 'issues'] as const
 
+export const COURIERS_COMMERCIAL_MODULE_KEYS = [
+  'customer-portal',
+  'deliveries',
+  'pre-alerts',
+  'packages',
+  'customers',
+] as const
+
 /** Commerce identity is established before sellable module gates. */
 export const COMMERCE_COMMERCIAL_MODULE_KEYS = [] as const
 
@@ -371,6 +422,7 @@ export const APP_MODULE_REGISTRIES = {
   '876-billing': BILLING_MODULE_REGISTRY,
   '876-invoice': INVOICE_MODULE_REGISTRY,
   '876-projects': PROJECTS_MODULE_REGISTRY,
+  '876-couriers': COURIERS_MODULE_REGISTRY,
   '876-commerce': COMMERCE_MODULE_REGISTRY,
 } as const
 
