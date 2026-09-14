@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 
 import { RequestListDetailShell } from '@876/crm-ui/request-list-detail-shell'
 
+import { canAccess } from '@/lib/auth/access-context'
 import { requireAppCapability } from '@/lib/auth/guards'
 import { INVOICE_REQUESTS_SLUG } from '@/lib/features'
 
@@ -18,7 +19,7 @@ export default async function CustomerRequestsLayout({
   children: ReactNode
   params: Promise<{ customerId: string }>
 }) {
-  const [, { customerId }] = await Promise.all([
+  const [access, { customerId }] = await Promise.all([
     requireAppCapability({
       permission: 'requests.view',
       feature: INVOICE_REQUESTS_SLUG,
@@ -31,6 +32,7 @@ export default async function CustomerRequestsLayout({
     <div className="flex h-full min-h-0 flex-col">
       <RequestListDetailShell
         baseHref={baseHref}
+        canCreate={canAccess(access, 'requests.create')}
         list={
           <Suspense fallback={<CustomerRequestListSkeleton />}>
             <CustomerRequestList customerId={customerId} baseHref={baseHref} />
