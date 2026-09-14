@@ -38,6 +38,16 @@ function context(role: 'admin' | 'staff' = 'admin') {
 }
 
 const validBody = { orgSlug: 'acme', name: 'Bank transfer' }
+const paymentMode = {
+  object: 'payment_mode' as const,
+  id: 'pm_1',
+  name: 'Bank transfer',
+  isDefault: false,
+  isActive: true,
+  isSystem: false,
+  createdAt: 1,
+  updatedAt: 1,
+}
 
 describe('Couriers payment mode create route', () => {
   beforeEach(() => {
@@ -46,7 +56,7 @@ describe('Couriers payment mode create route', () => {
     mocks.createBillingIntegration.mockReturnValue({
       paymentModes: { create: mocks.create },
     })
-    mocks.create.mockResolvedValue({ data: { id: 'pm_1' }, error: null })
+    mocks.create.mockResolvedValue({ data: paymentMode, error: null })
   })
 
   it('returns 403 without calling Billing when the caller is staff', async () => {
@@ -71,7 +81,7 @@ describe('Couriers payment mode create route', () => {
 
     expect(response.status).toBe(201)
     expect(await response.json()).toEqual({
-      data: { id: 'pm_1' },
+      data: paymentMode,
       error: null,
     })
     expect(mocks.create).toHaveBeenCalledWith('org_1', {

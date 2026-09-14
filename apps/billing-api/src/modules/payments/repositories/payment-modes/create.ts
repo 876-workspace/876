@@ -1,5 +1,6 @@
 import { nowUnixSeconds } from '@876/core/timestamps'
 
+import { type PaymentMode } from '@/db'
 import { prisma } from '@/db/client'
 import { generateId } from '@/platform/ids'
 import type { ServiceResult } from '../../schemas/api'
@@ -12,7 +13,7 @@ import { isUniqueConstraintError } from '@/platform/prisma-errors'
 export async function create(
   tenantId: string,
   params: PaymentModeCreateParams
-): ServiceResult<{ id: string }> {
+): ServiceResult<PaymentMode> {
   try {
     const now = nowUnixSeconds()
     const mode = await prisma.$transaction(async (tx) => {
@@ -36,7 +37,7 @@ export async function create(
       })
     })
 
-    return ok({ id: mode.id })
+    return ok(mode)
   } catch (error) {
     if (isUniqueConstraintError(error))
       return err('A payment mode with this name already exists.', 409)

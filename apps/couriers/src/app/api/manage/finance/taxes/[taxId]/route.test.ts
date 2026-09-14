@@ -16,6 +16,32 @@ vi.mock('@/lib/services/billing', () => ({
 import { PATCH } from './route'
 
 const params = Promise.resolve({ taxId: 'taxr_1' })
+const taxRate = {
+  object: 'tax_rate' as const,
+  id: 'taxr_1',
+  name: 'GCT',
+  description: null,
+  taxType: null,
+  rate: '15',
+  inclusive: false,
+  startsAt: null,
+  isActive: true,
+  isDefault: false,
+  taxAuthority: {
+    object: 'tax_authority' as const,
+    id: 'taxa_1',
+    name: 'Tax Administration Jamaica',
+    description: null,
+    countryCode: 'JM',
+    subdivisionCode: null,
+    isDefault: true,
+    isActive: true,
+    createdAt: 1,
+    updatedAt: 1,
+  },
+  createdAt: 1,
+  updatedAt: 1,
+}
 
 function request(body: unknown, method = 'PATCH') {
   return new Request('http://couriers.test/api/manage/finance/taxes/taxr_1', {
@@ -46,7 +72,7 @@ describe('Couriers tax rate update route', () => {
     mocks.createBillingIntegration.mockReturnValue({
       taxRates: { update: mocks.update },
     })
-    mocks.update.mockResolvedValue({ data: { id: 'taxr_1' }, error: null })
+    mocks.update.mockResolvedValue({ data: taxRate, error: null })
   })
 
   it('returns 403 without calling Billing when the caller is staff', async () => {
@@ -81,7 +107,7 @@ describe('Couriers tax rate update route', () => {
 
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({
-      data: { id: 'taxr_1' },
+      data: taxRate,
       error: null,
     })
     expect(mocks.update).toHaveBeenCalledWith('org_1', 'taxr_1', {
