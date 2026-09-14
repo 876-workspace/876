@@ -9,14 +9,27 @@ import type { TeamMemberRow, TeamRoleOption } from '@/types/team'
 const mocks = vi.hoisted(() => ({
   push: vi.fn(),
   refresh: vi.fn(),
-  searchParams: new URLSearchParams(),
   update: vi.fn(),
   del: vi.fn(),
 }))
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
-  useSearchParams: () => mocks.searchParams,
+}))
+
+vi.mock('next/link', () => ({
+  default: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string
+    children: React.ReactNode
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }))
 
 vi.mock('@/lib/client', () => ({
@@ -28,7 +41,7 @@ vi.mock('@/lib/client', () => ({
   },
 }))
 
-import { UsersSplit } from './users-split'
+import { UserDetailCard } from './user-detail'
 
 const roles: TeamRoleOption[] = [
   {
@@ -45,80 +58,60 @@ const roles: TeamRoleOption[] = [
   },
 ]
 
-const rows: TeamMemberRow[] = [
-  {
-    id: 'tmem_alejandra',
-    userId: 'usr_alejandra',
-    name: 'Alejandra Reyes',
-    email: 'alejandra@example.com',
-    avatar: null,
-    roleId: 'role_admin',
-    roleName: 'Admin',
-    roleSystemKey: 'admin',
-    status: 'active',
-    createdAt: 1_784_419_200,
-  },
-  {
-    id: 'tmem_malik',
-    userId: 'usr_malik',
-    name: 'Malik Brown',
-    email: 'malik@example.com',
-    avatar: null,
-    roleId: 'role_staff',
-    roleName: 'Staff',
-    roleSystemKey: 'staff',
-    status: 'inactive',
-    createdAt: 1_784_419_200,
-  },
-]
+const row: TeamMemberRow = {
+  id: 'tmem_alejandra',
+  userId: 'usr_alejandra',
+  name: 'Alejandra Reyes',
+  email: 'alejandra@example.com',
+  avatar: null,
+  roleId: 'role_admin',
+  roleName: 'Admin',
+  roleSystemKey: 'admin',
+  status: 'active',
+  createdAt: 1_784_419_200,
+}
 
-describe('UsersSplit', () => {
+function renderCard() {
+  return render(
+    <UserDetailCard
+      row={row}
+      roles={roles}
+      orgSlug="island-logistics"
+      closeHref="/island-logistics/settings/users?status=active"
+    />
+  )
+}
+
+describe('UserDetailCard', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.searchParams = new URLSearchParams()
-    mocks.update.mockResolvedValue({ data: rows[0], error: null })
+    mocks.update.mockResolvedValue({ data: row, error: null })
     mocks.del.mockResolvedValue({
       data: { id: 'tmem_alejandra', deleted: true },
       error: null,
     })
   })
 
-  it('shows the empty state when the tenant has no team grants', () => {
-    render(<UsersSplit rows={[]} roles={roles} orgSlug="island-logistics" />)
-
-    expect(screen.getByText('No users.')).toBeVisible()
-  })
-
-  it('opens the detail panel for the selected member from the URL', () => {
-    render(
-      <UsersSplit
-        rows={rows}
-        roles={roles}
-        selectedId="tmem_alejandra"
-        orgSlug="island-logistics"
-      />
-    )
+  it('renders the member card with tabs and a close link preserving the filter', () => {
+    renderCard()
 
     expect(
       screen.getByRole('heading', { name: 'Alejandra Reyes' })
     ).toBeVisible()
+    expect(screen.getByText('Active')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Deactivate' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Remove' })).toBeVisible()
     expect(screen.getByRole('tab', { name: 'Permissions' })).toBeVisible()
     expect(screen.getByRole('tab', { name: 'Activity' })).toBeVisible()
+    expect(
+      screen.getByRole('link', { name: 'Close user details' })
+    ).toHaveAttribute('href', '/island-logistics/settings/users?status=active')
   })
 
-  it('deactivates the selected member through the typed client and refreshes', async () => {
+  it('deactivates the member through the typed client and refreshes', async () => {
     const user = userEvent.setup()
 
-    render(
-      <UsersSplit
-        rows={rows}
-        roles={roles}
-        selectedId="tmem_alejandra"
-        orgSlug="island-logistics"
-      />
-    )
+    renderCard()
 
     await user.click(screen.getByRole('button', { name: 'Deactivate' }))
 
@@ -144,14 +137,7 @@ describe('UsersSplit', () => {
       },
     })
 
-    render(
-      <UsersSplit
-        rows={rows}
-        roles={roles}
-        selectedId="tmem_alejandra"
-        orgSlug="island-logistics"
-      />
-    )
+    renderCard()
 
     await user.click(screen.getByRole('button', { name: 'Deactivate' }))
 
@@ -163,20 +149,21 @@ describe('UsersSplit', () => {
     expect(mocks.refresh).not.toHaveBeenCalled()
   })
 
-  it('clears the user selection when the detail panel is closed', async () => {
+  it('removes the member through the confirm dialog and returns to the list', async () => {
     const user = userEvent.setup()
 
-    render(
-      <UsersSplit
-        rows={rows}
-        roles={roles}
-        selectedId="tmem_alejandra"
-        orgSlug="island-logistics"
-      />
-    )
+    renderCard()
 
-    await user.click(screen.getByRole('button', { name: 'Close user details' }))
+    await user.click(screen.getByRole('button', { name: 'Remove' }))
+    expect(await screen.findByText('Remove user?')).toBeVisible()
+    // The open dialog marks the card inert, so the only exposed Remove
+    // button is the confirm action itself.
+    await user.click(screen.getByRole('button', { name: 'Remove' }))
 
+    await waitFor(() => {
+      expect(mocks.del).toHaveBeenCalledTimes(1)
+    })
+    expect(mocks.del).toHaveBeenCalledWith('island-logistics', 'tmem_alejandra')
     expect(mocks.push).toHaveBeenCalledWith('/island-logistics/settings/users')
   })
 })

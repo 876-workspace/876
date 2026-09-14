@@ -87,7 +87,7 @@ export function RoleForm({ orgSlug, role }: Props) {
           edited.
         </div>
       ) : null}
-      <div className="876-card grid gap-5 p-5 sm:grid-cols-2">
+      <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="role-name">Name</Label>
           <Input

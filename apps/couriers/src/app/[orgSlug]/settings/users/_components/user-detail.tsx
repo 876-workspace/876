@@ -16,7 +16,13 @@ import { Alert, AlertDescription } from '@876/ui/alert'
 import { Avatar, AvatarFallback, AvatarImage } from '@876/ui/avatar'
 import { Badge } from '@876/ui/badge'
 import { Button } from '@876/ui/button'
-import { Activity, TriangleAlertIcon, XIcon } from '@876/ui/icons'
+import {
+  DetailCard,
+  DetailCardBody,
+  DetailCardHeader,
+  DetailCardIdBar,
+} from '@876/ui/detail-card'
+import { Activity, TriangleAlertIcon } from '@876/ui/icons'
 import {
   Select,
   SelectContent,
@@ -44,10 +50,11 @@ type Props = {
   row: TeamMemberRow
   roles: TeamRoleOption[]
   orgSlug: string
-  onClose: () => void
+  closeHref: string
 }
 
-export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
+/** The member record filling the split view's detail column. */
+export function UserDetailCard({ row, roles, orgSlug, closeHref }: Props) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [removeOpen, setRemoveOpen] = useState(false)
@@ -56,6 +63,7 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
     () => roles.map((role) => ({ value: role.id, label: role.name })),
     [roles]
   )
+  const listHref = `/${orgSlug}/settings/users`
 
   function update(params: { roleId?: string; status?: 'active' | 'inactive' }) {
     setError(null)
@@ -81,7 +89,7 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
       }
 
       setRemoveOpen(false)
-      onClose()
+      router.push(listHref)
       router.refresh()
     })
   }
@@ -90,131 +98,122 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
   const isActive = row.status === 'active'
 
   return (
-    <section className="876-card min-w-0 overflow-hidden">
-      <header className="flex items-start gap-3 px-5 pt-5 pb-2">
-        <Avatar size="lg" className="size-12 shrink-0">
-          {row.avatar ? <AvatarImage src={row.avatar} alt="" /> : null}
-          <AvatarFallback>{memberInitials(row.name)}</AvatarFallback>
-        </Avatar>
-
-        <div className="min-w-0 flex-1 pt-0.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="truncate text-base font-semibold tracking-tight">
-              {row.name}
-            </h2>
-            <Badge variant={isActive ? 'success' : 'secondary'}>
-              {isActive ? 'Active' : 'Inactive'}
-            </Badge>
-          </div>
-          <p className="text-muted-foreground mt-0.5 truncate text-[0.8125rem]">
-            {row.email ?? 'No email available'}
-          </p>
-        </div>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          onClick={onClose}
-          aria-label="Close user details"
-          className="text-muted-foreground hover:text-foreground -mt-0.5 shrink-0"
-        >
-          <XIcon className="size-4" />
-        </Button>
-      </header>
-
-      <Tabs defaultValue="overview" className="gap-0">
-        <div className="px-5">
-          <TabsList className="h-auto w-full justify-start gap-1 rounded-none !bg-transparent p-0">
-            <TabsTrigger value="overview" className={detailTabTriggerClass}>
-              Overview
-              <TabUnderline />
-            </TabsTrigger>
-            <TabsTrigger value="permissions" className={detailTabTriggerClass}>
-              Permissions
-              <TabUnderline />
-            </TabsTrigger>
-            <TabsTrigger value="activity" className={detailTabTriggerClass}>
-              Activity
-              <TabUnderline />
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        <TabsContent value="overview" className="mt-0 space-y-5 p-5">
-          {error ? (
-            <Alert variant="destructive">
-              <TriangleAlertIcon />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          ) : null}
-
-          <div className="space-y-4">
-            <div className="grid gap-2 sm:grid-cols-[6.5rem_1fr] sm:items-center sm:gap-4">
-              <span className="text-muted-foreground text-[0.8125rem]">
-                Role
-              </span>
-              <Select
-                value={row.roleId}
-                disabled={isPending}
-                onValueChange={(value) => value && update({ roleId: value })}
-                items={roleOptions}
+    <DetailCard aria-label={`Member details: ${row.name}`}>
+      <DetailCardHeader
+        icon={
+          <Avatar size="lg" className="size-12 shrink-0">
+            {row.avatar ? <AvatarImage src={row.avatar} alt="" /> : null}
+            <AvatarFallback>{memberInitials(row.name)}</AvatarFallback>
+          </Avatar>
+        }
+        title={row.name}
+        subtitle={row.email ?? 'No email available'}
+        meta={
+          <Badge variant={isActive ? 'success' : 'secondary'}>
+            {isActive ? 'Active' : 'Inactive'}
+          </Badge>
+        }
+        closeHref={closeHref}
+        closeLabel="Close user details"
+      />
+      <DetailCardBody className="p-0">
+        <Tabs defaultValue="overview" className="gap-0">
+          <div className="px-5">
+            <TabsList className="h-auto w-full justify-start gap-1 rounded-none !bg-transparent p-0">
+              <TabsTrigger value="overview" className={detailTabTriggerClass}>
+                Overview
+                <TabUnderline />
+              </TabsTrigger>
+              <TabsTrigger
+                value="permissions"
+                className={detailTabTriggerClass}
               >
-                <SelectTrigger className="w-full max-w-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {roleOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                Permissions
+                <TabUnderline />
+              </TabsTrigger>
+              <TabsTrigger value="activity" className={detailTabTriggerClass}>
+                Activity
+                <TabUnderline />
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="overview" className="mt-0 space-y-5 p-5">
+            {error ? (
+              <Alert variant="destructive">
+                <TriangleAlertIcon />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            <div className="space-y-4">
+              <div className="grid gap-2 sm:grid-cols-[6.5rem_1fr] sm:items-center sm:gap-4">
+                <span className="text-muted-foreground text-[0.8125rem]">
+                  Role
+                </span>
+                <Select
+                  value={row.roleId}
+                  disabled={isPending}
+                  onValueChange={(value) => value && update({ roleId: value })}
+                  items={roleOptions}
+                >
+                  <SelectTrigger className="w-full max-w-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roleOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-[6.5rem_1fr] sm:items-center sm:gap-4">
+                <span className="text-muted-foreground text-[0.8125rem]">
+                  Status
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isPending}
+                  className="w-fit"
+                  onClick={() =>
+                    update({
+                      status: isActive ? 'inactive' : 'active',
+                    })
+                  }
+                >
+                  {isActive ? 'Deactivate' : 'Activate'}
+                </Button>
+              </div>
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-[6.5rem_1fr] sm:items-center sm:gap-4">
-              <span className="text-muted-foreground text-[0.8125rem]">
-                Status
-              </span>
+            <div className="border-t pt-4">
               <Button
                 type="button"
-                variant="outline"
+                variant="destructive"
                 size="sm"
                 disabled={isPending}
-                className="w-fit"
-                onClick={() =>
-                  update({
-                    status: isActive ? 'inactive' : 'active',
-                  })
-                }
+                onClick={() => setRemoveOpen(true)}
               >
-                {isActive ? 'Deactivate' : 'Activate'}
+                Remove
               </Button>
             </div>
-          </div>
+          </TabsContent>
 
-          <div className="border-t pt-4">
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              disabled={isPending}
-              onClick={() => setRemoveOpen(true)}
-            >
-              Remove
-            </Button>
-          </div>
-        </TabsContent>
+          <TabsContent value="permissions" className="mt-0 p-5">
+            <UserPermissionsSummary role={role} />
+          </TabsContent>
 
-        <TabsContent value="permissions" className="mt-0 p-5">
-          <UserPermissionsSummary role={role} />
-        </TabsContent>
-
-        <TabsContent value="activity" className="mt-0 p-5">
-          <ActivityEmpty />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="activity" className="mt-0 p-5">
+            <ActivityEmpty />
+          </TabsContent>
+        </Tabs>
+      </DetailCardBody>
+      <DetailCardIdBar>{row.id}</DetailCardIdBar>
 
       <AlertDialog open={removeOpen} onOpenChange={setRemoveOpen}>
         <AlertDialogContent size="sm">
@@ -236,7 +235,7 @@ export function UserDetail({ row, roles, orgSlug, onClose }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </section>
+    </DetailCard>
   )
 }
 
