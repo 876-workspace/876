@@ -88,7 +88,7 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
     {
       slug: 'console-widgets-live-logs',
       name: 'Live logs widget',
-      description: 'Controls access to the Console Live logs widget.',
+      description: 'Controls access to Console Live logs widget.',
       parentSlug: 'console-widgets',
       tags: ['widget'],
       legacySlugs: ['console_widgets_live_logs'],
@@ -396,6 +396,12 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
       legacySlugs: ['billing_payroll'],
     },
     {
+      slug: 'billing-requests',
+      name: 'Requests',
+      description: 'Controls access to customer request management in Billing.',
+      defaultEnabled: true,
+    },
+    {
       slug: 'billing-theme-switcher',
       name: 'Theme switcher',
       description: 'Controls access to the Billing theme switcher.',
@@ -441,6 +447,12 @@ export const FEATURE_SEEDS_BY_APP: Readonly<
       parentSlug: 'invoice-widgets',
       defaultEnabled: false,
       tags: ['widget'],
+    },
+    {
+      slug: 'invoice-requests',
+      name: 'Requests',
+      description: 'Controls access to customer request management in Invoice.',
+      defaultEnabled: true,
     },
     {
       slug: 'invoice-theme-switcher',
