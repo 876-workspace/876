@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   BILLING_COMMERCIAL_MODULE_KEYS,
+  COURIERS_COMMERCIAL_MODULE_KEYS,
   INVOICE_COMMERCIAL_MODULE_KEYS,
   PROJECTS_COMMERCIAL_MODULE_KEYS,
   findAppModule,
@@ -20,6 +21,7 @@ const repository = vi.hoisted(() => ({
   listProducts: vi.fn(),
   listSubscriptionsByApp: vi.fn(),
   provisionSubscription: vi.fn(),
+  renameApplicationModuleKey: vi.fn(),
   setSubscriptionPrice: vi.fn(),
   updateApplicationModuleIdentity: vi.fn(),
 }))
@@ -38,6 +40,8 @@ vi.mock('@/platform/logger', () => ({
 import {
   INVOICE_FREE_PLAN_MODULE_KEYS,
   INVOICE_FREE_PLAN_SLUG,
+  COURIERS_FREE_PLAN_SLUG,
+  COURIERS_PRO_PLAN_SLUG,
   PLATFORM_MODULES,
   PROJECTS_FREE_PLAN_MODULE_KEYS,
   PROJECTS_FREE_PLAN_SLUG,
@@ -107,6 +111,28 @@ describe('canonical plan module seed definitions', () => {
         (definition) => definition.appSlug === '876-commerce'
       )
     ).toEqual([])
+  })
+
+  it('materializes the exact Couriers commercial registry with both baseline plans', () => {
+    const definitions = PLATFORM_MODULES.filter(
+      (definition) =>
+        definition.appSlug === '876-couriers' && definition.syncIdentity
+    )
+
+    expect(definitions.map((definition) => definition.key)).toEqual(
+      COURIERS_COMMERCIAL_MODULE_KEYS
+    )
+    expect(definitions.map((definition) => definition.position)).toEqual([
+      10, 20, 30, 40, 50,
+    ])
+    expect(
+      definitions.map((definition) => definition.includedPlanSlugs)
+    ).toEqual(
+      COURIERS_COMMERCIAL_MODULE_KEYS.map(() => [
+        COURIERS_FREE_PLAN_SLUG,
+        COURIERS_PRO_PLAN_SLUG,
+      ])
+    )
   })
 
   it('binds Requests to app-scoped rollout flags in both finance apps', () => {
@@ -227,6 +253,46 @@ describe('canonical plan module seed definitions', () => {
     )
   })
 
+  it('creates Couriers modules with initial grants to free and pro plans', async () => {
+    repository.listApps.mockResolvedValue([
+      { id: 'app_couriers', slug: '876-couriers' },
+    ])
+    repository.listProducts.mockResolvedValue([
+      {
+        id: 'product_couriers_free',
+        slug: COURIERS_FREE_PLAN_SLUG,
+        appId: 'app_couriers',
+      },
+      {
+        id: 'product_couriers_pro',
+        slug: COURIERS_PRO_PLAN_SLUG,
+        appId: 'app_couriers',
+      },
+    ])
+
+    const result = await seedPlatformPlanModules()
+
+    expect(result).toEqual({
+      modulesCreated: COURIERS_COMMERCIAL_MODULE_KEYS.length,
+      planModulesCreated: COURIERS_COMMERCIAL_MODULE_KEYS.length * 2,
+      billingAssignments: 0,
+      ownerProvisioned: false,
+    })
+    expect(
+      repository.createApplicationModule.mock.calls.map(([params]) => ({
+        key: params.key,
+        grants: params.initialGrants.map(
+          (grant: { productId: string }) => grant.productId
+        ),
+      }))
+    ).toEqual(
+      COURIERS_COMMERCIAL_MODULE_KEYS.map((key) => ({
+        key,
+        grants: ['product_couriers_free', 'product_couriers_pro'],
+      }))
+    )
+  })
+
   it('grants new Billing Requests to every current Billing plan only', async () => {
     repository.listApps.mockResolvedValue([
       { id: 'app_billing', slug: '876-billing' },
@@ -322,5 +388,74 @@ describe('canonical plan module seed definitions', () => {
       INVOICE_COMMERCIAL_MODULE_KEYS.length
     )
     expect(repository.createApplicationModule).not.toHaveBeenCalled()
+  })
+
+  it('renames the legacy Couriers delivery module in place before syncing identity', async () => {
+    repository.listApps.mockResolvedValue([
+      { id: 'app_couriers', slug: '876-couriers' },
+    ])
+    repository.findApplicationModule.mockImplementation(
+      (_appId: string, key: string) =>
+        Promise.resolve(
+          key === 'delivery'
+            ? {
+                id: 'mod_delivery',
+                appId: 'app_couriers',
+                key: 'delivery',
+                name: 'Delivery',
+                description: 'Legacy delivery module.',
+                featureId: null,
+              }
+            : null
+        )
+    )
+
+    const result = await seedPlatformPlanModules()
+
+    expect(result.modulesCreated).toBe(4)
+    expect(repository.renameApplicationModuleKey).toHaveBeenCalledTimes(1)
+    expect(repository.renameApplicationModuleKey).toHaveBeenCalledWith(
+      'mod_delivery',
+      { key: 'deliveries', updatedAt: BigInt(1_700_000_000) }
+    )
+    expect(repository.createApplicationModule).not.toHaveBeenCalledWith(
+      expect.objectContaining({ key: 'deliveries' })
+    )
+    expect(repository.updateApplicationModuleIdentity).toHaveBeenCalledWith(
+      'mod_delivery',
+      expect.objectContaining({
+        name: 'Deliveries',
+        description: 'Manage courier deliveries and delivery status.',
+      })
+    )
+  })
+
+  it('fails loudly when legacy and canonical Couriers delivery modules coexist', async () => {
+    repository.listApps.mockResolvedValue([
+      { id: 'app_couriers', slug: '876-couriers' },
+    ])
+    repository.findApplicationModule.mockImplementation(
+      (_appId: string, key: string) =>
+        Promise.resolve(
+          ['delivery', 'deliveries'].includes(key)
+            ? {
+                id: `mod_${key}`,
+                appId: 'app_couriers',
+                key,
+                name: 'Delivery',
+                description: 'Courier delivery module.',
+                featureId: null,
+              }
+            : null
+        )
+    )
+
+    await expect(seedPlatformPlanModules()).rejects.toThrow(
+      'Application module key collision for 876-couriers: deliveries, delivery. Resolve the duplicate rows before rerunning the seed.'
+    )
+    expect(repository.renameApplicationModuleKey).not.toHaveBeenCalled()
+    expect(repository.createApplicationModule).not.toHaveBeenCalledWith(
+      expect.objectContaining({ key: 'deliveries' })
+    )
   })
 })

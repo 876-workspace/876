@@ -1,6 +1,8 @@
 import {
   BILLING_COMMERCIAL_MODULE_KEYS,
   BILLING_MODULE_REGISTRY,
+  COURIERS_COMMERCIAL_MODULE_KEYS,
+  COURIERS_MODULE_REGISTRY,
   findAppModule,
   INVOICE_COMMERCIAL_MODULE_KEYS,
   INVOICE_MODULE_REGISTRY,
@@ -25,9 +27,11 @@ import {
   listProducts,
   listSubscriptionsByApp,
   provisionSubscription,
+  renameApplicationModuleKey,
   setSubscriptionPrice,
   updateApplicationModuleIdentity,
 } from './plans.repository'
+import type { ApplicationModuleRow } from './plans.repository'
 
 const log = getLogger('seeds:plans')
 
@@ -36,6 +40,8 @@ export const BILLING_INTERNAL_OWNER_EMAIL = 'raheemdevs@gmail.com'
 export const BILLING_APP_SLUG = '876-billing'
 export const INVOICE_FREE_PLAN_SLUG = '876-invoice-free'
 export const PROJECTS_FREE_PLAN_SLUG = '876-projects-free'
+export const COURIERS_FREE_PLAN_SLUG = '876-couriers-free'
+export const COURIERS_PRO_PLAN_SLUG = '876-couriers-pro'
 
 export const INVOICE_FREE_PLAN_MODULE_KEYS = [
   'invoices',
@@ -49,6 +55,10 @@ export const PROJECTS_FREE_PLAN_MODULE_KEYS = PROJECTS_COMMERCIAL_MODULE_KEYS
 
 const invoiceFreeModuleKeys = new Set<string>(INVOICE_FREE_PLAN_MODULE_KEYS)
 const projectsFreeModuleKeys = new Set<string>(PROJECTS_FREE_PLAN_MODULE_KEYS)
+const couriersPlanSlugs = [
+  COURIERS_FREE_PLAN_SLUG,
+  COURIERS_PRO_PLAN_SLUG,
+] as const
 
 const INVOICE_FEATURE_SLUGS: Readonly<Record<string, string>> = {
   requests: 'invoice-requests',
@@ -74,6 +84,11 @@ const BILLING_MODULE_POSITIONS: Readonly<Record<string, number>> = {
   requests: 70,
 }
 
+/** Durable module-key migrations, applied in place before canonical seeding. */
+const COURIERS_LEGACY_MODULE_KEYS = {
+  deliveries: ['delivery'],
+} as const
+
 type PlatformModuleDef = {
   appSlug: string
   key: string
@@ -84,6 +99,7 @@ type PlatformModuleDef = {
   includedPlanSlugs: readonly string[]
   includeCurrentAppPlans: boolean
   syncIdentity: boolean
+  legacyKeys?: readonly string[]
 }
 
 function registryModuleDefinitions(params: {
@@ -94,6 +110,7 @@ function registryModuleDefinitions(params: {
   featureSlugs?: Readonly<Record<string, string>>
   includedPlanSlugs?: (key: string) => readonly string[]
   includeCurrentAppPlans?: (key: string) => boolean
+  legacyKeys?: Readonly<Record<string, readonly string[]>>
 }): PlatformModuleDef[] {
   return params.keys.map((key, index) => {
     const definition = findAppModule(params.appSlug, key)
@@ -112,6 +129,7 @@ function registryModuleDefinitions(params: {
       includedPlanSlugs: params.includedPlanSlugs?.(key) ?? [],
       includeCurrentAppPlans: params.includeCurrentAppPlans?.(key) ?? false,
       syncIdentity: true,
+      legacyKeys: params.legacyKeys?.[key],
     }
   })
 }
@@ -140,6 +158,13 @@ const CANONICAL_COMMERCIAL_MODULES = [
     positionBase: 10,
     includedPlanSlugs: (key) =>
       projectsFreeModuleKeys.has(key) ? [PROJECTS_FREE_PLAN_SLUG] : [],
+  }),
+  ...registryModuleDefinitions({
+    appSlug: COURIERS_MODULE_REGISTRY.app,
+    keys: COURIERS_COMMERCIAL_MODULE_KEYS,
+    positionBase: 10,
+    includedPlanSlugs: () => couriersPlanSlugs,
+    legacyKeys: COURIERS_LEGACY_MODULE_KEYS,
   }),
 ]
 
@@ -177,18 +202,6 @@ export const PLATFORM_MODULES: readonly PlatformModuleDef[] = [
     includeCurrentAppPlans: false,
     syncIdentity: false,
   },
-  {
-    appSlug: '876-couriers',
-    key: 'delivery',
-    name: 'Delivery',
-    description:
-      'Courier delivery operations, shipping, and fulfillment settings.',
-    featureSlug: null,
-    position: 10,
-    includedPlanSlugs: ['876-couriers-free', '876-couriers-pro'],
-    includeCurrentAppPlans: false,
-    syncIdentity: false,
-  },
 ] as const
 
 export type PlanSeedSummary = {
@@ -220,10 +233,35 @@ export async function seedPlatformPlanModules(): Promise<PlanSeedSummary> {
     const app = appsBySlug.get(definition.appSlug)
     if (!app) continue
 
-    const applicationModule = await findApplicationModule(
-      app.id,
-      definition.key
+    let applicationModule = await findApplicationModule(app.id, definition.key)
+    const legacyModules = await Promise.all(
+      (definition.legacyKeys ?? []).map((key) =>
+        findApplicationModule(app.id, key)
+      )
     )
+    const existingLegacyModules = legacyModules.filter(
+      (module): module is ApplicationModuleRow => module !== null
+    )
+
+    if (applicationModule && existingLegacyModules.length > 0)
+      throw new Error(
+        `Application module key collision for ${definition.appSlug}: ${[
+          definition.key,
+          ...existingLegacyModules.map((module) => module.key),
+        ].join(', ')}. Resolve the duplicate rows before rerunning the seed.`
+      )
+    if (existingLegacyModules.length > 1)
+      throw new Error(
+        `Application module legacy key collision for ${definition.appSlug}.${definition.key}: ${existingLegacyModules.map((module) => module.key).join(', ')}. Resolve the duplicate rows before rerunning the seed.`
+      )
+    if (existingLegacyModules.length === 1) {
+      const legacyModule = existingLegacyModules[0]!
+      await renameApplicationModuleKey(legacyModule.id, {
+        key: definition.key,
+        updatedAt: now,
+      })
+      applicationModule = { ...legacyModule, key: definition.key }
+    }
     const feature = definition.featureSlug
       ? (featuresBySlug.get(definition.featureSlug) ?? null)
       : null

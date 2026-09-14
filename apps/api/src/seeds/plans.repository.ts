@@ -109,6 +109,20 @@ export async function updateApplicationModuleIdentity(
   })
 }
 
+/** Renames one durable module key without touching its existing plan grants. */
+export async function renameApplicationModuleKey(
+  moduleId: string,
+  params: { key: string; updatedAt: bigint }
+): Promise<void> {
+  await prisma.applicationModule.update({
+    where: { id: moduleId },
+    data: {
+      key: params.key,
+      updatedAt: params.updatedAt,
+    },
+  })
+}
+
 export async function findPlanModule(
   productId: string,
   moduleId: string

@@ -6,6 +6,9 @@ import {
   BILLING_MODULE_REGISTRY,
   COMMERCE_COMMERCIAL_MODULE_KEYS,
   COMMERCE_MODULE_REGISTRY,
+  COURIERS_COMMERCIAL_MODULE_KEYS,
+  COURIERS_MODULE_REGISTRY,
+  COURIERS_MODULES,
   defineAppModuleRegistry,
   FINANCE_MODULES,
   findAppModule,
@@ -110,6 +113,25 @@ describe('canonical application module registry', () => {
     ])
   })
 
+  it('registers Couriers commercial capabilities in declaration order', () => {
+    expect(
+      COURIERS_MODULE_REGISTRY.modules.map((module) => module.key)
+    ).toEqual([
+      'customer-portal',
+      'deliveries',
+      'pre-alerts',
+      'packages',
+      'customers',
+    ])
+    expect([...COURIERS_COMMERCIAL_MODULE_KEYS]).toEqual([
+      'customer-portal',
+      'deliveries',
+      'pre-alerts',
+      'packages',
+      'customers',
+    ])
+  })
+
   it('uses canonical kebab-case keys with unique keys per app', () => {
     const results = Object.values(APP_MODULE_REGISTRIES).map((registry) => {
       const keys = registry.modules.map((module) => module.key)
@@ -124,6 +146,7 @@ describe('canonical application module registry', () => {
       { app: '876-billing', canonical: true, unique: true },
       { app: '876-invoice', canonical: true, unique: true },
       { app: '876-projects', canonical: true, unique: true },
+      { app: '876-couriers', canonical: true, unique: true },
       { app: '876-commerce', canonical: true, unique: true },
     ])
   })
@@ -173,9 +196,12 @@ describe('canonical application module registry', () => {
     )
   })
 
-  it('resolves Projects and Commerce canonical modules by app and key', () => {
+  it('resolves Projects, Couriers, and Commerce canonical modules by app and key', () => {
     expect(findAppModule('876-projects', 'issues')).toBe(
       PROJECTS_MODULES.issues
+    )
+    expect(findAppModule('876-couriers', 'packages')).toBe(
+      COURIERS_MODULES.packages
     )
     expect(findAppModule('876-commerce', 'catalog')).toBe(
       COMMERCE_MODULE_REGISTRY.modules[0]
