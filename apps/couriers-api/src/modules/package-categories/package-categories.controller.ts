@@ -9,6 +9,7 @@ import type {
   CreatePackageCategoryBody,
   ListPackageCategoriesQuery,
   PackageCategoryParams,
+  ReconcilePackageCategoriesBody,
   TenantParams,
   UpdatePackageCategoryBody,
 } from './package-categories.schemas'
@@ -37,6 +38,22 @@ export async function createPackageCategory(req: Request, res: Response) {
   )
 
   return sendAppResult(res, result, 201)
+}
+
+export async function reconcilePackageCategories(req: Request, res: Response) {
+  const { tenantId } = validParams<TenantParams>(req)
+  const body = validBody<ReconcilePackageCategoriesBody>(req)
+  const result = await service.reconcileProvisionedPackageCategories(
+    tenantId,
+    body.categories
+  )
+  if ('httpStatus' in result) return sendAppResult(res, result)
+
+  return res.status(200).json({
+    object: 'package_category_reconciliation',
+    revision: body.revision,
+    reconciled: result.reconciled,
+  })
 }
 
 export async function retrievePackageCategory(req: Request, res: Response) {
