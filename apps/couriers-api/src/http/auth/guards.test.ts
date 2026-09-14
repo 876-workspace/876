@@ -120,7 +120,7 @@ function mockJwks(
   const fetchMock = vi.fn(async (input: string | URL | Request) => {
     const url = input instanceof Request ? input.url : String(input)
     if (url.endsWith('/oauth/introspect'))
-      return new Response(JSON.stringify(introspection))
+      return new Response(JSON.stringify({ data: introspection, error: null }))
     return new Response(
       JSON.stringify({
         keys: [{ ...jwk, alg: 'RS256', kid: 'platform-key-1', use: 'sig' }],
@@ -337,6 +337,34 @@ describe('session-tier authentication', () => {
         'content-type': 'application/x-www-form-urlencoded',
       })
       expect(String(init.body)).toBe(new URLSearchParams({ token }).toString())
+    })
+
+    it('answers 503 when the identity API returns an error envelope', async () => {
+      const { privateKey, publicKey } = await generateKeyPair('RS256')
+      const token = await createSessionToken(privateKey)
+      const jwk = await exportJWK(publicKey)
+      const fetchMock = vi.fn(async (input: string | URL | Request) => {
+        const url = input instanceof Request ? input.url : String(input)
+        if (url.endsWith('/oauth/introspect'))
+          return new Response(
+            JSON.stringify({
+              data: null,
+              error: { code: 'internal', message: 'Internal error.' },
+            })
+          )
+        return new Response(
+          JSON.stringify({
+            keys: [{ ...jwk, alg: 'RS256', kid: 'platform-key-1', use: 'sig' }],
+          })
+        )
+      })
+      vi.stubGlobal('fetch', fetchMock)
+
+      const response = await sessionRequest(createSessionApp(), token)
+
+      expect(response.status).toBe(503)
+      expect(response.body.error.code).toBe('auth/identity-unavailable')
+      expect(handler).not.toHaveBeenCalled()
     })
 
     it('rejects a session token whose session has been signed out', async () => {
