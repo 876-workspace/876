@@ -117,6 +117,21 @@ The Commerce commercial projection is intentionally empty at adoption time. Decl
 
 Commerce permission namespaces are allowed to be finer than this list. For example, `products`, `collections`, `themes`, and `domains` are permission domains under broader product capabilities and are not automatically `application_modules`.
 
+### System role copies follow the canonical permission catalog
+
+Product permission catalogs are code-owned and may grow as a product gains real capabilities. Platform role templates are regenerated from that catalog, so an organization-scoped copy of a platform-managed system role cannot be allowed to freeze an older permission set forever.
+
+The app-access seed therefore synchronizes **only** `permissions` for live organization roles where all of these are true:
+
+- the role is a system role;
+- its `template_key` matches the canonical platform role key;
+- the app and role key match the template being seeded;
+- the role is not deleted.
+
+Repeated entitlement provisioning applies the same rule to the organization being provisioned. Missing roles are still created normally.
+
+This synchronization deliberately does **not** overwrite custom roles, role names, descriptions, positions, defaults, or other organization data. It is a migration of platform-owned authorization vocabulary, not a general organization-role reset.
+
 ### Console shows both planes without merging them
 
 Console continues to use persisted `application_modules` as the plan-selectable commercial plane.
@@ -136,6 +151,7 @@ This lets Commerce be visibly configured without creating inert plan options.
 - Projects navigation, page reads, and create APIs can require both module entitlement and user permission.
 - Commerce starts with the correct long-term vocabulary while preserving an empty commercial module projection.
 - Product apps receive module entitlements through their self access bootstrap rather than an admin endpoint.
+- Existing organization system-role copies can receive newly declared canonical permissions without modifying custom roles or presentation metadata.
 - Permissions can remain more granular than commercial packaging.
 - Feature flags remain operational rollout controls rather than entitlement substitutes.
 - Existing apps that do not yet participate in module gating may omit `AccessContext.modules`; any new module-gated entry fails closed until that app populates the field.
