@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -12,7 +12,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from api.v1 import router as api_v1_router
 from core.config import Settings, get_settings
-from core.errors import AppHTTPException
+from core.errors import AppHTTPException, get_error
 from core.logging import configure_logging, get_logger
 from core.middleware import RequestLoggingMiddleware
 from core.openapi import SWAGGER_UI_PARAMETERS, custom_generate_unique_id, setup_openapi
@@ -86,26 +86,26 @@ def create_app(
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, _exc: RequestValidationError) -> JSONResponse:
         logger.warning("storage.request_validation_error", method=request.method, path=request.url.path)
+        definition = get_error("storage/invalid-request")
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=definition.http_status,
             content={
                 "error": {
-                    "code": "storage/invalid-request",
-                    "message": "The request body or parameters failed validation.",
+                    "code": definition.code,
+                    "message": definition.message,
                 }
             },
         )
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(_request: Request, exc: StarletteHTTPException) -> JSONResponse:
+        definition = get_error("storage/file-not-found" if exc.status_code == 404 else "storage/invalid-request")
         return JSONResponse(
             status_code=exc.status_code,
             content={
                 "error": {
-                    "code": "storage/file-not-found" if exc.status_code == 404 else "storage/invalid-request",
-                    "message": "The requested resource was not found."
-                    if exc.status_code == 404
-                    else "The request could not be completed.",
+                    "code": definition.code,
+                    "message": definition.message,
                 }
             },
         )

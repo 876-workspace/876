@@ -25,36 +25,20 @@ router = APIRouter(prefix="/uploads", tags=["Uploads"])
 OPAQUE_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,254}$")
 
 
-def _error(code: str, message: str, http_status_code: int) -> AppHTTPException:
-    return AppHTTPException(code=code, message=message, http_status_code=http_status_code)
+def _error(code: str) -> AppHTTPException:
+    return AppHTTPException(code=code)
 
 
 def _validate_upload(body: UploadCreate) -> UploadRoute:
     route = UPLOAD_ROUTES.get(body.route_key)
     if route is None:
-        raise _error(
-            "storage/route-not-found",
-            "The upload route was not found.",
-            status.HTTP_404_NOT_FOUND,
-        )
+        raise _error("storage/route-not-found")
     if body.owner_type != route.owner_type:
-        raise _error(
-            "storage/invalid-owner",
-            "The owner type is not valid for this upload.",
-            status.HTTP_400_BAD_REQUEST,
-        )
+        raise _error("storage/invalid-owner")
     if body.content_type not in route.allowed_content_types:
-        raise _error(
-            "storage/mime-not-allowed",
-            "This file type is not allowed for this upload.",
-            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-        )
+        raise _error("storage/mime-not-allowed")
     if body.size_bytes <= 0 or body.size_bytes > route.max_size_bytes:
-        raise _error(
-            "storage/file-too-large",
-            "The file exceeds the size allowed for this upload.",
-            status.HTTP_413_CONTENT_TOO_LARGE,
-        )
+        raise _error("storage/file-too-large")
     opaque_ids = (
         body.owner_id,
         body.actor_user_id,
@@ -62,11 +46,7 @@ def _validate_upload(body: UploadCreate) -> UploadRoute:
         *([body.quota_org_id] if body.quota_org_id is not None else []),
     )
     if not all(OPAQUE_ID_PATTERN.fullmatch(value) for value in opaque_ids):
-        raise _error(
-            "storage/invalid-request",
-            "The request contains an invalid opaque identifier.",
-            status.HTTP_400_BAD_REQUEST,
-        )
+        raise _error("storage/invalid-request")
     return route
 
 
@@ -264,11 +244,7 @@ async def complete_upload(
             error_code="storage/upload-not-found",
             reason="upload_session_not_found",
         )
-        raise _error(
-            "storage/upload-not-found",
-            "The upload session was not found.",
-            status.HTTP_404_NOT_FOUND,
-        )
+        raise _error("storage/upload-not-found")
 
     file_row = await file_repository.get_by_id(upload_session.file_id, include_deleted=True)
     if file_row is None:
@@ -284,11 +260,7 @@ async def complete_upload(
             error_code="storage/file-not-found",
             reason="file_not_found",
         )
-        raise _error(
-            "storage/file-not-found",
-            "The file was not found.",
-            status.HTTP_404_NOT_FOUND,
-        )
+        raise _error("storage/file-not-found")
 
     context = StorageOperationContext(
         source_app_id=file_row.source_app_id,
@@ -318,11 +290,7 @@ async def complete_upload(
             error_code="storage/file-not-found",
             reason="file_deleted",
         )
-        raise _error(
-            "storage/file-not-found",
-            "The file was not found.",
-            status.HTTP_404_NOT_FOUND,
-        )
+        raise _error("storage/file-not-found")
 
     if upload_session.status == "completed":
         return serialize_file(file_row, request.app.state.settings)
@@ -336,11 +304,7 @@ async def complete_upload(
             verified_size_bytes=None,
         )
         await db.commit()
-        raise _error(
-            "storage/upload-expired",
-            "The upload session has expired.",
-            status.HTTP_410_GONE,
-        )
+        raise _error("storage/upload-expired")
     if upload_session.status == "failed":
         await finalize_reservation(
             db,
@@ -351,11 +315,7 @@ async def complete_upload(
             verified_size_bytes=None,
         )
         await db.commit()
-        raise _error(
-            "storage/upload-incomplete",
-            "The upload session has already failed.",
-            status.HTTP_409_CONFLICT,
-        )
+        raise _error("storage/upload-incomplete")
 
     now = int(time.time())
     if now > upload_session.expires_at:
@@ -374,11 +334,7 @@ async def complete_upload(
             error_code="storage/upload-expired",
             reason="upload_expired",
         )
-        raise _error(
-            "storage/upload-expired",
-            "The upload session has expired.",
-            status.HTTP_410_GONE,
-        )
+        raise _error("storage/upload-expired")
 
     route = UPLOAD_ROUTES[upload_session.route_key]
     try:
@@ -440,11 +396,7 @@ async def complete_upload(
             error_code="storage/upload-incomplete",
             reason="object_missing",
         )
-        raise _error(
-            "storage/upload-incomplete",
-            "The uploaded object was not found.",
-            status.HTTP_409_CONFLICT,
-        )
+        raise _error("storage/upload-incomplete")
 
     rejection_reason = _verification_rejection_reason(
         content_length=head.content_length,
@@ -488,11 +440,7 @@ async def complete_upload(
                 error_code="storage/upload-verification-failed",
                 reason=rejection_reason,
             )
-        raise _error(
-            "storage/upload-verification-failed",
-            "The uploaded object did not match the signed declaration.",
-            status.HTTP_422_UNPROCESSABLE_CONTENT,
-        )
+        raise _error("storage/upload-verification-failed")
 
     if head.content_length is None:
         raise RuntimeError("Verified upload is missing its content length.")
@@ -506,11 +454,7 @@ async def complete_upload(
         verified_size_bytes=head.content_length,
     )
     if not reservation_committed:
-        raise _error(
-            "storage/upload-incomplete",
-            "The upload reservation has already been released.",
-            status.HTTP_409_CONFLICT,
-        )
+        raise _error("storage/upload-incomplete")
 
     await session_repository.mark_status(
         upload_session,

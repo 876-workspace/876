@@ -253,7 +253,7 @@ def test_sweep_rejects_non_scheduler_credentials_without_calling_provider(
     assert response.json() == {
         "error": {
             "code": "storage/unauthorized",
-            "message": "The storage scheduler credential is invalid.",
+            "message": "The storage credential is invalid.",
         }
     }
     assert storage_harness.provider.delete_calls == []
@@ -272,7 +272,7 @@ def test_scheduler_credential_cannot_open_upload(
     assert response.json() == {
         "error": {
             "code": "storage/unauthorized",
-            "message": "The storage service credential is invalid.",
+            "message": "The storage credential is invalid.",
         }
     }
     assert storage_harness.provider.create_upload_calls == []

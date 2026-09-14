@@ -23,7 +23,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Annotated, Any
 
-from fastapi import Depends, Header, status
+from fastapi import Depends, Header
 
 from core.errors import AppHTTPException
 
@@ -62,11 +62,7 @@ def _forbidden() -> AppHTTPException:
     Distinguishing "not authorized for this file" from "no such file" would turn
     the endpoint into an oracle for which file ids exist.
     """
-    return AppHTTPException(
-        code="storage/file-not-found",
-        message="The file was not found.",
-        http_status_code=status.HTTP_404_NOT_FOUND,
-    )
+    return AppHTTPException(code="storage/file-not-found")
 
 
 def _is_owner(file_row: Any, caller: CallerAssertion) -> bool:

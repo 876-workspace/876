@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.bytes import format_bytes
@@ -105,11 +104,7 @@ async def admit_upload(
             used_bytes=0,
             requested_bytes=body.size_bytes,
         )
-        raise AppHTTPException(
-            code="storage/file-too-large",
-            message="The file exceeds the size allowed for this upload.",
-            http_status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-        )
+        raise AppHTTPException(code="storage/file-too-large")
 
     usage_by_subject = {
         (row.subject_type, row.subject_id): row for row in usage_rows

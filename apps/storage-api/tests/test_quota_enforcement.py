@@ -9,7 +9,6 @@ from collections.abc import Callable
 from typing import Any
 
 import pytest
-from fastapi import status
 from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -713,11 +712,7 @@ def _provider_error(
 ) -> None:
     async def fail_head(params: HeadObjectInput) -> HeadObjectOutput:
         harness.provider.head_calls.append(params)
-        raise AppHTTPException(
-            code="storage/provider-error",
-            message="The storage provider could not complete the request.",
-            http_status_code=status.HTTP_502_BAD_GATEWAY,
-        )
+        raise AppHTTPException("storage/provider-error")
 
     monkeypatch.setattr(harness.provider, "head_object", fail_head)
 

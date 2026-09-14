@@ -23,11 +23,7 @@ router = APIRouter(prefix="/files", tags=["Files"])
 
 
 def _not_found() -> AppHTTPException:
-    return AppHTTPException(
-        code="storage/file-not-found",
-        message="The file was not found.",
-        http_status_code=status.HTTP_404_NOT_FOUND,
-    )
+    return AppHTTPException(code="storage/file-not-found")
 
 
 @router.delete(

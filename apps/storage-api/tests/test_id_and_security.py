@@ -65,7 +65,7 @@ def test_require_internal_key_fails_closed_when_configured_key_is_empty() -> Non
     assert response.json() == {
         "error": {
             "code": "storage/unauthorized",
-            "message": "The storage service credential is invalid.",
+            "message": "The storage credential is invalid.",
         }
     }
     assert provider.create_upload_calls == []
