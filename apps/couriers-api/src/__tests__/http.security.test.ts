@@ -1,6 +1,8 @@
 import request from 'supertest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { getError } from '@876/core'
+
 const APP_KEY = '876_app_secret_test_key_for_couriers_api'
 const ADMIN_HEADERS = {
   'X-876-API-Key': APP_KEY,
@@ -149,7 +151,7 @@ describe('HTTP security & middleware (Goldbergyoni 2.11, 5.9, 1.1 AAA)', () => {
       data: null,
       error: {
         code: 'request/invalid-json',
-        message: 'Request body is not valid JSON.',
+        message: getError('request/invalid-json').message,
       },
     })
     expect(res.body.error).not.toHaveProperty('stack')
