@@ -4,6 +4,8 @@ import {
   findAppModule,
   INVOICE_COMMERCIAL_MODULE_KEYS,
   INVOICE_MODULE_REGISTRY,
+  PROJECTS_COMMERCIAL_MODULE_KEYS,
+  PROJECTS_MODULE_REGISTRY,
 } from '@876/core/modules'
 
 import { getLogger } from '@/platform/logger'
@@ -33,6 +35,7 @@ export const BILLING_INTERNAL_PLAN_SLUG = '876-billing-internal'
 export const BILLING_INTERNAL_OWNER_EMAIL = 'raheemdevs@gmail.com'
 export const BILLING_APP_SLUG = '876-billing'
 export const INVOICE_FREE_PLAN_SLUG = '876-invoice-free'
+export const PROJECTS_FREE_PLAN_SLUG = '876-projects-free'
 
 export const INVOICE_FREE_PLAN_MODULE_KEYS = [
   'invoices',
@@ -42,7 +45,10 @@ export const INVOICE_FREE_PLAN_MODULE_KEYS = [
   'customers',
 ] as const
 
+export const PROJECTS_FREE_PLAN_MODULE_KEYS = PROJECTS_COMMERCIAL_MODULE_KEYS
+
 const invoiceFreeModuleKeys = new Set<string>(INVOICE_FREE_PLAN_MODULE_KEYS)
+const projectsFreeModuleKeys = new Set<string>(PROJECTS_FREE_PLAN_MODULE_KEYS)
 
 const BILLING_FEATURE_SLUGS: Readonly<Record<string, string>> = {
   subscriptions: 'billing-subscriptions',
@@ -102,7 +108,7 @@ function registryModuleDefinitions(params: {
   })
 }
 
-const CANONICAL_FINANCE_MODULES = [
+const CANONICAL_COMMERCIAL_MODULES = [
   ...registryModuleDefinitions({
     appSlug: INVOICE_MODULE_REGISTRY.app,
     keys: INVOICE_COMMERCIAL_MODULE_KEYS,
@@ -117,17 +123,26 @@ const CANONICAL_FINANCE_MODULES = [
     positions: BILLING_MODULE_POSITIONS,
     featureSlugs: BILLING_FEATURE_SLUGS,
   }),
+  ...registryModuleDefinitions({
+    appSlug: PROJECTS_MODULE_REGISTRY.app,
+    keys: PROJECTS_COMMERCIAL_MODULE_KEYS,
+    positionBase: 10,
+    includedPlanSlugs: (key) =>
+      projectsFreeModuleKeys.has(key) ? [PROJECTS_FREE_PLAN_SLUG] : [],
+  }),
 ]
 
 /**
- * Registry-backed finance modules plus transitional legacy commercial modules.
+ * Registry-backed commercial modules plus transitional legacy modules.
  *
  * Billing's `sales` and `documents` keys are intentionally retained until their
  * existing feature/entitlement semantics can be migrated explicitly. They are
- * not aliases for the finer canonical finance modules.
+ * not aliases for the finer canonical finance modules. Commerce intentionally
+ * contributes no rows yet: declaring its capability vocabulary in code does not
+ * make an unimplemented capability plan-selectable.
  */
 export const PLATFORM_MODULES: readonly PlatformModuleDef[] = [
-  ...CANONICAL_FINANCE_MODULES,
+  ...CANONICAL_COMMERCIAL_MODULES,
   {
     appSlug: '876-billing',
     key: 'sales',
