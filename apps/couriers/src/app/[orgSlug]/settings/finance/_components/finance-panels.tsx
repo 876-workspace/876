@@ -2,11 +2,16 @@
 
 import { useRouter } from 'next/navigation'
 
-import type { PaymentMode, TaxAuthority, TaxRate } from '@876/billing'
+import type { Currency, PaymentMode, TaxAuthority, TaxRate } from '@876/billing'
+import { CurrencySettingsPanel } from '@876/billing-ui/panels/currency-settings-panel'
 import { PaymentModeSettingsPanel } from '@876/billing-ui/panels/payment-mode-settings-panel'
 import { TaxRateSettingsPanel } from '@876/billing-ui/panels/tax-rate-settings-panel'
 
-import { financePaymentModes, financeTaxes } from '@/lib/client/finance'
+import {
+  financeCurrencies,
+  financePaymentModes,
+  financeTaxes,
+} from '@/lib/client/finance'
 
 type TaxesPanelProps = {
   orgSlug: string
@@ -62,6 +67,45 @@ export function PaymentModesPanel({
       onCreate={(params) => financePaymentModes.create(orgSlug, params)}
       onUpdate={(id, params) => financePaymentModes.update(orgSlug, id, params)}
       onDelete={(id) => financePaymentModes.remove(orgSlug, id)}
+      onSuccess={refresh}
+    />
+  )
+}
+
+type CurrenciesPanelProps = {
+  orgSlug: string
+  currencies: Currency[]
+  canManage: boolean
+}
+
+/** Couriers-hosted currency panel bound to the org's manage routes. */
+export function CurrenciesPanel({
+  orgSlug,
+  currencies,
+  canManage,
+}: CurrenciesPanelProps) {
+  const router = useRouter()
+  const refresh = () => router.refresh()
+
+  return (
+    <CurrencySettingsPanel
+      currencies={currencies.map((currency) => ({
+        code: currency.currencyCode,
+        name: currency.currency.name,
+        symbol: currency.currency.symbol,
+        decimalPlaces: currency.currency.decimalPlaces,
+        isDefault: currency.isDefault,
+        isEnabled: currency.isEnabled,
+      }))}
+      canManage={canManage}
+      onEnable={(currency) => financeCurrencies.enable(orgSlug, { currency })}
+      onUpdate={(currency, params) =>
+        financeCurrencies.update(orgSlug, currency, params)
+      }
+      onDisable={(currency) => financeCurrencies.disable(orgSlug, currency)}
+      onSetDefault={(currency) =>
+        financeCurrencies.setDefault(orgSlug, currency)
+      }
       onSuccess={refresh}
     />
   )

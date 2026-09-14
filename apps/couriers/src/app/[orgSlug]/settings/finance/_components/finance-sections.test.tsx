@@ -7,7 +7,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
 }))
 
-import { CurrenciesSection } from './currencies-section'
+import { CurrenciesSectionView } from './currencies-section'
 import { PaymentModesSectionView } from './payment-modes-section'
 import { TaxesSectionView } from './taxes-section'
 
@@ -81,14 +81,36 @@ describe('Finance section views', () => {
     expect(screen.queryByRole('heading', { name: 'Payment modes' })).toBeNull()
   })
 
-  it('states that currencies are unavailable instead of rendering an empty table', () => {
-    render(<CurrenciesSection />)
+  it('renders the shared currency panel when currencies load', () => {
+    render(
+      <CurrenciesSectionView
+        orgSlug="island-logistics"
+        currencies={[]}
+        canManage
+        error={null}
+      />
+    )
 
     expect(screen.getByRole('heading', { name: 'Currencies' })).toBeVisible()
-    expect(
-      screen.getByText('Currency settings are not available in Couriers yet.')
-    ).toBeVisible()
-    expect(screen.queryByRole('button', { name: /add/i })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Add' })).toBeVisible()
+  })
+
+  it('renders a scoped currency error without the currency panel', () => {
+    render(
+      <CurrenciesSectionView
+        orgSlug="island-logistics"
+        currencies={[]}
+        canManage
+        error={{
+          code: 'finance/currency-unavailable',
+          message:
+            'Currency settings are unavailable right now. Please try again.',
+        }}
+      />
+    )
+
+    expect(screen.getByText('Currencies could not be loaded')).toBeVisible()
+    expect(screen.queryByRole('heading', { name: 'Currencies' })).toBeNull()
   })
 
   it('keeps sibling sections mounted when one section fails', () => {

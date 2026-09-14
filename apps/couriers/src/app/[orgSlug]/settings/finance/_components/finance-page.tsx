@@ -43,7 +43,11 @@ export function FinancePageContent({ orgSlug, orgId, canManage }: Props) {
           <Suspense
             fallback={<FinanceSectionSkeleton label="Loading currencies" />}
           >
-            <CurrenciesSection />
+            <CurrenciesSection
+              orgId={orgId}
+              orgSlug={orgSlug}
+              canManage={canManage}
+            />
           </Suspense>
         </div>
 

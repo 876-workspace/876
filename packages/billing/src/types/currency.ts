@@ -23,6 +23,12 @@ export interface CurrencyEnableParams {
   currency: string
 }
 
+export interface CurrencyUpdateParams {
+  name: string
+  symbol?: string | null
+  decimalPlaces: number
+}
+
 export interface CurrencyMutation {
   object: 'tenant_currency'
   currency: string

@@ -1,6 +1,6 @@
 'use client'
 
-import type { CurrencyMutation } from '@876/billing'
+import type { CurrencyMutation, CurrencyUpdateParams } from '@876/billing'
 
 import { request } from './request'
 
@@ -10,6 +10,15 @@ export const currencies = {
       method: 'POST',
       body: JSON.stringify({ currency }),
     })
+  },
+  update(currency: string, params: CurrencyUpdateParams) {
+    return request<CurrencyMutation>(
+      `/api/currencies/${encodeURIComponent(currency)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(params),
+      }
+    )
   },
   disable(currency: string) {
     return request<CurrencyMutation>(

@@ -1,6 +1,8 @@
 'use client'
 
 import type {
+  CurrencyEnableParams,
+  CurrencyUpdateParams,
   PaymentModeCreateParams,
   PaymentModeUpdateParams,
   TaxRateCreateParams,
@@ -48,7 +50,35 @@ export const financePaymentModes = {
   },
 }
 
+export const financeCurrencies = {
+  enable(orgSlug: string, params: CurrencyEnableParams) {
+    return request<unknown>(`${base}/currencies`, {
+      method: 'POST',
+      body: JSON.stringify({ orgSlug, ...params }),
+    })
+  },
+  update(orgSlug: string, code: string, params: CurrencyUpdateParams) {
+    return request<unknown>(`${base}/currencies/${encodeURIComponent(code)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ orgSlug, ...params }),
+    })
+  },
+  setDefault(orgSlug: string, currency: string) {
+    return request<unknown>(`${base}/currencies`, {
+      method: 'PATCH',
+      body: JSON.stringify({ orgSlug, currency }),
+    })
+  },
+  disable(orgSlug: string, code: string) {
+    return request<unknown>(`${base}/currencies/${encodeURIComponent(code)}`, {
+      method: 'DELETE',
+      body: JSON.stringify({ orgSlug }),
+    })
+  },
+}
+
 export const finance = {
   taxes: financeTaxes,
   paymentModes: financePaymentModes,
+  currencies: financeCurrencies,
 }

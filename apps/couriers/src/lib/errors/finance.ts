@@ -28,6 +28,10 @@ export const FINANCE_ERRORS = {
     message: 'The payment mode details are invalid.',
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
   },
+  'finance/invalid-currency': {
+    message: 'The currency details are invalid.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
   'finance/tax-unavailable': {
     message: 'Tax settings are unavailable right now. Please try again.',
     httpStatus: HttpStatus.BAD_GATEWAY,
@@ -37,9 +41,9 @@ export const FINANCE_ERRORS = {
       'Payment mode settings are unavailable right now. Please try again.',
     httpStatus: HttpStatus.BAD_GATEWAY,
   },
-  'finance/currencies-unavailable': {
-    message: 'Currency settings are not available in Couriers yet.',
-    httpStatus: HttpStatus.SERVICE_UNAVAILABLE,
+  'finance/currency-unavailable': {
+    message: 'Currency settings are unavailable right now. Please try again.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
   },
 } as const satisfies Record<string, ErrorDef>
 
@@ -48,7 +52,7 @@ export type FinanceErrorCode = keyof typeof FINANCE_ERRORS
 /** Registered code returned when a finance resource cannot be reached. */
 export const FINANCE_UNAVAILABLE_CODE: Record<FinanceResource, string> = {
   tax: 'finance/tax-unavailable',
-  currency: 'finance/currencies-unavailable',
+  currency: 'finance/currency-unavailable',
   'payment-mode': 'finance/payment-mode-unavailable',
 }
 

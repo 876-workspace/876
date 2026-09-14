@@ -57,10 +57,10 @@ describe('PaymentModeSettingsPanel', () => {
     expect(screen.getByText('Cash')).toBeInTheDocument()
   })
 
-  it('renders an empty state rather than a bare list when there are no modes', () => {
+  it('renders an empty-state icon when there are no modes', () => {
     renderPanel({ modes: [] })
 
-    expect(screen.getByText('No payment modes')).toBeInTheDocument()
+    expect(screen.getByLabelText('Payment modes')).toBeInTheDocument()
   })
 
   it('marks the default mode so it is distinguishable from the rest', () => {
@@ -102,6 +102,22 @@ describe('PaymentModeSettingsPanel', () => {
 
     expect(onCreate).toHaveBeenCalledTimes(1)
     expect(onCreate).toHaveBeenCalledWith({ name: 'Cheque' })
+    expect(onSuccess).toHaveBeenCalledTimes(1)
+  })
+
+  it('updates a custom payment mode with the edited name', async () => {
+    const user = userEvent.setup()
+    const { onUpdate, onSuccess } = renderPanel()
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }))
+    await user.clear(screen.getByLabelText('Payment mode edit name'))
+    await user.type(screen.getByLabelText('Payment mode edit name'), 'Cheque')
+    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    expect(onUpdate).toHaveBeenCalledTimes(1)
+    expect(onUpdate).toHaveBeenCalledWith('pm_bank_transfer', {
+      name: 'Cheque',
+    })
     expect(onSuccess).toHaveBeenCalledTimes(1)
   })
 

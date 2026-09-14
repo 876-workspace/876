@@ -22,6 +22,17 @@ export const currenciesController = {
   async list(req: Request, res: Response) {
     res.json(await listCurrencies(tenantId(req)))
   },
+  async integrationList(req: Request, res: Response) {
+    const organizationId = validParams<{ organizationId: string }>(
+      req
+    ).organizationId
+    res.json(
+      await listCurrencies(
+        tenantId(req),
+        `/api/v1/integrations/organizations/${organizationId}/currencies`
+      )
+    )
+  },
   async create(req: Request, res: Response) {
     res.status(201).json(await createCurrency(tenantId(req), validBody(req)))
   },
