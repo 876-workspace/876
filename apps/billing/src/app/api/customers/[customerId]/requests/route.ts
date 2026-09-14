@@ -7,7 +7,7 @@ import {
 } from '@876/crm'
 import { z } from 'zod'
 
-import { getWorkspaceContext, hasPermission } from '@/lib/auth/billing-context'
+import { requireRequestApiAccess } from '@/lib/auth/request-api-access'
 import { getCrm } from '@/lib/services/crm'
 
 const listQuerySchema = z.object({
@@ -49,28 +49,11 @@ function invalidRequest() {
   )
 }
 
-async function requireRequestPermission(
-  permission: 'customers:read' | 'customers:write'
-) {
-  const context = await getWorkspaceContext()
-  if (!context || !hasPermission(context, permission))
-    return {
-      response: apiJson(
-        {
-          data: null,
-          error: { code: 'auth/forbidden', message: 'Forbidden.' },
-        },
-        { status: 403 }
-      ),
-    }
-  return { response: null, context }
-}
-
 export async function GET(
   request: Request,
   route: RouteContext<'/api/customers/[customerId]/requests'>
 ) {
-  const access = await requireRequestPermission('customers:read')
+  const access = await requireRequestApiAccess('customers:read')
   if (access.response) return access.response
   const { customerId } = await route.params
   const query = listQuerySchema.safeParse(
@@ -91,7 +74,7 @@ export async function POST(
   request: Request,
   route: RouteContext<'/api/customers/[customerId]/requests'>
 ) {
-  const access = await requireRequestPermission('customers:write')
+  const access = await requireRequestApiAccess('customers:write')
   if (access.response) return access.response
   const { customerId } = await route.params
   const body = createBodySchema.safeParse(

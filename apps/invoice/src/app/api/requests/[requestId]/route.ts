@@ -2,7 +2,8 @@ import { apiJson } from '@876/core/api'
 import { requestStatusSchema } from '@876/crm'
 import { z } from 'zod'
 
-import { requireApiPermission } from '@/lib/auth/api-permission'
+import { requireApiCapability } from '@/lib/auth/api-permission'
+import { INVOICE_REQUESTS_SLUG } from '@/lib/features'
 import { getCrm } from '@/lib/services/crm'
 
 const updateBodySchema = z
@@ -19,7 +20,10 @@ export async function PATCH(
   request: Request,
   context: RouteContext<'/api/requests/[requestId]'>
 ) {
-  const access = await requireApiPermission('requests.edit')
+  const access = await requireApiCapability({
+    permission: 'requests.edit',
+    feature: INVOICE_REQUESTS_SLUG,
+  })
   if (access.response) return access.response
   const { requestId } = await context.params
   const input = updateBodySchema.parse(await request.json())

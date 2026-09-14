@@ -56,6 +56,28 @@ describe('resolveBillingNavigation', () => {
     ).toEqual(['Home', 'Customers', 'Items', 'Reports', 'Settings'])
   })
 
+  it('shows Requests only when permission and feature are both present', () => {
+    expect(
+      resolvedEntry(['customers:read'], [], 'requests')
+    ).toBeUndefined()
+    expect(
+      resolvedEntry([], ['billing-requests'], 'requests')
+    ).toBeUndefined()
+
+    const requests = resolvedEntry(
+      ['customers:read'],
+      ['billing-requests'],
+      'requests'
+    )
+    expect({
+      href: requests?.href,
+      children: requests?.children?.map((child) => child.href),
+    }).toEqual({
+      href: '/requests',
+      children: ['/requests', '/requests/customers', '/requests/forms'],
+    })
+  })
+
   it('returns no navigation without permissions', () => {
     expect(
       resolveBillingNavigation(
@@ -208,6 +230,7 @@ describe('resolveBillingNavigation', () => {
       context(
         [...BILLING_PERMISSION_VALUES],
         [
+          'billing-requests',
           'billing-sales',
           'billing-sales-quotes',
           'billing-subscriptions',
@@ -242,6 +265,7 @@ describe('resolveBillingNavigation', () => {
 
     expect(permissions).toEqual([
       'dashboard:read',
+      'customers:read',
       'customers:read',
       'catalog:read',
       'sales:read',

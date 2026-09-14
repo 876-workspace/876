@@ -39,6 +39,7 @@ describe('getFeatures', () => {
           { slug: 'invoice-global-add' },
           { slug: 'invoice-app-switcher' },
           { slug: 'invoice-org-switcher' },
+          { slug: 'invoice-requests' },
         ],
       },
       error: null,
@@ -55,6 +56,7 @@ describe('getFeatures', () => {
       'invoice-global-add',
       'invoice-app-switcher',
       'invoice-org-switcher',
+      'invoice-requests',
     ])
     expect(result.uiFeatures).toEqual({
       searchBar: true,
@@ -112,6 +114,18 @@ describe('getFeatures', () => {
     const result = await getFeatures({ userId: 'user_invoice_widgets' })
 
     expect(result.featureKeys).toEqual(['invoice-widgets'])
+    expect(result.widgets).toEqual({ enabledWidgetIds: [] })
+  })
+
+  it('keeps Requests independent when Work widget gates are absent', async () => {
+    mocks.evaluate.mockResolvedValue({
+      data: { data: [{ slug: 'invoice-requests' }] },
+      error: null,
+    })
+
+    const result = await getFeatures({ userId: 'user_requests_only' })
+
+    expect(result.featureKeys).toEqual(['invoice-requests'])
     expect(result.widgets).toEqual({ enabledWidgetIds: [] })
   })
 

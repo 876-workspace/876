@@ -1,7 +1,8 @@
 import { apiJson } from '@876/core/api'
 import { supportResponseStatus } from '@876/crm'
 
-import { requireApiPermission } from '@/lib/auth/api-permission'
+import { requireApiCapability } from '@/lib/auth/api-permission'
+import { INVOICE_REQUESTS_SLUG } from '@/lib/features'
 import { getCrm } from '@/lib/services/crm'
 
 export const runtime = 'nodejs'
@@ -10,7 +11,10 @@ export async function DELETE(
   _request: Request,
   context: RouteContext<'/api/requests/[requestId]/events/[eventId]'>
 ) {
-  const access = await requireApiPermission('requests.edit')
+  const access = await requireApiCapability({
+    permission: 'requests.edit',
+    feature: INVOICE_REQUESTS_SLUG,
+  })
   if (access.response) return access.response
 
   const { requestId, eventId } = await context.params
@@ -20,5 +24,7 @@ export async function DELETE(
     eventId,
     { deletedBy: access.userId }
   )
-  return apiJson(result, { status: supportResponseStatus(result.error?.code, 200) })
+  return apiJson(result, {
+    status: supportResponseStatus(result.error?.code, 200),
+  })
 }

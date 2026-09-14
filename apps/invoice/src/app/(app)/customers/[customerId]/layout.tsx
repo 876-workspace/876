@@ -11,6 +11,7 @@ import {
 import { Skeleton } from '@876/ui/skeleton'
 
 import { getInvoiceContext } from '@/lib/auth/context'
+import { getFeatures, INVOICE_REQUESTS_SLUG } from '@/lib/features'
 import { getBilling } from '@/lib/services/billing'
 import { CustomerActions } from './_components/customer-actions'
 
@@ -21,12 +22,25 @@ export default async function CustomerDetailLayout({
   children: ReactNode
   params: Promise<{ customerId: string }>
 }) {
-  const { customerId } = await params
+  const [{ customerId }, context] = await Promise.all([
+    params,
+    getInvoiceContext(),
+  ])
+  const requestsEnabled = context
+    ? (
+        await getFeatures({
+          userId: context.userId,
+          organizationId: context.orgId,
+        })
+      ).featureKeys.includes(INVOICE_REQUESTS_SLUG)
+    : false
   const base = `/customers/${customerId}`
   const tabs = [
     { label: 'Overview', href: base, exact: true },
     { label: 'Transactions', href: `${base}/transactions` },
-    { label: 'Requests', href: `${base}/requests` },
+    ...(requestsEnabled
+      ? [{ label: 'Requests', href: `${base}/requests` }]
+      : []),
     { label: 'Mails', href: `${base}/mails` },
     { label: 'Statement', href: `${base}/statement` },
     { label: 'Activity', href: `${base}/activity` },

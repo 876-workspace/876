@@ -1,9 +1,15 @@
 'use client'
 
 import type { NavGroupDefinition } from '@876/core/access'
-import { ProductMobileNav } from '@876/ui/product-mobile-nav'
+import { ContextualProductMobileNav } from '@876/ui/contextual-product-mobile-nav'
 
 import { resolveBillingNavIcon } from './nav-icons'
+
+const CONTEXT_OPTIONS = {
+  rootKey: 'billing',
+  rootBackLabel: 'Billing',
+  sectionKeys: ['requests'],
+} as const
 
 export function MobileNav({
   tenantName,
@@ -13,11 +19,12 @@ export function MobileNav({
   navigation: NavGroupDefinition[]
 }) {
   return (
-    <ProductMobileNav
+    <ContextualProductMobileNav
       title="Billing"
       subtitle={tenantName}
       navigation={navigation}
       resolveIcon={resolveBillingNavIcon}
+      contextOptions={CONTEXT_OPTIONS}
     />
   )
 }

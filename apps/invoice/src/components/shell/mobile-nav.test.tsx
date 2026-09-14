@@ -6,11 +6,11 @@ import { describe, expect, it, vi } from 'vitest'
 
 import type { NavGroupDefinition } from '@876/core/access'
 
-const mocks = vi.hoisted(() => ({ productMobileNav: vi.fn() }))
+const mocks = vi.hoisted(() => ({ contextualMobileNav: vi.fn() }))
 
-vi.mock('@876/ui/product-mobile-nav', () => ({
-  ProductMobileNav: (props: Record<string, unknown>) => {
-    mocks.productMobileNav(props)
+vi.mock('@876/ui/contextual-product-mobile-nav', () => ({
+  ContextualProductMobileNav: (props: Record<string, unknown>) => {
+    mocks.contextualMobileNav(props)
     return <div>Invoice mobile navigation</div>
   },
 }))
@@ -33,16 +33,21 @@ const navigation: NavGroupDefinition[] = [
 ]
 
 describe('Invoice MobileNav', () => {
-  it('passes Invoice identity and resolved navigation to the shared drawer', () => {
+  it('declares Requests as the only contextual mobile section', () => {
     render(<MobileNav orgName="Island Commerce" navigation={navigation} />)
 
     expect(screen.getByText('Invoice mobile navigation')).toBeVisible()
-    expect(mocks.productMobileNav).toHaveBeenCalledTimes(1)
-    expect(mocks.productMobileNav).toHaveBeenCalledWith({
+    expect(mocks.contextualMobileNav).toHaveBeenCalledTimes(1)
+    expect(mocks.contextualMobileNav).toHaveBeenCalledWith({
       title: 'Invoice',
       subtitle: 'Island Commerce',
       navigation,
       resolveIcon: resolveInvoiceNavIcon,
+      contextOptions: {
+        rootKey: 'invoice',
+        rootBackLabel: 'Invoice',
+        sectionKeys: ['requests'],
+      },
     })
   })
 })

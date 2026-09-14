@@ -15,6 +15,10 @@
       "types": "./src/customer-list.tsx",
       "default": "./src/customer-list.tsx"
     },
+    "./customer-row": {
+      "types": "./src/customer-row.ts",
+      "default": "./src/customer-row.ts"
+    },
     "./customer-card-frame": {
       "types": "./src/customer-card-frame.tsx",
       "default": "./src/customer-card-frame.tsx"
@@ -22,6 +26,26 @@
     "./customer-overview": {
       "types": "./src/customer-overview.tsx",
       "default": "./src/customer-overview.tsx"
+    },
+    "./request-list": {
+      "types": "./src/request-list.tsx",
+      "default": "./src/request-list.tsx"
+    },
+    "./request-list-rows": {
+      "types": "./src/request-list-rows.ts",
+      "default": "./src/request-list-rows.ts"
+    },
+    "./request-status": {
+      "types": "./src/request-status.ts",
+      "default": "./src/request-status.ts"
+    },
+    "./request-forms-list": {
+      "types": "./src/request-forms-list.tsx",
+      "default": "./src/request-forms-list.tsx"
+    },
+    "./request-customers-list": {
+      "types": "./src/request-customers-list.tsx",
+      "default": "./src/request-customers-list.tsx"
     },
     "./request-record-shell": {
       "types": "./src/request-record-shell.tsx",

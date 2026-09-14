@@ -109,7 +109,7 @@ export async function seedInternalPlans(): Promise<InternalPlanSeedSummary> {
         appId: app.id,
         now,
       })
-      product = { id: created.productId, slug: planSlug }
+      product = { id: created.productId, slug: planSlug, appId: app.id }
       summary.plansCreated += 1
       log.info({ slug: planSlug, app_id: app.id }, 'internal_plan.created')
     }

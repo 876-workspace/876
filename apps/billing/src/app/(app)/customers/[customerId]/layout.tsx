@@ -24,6 +24,7 @@ import { Skeleton } from '@876/ui/skeleton'
 
 import { resolveCustomer } from '@/app/(app)/_lib/detail-data'
 import { getWorkspaceContext, hasPermission } from '@/lib/auth/billing-context'
+import { getFeatures } from '@/lib/features'
 import { formatDate } from '@/lib/format'
 import { CustomerActions } from './_components/customer-actions'
 import { resolveCustomerParty, type CustomerPartyInput } from './_data'
@@ -46,13 +47,26 @@ export default async function CustomerDetailLayout({
   children: ReactNode
   params: Promise<{ customerId: string }>
 }) {
-  const { customerId } = await params
+  const [{ customerId }, context] = await Promise.all([
+    params,
+    getWorkspaceContext(),
+  ])
+  const requestsEnabled = context
+    ? (
+        await getFeatures({
+          userId: context.userId,
+          organizationId: context.orgId,
+        })
+      ).productFeatures.requests
+    : false
   const base = `/customers/${customerId}`
   const tabs = [
     { label: 'Overview', href: base, exact: true },
     { label: 'Transactions', href: `${base}/transactions` },
     { label: 'Subscriptions', href: `${base}/subscriptions` },
-    { label: 'Requests', href: `${base}/requests` },
+    ...(requestsEnabled
+      ? [{ label: 'Requests', href: `${base}/requests` }]
+      : []),
     { label: 'Mails', href: `${base}/mails` },
     { label: 'Statement', href: `${base}/statement` },
     { label: 'Activity', href: `${base}/activity` },

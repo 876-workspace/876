@@ -3,10 +3,18 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-import type { CrmRequest, RelatedResourceSnapshot, RelatedResourceType, RequestList } from '@876/crm'
-import { Button } from '@876/ui/button'
+import type {
+  CrmRequest,
+  RelatedResourceSnapshot,
+  RelatedResourceType,
+  RequestList,
+} from '@876/crm'
 import { RelatedRequestsPanel } from '@876/crm-ui/related-requests-panel'
-import { RequestComposer, type RequestComposerInput } from '@876/crm-ui/request-composer'
+import {
+  RequestComposer,
+  type RequestComposerInput,
+} from '@876/crm-ui/request-composer'
+import { Button } from '@876/ui/button'
 
 import { request } from '@/lib/client/request'
 
@@ -20,11 +28,13 @@ export function RelatedRequestsClient({
   resourceType,
   resourceId,
   snapshot,
+  canCreate,
 }: {
   customerId: string
   resourceType: RelatedResourceType
   resourceId: string
   snapshot: RelatedResourceSnapshot
+  canCreate: boolean
 }) {
   const router = useRouter()
   const [state, setState] = useState<State>({ status: 'loading' })
@@ -41,7 +51,8 @@ export function RelatedRequestsClient({
       { signal: controller.signal }
     ).then((result) => {
       if (controller.signal.aborted) return
-      if (result.error) setState({ status: 'error', message: result.error.message })
+      if (result.error)
+        setState({ status: 'error', message: result.error.message })
       else setState({ status: 'ready', requests: result.data.data })
     })
     return () => controller.abort()
@@ -64,7 +75,9 @@ export function RelatedRequestsClient({
       }
     )
     if (result.error) return { error: result.error }
-    router.push(`/customers/${encodeURIComponent(customerId)}/requests/${encodeURIComponent(result.data.id)}`)
+    router.push(
+      `/customers/${encodeURIComponent(customerId)}/requests/${encodeURIComponent(result.data.id)}`
+    )
     return { error: null }
   }
 
@@ -77,14 +90,20 @@ export function RelatedRequestsClient({
 
   return (
     <section className="mt-6 space-y-3">
-      <div className="flex justify-end">
-        <Button size="sm" onClick={() => setComposing(true)}>New request</Button>
-      </div>
+      {canCreate ? (
+        <div className="flex justify-end">
+          <Button size="sm" onClick={() => setComposing(true)}>
+            New request
+          </Button>
+        </div>
+      ) : null}
       <RelatedRequestsPanel
         state={panelState}
-        requestHref={(requestId) => `/customers/${encodeURIComponent(customerId)}/requests/${encodeURIComponent(requestId)}`}
+        requestHref={(requestId) =>
+          `/customers/${encodeURIComponent(customerId)}/requests/${encodeURIComponent(requestId)}`
+        }
       />
-      {composing ? (
+      {canCreate && composing ? (
         <RequestComposer
           state={{ status: 'ready' }}
           relatedResource={{ type: resourceType, id: resourceId, snapshot }}

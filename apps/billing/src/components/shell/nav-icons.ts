@@ -3,7 +3,7 @@ import {
   Building2,
   BuildingLibraryIcon,
   ChartPieIcon,
-  CircleStackIcon,
+  ChatBubbleLeftIcon,
   ClipboardDocumentListIcon,
   DocumentTextIcon,
   IdentificationIcon,
@@ -17,6 +17,8 @@ import {
 export const BILLING_NAV_ICONS: Record<string, IconComponent> = {
   dashboard: BarChart3,
   customers: UsersIcon,
+  requests: ChatBubbleLeftIcon,
+  forms: DocumentTextIcon,
   items: ClipboardDocumentListIcon,
   // `ClipboardList` is an alias of `ClipboardDocumentListIcon` in `@876/ui`, so
   // sharing it with `items` made two rail entries render the same glyph.

@@ -3,13 +3,12 @@ import { Suspense } from 'react'
 import { AppError } from '@876/ui/app-error'
 import { Skeleton } from '@876/ui/skeleton'
 
+import { RequestTasksClient } from '@/features/crm/request-tasks-client'
 import {
   getWorkspaceContext,
   requirePagePermission,
 } from '@/lib/auth/billing-context'
 import { getCrm } from '@/lib/services/crm'
-
-import { RequestTasksClient } from '../../_components/request-tasks-client'
 
 export const metadata = { title: 'Request tasks' }
 

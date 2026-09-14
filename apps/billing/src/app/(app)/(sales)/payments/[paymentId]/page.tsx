@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { PaymentDetailCard } from '@876/billing-ui/payment-detail-card'
 
 import { requirePagePermission } from '@/lib/auth/billing-context'
+import { getFeatures } from '@/lib/features'
 import { formatDate, formatMoney } from '@/lib/format'
 import { service, type LegacyBillingRecord } from '@/lib/service'
 import { RelatedRequestsClient } from '../../../_components/related-requests-client'
@@ -17,10 +18,10 @@ export const metadata: Metadata = {
 export default async function PaymentPage({ params }: Props) {
   const context = await requirePagePermission('payments:read')
   const { paymentId } = await params
-  const payment: LegacyBillingRecord = await service.payments.retrieve(
-    context.tenant.id,
-    paymentId
-  )
+  const [payment, features] = await Promise.all([
+    service.payments.retrieve(context.tenant.id, paymentId),
+    getFeatures({ userId: context.userId, organizationId: context.orgId }),
+  ])
   if (!payment) notFound()
 
   const allocated = payment.invoiceAllocations.reduce(
@@ -29,6 +30,10 @@ export default async function PaymentPage({ params }: Props) {
     0n
   )
   const canWrite = context.permissions.includes('payments:write')
+  const canViewRequests =
+    features.productFeatures.requests &&
+    context.permissions.includes('customers:read')
+  const canCreateRequest = context.permissions.includes('customers:write')
   const canRefund =
     canWrite &&
     (payment.status === 'SUCCEEDED' ||
@@ -78,17 +83,20 @@ export default async function PaymentPage({ params }: Props) {
       }
       refundHref={canRefund ? `/payments/${payment.id}/refund` : undefined}
     >
-      <RelatedRequestsClient
-        customerId={payment.customer.id}
-        resourceType="payment"
-        resourceId={payment.id}
-        snapshot={{
-          number: payment.number,
-          amount: String(payment.amount),
-          currency: payment.currency,
-          status: payment.status,
-        }}
-      />
+      {canViewRequests ? (
+        <RelatedRequestsClient
+          customerId={payment.customer.id}
+          resourceType="payment"
+          resourceId={payment.id}
+          snapshot={{
+            number: payment.number,
+            amount: String(payment.amount),
+            currency: payment.currency,
+            status: payment.status,
+          }}
+          canCreate={canCreateRequest}
+        />
+      ) : null}
     </PaymentDetailCard>
   )
 }

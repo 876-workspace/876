@@ -20,6 +20,7 @@ const INVOICE_APP_SWITCHER_SLUG = 'invoice-app-switcher'
 const INVOICE_ORG_SWITCHER_SLUG = 'invoice-org-switcher'
 const INVOICE_WIDGETS_SLUG = 'invoice-widgets'
 const INVOICE_WIDGETS_WORK_SLUG = 'invoice-widgets-work'
+export const INVOICE_REQUESTS_SLUG = 'invoice-requests'
 
 const INVOICE_FEATURE_SLUGS = [
   INVOICE_SEARCH_BAR_SLUG,
@@ -29,6 +30,7 @@ const INVOICE_FEATURE_SLUGS = [
   INVOICE_ORG_SWITCHER_SLUG,
   INVOICE_WIDGETS_SLUG,
   INVOICE_WIDGETS_WORK_SLUG,
+  INVOICE_REQUESTS_SLUG,
 ] as const
 
 const DEFAULT_UI_FEATURES: InvoiceUiFeatures = {

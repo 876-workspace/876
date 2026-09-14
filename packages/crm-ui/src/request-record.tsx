@@ -12,12 +12,14 @@ import { RequestDetailCard } from './request-detail-card'
 export function RequestRecord({
   request,
   baseHref,
+  closeHref,
   customerHref,
   onUpdate,
   children,
 }: {
   request: CrmRequest
   baseHref: string
+  closeHref?: string
   customerHref?: string
   onUpdate: (input: UpdateRequestInput) => Promise<{
     data: CrmRequest | null
@@ -45,6 +47,7 @@ export function RequestRecord({
     <RequestDetailCard
       request={current}
       baseHref={baseHref}
+      closeHref={closeHref}
       customerHref={customerHref}
     >
       {error ? (
