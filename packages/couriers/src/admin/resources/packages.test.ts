@@ -8,6 +8,7 @@ const apiKey = '876_app_secret_couriers'
 const internalKey = 'couriers_internal_kingston'
 const tenantId = 'ten_kingston/876'
 const packageId = 'pkg_kingston/2026-0816 A'
+const categoryId = 'pcat_electronics'
 const adminNotConfigured = {
   code: 'couriers/admin-not-configured',
   message: 'Couriers administration is not configured.',
@@ -24,6 +25,12 @@ const courierPackage = {
   customer_id: 'cpr_kingston_sophia_brown',
   branch_id: 'br_kingston/harbour',
   mailbox_id: 'mbx_kingston_1842',
+  category_id: categoryId,
+  category: {
+    id: categoryId,
+    name: 'Electronics',
+    slug: 'electronics',
+  },
   tracking_num: '1ZJAM876042924',
   status: 'READY_FOR_PICKUP' as const,
   package_type: 'CARTON' as const,
@@ -47,6 +54,7 @@ const listParams = {
   status: 'READY_FOR_PICKUP' as const,
   customer_id: 'cpr_kingston/sophia brown',
   branch_id: 'br_kingston/harbour',
+  category_id: categoryId,
   limit: 25,
 }
 
@@ -54,6 +62,7 @@ const createPackageBody = {
   customer_id: 'cpr_montego_bay/isaac grant',
   branch_id: 'br_montego_bay/freeport',
   mailbox_id: 'mbx_montego_bay_728',
+  category_id: categoryId,
   tracking_num: 'JAMAICA-2026-8114',
   status: 'PRE_ALERT' as const,
   package_type: 'ENVELOPE' as const,
@@ -65,6 +74,7 @@ const createPackageBody = {
 const updatePackageBody = {
   branch_id: null,
   mailbox_id: null,
+  category_id: null,
   tracking_num: null,
   status: 'COLLECTED' as const,
   package_type: 'BAG' as const,
@@ -94,7 +104,7 @@ describe('createPackagesResource', () => {
 
     expect(result).toEqual({ data: packageList, error: null })
     expect(fetchMock).toHaveBeenCalledWith(
-      `${baseUrl}/v1/tenants/ten_kingston%2F876/packages?status=READY_FOR_PICKUP&customer_id=cpr_kingston%2Fsophia+brown&branch_id=br_kingston%2Fharbour&limit=25`,
+      `${baseUrl}/v1/tenants/ten_kingston%2F876/packages?status=READY_FOR_PICKUP&customer_id=cpr_kingston%2Fsophia+brown&branch_id=br_kingston%2Fharbour&category_id=pcat_electronics&limit=25`,
       {
         method: 'GET',
         headers: {
@@ -131,13 +141,18 @@ describe('createPackagesResource', () => {
     )
   })
 
-  it('retrieves a package with encoded identifiers', async () => {
+  it('retrieves a package with encoded identifiers and category data', async () => {
     const fetchMock = successFetch(courierPackage)
     const resource = createResource(fetchMock, internalKey)
 
     const result = await resource.retrieve(tenantId, packageId)
 
     expect(result).toEqual({ data: courierPackage, error: null })
+    expect(result.data?.category).toEqual({
+      id: categoryId,
+      name: 'Electronics',
+      slug: 'electronics',
+    })
     expect(fetchMock).toHaveBeenCalledWith(
       `${baseUrl}/v1/tenants/ten_kingston%2F876/packages/pkg_kingston%2F2026-0816%20A`,
       {
@@ -152,7 +167,7 @@ describe('createPackagesResource', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
-  it('creates a package with the exact body', async () => {
+  it('creates a package with the exact category-aware body', async () => {
     const fetchMock = successFetch(courierPackage)
     const resource = createResource(fetchMock, internalKey)
 
@@ -175,12 +190,17 @@ describe('createPackagesResource', () => {
   })
 
   it('updates a package with encoded identifiers and the exact body', async () => {
-    const fetchMock = successFetch(courierPackage)
+    const fetchMock = successFetch({
+      ...courierPackage,
+      category_id: null,
+      category: null,
+    })
     const resource = createResource(fetchMock, internalKey)
 
     const result = await resource.update(tenantId, packageId, updatePackageBody)
 
-    expect(result).toEqual({ data: courierPackage, error: null })
+    expect(result.data?.category_id).toBeNull()
+    expect(result.data?.category).toBeNull()
     expect(fetchMock).toHaveBeenCalledWith(
       `${baseUrl}/v1/tenants/ten_kingston%2F876/packages/pkg_kingston%2F2026-0816%20A`,
       {

@@ -29,6 +29,7 @@ export type {
 } from './provisioning-catalog.types'
 
 export const BILLING_APP_SLUG = '876-billing'
+const COURIERS_APP_SLUG = '876-couriers'
 const CRM_APP_SLUG = '876-crm'
 const ENTERPRISE_APP_SLUG = '876-enterprise'
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
@@ -315,6 +316,21 @@ export const APPLICATION_RESOURCES: Record<string, Record<string, Resource>> = {
         termsAndConditions: field('Terms and conditions', 'string', {
           required: false,
         }),
+      }
+    ),
+  },
+  [COURIERS_APP_SLUG]: {
+    package_category: resource(
+      'Package categories',
+      'Flat package-content categories materialized into new Couriers workspaces.',
+      true,
+      1,
+      {
+        name: field('Name', 'string'),
+        description: field('Description', 'string', { required: false }),
+        icon: field('Icon', 'string', { required: false }),
+        sortOrder: field('Sort order', 'integer'),
+        isActive: field('Active', 'boolean'),
       }
     ),
   },

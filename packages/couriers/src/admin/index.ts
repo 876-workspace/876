@@ -81,6 +81,27 @@ export {
   updateCustomerAddressBodySchema,
 } from './types/customer-address.schema'
 export type {
+  CreatePackageCategoryBody,
+  DeletedPackageCategory,
+  ListPackageCategoriesParams,
+  PackageCategory,
+  PackageCategoryList,
+  PackageCategoryReconciliation,
+  ProvisionedPackageCategory,
+  ReconcilePackageCategoriesBody,
+  UpdatePackageCategoryBody,
+} from './types/package-category.schema'
+export {
+  createPackageCategoryBodySchema,
+  deletedPackageCategorySchema,
+  packageCategoryListSchema,
+  packageCategoryReconciliationSchema,
+  packageCategorySchema,
+  provisionedPackageCategorySchema,
+  reconcilePackageCategoriesBodySchema,
+  updatePackageCategoryBodySchema,
+} from './types/package-category.schema'
+export type {
   CreatePackageBody,
   ListPackagesParams,
   Package,

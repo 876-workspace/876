@@ -1,0 +1,3 @@
+Wrote `apps/couriers/docs/package-categories.md` with the requested 7 sections (category vs type vs description table, data model, tenant API route table, provisioned defaults, package assignment, management UI, not in scope).
+All statements are sourced from the allowed files; the brief's provisioning path was stale — the real file is `apps/api/src/modules/provisioning/provisioning-import.couriers.ts`, and onboarding reconcile is confirmed at `apps/couriers/src/app/api/manage/onboarding/complete/route.ts:84`.
+No files committed; only the doc plus this report were created.

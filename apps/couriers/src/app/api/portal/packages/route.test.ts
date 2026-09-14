@@ -83,6 +83,7 @@ function createPortalPackage(
     customer_id: 'cprof_kimani',
     branch_id: 'br_kingston',
     mailbox_id: 'mbx_rsj1001',
+    category: null,
     tracking_num: 'FX876JM1001',
     status: 'READY_FOR_PICKUP',
     package_type: 'CARTON',

@@ -59,12 +59,14 @@ model Package {
   branch   Branch?                @relation(fields: [branchId], references: [id], onDelete: SetNull)
   mailbox  Mailbox?               @relation(fields: [mailboxId], references: [id], onDelete: SetNull)
   carrier  Carrier?               @relation(fields: [carrierId], references: [id], onDelete: SetNull)
+  category PackageCategory?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
   @@index([tenantId], name: "packages_tenant_id_idx")
   @@index([customerId], name: "packages_customer_id_idx")
   @@index([tenantId, trackingNum], name: "packages_tenant_id_tracking_num_idx")
   @@index([branchId], name: "packages_branch_id_idx")
   @@index([carrierId], name: "packages_carrier_id_idx")
+  @@index([categoryId], name: "packages_category_id_idx")
   @@index([mailboxId], name: "packages_mailbox_id_idx")
   @@map("packages")
 }

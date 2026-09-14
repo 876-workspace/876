@@ -18,6 +18,12 @@ const packageTypeSchema = z.enum([
   'OTHER',
 ])
 
+const packageCategoryReferenceSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  slug: z.string(),
+})
+
 export const packageSchema = z.object({
   object: z.literal('package'),
   id: z.string(),
@@ -25,6 +31,8 @@ export const packageSchema = z.object({
   customer_id: z.string(),
   branch_id: z.string().nullable(),
   mailbox_id: z.string().nullable(),
+  category_id: z.string().nullable(),
+  category: packageCategoryReferenceSchema.nullable(),
   tracking_num: z.string().nullable(),
   status: packageStatusSchema,
   package_type: packageTypeSchema,
@@ -48,6 +56,7 @@ export const createPackageBodySchema = z.strictObject({
   customer_id: z.string(),
   branch_id: z.string().nullable().optional(),
   mailbox_id: z.string().nullable().optional(),
+  category_id: z.string().nullable().optional(),
   tracking_num: z.string().nullable().optional(),
   status: packageStatusSchema.optional(),
   package_type: packageTypeSchema.optional(),
@@ -59,6 +68,7 @@ export const createPackageBodySchema = z.strictObject({
 export const updatePackageBodySchema = z.strictObject({
   branch_id: z.string().nullable().optional(),
   mailbox_id: z.string().nullable().optional(),
+  category_id: z.string().nullable().optional(),
   tracking_num: z.string().nullable().optional(),
   status: packageStatusSchema.optional(),
   package_type: packageTypeSchema.optional(),
@@ -74,6 +84,7 @@ export type ListPackagesParams = {
   status?: PackageStatus
   customer_id?: string
   branch_id?: string
+  category_id?: string
   limit?: number
   starting_after?: string
   ending_before?: string

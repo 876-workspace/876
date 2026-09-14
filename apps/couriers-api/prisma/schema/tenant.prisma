@@ -16,6 +16,7 @@ model Tenant {
   domains Domain[]
   mailboxes  Mailbox[]
   packages   Package[]
+  packageCategories PackageCategory[]
   roles      Role[]
   teamMembers TeamMember[]
   organizationModules OrganizationModule[]

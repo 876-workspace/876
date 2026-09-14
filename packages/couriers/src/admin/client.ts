@@ -3,6 +3,7 @@ import { createBranchesResource } from './resources/branches'
 import { createAddressesResource } from './resources/addresses'
 import { createCustomersResource } from './resources/customers'
 import { createMailboxesResource } from './resources/mailboxes'
+import { createPackageCategoriesResource } from './resources/package-categories'
 import { createPackagesResource } from './resources/packages'
 import { createRolesResource } from './resources/roles'
 import { createSettingsResource } from './resources/settings'
@@ -21,6 +22,7 @@ export function create876CouriersAdminClient(options: AdminClientOptions = {}) {
     addresses: createAddressesResource(runtime),
     customers: createCustomersResource(runtime),
     mailboxes: createMailboxesResource(runtime),
+    packageCategories: createPackageCategoriesResource(runtime),
     packages: createPackagesResource(runtime),
     roles: createRolesResource(runtime),
     team: createTeamResource(runtime),

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
+import Link from 'next/link'
 import { Avatar, AvatarFallback } from '@876/ui/avatar'
 import { DataTable } from '@876/ui/data-table'
 import { DataTableColumnHeader } from '@876/ui/data-table-column-header'
@@ -12,7 +13,18 @@ export type PackageTableRow = {
   description: string
   trackingNumber: string
   branch: string
+  category: string
+  categoryId: string | null
   status: string
+  statusCode:
+    | 'PRE_ALERT'
+    | 'RECEIVED'
+    | 'IN_TRANSIT'
+    | 'ARRIVED'
+    | 'READY_FOR_PICKUP'
+    | 'COLLECTED'
+    | 'UNCLAIMED'
+  orgSlug?: string
 }
 
 const AVATAR_COLORS = [
@@ -63,9 +75,12 @@ const columns: ColumnDef<PackageTableRow, unknown>[] = [
       <DataTableColumnHeader column={column} title="Tracking #" />
     ),
     cell: ({ row }) => (
-      <span className="font-medium text-sky-600">
+      <Link
+        href={`/${row.original.orgSlug}/packages/${row.original.id}`}
+        className="font-medium text-sky-600 dark:text-sky-400"
+      >
         {row.original.trackingNumber}
-      </span>
+      </Link>
     ),
   },
   {
@@ -86,9 +101,7 @@ const columns: ColumnDef<PackageTableRow, unknown>[] = [
               .slice(0, 2)}
           </AvatarFallback>
         </Avatar>
-        <span className="font-medium text-sky-600">
-          {row.original.customerName}
-        </span>
+        <span className="font-medium">{row.original.customerName}</span>
       </div>
     ),
   },
@@ -96,6 +109,15 @@ const columns: ColumnDef<PackageTableRow, unknown>[] = [
     accessorKey: 'description',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Description" />
+    ),
+  },
+  {
+    accessorKey: 'category',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Category" />
+    ),
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">{row.original.category}</span>
     ),
   },
   {
@@ -128,17 +150,20 @@ const columns: ColumnDef<PackageTableRow, unknown>[] = [
 
 export function PackagesTable({
   packages,
+  orgSlug,
   emptyState,
 }: {
   packages: PackageTableRow[]
+  orgSlug: string
   emptyState?: ReactNode
 }) {
   return (
     <div className="876-card overflow-hidden">
       <DataTable
         columns={columns}
-        data={packages}
+        data={packages.map((pkg) => ({ ...pkg, orgSlug }))}
         emptyState={emptyState}
+        className="text-[0.8125rem]"
         rowClassName="cursor-pointer"
       />
     </div>

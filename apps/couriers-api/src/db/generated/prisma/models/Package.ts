@@ -521,6 +521,7 @@ export type PackageWhereInput = {
   branch?: Prisma.XOR<Prisma.BranchNullableScalarRelationFilter, Prisma.BranchWhereInput> | null
   mailbox?: Prisma.XOR<Prisma.MailboxNullableScalarRelationFilter, Prisma.MailboxWhereInput> | null
   carrier?: Prisma.XOR<Prisma.CarrierNullableScalarRelationFilter, Prisma.CarrierWhereInput> | null
+  category?: Prisma.XOR<Prisma.PackageCategoryNullableScalarRelationFilter, Prisma.PackageCategoryWhereInput> | null
 }
 
 export type PackageOrderByWithRelationInput = {
@@ -565,6 +566,7 @@ export type PackageOrderByWithRelationInput = {
   branch?: Prisma.BranchOrderByWithRelationInput
   mailbox?: Prisma.MailboxOrderByWithRelationInput
   carrier?: Prisma.CarrierOrderByWithRelationInput
+  category?: Prisma.PackageCategoryOrderByWithRelationInput
 }
 
 export type PackageWhereUniqueInput = Prisma.AtLeast<{
@@ -612,6 +614,7 @@ export type PackageWhereUniqueInput = Prisma.AtLeast<{
   branch?: Prisma.XOR<Prisma.BranchNullableScalarRelationFilter, Prisma.BranchWhereInput> | null
   mailbox?: Prisma.XOR<Prisma.MailboxNullableScalarRelationFilter, Prisma.MailboxWhereInput> | null
   carrier?: Prisma.XOR<Prisma.CarrierNullableScalarRelationFilter, Prisma.CarrierWhereInput> | null
+  category?: Prisma.XOR<Prisma.PackageCategoryNullableScalarRelationFilter, Prisma.PackageCategoryWhereInput> | null
 }, "id">
 
 export type PackageOrderByWithAggregationInput = {
@@ -703,7 +706,6 @@ export type PackageScalarWhereWithAggregatesInput = {
 export type PackageCreateInput = {
   id?: string
   sellerId?: string | null
-  categoryId?: string | null
   billingInvoiceId?: string | null
   manifestId?: string | null
   trackingNum?: string | null
@@ -737,6 +739,7 @@ export type PackageCreateInput = {
   branch?: Prisma.BranchCreateNestedOneWithoutPackagesInput
   mailbox?: Prisma.MailboxCreateNestedOneWithoutPackagesInput
   carrier?: Prisma.CarrierCreateNestedOneWithoutPackagesInput
+  category?: Prisma.PackageCategoryCreateNestedOneWithoutPackagesInput
 }
 
 export type PackageUncheckedCreateInput = {
@@ -781,7 +784,6 @@ export type PackageUncheckedCreateInput = {
 export type PackageUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manifestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trackingNum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -815,6 +817,7 @@ export type PackageUpdateInput = {
   branch?: Prisma.BranchUpdateOneWithoutPackagesNestedInput
   mailbox?: Prisma.MailboxUpdateOneWithoutPackagesNestedInput
   carrier?: Prisma.CarrierUpdateOneWithoutPackagesNestedInput
+  category?: Prisma.PackageCategoryUpdateOneWithoutPackagesNestedInput
 }
 
 export type PackageUncheckedUpdateInput = {
@@ -898,7 +901,6 @@ export type PackageCreateManyInput = {
 export type PackageUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manifestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trackingNum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1297,6 +1299,48 @@ export type PackageUncheckedUpdateManyWithoutMailboxNestedInput = {
   deleteMany?: Prisma.PackageScalarWhereInput | Prisma.PackageScalarWhereInput[]
 }
 
+export type PackageCreateNestedManyWithoutCategoryInput = {
+  create?: Prisma.XOR<Prisma.PackageCreateWithoutCategoryInput, Prisma.PackageUncheckedCreateWithoutCategoryInput> | Prisma.PackageCreateWithoutCategoryInput[] | Prisma.PackageUncheckedCreateWithoutCategoryInput[]
+  connectOrCreate?: Prisma.PackageCreateOrConnectWithoutCategoryInput | Prisma.PackageCreateOrConnectWithoutCategoryInput[]
+  createMany?: Prisma.PackageCreateManyCategoryInputEnvelope
+  connect?: Prisma.PackageWhereUniqueInput | Prisma.PackageWhereUniqueInput[]
+}
+
+export type PackageUncheckedCreateNestedManyWithoutCategoryInput = {
+  create?: Prisma.XOR<Prisma.PackageCreateWithoutCategoryInput, Prisma.PackageUncheckedCreateWithoutCategoryInput> | Prisma.PackageCreateWithoutCategoryInput[] | Prisma.PackageUncheckedCreateWithoutCategoryInput[]
+  connectOrCreate?: Prisma.PackageCreateOrConnectWithoutCategoryInput | Prisma.PackageCreateOrConnectWithoutCategoryInput[]
+  createMany?: Prisma.PackageCreateManyCategoryInputEnvelope
+  connect?: Prisma.PackageWhereUniqueInput | Prisma.PackageWhereUniqueInput[]
+}
+
+export type PackageUpdateManyWithoutCategoryNestedInput = {
+  create?: Prisma.XOR<Prisma.PackageCreateWithoutCategoryInput, Prisma.PackageUncheckedCreateWithoutCategoryInput> | Prisma.PackageCreateWithoutCategoryInput[] | Prisma.PackageUncheckedCreateWithoutCategoryInput[]
+  connectOrCreate?: Prisma.PackageCreateOrConnectWithoutCategoryInput | Prisma.PackageCreateOrConnectWithoutCategoryInput[]
+  upsert?: Prisma.PackageUpsertWithWhereUniqueWithoutCategoryInput | Prisma.PackageUpsertWithWhereUniqueWithoutCategoryInput[]
+  createMany?: Prisma.PackageCreateManyCategoryInputEnvelope
+  set?: Prisma.PackageWhereUniqueInput | Prisma.PackageWhereUniqueInput[]
+  disconnect?: Prisma.PackageWhereUniqueInput | Prisma.PackageWhereUniqueInput[]
+  delete?: Prisma.PackageWhereUniqueInput | Prisma.PackageWhereUniqueInput[]
+  connect?: Prisma.PackageWhereUniqueInput | Prisma.PackageWhereUniqueInput[]
+  update?: Prisma.PackageUpdateWithWhereUniqueWithoutCategoryInput | Prisma.PackageUpdateWithWhereUniqueWithoutCategoryInput[]
+  updateMany?: Prisma.PackageUpdateManyWithWhereWithoutCategoryInput | Prisma.PackageUpdateManyWithWhereWithoutCategoryInput[]
+  deleteMany?: Prisma.PackageScalarWhereInput | Prisma.PackageScalarWhereInput[]
+}
+
+export type PackageUncheckedUpdateManyWithoutCategoryNestedInput = {
+  create?: Prisma.XOR<Prisma.PackageCreateWithoutCategoryInput, Prisma.PackageUncheckedCreateWithoutCategoryInput> | Prisma.PackageCreateWithoutCategoryInput[] | Prisma.PackageUncheckedCreateWithoutCategoryInput[]
+  connectOrCreate?: Prisma.PackageCreateOrConnectWithoutCategoryInput | Prisma.PackageCreateOrConnectWithoutCategoryInput[]
+  upsert?: Prisma.PackageUpsertWithWhereUniqueWithoutCategoryInput | Prisma.PackageUpsertWithWhereUniqueWithoutCategoryInput[]
+  createMany?: Prisma.PackageCreateManyCategoryInputEnvelope
+  set?: Prisma.PackageWhereUniqueInput | Prisma.PackageWhereUniqueInput[]
+  disconnect?: Prisma.PackageWhereUniqueInput | Prisma.PackageWhereUniqueInput[]
+  delete?: Prisma.PackageWhereUniqueInput | Prisma.PackageWhereUniqueInput[]
+  connect?: Prisma.PackageWhereUniqueInput | Prisma.PackageWhereUniqueInput[]
+  update?: Prisma.PackageUpdateWithWhereUniqueWithoutCategoryInput | Prisma.PackageUpdateWithWhereUniqueWithoutCategoryInput[]
+  updateMany?: Prisma.PackageUpdateManyWithWhereWithoutCategoryInput | Prisma.PackageUpdateManyWithWhereWithoutCategoryInput[]
+  deleteMany?: Prisma.PackageScalarWhereInput | Prisma.PackageScalarWhereInput[]
+}
+
 export type EnumPackageStatusFieldUpdateOperationsInput = {
   set?: $Enums.PackageStatus
 }
@@ -1350,7 +1394,6 @@ export type PackageUncheckedUpdateManyWithoutTenantNestedInput = {
 export type PackageCreateWithoutBranchInput = {
   id?: string
   sellerId?: string | null
-  categoryId?: string | null
   billingInvoiceId?: string | null
   manifestId?: string | null
   trackingNum?: string | null
@@ -1383,6 +1426,7 @@ export type PackageCreateWithoutBranchInput = {
   customer: Prisma.CourierCustomerProfileCreateNestedOneWithoutPackagesInput
   mailbox?: Prisma.MailboxCreateNestedOneWithoutPackagesInput
   carrier?: Prisma.CarrierCreateNestedOneWithoutPackagesInput
+  category?: Prisma.PackageCategoryCreateNestedOneWithoutPackagesInput
 }
 
 export type PackageUncheckedCreateWithoutBranchInput = {
@@ -1494,7 +1538,6 @@ export type PackageScalarWhereInput = {
 export type PackageCreateWithoutCarrierInput = {
   id?: string
   sellerId?: string | null
-  categoryId?: string | null
   billingInvoiceId?: string | null
   manifestId?: string | null
   trackingNum?: string | null
@@ -1527,6 +1570,7 @@ export type PackageCreateWithoutCarrierInput = {
   customer: Prisma.CourierCustomerProfileCreateNestedOneWithoutPackagesInput
   branch?: Prisma.BranchCreateNestedOneWithoutPackagesInput
   mailbox?: Prisma.MailboxCreateNestedOneWithoutPackagesInput
+  category?: Prisma.PackageCategoryCreateNestedOneWithoutPackagesInput
 }
 
 export type PackageUncheckedCreateWithoutCarrierInput = {
@@ -1596,7 +1640,6 @@ export type PackageUpdateManyWithWhereWithoutCarrierInput = {
 export type PackageCreateWithoutCustomerInput = {
   id?: string
   sellerId?: string | null
-  categoryId?: string | null
   billingInvoiceId?: string | null
   manifestId?: string | null
   trackingNum?: string | null
@@ -1629,6 +1672,7 @@ export type PackageCreateWithoutCustomerInput = {
   branch?: Prisma.BranchCreateNestedOneWithoutPackagesInput
   mailbox?: Prisma.MailboxCreateNestedOneWithoutPackagesInput
   carrier?: Prisma.CarrierCreateNestedOneWithoutPackagesInput
+  category?: Prisma.PackageCategoryCreateNestedOneWithoutPackagesInput
 }
 
 export type PackageUncheckedCreateWithoutCustomerInput = {
@@ -1698,7 +1742,6 @@ export type PackageUpdateManyWithWhereWithoutCustomerInput = {
 export type PackageCreateWithoutMailboxInput = {
   id?: string
   sellerId?: string | null
-  categoryId?: string | null
   billingInvoiceId?: string | null
   manifestId?: string | null
   trackingNum?: string | null
@@ -1731,6 +1774,7 @@ export type PackageCreateWithoutMailboxInput = {
   customer: Prisma.CourierCustomerProfileCreateNestedOneWithoutPackagesInput
   branch?: Prisma.BranchCreateNestedOneWithoutPackagesInput
   carrier?: Prisma.CarrierCreateNestedOneWithoutPackagesInput
+  category?: Prisma.PackageCategoryCreateNestedOneWithoutPackagesInput
 }
 
 export type PackageUncheckedCreateWithoutMailboxInput = {
@@ -1797,10 +1841,111 @@ export type PackageUpdateManyWithWhereWithoutMailboxInput = {
   data: Prisma.XOR<Prisma.PackageUpdateManyMutationInput, Prisma.PackageUncheckedUpdateManyWithoutMailboxInput>
 }
 
+export type PackageCreateWithoutCategoryInput = {
+  id?: string
+  sellerId?: string | null
+  billingInvoiceId?: string | null
+  manifestId?: string | null
+  trackingNum?: string | null
+  status?: $Enums.PackageStatus
+  packageType?: $Enums.PackageType
+  description?: string | null
+  quantity?: number
+  actualWeight?: number | null
+  chargeableWeight?: number | null
+  length?: number | null
+  width?: number | null
+  height?: number | null
+  dimensionalWeight?: number | null
+  declaredValue?: number | null
+  hsCode?: string | null
+  countryOfOrigin?: string | null
+  hasCustomsDuty?: boolean
+  importDutyAmount?: number | null
+  gctAmount?: number | null
+  customsEntryNumber?: string | null
+  customsClearedAt?: number | null
+  customsHoldReason?: string | null
+  isHazardous?: boolean
+  condition?: string | null
+  collectedAt?: number | null
+  collectedById?: string | null
+  createdAt: number
+  updatedAt: number
+  tenant: Prisma.TenantCreateNestedOneWithoutPackagesInput
+  customer: Prisma.CourierCustomerProfileCreateNestedOneWithoutPackagesInput
+  branch?: Prisma.BranchCreateNestedOneWithoutPackagesInput
+  mailbox?: Prisma.MailboxCreateNestedOneWithoutPackagesInput
+  carrier?: Prisma.CarrierCreateNestedOneWithoutPackagesInput
+}
+
+export type PackageUncheckedCreateWithoutCategoryInput = {
+  id?: string
+  tenantId: string
+  customerId: string
+  branchId?: string | null
+  mailboxId?: string | null
+  carrierId?: string | null
+  sellerId?: string | null
+  billingInvoiceId?: string | null
+  manifestId?: string | null
+  trackingNum?: string | null
+  status?: $Enums.PackageStatus
+  packageType?: $Enums.PackageType
+  description?: string | null
+  quantity?: number
+  actualWeight?: number | null
+  chargeableWeight?: number | null
+  length?: number | null
+  width?: number | null
+  height?: number | null
+  dimensionalWeight?: number | null
+  declaredValue?: number | null
+  hsCode?: string | null
+  countryOfOrigin?: string | null
+  hasCustomsDuty?: boolean
+  importDutyAmount?: number | null
+  gctAmount?: number | null
+  customsEntryNumber?: string | null
+  customsClearedAt?: number | null
+  customsHoldReason?: string | null
+  isHazardous?: boolean
+  condition?: string | null
+  collectedAt?: number | null
+  collectedById?: string | null
+  createdAt: number
+  updatedAt: number
+}
+
+export type PackageCreateOrConnectWithoutCategoryInput = {
+  where: Prisma.PackageWhereUniqueInput
+  create: Prisma.XOR<Prisma.PackageCreateWithoutCategoryInput, Prisma.PackageUncheckedCreateWithoutCategoryInput>
+}
+
+export type PackageCreateManyCategoryInputEnvelope = {
+  data: Prisma.PackageCreateManyCategoryInput | Prisma.PackageCreateManyCategoryInput[]
+  skipDuplicates?: boolean
+}
+
+export type PackageUpsertWithWhereUniqueWithoutCategoryInput = {
+  where: Prisma.PackageWhereUniqueInput
+  update: Prisma.XOR<Prisma.PackageUpdateWithoutCategoryInput, Prisma.PackageUncheckedUpdateWithoutCategoryInput>
+  create: Prisma.XOR<Prisma.PackageCreateWithoutCategoryInput, Prisma.PackageUncheckedCreateWithoutCategoryInput>
+}
+
+export type PackageUpdateWithWhereUniqueWithoutCategoryInput = {
+  where: Prisma.PackageWhereUniqueInput
+  data: Prisma.XOR<Prisma.PackageUpdateWithoutCategoryInput, Prisma.PackageUncheckedUpdateWithoutCategoryInput>
+}
+
+export type PackageUpdateManyWithWhereWithoutCategoryInput = {
+  where: Prisma.PackageScalarWhereInput
+  data: Prisma.XOR<Prisma.PackageUpdateManyMutationInput, Prisma.PackageUncheckedUpdateManyWithoutCategoryInput>
+}
+
 export type PackageCreateWithoutTenantInput = {
   id?: string
   sellerId?: string | null
-  categoryId?: string | null
   billingInvoiceId?: string | null
   manifestId?: string | null
   trackingNum?: string | null
@@ -1833,6 +1978,7 @@ export type PackageCreateWithoutTenantInput = {
   branch?: Prisma.BranchCreateNestedOneWithoutPackagesInput
   mailbox?: Prisma.MailboxCreateNestedOneWithoutPackagesInput
   carrier?: Prisma.CarrierCreateNestedOneWithoutPackagesInput
+  category?: Prisma.PackageCategoryCreateNestedOneWithoutPackagesInput
 }
 
 export type PackageUncheckedCreateWithoutTenantInput = {
@@ -1940,7 +2086,6 @@ export type PackageCreateManyBranchInput = {
 export type PackageUpdateWithoutBranchInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manifestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trackingNum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1973,6 +2118,7 @@ export type PackageUpdateWithoutBranchInput = {
   customer?: Prisma.CourierCustomerProfileUpdateOneRequiredWithoutPackagesNestedInput
   mailbox?: Prisma.MailboxUpdateOneWithoutPackagesNestedInput
   carrier?: Prisma.CarrierUpdateOneWithoutPackagesNestedInput
+  category?: Prisma.PackageCategoryUpdateOneWithoutPackagesNestedInput
 }
 
 export type PackageUncheckedUpdateWithoutBranchInput = {
@@ -2092,7 +2238,6 @@ export type PackageCreateManyCarrierInput = {
 export type PackageUpdateWithoutCarrierInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manifestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trackingNum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2125,6 +2270,7 @@ export type PackageUpdateWithoutCarrierInput = {
   customer?: Prisma.CourierCustomerProfileUpdateOneRequiredWithoutPackagesNestedInput
   branch?: Prisma.BranchUpdateOneWithoutPackagesNestedInput
   mailbox?: Prisma.MailboxUpdateOneWithoutPackagesNestedInput
+  category?: Prisma.PackageCategoryUpdateOneWithoutPackagesNestedInput
 }
 
 export type PackageUncheckedUpdateWithoutCarrierInput = {
@@ -2244,7 +2390,6 @@ export type PackageCreateManyCustomerInput = {
 export type PackageUpdateWithoutCustomerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manifestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trackingNum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2277,6 +2422,7 @@ export type PackageUpdateWithoutCustomerInput = {
   branch?: Prisma.BranchUpdateOneWithoutPackagesNestedInput
   mailbox?: Prisma.MailboxUpdateOneWithoutPackagesNestedInput
   carrier?: Prisma.CarrierUpdateOneWithoutPackagesNestedInput
+  category?: Prisma.PackageCategoryUpdateOneWithoutPackagesNestedInput
 }
 
 export type PackageUncheckedUpdateWithoutCustomerInput = {
@@ -2396,7 +2542,6 @@ export type PackageCreateManyMailboxInput = {
 export type PackageUpdateWithoutMailboxInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manifestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trackingNum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2429,6 +2574,7 @@ export type PackageUpdateWithoutMailboxInput = {
   customer?: Prisma.CourierCustomerProfileUpdateOneRequiredWithoutPackagesNestedInput
   branch?: Prisma.BranchUpdateOneWithoutPackagesNestedInput
   carrier?: Prisma.CarrierUpdateOneWithoutPackagesNestedInput
+  category?: Prisma.PackageCategoryUpdateOneWithoutPackagesNestedInput
 }
 
 export type PackageUncheckedUpdateWithoutMailboxInput = {
@@ -2507,6 +2653,158 @@ export type PackageUncheckedUpdateManyWithoutMailboxInput = {
   updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
+export type PackageCreateManyCategoryInput = {
+  id?: string
+  tenantId: string
+  customerId: string
+  branchId?: string | null
+  mailboxId?: string | null
+  carrierId?: string | null
+  sellerId?: string | null
+  billingInvoiceId?: string | null
+  manifestId?: string | null
+  trackingNum?: string | null
+  status?: $Enums.PackageStatus
+  packageType?: $Enums.PackageType
+  description?: string | null
+  quantity?: number
+  actualWeight?: number | null
+  chargeableWeight?: number | null
+  length?: number | null
+  width?: number | null
+  height?: number | null
+  dimensionalWeight?: number | null
+  declaredValue?: number | null
+  hsCode?: string | null
+  countryOfOrigin?: string | null
+  hasCustomsDuty?: boolean
+  importDutyAmount?: number | null
+  gctAmount?: number | null
+  customsEntryNumber?: string | null
+  customsClearedAt?: number | null
+  customsHoldReason?: string | null
+  isHazardous?: boolean
+  condition?: string | null
+  collectedAt?: number | null
+  collectedById?: string | null
+  createdAt: number
+  updatedAt: number
+}
+
+export type PackageUpdateWithoutCategoryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manifestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus
+  packageType?: Prisma.EnumPackageTypeFieldUpdateOperationsInput | $Enums.PackageType
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  actualWeight?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  chargeableWeight?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  length?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  width?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  height?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  dimensionalWeight?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  declaredValue?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  hsCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  countryOfOrigin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasCustomsDuty?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  importDutyAmount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  gctAmount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  customsEntryNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsClearedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  customsHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isHazardous?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  condition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  collectedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutPackagesNestedInput
+  customer?: Prisma.CourierCustomerProfileUpdateOneRequiredWithoutPackagesNestedInput
+  branch?: Prisma.BranchUpdateOneWithoutPackagesNestedInput
+  mailbox?: Prisma.MailboxUpdateOneWithoutPackagesNestedInput
+  carrier?: Prisma.CarrierUpdateOneWithoutPackagesNestedInput
+}
+
+export type PackageUncheckedUpdateWithoutCategoryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mailboxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manifestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus
+  packageType?: Prisma.EnumPackageTypeFieldUpdateOperationsInput | $Enums.PackageType
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  actualWeight?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  chargeableWeight?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  length?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  width?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  height?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  dimensionalWeight?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  declaredValue?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  hsCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  countryOfOrigin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasCustomsDuty?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  importDutyAmount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  gctAmount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  customsEntryNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsClearedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  customsHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isHazardous?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  condition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  collectedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
+export type PackageUncheckedUpdateManyWithoutCategoryInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  branchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mailboxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  carrierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manifestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingNum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus
+  packageType?: Prisma.EnumPackageTypeFieldUpdateOperationsInput | $Enums.PackageType
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  actualWeight?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  chargeableWeight?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  length?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  width?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  height?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  dimensionalWeight?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  declaredValue?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  hsCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  countryOfOrigin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  hasCustomsDuty?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  importDutyAmount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  gctAmount?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  customsEntryNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customsClearedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  customsHoldReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isHazardous?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  condition?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  collectedAt?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  collectedById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
 export type PackageCreateManyTenantInput = {
   id?: string
   customerId: string
@@ -2548,7 +2846,6 @@ export type PackageCreateManyTenantInput = {
 export type PackageUpdateWithoutTenantInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sellerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingInvoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   manifestId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trackingNum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2581,6 +2878,7 @@ export type PackageUpdateWithoutTenantInput = {
   branch?: Prisma.BranchUpdateOneWithoutPackagesNestedInput
   mailbox?: Prisma.MailboxUpdateOneWithoutPackagesNestedInput
   carrier?: Prisma.CarrierUpdateOneWithoutPackagesNestedInput
+  category?: Prisma.PackageCategoryUpdateOneWithoutPackagesNestedInput
 }
 
 export type PackageUncheckedUpdateWithoutTenantInput = {
@@ -2703,6 +3001,7 @@ export type PackageSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   branch?: boolean | Prisma.Package$branchArgs<ExtArgs>
   mailbox?: boolean | Prisma.Package$mailboxArgs<ExtArgs>
   carrier?: boolean | Prisma.Package$carrierArgs<ExtArgs>
+  category?: boolean | Prisma.Package$categoryArgs<ExtArgs>
 }, ExtArgs["result"]["package"]>
 
 export type PackageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -2747,6 +3046,7 @@ export type PackageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   branch?: boolean | Prisma.Package$branchArgs<ExtArgs>
   mailbox?: boolean | Prisma.Package$mailboxArgs<ExtArgs>
   carrier?: boolean | Prisma.Package$carrierArgs<ExtArgs>
+  category?: boolean | Prisma.Package$categoryArgs<ExtArgs>
 }, ExtArgs["result"]["package"]>
 
 export type PackageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -2791,6 +3091,7 @@ export type PackageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   branch?: boolean | Prisma.Package$branchArgs<ExtArgs>
   mailbox?: boolean | Prisma.Package$mailboxArgs<ExtArgs>
   carrier?: boolean | Prisma.Package$carrierArgs<ExtArgs>
+  category?: boolean | Prisma.Package$categoryArgs<ExtArgs>
 }, ExtArgs["result"]["package"]>
 
 export type PackageSelectScalar = {
@@ -2839,6 +3140,7 @@ export type PackageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   branch?: boolean | Prisma.Package$branchArgs<ExtArgs>
   mailbox?: boolean | Prisma.Package$mailboxArgs<ExtArgs>
   carrier?: boolean | Prisma.Package$carrierArgs<ExtArgs>
+  category?: boolean | Prisma.Package$categoryArgs<ExtArgs>
 }
 export type PackageIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
@@ -2846,6 +3148,7 @@ export type PackageIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   branch?: boolean | Prisma.Package$branchArgs<ExtArgs>
   mailbox?: boolean | Prisma.Package$mailboxArgs<ExtArgs>
   carrier?: boolean | Prisma.Package$carrierArgs<ExtArgs>
+  category?: boolean | Prisma.Package$categoryArgs<ExtArgs>
 }
 export type PackageIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
@@ -2853,6 +3156,7 @@ export type PackageIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   branch?: boolean | Prisma.Package$branchArgs<ExtArgs>
   mailbox?: boolean | Prisma.Package$mailboxArgs<ExtArgs>
   carrier?: boolean | Prisma.Package$carrierArgs<ExtArgs>
+  category?: boolean | Prisma.Package$categoryArgs<ExtArgs>
 }
 
 export type $PackagePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2863,6 +3167,7 @@ export type $PackagePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     branch: Prisma.$BranchPayload<ExtArgs> | null
     mailbox: Prisma.$MailboxPayload<ExtArgs> | null
     carrier: Prisma.$CarrierPayload<ExtArgs> | null
+    category: Prisma.$PackageCategoryPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3300,6 +3605,7 @@ export interface Prisma__PackageClient<T, Null = never, ExtArgs extends runtime.
   branch<T extends Prisma.Package$branchArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Package$branchArgs<ExtArgs>>): Prisma.Prisma__BranchClient<runtime.Types.Result.GetResult<Prisma.$BranchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   mailbox<T extends Prisma.Package$mailboxArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Package$mailboxArgs<ExtArgs>>): Prisma.Prisma__MailboxClient<runtime.Types.Result.GetResult<Prisma.$MailboxPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   carrier<T extends Prisma.Package$carrierArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Package$carrierArgs<ExtArgs>>): Prisma.Prisma__CarrierClient<runtime.Types.Result.GetResult<Prisma.$CarrierPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  category<T extends Prisma.Package$categoryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Package$categoryArgs<ExtArgs>>): Prisma.Prisma__PackageCategoryClient<runtime.Types.Result.GetResult<Prisma.$PackageCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3820,6 +4126,25 @@ export type Package$carrierArgs<ExtArgs extends runtime.Types.Extensions.Interna
    */
   include?: Prisma.CarrierInclude<ExtArgs> | null
   where?: Prisma.CarrierWhereInput
+}
+
+/**
+ * Package.category
+ */
+export type Package$categoryArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PackageCategory
+   */
+  select?: Prisma.PackageCategorySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PackageCategory
+   */
+  omit?: Prisma.PackageCategoryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PackageCategoryInclude<ExtArgs> | null
+  where?: Prisma.PackageCategoryWhereInput
 }
 
 /**
