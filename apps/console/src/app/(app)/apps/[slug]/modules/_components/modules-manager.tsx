@@ -69,8 +69,13 @@ export function ModulesManager({
   const canManage = contextState.value?.canManage ?? false
   const registryManaged = contextState.value?.registryManaged ?? false
   const registryModuleKeys = contextState.value?.registryModuleKeys ?? []
+  const registryModules = contextState.value?.registryModules ?? []
   const resolvedModules = localModules ?? modulesState.value?.data ?? []
   const resolvedFeatures = featuresState.value?.data ?? []
+  const materializedKeys = new Set(resolvedModules.map((module) => module.key))
+  const declaredOnlyModules = registryModules.filter(
+    (module) => !materializedKeys.has(module.key)
+  )
   const modulesError = modulesState.value?.error
   const featuresError = featuresState.value?.error
   const optionsUnavailable =
@@ -276,6 +281,50 @@ export function ModulesManager({
           </Table>
         </div>
       )}
+
+      {!modulesState.pending &&
+      !modulesState.error &&
+      declaredOnlyModules.length > 0 ? (
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-sm font-semibold">Declared capabilities</h2>
+            <p className="text-muted-foreground mt-1 text-xs">
+              These capabilities are defined by the application registry but are
+              not commercially materialized. They cannot be added to plans until
+              the application has real module-entitlement semantics for them.
+            </p>
+          </div>
+          <div className="876-card -mx-4 overflow-hidden rounded-none border-x-0 sm:-mx-6 lg:-mx-8">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Capability</TableHead>
+                  <TableHead>Key</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {declaredOnlyModules.map((module) => (
+                  <TableRow key={module.key}>
+                    <TableCell>
+                      <p className="font-medium">{module.name}</p>
+                      <p className="text-muted-foreground max-w-md text-xs">
+                        {module.description}
+                      </p>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {module.key}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">Declared only</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </section>
+      ) : null}
 
       {editingId && (
         <ModuleForm

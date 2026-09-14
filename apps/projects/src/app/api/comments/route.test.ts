@@ -2,12 +2,12 @@ import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
-  requirePermission: vi.fn(),
+  requireAccess: vi.fn(),
   create: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/api-permission', () => ({
-  requireApiPermission: mocks.requirePermission,
+  requireApiAccess: mocks.requireAccess,
 }))
 vi.mock('@/lib/services/projects', () => ({
   projects: { comments: { create: mocks.create } },
@@ -25,7 +25,7 @@ function request(body?: unknown) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mocks.requirePermission.mockResolvedValue({
+  mocks.requireAccess.mockResolvedValue({
     response: null,
     orgId: 'org_1',
     userId: 'usr_1',
@@ -38,7 +38,7 @@ beforeEach(() => {
 
 describe('POST /api/comments', () => {
   it('returns the authorization response without calling the client', async () => {
-    mocks.requirePermission.mockResolvedValue({
+    mocks.requireAccess.mockResolvedValue({
       response: new Response('{"error":"Unauthorized."}', { status: 401 }),
     })
 
@@ -62,7 +62,10 @@ describe('POST /api/comments', () => {
       request({ issueRef: 'CONSOLE-12', body: 'Note' })
     )
 
-    expect(mocks.requirePermission).toHaveBeenCalledWith('comments.create')
+    expect(mocks.requireAccess).toHaveBeenCalledWith({
+      module: 'issues',
+      permission: 'comments.create',
+    })
     expect(mocks.create).toHaveBeenCalledWith('org_1', 'CONSOLE-12', {
       body: 'Note',
       authorUserId: 'usr_1',

@@ -36,12 +36,19 @@ async function loadModulesContext(slug: string): Promise<ModulesContext> {
   if (!app || !['product', 'platform'].includes(app.app_kind)) notFound()
 
   const registry = getAppModuleRegistry(app.slug)
+  const registryModules =
+    registry?.modules.map((module) => ({
+      key: module.key,
+      name: module.label,
+      description: module.description,
+    })) ?? []
 
   return {
     appId: app.id,
     canManage: app.app_kind === 'product',
     registryManaged: registry !== undefined,
-    registryModuleKeys: registry?.modules.map((module) => module.key) ?? [],
+    registryModuleKeys: registryModules.map((module) => module.key),
+    registryModules,
   }
 }
 

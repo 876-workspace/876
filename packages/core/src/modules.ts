@@ -132,6 +132,135 @@ export const FINANCE_MODULES = {
   },
 } as const satisfies Record<string, AppModuleDefinition>
 
+/** Stable product capability identity for 876 Projects. */
+export const PROJECTS_MODULES = {
+  projects: {
+    key: 'projects',
+    label: 'Projects',
+    description: 'Plan and manage projects and their work streams.',
+  },
+  issues: {
+    key: 'issues',
+    label: 'Issues',
+    description: 'Track project issues, status, priority, and delivery work.',
+  },
+  reports: {
+    key: 'reports',
+    label: 'Reports',
+    description: 'Review project delivery, throughput, and progress reporting.',
+  },
+} as const satisfies Record<string, AppModuleDefinition>
+
+/**
+ * Commerce capability identity. This is the product vocabulary, not a promise
+ * that every capability is implemented or commercially selectable today.
+ */
+export const COMMERCE_MODULES = {
+  catalog: {
+    key: 'catalog',
+    label: 'Catalog',
+    description: 'Manage products, variants, collections, and merchandising.',
+  },
+  orders: {
+    key: 'orders',
+    label: 'Orders',
+    description: 'Manage customer orders and their commerce lifecycle.',
+  },
+  customers: {
+    key: 'customers',
+    label: 'Customers',
+    description: 'Manage commerce customer profiles and account relationships.',
+  },
+  inventory: {
+    key: 'inventory',
+    label: 'Inventory',
+    description:
+      'Manage stock availability, locations, and inventory movement.',
+  },
+  storefront: {
+    key: 'storefront',
+    label: 'Storefront',
+    description:
+      'Manage online stores, themes, content, navigation, and domains.',
+  },
+  checkout: {
+    key: 'checkout',
+    label: 'Checkout',
+    description: 'Manage carts, checkout sessions, and checkout configuration.',
+  },
+  payments: {
+    key: 'payments',
+    label: 'Payments',
+    description: 'Orchestrate commerce payment and transaction workflows.',
+  },
+  discounts: {
+    key: 'discounts',
+    label: 'Discounts',
+    description: 'Manage discount codes, automatic discounts, and promotions.',
+  },
+  shipping: {
+    key: 'shipping',
+    label: 'Shipping',
+    description:
+      'Configure shipping zones, rates, carriers, and delivery options.',
+  },
+  fulfillment: {
+    key: 'fulfillment',
+    label: 'Fulfillment',
+    description:
+      'Manage picking, packing, shipment, and fulfillment lifecycle.',
+  },
+  returns: {
+    key: 'returns',
+    label: 'Returns',
+    description: 'Manage returns, exchanges, return requests, and disposition.',
+  },
+  markets: {
+    key: 'markets',
+    label: 'Markets',
+    description:
+      'Manage countries, currencies, localization, and regional selling.',
+  },
+  marketing: {
+    key: 'marketing',
+    label: 'Marketing',
+    description:
+      'Manage commerce campaigns, acquisition, and promotion workflows.',
+  },
+  analytics: {
+    key: 'analytics',
+    label: 'Analytics',
+    description: 'Review commerce performance, sales metrics, and reports.',
+  },
+  pos: {
+    key: 'pos',
+    label: 'POS',
+    description: 'Manage physical retail and point-of-sale operations.',
+  },
+  b2b: {
+    key: 'b2b',
+    label: 'B2B',
+    description:
+      'Manage companies, wholesale catalogs, terms, and B2B purchasing.',
+  },
+  subscriptions: {
+    key: 'subscriptions',
+    label: 'Subscriptions',
+    description:
+      'Offer recurring commerce through the shared subscription engine.',
+  },
+  channels: {
+    key: 'channels',
+    label: 'Channels',
+    description: 'Manage external sales channels and marketplace distribution.',
+  },
+  automation: {
+    key: 'automation',
+    label: 'Automation',
+    description: 'Automate commerce workflows and event-driven operations.',
+  },
+} as const satisfies Record<string, AppModuleDefinition>
+
 export const INVOICE_MODULE_REGISTRY = defineAppModuleRegistry({
   app: '876-invoice',
   modules: [
@@ -159,8 +288,43 @@ export const BILLING_MODULE_REGISTRY = defineAppModuleRegistry({
   ],
 })
 
+export const PROJECTS_MODULE_REGISTRY = defineAppModuleRegistry({
+  app: '876-projects',
+  modules: [
+    PROJECTS_MODULES.projects,
+    PROJECTS_MODULES.issues,
+    PROJECTS_MODULES.reports,
+  ],
+})
+
+export const COMMERCE_MODULE_REGISTRY = defineAppModuleRegistry({
+  app: '876-commerce',
+  modules: [
+    COMMERCE_MODULES.catalog,
+    COMMERCE_MODULES.orders,
+    COMMERCE_MODULES.customers,
+    COMMERCE_MODULES.inventory,
+    COMMERCE_MODULES.storefront,
+    COMMERCE_MODULES.checkout,
+    COMMERCE_MODULES.payments,
+    COMMERCE_MODULES.discounts,
+    COMMERCE_MODULES.shipping,
+    COMMERCE_MODULES.fulfillment,
+    COMMERCE_MODULES.returns,
+    COMMERCE_MODULES.markets,
+    COMMERCE_MODULES.marketing,
+    COMMERCE_MODULES.analytics,
+    COMMERCE_MODULES.pos,
+    COMMERCE_MODULES.b2b,
+    COMMERCE_MODULES.subscriptions,
+    COMMERCE_MODULES.channels,
+    COMMERCE_MODULES.automation,
+  ],
+})
+
 /**
  * Modules that may be materialized into Core's commercial entitlement plane.
+ * Canonical identity alone never makes a capability plan-selectable.
  *
  * Invoice currently has no competing aggregate commercial taxonomy, so its
  * implemented registry modules can be sold directly.
@@ -174,6 +338,9 @@ export const BILLING_MODULE_REGISTRY = defineAppModuleRegistry({
  *
  * Requests is deliberately present in both projections because this work wires
  * its exact app-scoped feature gate in both finance hosts.
+ *
+ * Projects' `reports` remains canonical but is not commercial until its surface
+ * exists. Commerce remains empty until a capability has runtime entitlement semantics.
  */
 export const INVOICE_COMMERCIAL_MODULE_KEYS = [
   'invoices',
@@ -195,9 +362,16 @@ export const BILLING_COMMERCIAL_MODULE_KEYS = [
   'requests',
 ] as const
 
+export const PROJECTS_COMMERCIAL_MODULE_KEYS = ['projects', 'issues'] as const
+
+/** Commerce identity is established before sellable module gates. */
+export const COMMERCE_COMMERCIAL_MODULE_KEYS = [] as const
+
 export const APP_MODULE_REGISTRIES = {
   '876-billing': BILLING_MODULE_REGISTRY,
   '876-invoice': INVOICE_MODULE_REGISTRY,
+  '876-projects': PROJECTS_MODULE_REGISTRY,
+  '876-commerce': COMMERCE_MODULE_REGISTRY,
 } as const
 
 export type RegisteredModuleApp = keyof typeof APP_MODULE_REGISTRIES

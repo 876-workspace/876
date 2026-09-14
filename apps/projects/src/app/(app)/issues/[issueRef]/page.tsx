@@ -5,7 +5,7 @@ import { PageBreadcrumb } from '@/components/page-breadcrumb'
 import { IssueDetailData } from './_components/issue-detail-data'
 import { IssueDetailSkeleton } from './_components/issue-detail-skeleton'
 import {
-  requireAppPermission,
+  requireAppAccess,
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
 
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function IssueDetailPage({ params }: Props) {
-  await requireAppPermission('issues.view')
+  await requireAppAccess({ module: 'issues', permission: 'issues.view' })
   const { orgId, userId } = await requireProjectsContext()
 
   return (

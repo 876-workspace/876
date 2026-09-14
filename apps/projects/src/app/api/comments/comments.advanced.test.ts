@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
-  requirePermission: vi.fn(),
+  requireAccess: vi.fn(),
   retrieve: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
@@ -10,7 +10,8 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@/lib/auth/api-permission', () => ({
-  requireApiPermission: mocks.requirePermission,
+  requireApiPermission: mocks.requireAccess,
+  requireApiAccess: mocks.requireAccess,
 }))
 vi.mock('@/lib/services/projects', () => ({
   projects: {
@@ -82,7 +83,7 @@ function sampleCorpus(seed: number, count: number): string[] {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mocks.requirePermission.mockResolvedValue({
+  mocks.requireAccess.mockResolvedValue({
     response: null,
     orgId: 'org_1',
     userId: 'usr_1',
@@ -169,11 +170,7 @@ describe('PATCH /api/comments/[commentId] — ownership boundary', () => {
     )
 
     expect(response.status).toBe(200)
-    expect(mocks.retrieve).toHaveBeenCalledWith(
-      'org_1',
-      'CONSOLE-12',
-      'cmt_1'
-    )
+    expect(mocks.retrieve).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_1')
     expect(mocks.update).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_1', {
       body: body.trim(),
     })
@@ -219,11 +216,7 @@ describe('DELETE /api/comments/[commentId] — ownership boundary', () => {
     )
 
     expect(response.status).toBe(200)
-    expect(mocks.retrieve).toHaveBeenCalledWith(
-      'org_1',
-      'CONSOLE-12',
-      'cmt_1'
-    )
+    expect(mocks.retrieve).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_1')
     expect(mocks.remove).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_1')
   })
 

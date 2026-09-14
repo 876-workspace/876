@@ -1,29 +1,23 @@
+import { PROJECTS_MODULES } from '@876/core/modules'
+
 /**
- * The 876 Projects module catalog.
+ * Product-surface availability for 876 Projects.
  *
- * A module is a functional area an organization may use. Module state is
- * org-controlled product usage and is stored by the owning app; a feature flag
- * is platform-controlled rollout. They are different layers and must not be
- * conflated (`.claude/rules/module-settings.md`).
- *
- * Keys are canonical kebab-case and must match the permission-catalog module
- * keys, so `<module>.view` / `<module>.edit` can gate each module's settings
- * surface. They are durable persisted identifiers: renaming one is a
- * coordinated migration, never a refactor.
- *
- * This declares the catalog only. No module state, preference override, or
- * provisioning data is stored yet — `available: false` marks a module whose
- * surface is still to be built, so nothing offers a door that opens on nothing.
+ * This is intentionally not the application-module registry. Core owns stable
+ * module identity for `projects`, `issues`, and `reports`; this local catalog
+ * tracks whether finer UI/permission surfaces exist today. A navigation or
+ * permission surface does not become a commercial module just because it has a
+ * key (`.claude/rules/module-settings.md`).
  */
-export interface ProjectsModule {
+export interface ProjectsSurface {
   key: string
   label: string
   description: string
-  /** Whether the module's surface exists today. Planned modules carry no href. */
+  /** Whether the surface exists today. Planned surfaces carry no href. */
   available: boolean
 }
 
-export const PROJECTS_MODULES: readonly ProjectsModule[] = [
+export const PROJECTS_SURFACES: readonly ProjectsSurface[] = [
   {
     key: 'dashboard',
     label: 'Dashboard',
@@ -31,15 +25,11 @@ export const PROJECTS_MODULES: readonly ProjectsModule[] = [
     available: true,
   },
   {
-    key: 'projects',
-    label: 'Projects',
-    description: 'Projects and their issue key prefixes.',
+    ...PROJECTS_MODULES.projects,
     available: true,
   },
   {
-    key: 'issues',
-    label: 'Issues',
-    description: 'Issue tracking, status and priority.',
+    ...PROJECTS_MODULES.issues,
     available: true,
   },
   {
@@ -61,9 +51,7 @@ export const PROJECTS_MODULES: readonly ProjectsModule[] = [
     available: true,
   },
   {
-    key: 'reports',
-    label: 'Reports',
-    description: 'Delivery and throughput reporting.',
+    ...PROJECTS_MODULES.reports,
     available: false,
   },
   {

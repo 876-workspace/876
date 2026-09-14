@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
+  requireAccess: vi.fn(),
   requirePermission: vi.fn(),
   createProject: vi.fn(),
   createIssue: vi.fn(),
@@ -9,6 +10,7 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@/lib/auth/api-permission', () => ({
+  requireApiAccess: mocks.requireAccess,
   requireApiPermission: mocks.requirePermission,
 }))
 vi.mock('@/lib/services/projects', () => ({
@@ -34,11 +36,13 @@ function request(url: string, body?: unknown) {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mocks.requirePermission.mockResolvedValue({
+  const allowed = {
     response: null,
     orgId: 'org_1',
     userId: 'usr_1',
-  })
+  }
+  mocks.requireAccess.mockResolvedValue(allowed)
+  mocks.requirePermission.mockResolvedValue(allowed)
   mocks.createProject.mockResolvedValue({
     data: { object: 'projects.project', id: 'prj_1' },
     error: null,
@@ -54,15 +58,18 @@ beforeEach(() => {
 })
 
 describe('POST /api/projects', () => {
-  it('authorizes on projects.create before touching the client', async () => {
+  it('authorizes on the projects module and projects.create before touching the client', async () => {
     await createProjectRoute(request('/api/projects', { name: 'Console' }))
 
-    expect(mocks.requirePermission).toHaveBeenCalledWith('projects.create')
-    expect(mocks.requirePermission).toHaveBeenCalledTimes(1)
+    expect(mocks.requireAccess).toHaveBeenCalledWith({
+      module: 'projects',
+      permission: 'projects.create',
+    })
+    expect(mocks.requireAccess).toHaveBeenCalledTimes(1)
   })
 
   it('returns the guard response and never calls the client when denied', async () => {
-    mocks.requirePermission.mockResolvedValue({
+    mocks.requireAccess.mockResolvedValue({
       response: new Response('{"error":"Forbidden."}', { status: 403 }),
     })
 
@@ -137,10 +144,13 @@ describe('POST /api/projects', () => {
 })
 
 describe('POST /api/issues', () => {
-  it('authorizes on issues.create', async () => {
+  it('authorizes on the issues module and issues.create', async () => {
     await createIssueRoute(request('/api/issues', { title: 'Fix login' }))
 
-    expect(mocks.requirePermission).toHaveBeenCalledWith('issues.create')
+    expect(mocks.requireAccess).toHaveBeenCalledWith({
+      module: 'issues',
+      permission: 'issues.create',
+    })
   })
 
   it('creates the issue scoped to the authorized organization', async () => {
@@ -183,7 +193,7 @@ describe('POST /api/issues', () => {
   })
 
   it('never calls the client when denied', async () => {
-    mocks.requirePermission.mockResolvedValue({
+    mocks.requireAccess.mockResolvedValue({
       response: new Response('{}', { status: 403 }),
     })
 
@@ -194,10 +204,14 @@ describe('POST /api/issues', () => {
 })
 
 describe('POST /api/labels', () => {
-  it('authorizes on labels.create', async () => {
+  it('authorizes labels within the issues module', async () => {
     await createLabelRoute(request('/api/labels', { name: 'bug' }))
 
-    expect(mocks.requirePermission).toHaveBeenCalledWith('labels.create')
+    expect(mocks.requireAccess).toHaveBeenCalledWith({
+      module: 'issues',
+      permission: 'labels.create',
+    })
+    expect(mocks.requirePermission).not.toHaveBeenCalled()
   })
 
   it('creates the label scoped to the authorized organization', async () => {
@@ -218,8 +232,8 @@ describe('POST /api/labels', () => {
     expect(mocks.createLabel).not.toHaveBeenCalled()
   })
 
-  it('never calls the client when denied', async () => {
-    mocks.requirePermission.mockResolvedValue({
+  it('never calls the client when module or permission access is denied', async () => {
+    mocks.requireAccess.mockResolvedValue({
       response: new Response('{}', { status: 403 }),
     })
 

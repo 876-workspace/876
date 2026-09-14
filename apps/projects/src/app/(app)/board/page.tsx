@@ -5,12 +5,12 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
 import { BoardData } from '@/features/projects/components/board-data'
-import { requireAppPermission } from '@/lib/auth/require-projects-context'
+import { requireAppAccess } from '@/lib/auth/require-projects-context'
 
 export const metadata: Metadata = { title: 'Board' }
 
 export default async function BoardPage() {
-  await requireAppPermission('issues.view')
+  await requireAppAccess({ module: 'issues', permission: 'issues.view' })
 
   return (
     <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">

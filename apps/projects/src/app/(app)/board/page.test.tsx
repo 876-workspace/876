@@ -11,7 +11,7 @@ vi.mock('next/navigation', () => ({
 }))
 
 vi.mock('@/lib/auth/require-projects-context', () => ({
-  requireAppPermission: vi.fn().mockResolvedValue(undefined),
+  requireAppAccess: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@/features/projects/components/board-data', () => ({

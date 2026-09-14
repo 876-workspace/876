@@ -52,6 +52,15 @@ function renderManager(
         canManage: true,
         registryManaged,
         registryModuleKeys: registryManaged ? ['invoices'] : [],
+        registryModules: registryManaged
+          ? [
+              {
+                key: 'invoices',
+                name: 'Invoices',
+                description: MODULE.description ?? '',
+              },
+            ]
+          : [],
       }}
       modules={{ data: [module], error: null }}
       features={{ data: [], error: null }}
@@ -143,6 +152,45 @@ describe('ModulesManager registry ownership', () => {
     expect(screen.queryByText('Registry managed')).not.toBeInTheDocument()
   })
 
+  it('shows declared registry capabilities without making them editable commercial modules', () => {
+    render(
+      <ModulesManager
+        context={{
+          appId: 'app_commerce',
+          canManage: true,
+          registryManaged: true,
+          registryModuleKeys: ['catalog', 'orders'],
+          registryModules: [
+            {
+              key: 'catalog',
+              name: 'Catalog',
+              description: 'Manage products and merchandising.',
+            },
+            {
+              key: 'orders',
+              name: 'Orders',
+              description: 'Manage customer orders.',
+            },
+          ],
+        }}
+        modules={{ data: [], error: null }}
+        features={{ data: [], error: null }}
+      />
+    )
+
+    expect(screen.getByText('Declared capabilities')).toBeInTheDocument()
+    expect(screen.getByText('Catalog')).toBeInTheDocument()
+    expect(screen.getByText('Orders')).toBeInTheDocument()
+    expect(screen.getAllByText('Declared only')).toHaveLength(2)
+    expect(screen.queryByRole('button', { name: /Edit Catalog/i })).toBeNull()
+  })
+
+  it('does not duplicate a materialized registry module in declared-only capabilities', () => {
+    renderManager(true)
+
+    expect(screen.queryByText('Declared capabilities')).not.toBeInTheDocument()
+  })
+
   it('blocks saving when rollout options fail so an existing association cannot be cleared', async () => {
     const user = userEvent.setup()
     render(
@@ -152,6 +200,13 @@ describe('ModulesManager registry ownership', () => {
           canManage: true,
           registryManaged: true,
           registryModuleKeys: ['subscriptions'],
+          registryModules: [
+            {
+              key: 'subscriptions',
+              name: 'Subscriptions',
+              description: 'Recurring billing.',
+            },
+          ],
         }}
         modules={{ data: [LEGACY_MODULE], error: null }}
         features={{

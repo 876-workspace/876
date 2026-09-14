@@ -11,14 +11,14 @@ import { Suspense } from 'react'
 
 import { IssuesData } from '@/features/projects/components/issues-data'
 import { ISSUES_SKELETON_COLUMNS } from '@876/projects-ui/skeleton-columns'
-import { requireAppPermission } from '@/lib/auth/require-projects-context'
+import { requireAppAccess } from '@/lib/auth/require-projects-context'
 
 export const metadata: Metadata = { title: 'Issues' }
 
 type Props = { searchParams: Promise<{ status?: string }> }
 
 export default async function IssuesPage({ searchParams }: Props) {
-  await requireAppPermission('issues.view')
+  await requireAppAccess({ module: 'issues', permission: 'issues.view' })
   const { status } = await searchParams
   const selectedStatus: IssueFilterStatus = isIssueStatus(status)
     ? status

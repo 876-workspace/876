@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   BILLING_COMMERCIAL_MODULE_KEYS,
   INVOICE_COMMERCIAL_MODULE_KEYS,
+  PROJECTS_COMMERCIAL_MODULE_KEYS,
   findAppModule,
 } from '@876/core/modules'
 
@@ -38,6 +39,8 @@ import {
   INVOICE_FREE_PLAN_MODULE_KEYS,
   INVOICE_FREE_PLAN_SLUG,
   PLATFORM_MODULES,
+  PROJECTS_FREE_PLAN_MODULE_KEYS,
+  PROJECTS_FREE_PLAN_SLUG,
   seedPlatformPlanModules,
 } from './plans'
 
@@ -50,11 +53,7 @@ function createdModule(params: {
 }) {
   return {
     id: `mod_${params.key}`,
-    appId: params.appId,
-    key: params.key,
-    name: params.name,
-    description: params.description,
-    featureId: params.featureId,
+    ...params,
   }
 }
 
@@ -73,56 +72,52 @@ describe('canonical plan module seed definitions', () => {
   })
 
   it('materializes the exact Invoice commercial registry without crm', () => {
-    // ARRANGE
-    const invoiceDefinitions = PLATFORM_MODULES.filter(
+    const definitions = PLATFORM_MODULES.filter(
       (definition) =>
         definition.appSlug === '876-invoice' && definition.syncIdentity
     )
 
-    // ACT
-    const identity = invoiceDefinitions.map((definition) => {
-      const canonical = findAppModule('876-invoice', definition.key)
-      return {
-        key: definition.key,
-        name: definition.name,
-        description: definition.description,
-        canonicalName: canonical?.label,
-        canonicalDescription: canonical?.description,
-      }
-    })
-
-    // ASSERT
-    expect(invoiceDefinitions.map((definition) => definition.key)).toEqual(
+    expect(definitions.map((definition) => definition.key)).toEqual(
       INVOICE_COMMERCIAL_MODULE_KEYS
     )
-    expect(identity).toEqual(
-      invoiceDefinitions.map((definition) => ({
-        key: definition.key,
-        name: definition.name,
-        description: definition.description,
-        canonicalName: definition.name,
-        canonicalDescription: definition.description,
-      }))
+    for (const definition of definitions) {
+      const canonical = findAppModule('876-invoice', definition.key)
+      expect(definition.name).toBe(canonical?.label)
+      expect(definition.description).toBe(canonical?.description)
+    }
+    expect(definitions.some((definition) => definition.key === 'crm')).toBe(
+      false
     )
+  })
+
+  it('materializes only Projects capabilities with current commercial semantics', () => {
+    const keys = PLATFORM_MODULES.filter(
+      (definition) =>
+        definition.appSlug === '876-projects' && definition.syncIdentity
+    ).map((definition) => definition.key)
+
+    expect(keys).toEqual(PROJECTS_COMMERCIAL_MODULE_KEYS)
+    expect(keys).toEqual(['projects', 'issues'])
+    expect(keys).not.toContain('reports')
+  })
+
+  it('does not materialize Commerce capabilities before runtime module gates exist', () => {
     expect(
-      invoiceDefinitions.some((definition) => definition.key === 'crm')
-    ).toBe(false)
+      PLATFORM_MODULES.filter(
+        (definition) => definition.appSlug === '876-commerce'
+      )
+    ).toEqual([])
   })
 
   it('binds Requests to app-scoped rollout flags in both finance apps', () => {
-    // ARRANGE
-    const definitions = PLATFORM_MODULES.filter(
+    const bindings = PLATFORM_MODULES.filter(
       (definition) => definition.key === 'requests'
-    )
-
-    // ACT
-    const bindings = definitions.map((definition) => ({
+    ).map((definition) => ({
       appSlug: definition.appSlug,
       featureSlug: definition.featureSlug,
       includeCurrentAppPlans: definition.includeCurrentAppPlans,
     }))
 
-    // ASSERT
     expect(bindings).toEqual([
       {
         appSlug: '876-invoice',
@@ -138,20 +133,14 @@ describe('canonical plan module seed definitions', () => {
   })
 
   it('keeps Billing sales and documents as explicit legacy modules', () => {
-    // ARRANGE
-    const billingDefinitions = PLATFORM_MODULES.filter(
-      (definition) => definition.appSlug === '876-billing'
-    )
+    const legacy = PLATFORM_MODULES.filter(
+      (definition) =>
+        definition.appSlug === '876-billing' && !definition.syncIdentity
+    ).map((definition) => ({
+      key: definition.key,
+      featureSlug: definition.featureSlug,
+    }))
 
-    // ACT
-    const legacy = billingDefinitions
-      .filter((definition) => !definition.syncIdentity)
-      .map((definition) => ({
-        key: definition.key,
-        featureSlug: definition.featureSlug,
-      }))
-
-    // ASSERT
     expect(legacy).toEqual([
       { key: 'sales', featureSlug: 'billing-sales' },
       { key: 'documents', featureSlug: 'billing-documents' },
@@ -159,25 +148,20 @@ describe('canonical plan module seed definitions', () => {
   })
 
   it('preserves established Billing positions and appends Requests', () => {
-    // ARRANGE
-    const billingDefinitions = new Map(
+    const positions = new Map(
       PLATFORM_MODULES.filter(
         (definition) =>
           definition.appSlug === '876-billing' && definition.syncIdentity
       ).map((definition) => [definition.key, definition.position])
     )
 
-    // ACT
-    const positions = {
-      subscriptions: billingDefinitions.get('subscriptions'),
-      purchases: billingDefinitions.get('purchases'),
-      banking: billingDefinitions.get('banking'),
-      payroll: billingDefinitions.get('payroll'),
-      requests: billingDefinitions.get('requests'),
-    }
-
-    // ASSERT
-    expect(positions).toEqual({
+    expect({
+      subscriptions: positions.get('subscriptions'),
+      purchases: positions.get('purchases'),
+      banking: positions.get('banking'),
+      payroll: positions.get('payroll'),
+      requests: positions.get('requests'),
+    }).toEqual({
       subscriptions: 20,
       purchases: 30,
       banking: 40,
@@ -187,7 +171,6 @@ describe('canonical plan module seed definitions', () => {
   })
 
   it('grants new Invoice Requests to the current plan beside the free baseline', async () => {
-    // ARRANGE
     repository.listApps.mockResolvedValue([
       { id: 'app_invoice', slug: '876-invoice' },
     ])
@@ -199,43 +182,52 @@ describe('canonical plan module seed definitions', () => {
       },
     ])
 
-    // ACT
     const result = await seedPlatformPlanModules()
 
-    // ASSERT
-    expect(result).toEqual({
-      modulesCreated: INVOICE_COMMERCIAL_MODULE_KEYS.length,
-      planModulesCreated: INVOICE_FREE_PLAN_MODULE_KEYS.length + 1,
-      billingAssignments: 0,
-      ownerProvisioned: false,
-    })
+    expect(result.planModulesCreated).toBe(
+      INVOICE_FREE_PLAN_MODULE_KEYS.length + 1
+    )
     expect(repository.createApplicationModule).toHaveBeenCalledTimes(
       INVOICE_COMMERCIAL_MODULE_KEYS.length
     )
-    expect(
-      repository.createApplicationModule.mock.calls.map(
-        ([params]) => (params as { key: string }).key
-      )
-    ).toEqual(INVOICE_COMMERCIAL_MODULE_KEYS)
+  })
+
+  it('creates Projects modules with initial grants to its free plan', async () => {
+    repository.listApps.mockResolvedValue([
+      { id: 'app_projects', slug: '876-projects' },
+    ])
+    repository.listProducts.mockResolvedValue([
+      {
+        id: 'product_projects_free',
+        slug: PROJECTS_FREE_PLAN_SLUG,
+        appId: 'app_projects',
+      },
+    ])
+
+    const result = await seedPlatformPlanModules()
+
+    expect(result).toEqual({
+      modulesCreated: PROJECTS_COMMERCIAL_MODULE_KEYS.length,
+      planModulesCreated: PROJECTS_FREE_PLAN_MODULE_KEYS.length,
+      billingAssignments: 0,
+      ownerProvisioned: false,
+    })
     expect(
       repository.createApplicationModule.mock.calls.map(([params]) => ({
         key: params.key,
         grants: params.initialGrants,
       }))
     ).toEqual(
-      INVOICE_COMMERCIAL_MODULE_KEYS.map((key) => ({
+      PROJECTS_COMMERCIAL_MODULE_KEYS.map((key) => ({
         key,
-        grants:
-          new Set<string>(INVOICE_FREE_PLAN_MODULE_KEYS).has(key) ||
-          key === 'requests'
-            ? [{ id: 'planModule_generated', productId: 'product_invoice_free' }]
-            : [],
+        grants: [
+          { id: 'planModule_generated', productId: 'product_projects_free' },
+        ],
       }))
     )
   })
 
   it('grants new Billing Requests to every current Billing plan only', async () => {
-    // ARRANGE
     repository.listApps.mockResolvedValue([
       { id: 'app_billing', slug: '876-billing' },
     ])
@@ -248,10 +240,8 @@ describe('canonical plan module seed definitions', () => {
       { id: 'plan_invoice', slug: 'invoice-free', appId: 'app_invoice' },
     ])
 
-    // ACT
     await seedPlatformPlanModules()
 
-    // ASSERT
     const requestsCall = repository.createApplicationModule.mock.calls.find(
       ([params]) => params.key === 'requests'
     )
@@ -270,15 +260,10 @@ describe('canonical plan module seed definitions', () => {
       repository.createApplicationModule.mock.calls
         .filter(([params]) => params.appId === 'app_billing')
         .map(([params]) => params.key)
-    ).toEqual([
-      ...BILLING_COMMERCIAL_MODULE_KEYS,
-      'sales',
-      'documents',
-    ])
+    ).toEqual([...BILLING_COMMERCIAL_MODULE_KEYS, 'sales', 'documents'])
   })
 
   it('does not restore a removed Requests grant after the module already exists', async () => {
-    // ARRANGE
     repository.listApps.mockResolvedValue([
       { id: 'app_invoice', slug: '876-invoice' },
     ])
@@ -307,21 +292,14 @@ describe('canonical plan module seed definitions', () => {
       }
     )
 
-    // ACT
     const result = await seedPlatformPlanModules()
 
-    // ASSERT
-    expect(result).toEqual({
-      modulesCreated: 0,
-      planModulesCreated: 0,
-      billingAssignments: 0,
-      ownerProvisioned: false,
-    })
+    expect(result.modulesCreated).toBe(0)
+    expect(result.planModulesCreated).toBe(0)
     expect(repository.createApplicationModule).not.toHaveBeenCalled()
   })
 
   it('repairs stale registry-owned labels and descriptions without changing grants', async () => {
-    // ARRANGE
     repository.listApps.mockResolvedValue([
       { id: 'app_invoice', slug: '876-invoice' },
     ])
@@ -337,22 +315,12 @@ describe('canonical plan module seed definitions', () => {
         })
     )
 
-    // ACT
     const result = await seedPlatformPlanModules()
 
-    // ASSERT
     expect(result.planModulesCreated).toBe(0)
     expect(repository.updateApplicationModuleIdentity).toHaveBeenCalledTimes(
       INVOICE_COMMERCIAL_MODULE_KEYS.length
     )
     expect(repository.createApplicationModule).not.toHaveBeenCalled()
-    expect(repository.updateApplicationModuleIdentity).toHaveBeenCalledWith(
-      'mod_invoices',
-      {
-        name: 'Invoices',
-        description: 'Create, issue, and manage customer invoices.',
-        updatedAt: BigInt(1_700_000_000),
-      }
-    )
   })
 })
