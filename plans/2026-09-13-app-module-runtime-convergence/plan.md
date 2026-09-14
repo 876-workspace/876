@@ -144,8 +144,8 @@ Run focused Prettier over touched paths before final integration.
 
 ## Reports
 
-| Tool | Report | Status |
-| --- | --- | --- |
+| Tool    | Report                                                         | Status  |
+| ------- | -------------------------------------------------------------- | ------- |
 | GPT Web | `reports/gpt-web/2026-09-13-app-module-runtime-convergence.md` | Pending |
 
 ## Handoff state
