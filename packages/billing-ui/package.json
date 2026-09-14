@@ -99,6 +99,10 @@
       "types": "./src/items-table.tsx",
       "default": "./src/items-table.tsx"
     },
+    "./item-form": {
+      "types": "./src/item-form.tsx",
+      "default": "./src/item-form.tsx"
+    },
     "./panels/access/member-identity": {
       "types": "./src/panels/access/member-identity.ts",
       "default": "./src/panels/access/member-identity.ts"

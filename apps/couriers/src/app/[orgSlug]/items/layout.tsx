@@ -22,6 +22,7 @@ export default async function ItemsLayout({ children, params }: Props) {
 
   return (
     <ItemsSection
+      orgSlug={orgSlug}
       list={
         <Suspense
           fallback={

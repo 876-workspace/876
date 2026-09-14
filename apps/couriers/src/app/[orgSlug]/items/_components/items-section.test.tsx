@@ -19,7 +19,10 @@ import { ItemsSection } from './items-section'
 
 function renderSection() {
   return render(
-    <ItemsSection list={<div data-testid="item-list" />}>
+    <ItemsSection
+      orgSlug="island-logistics"
+      list={<div data-testid="item-list" />}
+    >
       <div data-testid="detail-route" />
     </ItemsSection>
   )

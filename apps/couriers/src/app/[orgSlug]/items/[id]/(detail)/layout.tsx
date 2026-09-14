@@ -11,6 +11,7 @@ import {
 } from '@876/ui/detail-card'
 import { CircleStackIcon, WrenchScrewdriverIcon } from '@876/ui/icons'
 import { Skeleton } from '@876/ui/skeleton'
+import { ItemActions } from '../_components/item-actions'
 
 import { resolveItem, resolveItemTitle } from '../_lib/item-data'
 
@@ -91,6 +92,13 @@ async function ItemHeader({
               : (item.unit ?? item.type.toLowerCase())}
           </span>
         </DetailCardMeta>
+      }
+      actions={
+        <ItemActions
+          orgSlug={orgSlug}
+          itemId={item.id}
+          isActive={item.isActive}
+        />
       }
       closeHref={closeHref}
       closeLabel="Close item details"

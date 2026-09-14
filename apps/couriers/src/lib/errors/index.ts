@@ -22,6 +22,7 @@ import { MAILBOX_ERRORS } from './mailbox'
 import { ONBOARDING_ERRORS } from './onboarding'
 import { SETTINGS_ERRORS } from './settings'
 import { WIDGETS_ERRORS } from './widgets'
+import { ITEM_ERRORS } from './item'
 
 export const COURIERS_ERRORS = {
   ...GENERIC_ERRORS,
@@ -39,6 +40,7 @@ export const COURIERS_ERRORS = {
   ...ONBOARDING_ERRORS,
   ...SETTINGS_ERRORS,
   ...WIDGETS_ERRORS,
+  ...ITEM_ERRORS,
 } as const satisfies Record<string, ErrorDef>
 
 export type CouriersErrorCode = keyof typeof COURIERS_ERRORS

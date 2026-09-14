@@ -58,9 +58,7 @@ export default async function EditItemPage({ params }: Props) {
           lowStockThreshold: item.lowStockThreshold,
           allowOutOfStock: item.allowOutOfStock,
           isActive: item.isActive,
-          variantMode: item.variantMode,
         }}
-        variantsEnabled={preferences.data?.productVariants === true}
       />
     </Page>
   )
