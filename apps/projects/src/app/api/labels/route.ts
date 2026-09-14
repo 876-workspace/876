@@ -4,10 +4,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
-import {
-  requireApiPermission,
-  type ApiContext,
-} from '@/lib/auth/api-permission'
+import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'
@@ -23,7 +20,10 @@ const createLabelSchema = z.strictObject({
 })
 
 export async function POST(request: NextRequest) {
-  const auth: ApiContext = await requireApiPermission('labels.create')
+  const auth: ApiContext = await requireApiAccess({
+    module: 'issues',
+    permission: 'labels.create',
+  })
   if (auth.response) return auth.response
 
   const body = await request.json().catch(() => null)
