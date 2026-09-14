@@ -1,16 +1,59 @@
 import { describe, expect, it } from 'vitest'
 
-import { can, hasFeature, variantOf, type AccessContext } from './context'
+import {
+  can,
+  hasFeature,
+  hasModule,
+  variantOf,
+  type AccessContext,
+} from './context'
 
 function context(overrides: Partial<AccessContext> = {}): AccessContext {
   return {
     subject: { userId: 'user_695d45c54a374ff0a570003e15668891' },
+    modules: ['projects', 'issues'],
     permissions: ['users:read', 'organizations:list'],
     features: ['console_search_bar', 'console_widgets'],
     experiments: { console_nav_density: 'compact' },
     ...overrides,
   }
 }
+
+describe('hasModule', () => {
+  it('returns true for an exact effective module', () => {
+    const result = hasModule(context(), 'projects')
+
+    expect(result).toBe(true)
+  })
+
+  it('returns false for a module that is not effective', () => {
+    const result = hasModule(context(), 'reports')
+
+    expect(result).toBe(false)
+  })
+
+  it('fails closed when modules are absent or malformed at runtime', () => {
+    const missing = context() as unknown as Record<string, unknown>
+    delete missing.modules
+    const malformed = {
+      ...context(),
+      modules: 'projects',
+    } as unknown as AccessContext
+
+    expect(hasModule(missing as unknown as AccessContext, 'projects')).toBe(false)
+    expect(hasModule(malformed, 'projects')).toBe(false)
+    expect(hasModule(null as unknown as AccessContext, 'projects')).toBe(false)
+  })
+
+  it('rejects an empty module key and ignores malformed array entries', () => {
+    const malformed = context({
+      modules: ['projects', 42, null] as unknown as string[],
+    })
+
+    expect(hasModule(malformed, 'projects')).toBe(true)
+    expect(hasModule(malformed, '')).toBe(false)
+  })
+})
 
 describe('can', () => {
   it('returns true for an exact held permission', () => {
