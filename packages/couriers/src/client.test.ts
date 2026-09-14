@@ -35,6 +35,7 @@ const portalPackage = {
   carrier: { id: 'car_1', name: 'Carrier One' },
   branch: { id: 'br_1', name: 'Kingston' },
   mailbox: { id: 'mbx_1', number: 'KIN-1001' },
+  category: { id: 'pcat_books', name: 'Books', slug: 'books' },
   collected_at: null,
   created_at: 1,
   updated_at: 2,

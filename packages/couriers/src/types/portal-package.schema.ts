@@ -27,6 +27,9 @@ export const portalPackageSchema = z.object({
   carrier: z.object({ id: z.string(), name: z.string() }).nullable(),
   branch: z.object({ id: z.string(), name: z.string() }).nullable(),
   mailbox: z.object({ id: z.string(), number: z.string() }).nullable(),
+  category: z
+    .object({ id: z.string(), name: z.string(), slug: z.string() })
+    .nullable(),
   collected_at: z.number().int().nullable(),
   created_at: z.number().int(),
   updated_at: z.number().int(),

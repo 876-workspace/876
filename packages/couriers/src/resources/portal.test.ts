@@ -34,6 +34,29 @@ const mailbox = {
   updated_at: 1,
 }
 
+const portalPackage = {
+  object: 'package' as const,
+  id: 'pkg_kingston',
+  tenant_id: tenantId,
+  customer_id: customer.id,
+  branch_id: null,
+  mailbox_id: mailbox.id,
+  tracking_num: 'TRACK-1001',
+  status: 'ARRIVED' as const,
+  package_type: 'CARTON' as const,
+  description: null,
+  quantity: 1,
+  actual_weight: 4.5,
+  chargeable_weight: 4.5,
+  carrier: null,
+  branch: null,
+  mailbox: { id: mailbox.id, number: mailbox.number },
+  category: { id: 'pcat_fragile', name: 'Fragile', slug: 'fragile' },
+  collected_at: null,
+  created_at: 1,
+  updated_at: 1,
+}
+
 function createResource(fetchMock: typeof fetch) {
   return createPortalResource(
     buildRuntime({ baseUrl, apiKey, accessToken, fetch: fetchMock })
@@ -99,6 +122,30 @@ describe('portal resource', () => {
         body: JSON.stringify({
           billing_customer_id: customer.billing_customer_id,
         }),
+      }
+    )
+  })
+
+  it('parses a category returned by the portal package endpoint', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json({ data: portalPackage, error: null }))
+
+    const result = await createResource(fetchMock).packages.retrieve(
+      tenantId,
+      portalPackage.id
+    )
+
+    expect(result).toEqual({ data: portalPackage, error: null })
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${baseUrl}/v1/portal/tenants/ten_kingston%2F876/packages/pkg_kingston`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
     )
   })
