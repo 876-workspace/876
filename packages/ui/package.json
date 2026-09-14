@@ -24,6 +24,10 @@
       "types": "./src/resource-row-link.tsx",
       "default": "./src/resource-row-link.tsx"
     },
+    "./sidebar-context": {
+      "types": "./src/sidebar-context.ts",
+      "default": "./src/sidebar-context.ts"
+    },
     "./styles.css": "./src/styles.css",
     "./876.css": "./src/876.css",
     "./auth": {

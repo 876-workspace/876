@@ -5,6 +5,7 @@ const source = readFileSync(
   'src/app/(app)/customers/[customerId]/layout.tsx',
   'utf8'
 )
+
 describe('Invoice customer detail layout', () => {
   it('uses the required ordered tab set without subscriptions', () => {
     expect(source).toMatch(
@@ -12,10 +13,18 @@ describe('Invoice customer detail layout', () => {
     )
     expect(source).not.toContain("label: 'Subscriptions'")
   })
+
   it('builds every href from the route params', () => {
-    expect(source).toContain('const { customerId } = await params')
+    expect(source).toContain('const [{ customerId }, context] = await Promise.all')
     expect(source).toContain('const base = `/customers/${customerId}`')
   })
+
+  it('renders the Requests tab only when the Invoice Requests feature is enabled', () => {
+    expect(source).toContain('INVOICE_REQUESTS_SLUG')
+    expect(source).toContain('.featureKeys.includes(INVOICE_REQUESTS_SLUG)')
+    expect(source).toContain('...(requestsEnabled')
+  })
+
   it('gives every placeholder tab visible content and a leaf loading skeleton', () => {
     for (const tab of ['mails', 'activity']) {
       const page = readFileSync(
@@ -43,6 +52,8 @@ describe('Invoice customer detail layout', () => {
     )
 
     expect(layout).toContain('RequestListDetailShell')
+    expect(layout).toContain('requireAppCapability')
+    expect(layout).toContain('INVOICE_REQUESTS_SLUG')
     expect(page).toContain('return null')
   })
 })

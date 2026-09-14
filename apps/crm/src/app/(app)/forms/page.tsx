@@ -1,3 +1,8 @@
+import {
+  RequestFormsList,
+  RequestFormsListSkeleton,
+  type RequestFormRow,
+} from '@876/crm-ui/request-forms-list'
 import { AppError } from '@876/ui/app-error'
 import { Page } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
@@ -9,12 +14,6 @@ import {
   requireCrmContext,
 } from '@/lib/auth/require-crm-context'
 import { crm } from '@/lib/services/crm'
-
-import {
-  FormsList,
-  FormsListSkeleton,
-  type RequestFormRow,
-} from './_components/forms-list'
 
 export const metadata = { title: 'Forms' }
 
@@ -37,7 +36,7 @@ export default async function FormsPage() {
         primaryVariant="info"
         refresh
       />
-      <Suspense fallback={<FormsListSkeleton />}>
+      <Suspense fallback={<RequestFormsListSkeleton />}>
         <FormsListData />
       </Suspense>
     </Page>
@@ -67,7 +66,7 @@ async function FormsListData() {
           variant="banner"
         />
       ) : null}
-      <FormsList forms={forms} />
+      <RequestFormsList forms={forms} formsHref="/forms" />
     </div>
   )
 }

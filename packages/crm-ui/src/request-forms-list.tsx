@@ -21,14 +21,13 @@ const STATUS_VARIANT = {
   ARCHIVED: 'secondary',
 } as const
 
-/**
- * The org's intake forms.
- *
- * A form is read by what it is called and whether it is live, so the row leads
- * with the name and carries the status as a badge — the same three-tier scale
- * the request queue uses.
- */
-export function FormsList({ forms }: { forms: RequestFormRow[] }) {
+export function RequestFormsList({
+  forms,
+  formsHref,
+}: {
+  forms: readonly RequestFormRow[]
+  formsHref?: string | null
+}) {
   if (forms.length === 0) {
     return (
       <div className="876-card overflow-hidden">
@@ -47,12 +46,9 @@ export function FormsList({ forms }: { forms: RequestFormRow[] }) {
   return (
     <div className="876-card overflow-hidden">
       <ul className="divide-border/60 divide-y">
-        {forms.map((form) => (
-          <li key={form.id} className="hover:bg-muted/40 transition-colors">
-            <Link
-              href={`/forms/${form.id}`}
-              className="flex items-center gap-4 px-4 py-3.5 sm:px-5"
-            >
+        {forms.map((form) => {
+          const content = (
+            <>
               <div className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">
                   {form.name}
@@ -65,16 +61,32 @@ export function FormsList({ forms }: { forms: RequestFormRow[] }) {
               <Badge variant={STATUS_VARIANT[form.status]}>
                 {form.status.charAt(0) + form.status.slice(1).toLowerCase()}
               </Badge>
-            </Link>
-          </li>
-        ))}
+            </>
+          )
+
+          return (
+            <li key={form.id} className="hover:bg-muted/40 transition-colors">
+              {formsHref ? (
+                <Link
+                  href={`${formsHref}/${encodeURIComponent(form.id)}`}
+                  className="flex items-center gap-4 px-4 py-3.5 sm:px-5"
+                >
+                  {content}
+                </Link>
+              ) : (
+                <div className="flex items-center gap-4 px-4 py-3.5 sm:px-5">
+                  {content}
+                </div>
+              )}
+            </li>
+          )
+        })}
       </ul>
     </div>
   )
 }
 
-/** Holds the list's shape while the page it belongs to is in flight. */
-export function FormsListSkeleton({ rows = 4 }: { rows?: number }) {
+export function RequestFormsListSkeleton({ rows = 4 }: { rows?: number }) {
   return (
     <div className="876-card overflow-hidden">
       <ul className="divide-border/60 divide-y">

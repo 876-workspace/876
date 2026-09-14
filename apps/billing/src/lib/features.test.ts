@@ -33,6 +33,7 @@ describe('getFeatures', () => {
           { slug: 'billing-banking' },
           { slug: 'billing-documents' },
           { slug: 'billing-payroll' },
+          { slug: 'billing-requests' },
           { slug: 'platform-widgets' },
           { slug: 'platform-widgets-notepad' },
           { slug: 'billing-widgets' },
@@ -69,6 +70,7 @@ describe('getFeatures', () => {
       banking: true,
       documents: true,
       payroll: true,
+      requests: true,
     })
     expect(result.featureKeys).toEqual([
       'billing-search-bar',
@@ -83,6 +85,7 @@ describe('getFeatures', () => {
       'billing-banking',
       'billing-documents',
       'billing-payroll',
+      'billing-requests',
     ])
     expect(result.widgets).toEqual({ enabledWidgetIds: ['notepad'] })
   })
@@ -127,6 +130,7 @@ describe('getFeatures', () => {
       banking: false,
       documents: false,
       payroll: false,
+      requests: false,
     })
     expect(result.featureKeys).toEqual([
       'billing-sales-quotes',
@@ -213,6 +217,7 @@ describe('getFeatures', () => {
       banking: false,
       documents: false,
       payroll: false,
+      requests: false,
     })
     expect(result.featureKeys).toEqual(['billing-search-bar'])
     expect(result.widgets).toEqual({ enabledWidgetIds: [] })
@@ -248,6 +253,7 @@ describe('getFeatures', () => {
       banking: false,
       documents: false,
       payroll: false,
+      requests: false,
     })
     expect(result.featureKeys).toEqual([])
     expect(result.widgets).toEqual({ enabledWidgetIds: [] })
@@ -260,7 +266,6 @@ describe('getFeatures', () => {
           { slug: 'platform-widgets' },
           { slug: 'platform-widgets-notepad' },
           { slug: 'billing-widgets' },
-          // billing-widgets-notepad is missing
         ],
       },
       error: null,

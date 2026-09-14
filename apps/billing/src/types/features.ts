@@ -20,6 +20,7 @@ export interface BillingProductFeatures {
   banking: boolean
   documents: boolean
   payroll: boolean
+  requests: boolean
 }
 
 export type BillingProductFeature = keyof BillingProductFeatures

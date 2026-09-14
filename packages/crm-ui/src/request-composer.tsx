@@ -13,11 +13,18 @@ export type RequestComposerState =
   | { status: 'error'; message: string }
   | { status: 'ready' }
 
+export type RequestComposerCustomerOption = {
+  id: string
+  name: string
+  description?: string | null
+}
+
 export type RequestComposerInput = {
   subject: string
   description: string
   priority: string
   category: string | null
+  customerId?: string
 }
 
 export type RequestComposerSubmitResult = {
@@ -27,6 +34,7 @@ export type RequestComposerSubmitResult = {
 export function RequestComposer({
   state,
   relatedResource,
+  customerOptions,
   onSubmit,
   onCancel,
 }: {
@@ -36,6 +44,7 @@ export function RequestComposer({
     id: string
     snapshot: RelatedResourceSnapshot
   } | null
+  customerOptions?: readonly RequestComposerCustomerOption[]
   onSubmit: (
     input: RequestComposerInput
   ) => void | RequestComposerSubmitResult | Promise<RequestComposerSubmitResult | void>
@@ -51,12 +60,22 @@ export function RequestComposer({
     setSaving(true)
     setSubmissionError(null)
     try {
-      const result = await onSubmit({
+      const input: RequestComposerInput = {
         subject: String(form.get('subject') ?? '').trim(),
         description: String(form.get('description') ?? '').trim(),
         priority: String(form.get('priority') ?? '').trim(),
         category: String(form.get('category') ?? '').trim() || null,
-      })
+      }
+      if (customerOptions) {
+        const customerId = String(form.get('customerId') ?? '').trim()
+        if (!customerId) {
+          setSubmissionError('Select a customer before creating the request.')
+          return
+        }
+        input.customerId = customerId
+      }
+
+      const result = await onSubmit(input)
       if (result?.error) setSubmissionError(result.error.message)
     } catch (error) {
       setSubmissionError(
@@ -78,6 +97,28 @@ export function RequestComposer({
           About {relatedResource.type}{' '}
           {relatedResource.snapshot.number ?? relatedResource.id}
         </p>
+      ) : null}
+      {customerOptions ? (
+        <label className="grid gap-1.5 text-sm">
+          <span className="font-medium">Customer</span>
+          <select
+            name="customerId"
+            required
+            defaultValue=""
+            className="border-input bg-background ring-offset-background focus-visible:ring-ring min-h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
+            <option value="" disabled>
+              Select a customer
+            </option>
+            {customerOptions.map((customer) => (
+              <option key={customer.id} value={customer.id}>
+                {customer.description
+                  ? `${customer.name} — ${customer.description}`
+                  : customer.name}
+              </option>
+            ))}
+          </select>
+        </label>
       ) : null}
       <Input name="subject" required placeholder="Subject" />
       <Textarea name="description" placeholder="Description" />

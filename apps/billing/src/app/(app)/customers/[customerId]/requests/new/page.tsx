@@ -4,9 +4,8 @@ import {
   DetailCardHeader,
 } from '@876/ui/detail-card'
 
+import { RequestComposerClient } from '@/features/crm/request-composer-client'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-
-import { RequestComposerClient } from '../_components/request-composer-client'
 
 export const metadata = { title: 'New request' }
 

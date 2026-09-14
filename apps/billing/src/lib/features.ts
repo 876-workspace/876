@@ -32,6 +32,7 @@ const BILLING_PURCHASES_EXPENSES_SLUG = 'billing-purchases-expenses'
 const BILLING_BANKING_SLUG = 'billing-banking'
 const BILLING_DOCUMENTS_SLUG = 'billing-documents'
 const BILLING_PAYROLL_SLUG = 'billing-payroll'
+const BILLING_REQUESTS_SLUG = 'billing-requests'
 
 const BILLING_FEATURE_SLUGS = [
   BILLING_SEARCH_BAR_SLUG,
@@ -49,6 +50,7 @@ const BILLING_FEATURE_SLUGS = [
   BILLING_BANKING_SLUG,
   BILLING_DOCUMENTS_SLUG,
   BILLING_PAYROLL_SLUG,
+  BILLING_REQUESTS_SLUG,
 ] as const
 
 const LEGACY_FEATURE_SLUGS: Readonly<Record<string, readonly string[]>> = {
@@ -98,6 +100,7 @@ const DEFAULT_PRODUCT_FEATURES: BillingProductFeatures = {
   banking: false,
   documents: false,
   payroll: false,
+  requests: false,
 }
 
 export async function getFeatures({
@@ -173,6 +176,7 @@ const getCachedFeatures = cache(async function getCachedFeatures(
       banking: hasFeature(enabledSlugs, BILLING_BANKING_SLUG),
       documents: hasFeature(enabledSlugs, BILLING_DOCUMENTS_SLUG),
       payroll: hasFeature(enabledSlugs, BILLING_PAYROLL_SLUG),
+      requests: hasFeature(enabledSlugs, BILLING_REQUESTS_SLUG),
     },
     widgets: {
       enabledWidgetIds,

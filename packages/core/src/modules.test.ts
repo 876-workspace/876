@@ -10,6 +10,7 @@ import {
   getAppModuleRegistry,
   INVOICE_COMMERCIAL_MODULE_KEYS,
   INVOICE_MODULE_REGISTRY,
+  SHARED_APP_MODULES,
 } from './modules'
 
 const KEY_PATTERN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
@@ -26,6 +27,7 @@ describe('canonical application module registry', () => {
       'sales-receipts',
       'time-tracking',
       'customers',
+      'requests',
     ]
 
     // ACT
@@ -54,6 +56,19 @@ describe('canonical application module registry', () => {
         sameObject: true,
       }))
     )
+  })
+
+  it('projects CRM-owned Requests into both finance apps without redefining it', () => {
+    // ARRANGE
+    const expected = SHARED_APP_MODULES.requests
+
+    // ACT
+    const invoice = findAppModule('876-invoice', 'requests')
+    const billing = findAppModule('876-billing', 'requests')
+
+    // ASSERT
+    expect(invoice).toBe(expected)
+    expect(billing).toBe(expected)
   })
 
   it('keeps Billing as a strict superset of Invoice', () => {
@@ -93,7 +108,7 @@ describe('canonical application module registry', () => {
     ])
   })
 
-  it('keeps crm out of the commercial module projections', () => {
+  it('keeps the standalone CRM product out of finance commercial projections', () => {
     // ARRANGE
     const invoiceCommercial = new Set<string>(INVOICE_COMMERCIAL_MODULE_KEYS)
     const billingCommercial = new Set<string>(BILLING_COMMERCIAL_MODULE_KEYS)
@@ -108,9 +123,30 @@ describe('canonical application module registry', () => {
     expect(result).toEqual({ invoiceHasCrm: false, billingHasCrm: false })
   })
 
+  it('materializes Requests commercially for both finance apps', () => {
+    // ARRANGE
+    const invoiceCommercial = new Set<string>(INVOICE_COMMERCIAL_MODULE_KEYS)
+    const billingCommercial = new Set<string>(BILLING_COMMERCIAL_MODULE_KEYS)
+
+    // ACT
+    const result = {
+      invoice: invoiceCommercial.has('requests'),
+      billing: billingCommercial.has('requests'),
+    }
+
+    // ASSERT
+    expect(result).toEqual({ invoice: true, billing: true })
+  })
+
   it('exposes only Billing keys with existing effective commercial semantics', () => {
     // ARRANGE
-    const expected = ['subscriptions', 'purchases', 'banking', 'payroll']
+    const expected = [
+      'subscriptions',
+      'purchases',
+      'banking',
+      'payroll',
+      'requests',
+    ]
 
     // ACT
     const keys = [...BILLING_COMMERCIAL_MODULE_KEYS]

@@ -7,7 +7,8 @@ import {
 } from '@876/crm'
 import { z } from 'zod'
 
-import { requireApiPermission } from '@/lib/auth/api-permission'
+import { requireApiCapability } from '@/lib/auth/api-permission'
+import { INVOICE_REQUESTS_SLUG } from '@/lib/features'
 import { getCrm } from '@/lib/services/crm'
 
 const listQuerySchema = z.object({
@@ -53,7 +54,10 @@ export async function GET(
   request: Request,
   context: RouteContext<'/api/customers/[customerId]/requests'>
 ) {
-  const access = await requireApiPermission('requests.view')
+  const access = await requireApiCapability({
+    permission: 'requests.view',
+    feature: INVOICE_REQUESTS_SLUG,
+  })
   if (access.response) return access.response
 
   const { customerId } = await context.params
@@ -75,7 +79,10 @@ export async function POST(
   request: Request,
   context: RouteContext<'/api/customers/[customerId]/requests'>
 ) {
-  const access = await requireApiPermission('requests.create')
+  const access = await requireApiCapability({
+    permission: 'requests.create',
+    feature: INVOICE_REQUESTS_SLUG,
+  })
   if (access.response) return access.response
 
   const { customerId } = await context.params

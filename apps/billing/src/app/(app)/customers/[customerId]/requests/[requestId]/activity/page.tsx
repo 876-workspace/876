@@ -3,13 +3,12 @@ import { Suspense } from 'react'
 import { AppError } from '@876/ui/app-error'
 import { Skeleton } from '@876/ui/skeleton'
 
+import { RequestEventsClient } from '@/features/crm/request-events-client'
 import {
   getWorkspaceContext,
   requirePagePermission,
 } from '@/lib/auth/billing-context'
 import { getCrm } from '@/lib/services/crm'
-
-import { RequestEventsClient } from '../../_components/request-events-client'
 
 export const metadata = { title: 'Request activity' }
 

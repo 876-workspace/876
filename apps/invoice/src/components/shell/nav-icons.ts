@@ -3,7 +3,7 @@ import {
   Building2,
   CalculatorIcon,
   ChartPieIcon,
-  CircleStackIcon,
+  ChatBubbleLeftIcon,
   ClipboardDocumentListIcon,
   DocumentTextIcon,
   Clock,
@@ -19,6 +19,8 @@ import {
 export const INVOICE_NAV_ICONS: Record<string, IconComponent> = {
   dashboard: BarChart3,
   customers: UsersIcon,
+  requests: ChatBubbleLeftIcon,
+  forms: DocumentTextIcon,
   items: ClipboardDocumentListIcon,
   quotes: CalculatorIcon,
   // Distinct from `items`: `ClipboardList` is an alias of

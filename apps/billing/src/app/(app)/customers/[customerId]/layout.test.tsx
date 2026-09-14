@@ -5,6 +5,7 @@ const source = readFileSync(
   'src/app/(app)/customers/[customerId]/layout.tsx',
   'utf8'
 )
+
 describe('Billing customer detail layout', () => {
   it('uses the required ordered tab set', () => {
     expect(source).toContain("'Overview', href: base")
@@ -12,9 +13,17 @@ describe('Billing customer detail layout', () => {
       /Overview[\s\S]*Transactions[\s\S]*Subscriptions[\s\S]*Requests[\s\S]*Mails[\s\S]*Statement[\s\S]*Activity/
     )
   })
+
   it('includes subscriptions for Billing', () => {
     expect(source).toContain("label: 'Subscriptions'")
   })
+
+  it('renders the Requests tab only when the Billing Requests feature is enabled', () => {
+    expect(source).toContain('productFeatures.requests')
+    expect(source).toContain('...(requestsEnabled')
+    expect(source).toContain("label: 'Requests'")
+  })
+
   it('gives every placeholder tab visible content and a leaf loading skeleton', () => {
     for (const tab of ['subscriptions', 'mails', 'activity']) {
       const page = readFileSync(
@@ -42,6 +51,7 @@ describe('Billing customer detail layout', () => {
     )
 
     expect(layout).toContain('RequestListDetailShell')
+    expect(layout).toContain("requireBillingFeature('requests')")
     expect(page).toContain('return null')
   })
 })
