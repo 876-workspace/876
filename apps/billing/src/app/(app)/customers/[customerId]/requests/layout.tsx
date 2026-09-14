@@ -3,7 +3,10 @@ import { Suspense } from 'react'
 
 import { RequestListDetailShell } from '@876/crm-ui/request-list-detail-shell'
 
-import { requirePagePermission } from '@/lib/auth/billing-context'
+import {
+  requireBillingFeature,
+  requirePagePermission,
+} from '@/lib/auth/billing-context'
 
 import {
   CustomerRequestList,
@@ -17,8 +20,11 @@ export default async function CustomerRequestsLayout({
   children: ReactNode
   params: Promise<{ customerId: string }>
 }) {
-  await requirePagePermission('customers:read')
-  const { customerId } = await params
+  const [, , { customerId }] = await Promise.all([
+    requirePagePermission('customers:read'),
+    requireBillingFeature('requests'),
+    params,
+  ])
   const baseHref = `/customers/${encodeURIComponent(customerId)}/requests`
 
   return (
