@@ -17,6 +17,16 @@ vi.mock('@/lib/services/billing', () => ({
 import { DELETE, PATCH } from './route'
 
 const params = Promise.resolve({ modeId: 'pm_1' })
+const paymentMode = {
+  object: 'payment_mode' as const,
+  id: 'pm_1',
+  name: 'Bank transfer',
+  isDefault: false,
+  isActive: true,
+  isSystem: false,
+  createdAt: 1,
+  updatedAt: 1,
+}
 
 function request(body: unknown, method = 'PATCH') {
   return new Request(
@@ -50,7 +60,7 @@ describe('Couriers payment mode mutation routes', () => {
     mocks.createBillingIntegration.mockReturnValue({
       paymentModes: { update: mocks.update, delete: mocks.remove },
     })
-    mocks.update.mockResolvedValue({ data: { id: 'pm_1' }, error: null })
+    mocks.update.mockResolvedValue({ data: paymentMode, error: null })
     mocks.remove.mockResolvedValue({
       data: { id: 'pm_1', deleted: true },
       error: null,
@@ -85,7 +95,7 @@ describe('Couriers payment mode mutation routes', () => {
 
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({
-      data: { id: 'pm_1' },
+      data: paymentMode,
       error: null,
     })
     expect(mocks.update).toHaveBeenCalledWith('org_1', 'pm_1', {

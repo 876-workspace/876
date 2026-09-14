@@ -43,6 +43,32 @@ const validBody = {
   rate: '15',
   taxAuthorityId: 'taxa_1',
 }
+const taxRate = {
+  object: 'tax_rate' as const,
+  id: 'taxr_1',
+  name: 'GCT',
+  description: null,
+  taxType: null,
+  rate: '15',
+  inclusive: false,
+  startsAt: null,
+  isActive: true,
+  isDefault: false,
+  taxAuthority: {
+    object: 'tax_authority' as const,
+    id: 'taxa_1',
+    name: 'Tax Administration Jamaica',
+    description: null,
+    countryCode: 'JM',
+    subdivisionCode: null,
+    isDefault: true,
+    isActive: true,
+    createdAt: 1,
+    updatedAt: 1,
+  },
+  createdAt: 1,
+  updatedAt: 1,
+}
 
 describe('Couriers tax rate create route', () => {
   beforeEach(() => {
@@ -51,7 +77,7 @@ describe('Couriers tax rate create route', () => {
     mocks.createBillingIntegration.mockReturnValue({
       taxRates: { create: mocks.create },
     })
-    mocks.create.mockResolvedValue({ data: { id: 'taxr_1' }, error: null })
+    mocks.create.mockResolvedValue({ data: taxRate, error: null })
   })
 
   it('returns 403 without calling Billing when the caller is staff', async () => {
@@ -76,7 +102,7 @@ describe('Couriers tax rate create route', () => {
 
     expect(response.status).toBe(201)
     expect(await response.json()).toEqual({
-      data: { id: 'taxr_1' },
+      data: taxRate,
       error: null,
     })
     expect(mocks.create).toHaveBeenCalledWith('org_1', {
