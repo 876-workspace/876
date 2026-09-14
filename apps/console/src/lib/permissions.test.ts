@@ -32,9 +32,11 @@ const OPERATOR_UNIVERSE_KEYS = new Set([
 ])
 
 const EXPECTED_ROLE_COUNTS = {
-  staff: 77,
-  admin: 261,
-  'super-admin': 273,
+  // Finance Requests projects its read/create/delete permissions into the
+  // generated Console operator catalog.
+  staff: 79,
+  admin: 266,
+  'super-admin': 279,
 } as const
 
 describe('Console permission catalog', () => {
