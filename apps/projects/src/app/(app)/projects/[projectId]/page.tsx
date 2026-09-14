@@ -4,8 +4,10 @@ import { Suspense } from 'react'
 import { PageBreadcrumb } from '@/components/page-breadcrumb'
 import { ProjectDetailData } from './_components/project-detail-data'
 import { ProjectDetailSkeleton } from './_components/project-detail-skeleton'
-import { requireAppPermission } from '@/lib/auth/require-projects-context'
-import { requireProjectsContext } from '@/lib/auth/require-projects-context'
+import {
+  requireAppAccess,
+  requireProjectsContext,
+} from '@/lib/auth/require-projects-context'
 
 type Props = { params: Promise<{ projectId: string }> }
 
@@ -15,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProjectDetailPage({ params }: Props) {
-  await requireAppPermission('projects.view')
+  await requireAppAccess({ module: 'projects', permission: 'projects.view' })
   const { orgId } = await requireProjectsContext()
 
   return (
