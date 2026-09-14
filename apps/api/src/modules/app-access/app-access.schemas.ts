@@ -59,6 +59,8 @@ export const appMembershipSchema = z
     permission_grants: z.array(appPermissionKeySchema),
     permission_denies: z.array(appPermissionKeySchema),
     effective_permissions: z.array(appPermissionKeySchema),
+    /** Present on the acting member's self read; omitted from admin list projections. */
+    entitled_modules: z.array(z.string()).optional(),
     title: z.string().nullable(),
     attributes: z.record(z.string(), z.unknown()).nullable(),
     assigned_by: z.string().nullable(),
