@@ -6,6 +6,10 @@ import type {
   UpdatePackageBody,
 } from './packages.schemas'
 
+const categoryInclude = {
+  select: { id: true, name: true, slug: true },
+} as const
+
 export async function listTenantPackages(options: {
   tenantId: string
   query: ListPackagesQuery
@@ -25,12 +29,16 @@ export async function listTenantPackages(options: {
         ? { customerId: options.query.customer_id }
         : {}),
       ...(options.query.branch_id ? { branchId: options.query.branch_id } : {}),
+      ...(options.query.category_id
+        ? { categoryId: options.query.category_id }
+        : {}),
       ...(anchor
         ? options.query.starting_after
           ? packagesAfter(anchor)
           : packagesBefore(anchor)
         : {}),
     },
+    include: { category: categoryInclude },
     orderBy: options.query.ending_before
       ? [{ createdAt: 'asc' }, { id: 'asc' }]
       : [{ createdAt: 'desc' }, { id: 'desc' }],
@@ -39,7 +47,10 @@ export async function listTenantPackages(options: {
 }
 
 export function findTenantPackageById(tenantId: string, id: string) {
-  return prisma.package.findFirst({ where: { tenantId, id } })
+  return prisma.package.findFirst({
+    where: { tenantId, id },
+    include: { category: categoryInclude },
+  })
 }
 
 export function findTenantCustomerPackageById(options: {
@@ -53,6 +64,7 @@ export function findTenantCustomerPackageById(options: {
       customerId: options.customerId,
       id: options.id,
     },
+    include: { category: categoryInclude },
   })
 }
 
@@ -68,6 +80,7 @@ export function findTenantCustomerPackageDetailById(options: {
       id: options.id,
     },
     include: {
+      category: categoryInclude,
       carrier: { select: { id: true, name: true } },
       branch: { select: { id: true, name: true } },
       mailbox: { select: { id: true, number: true } },
@@ -100,6 +113,7 @@ export function createTenantPackage(options: {
       customerId: options.input.customer_id,
       branchId: options.input.branch_id ?? null,
       mailboxId: options.input.mailbox_id ?? null,
+      categoryId: options.input.category_id ?? null,
       trackingNum: options.input.tracking_num ?? null,
       status: options.input.status ?? 'PRE_ALERT',
       packageType: options.input.package_type ?? 'CARTON',
@@ -109,6 +123,7 @@ export function createTenantPackage(options: {
       createdAt: options.now,
       updatedAt: options.now,
     },
+    include: { category: categoryInclude },
   })
 }
 
@@ -126,6 +141,9 @@ export function updateTenantPackage(options: {
       ...(options.input.mailbox_id === undefined
         ? {}
         : { mailboxId: options.input.mailbox_id }),
+      ...(options.input.category_id === undefined
+        ? {}
+        : { categoryId: options.input.category_id }),
       ...(options.input.tracking_num === undefined
         ? {}
         : { trackingNum: options.input.tracking_num }),
@@ -151,6 +169,7 @@ export function updateTenantPackage(options: {
         : { actualWeight: options.input.actual_weight }),
       updatedAt: options.now,
     },
+    include: { category: categoryInclude },
   })
 }
 
