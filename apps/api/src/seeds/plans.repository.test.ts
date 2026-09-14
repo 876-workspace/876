@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { prismaRef } = vi.hoisted(() => ({
-  prismaRef: { current: { applicationModule: { create: vi.fn() } } },
+  prismaRef: {
+    current: { applicationModule: { create: vi.fn(), update: vi.fn() } },
+  },
 }))
 vi.mock('@/db/client', () => ({
   get prisma() {
@@ -9,12 +11,17 @@ vi.mock('@/db/client', () => ({
   },
 }))
 
-import { createApplicationModule } from './plans.repository'
+import {
+  createApplicationModule,
+  renameApplicationModuleKey,
+} from './plans.repository'
 
 describe('createApplicationModule', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    prismaRef.current = { applicationModule: { create: vi.fn() } }
+    prismaRef.current = {
+      applicationModule: { create: vi.fn(), update: vi.fn() },
+    }
   })
 
   it('creates the module and its initial plan grants in one nested write', async () => {
@@ -85,5 +92,33 @@ describe('createApplicationModule', () => {
       })
     ).rejects.toBe(failure)
     expect(prismaRef.current.applicationModule.create).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('renameApplicationModuleKey', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    prismaRef.current = {
+      applicationModule: { create: vi.fn(), update: vi.fn() },
+    }
+  })
+
+  it('updates only the durable key and timestamp, preserving the module and plan links', async () => {
+    await renameApplicationModuleKey('mod_delivery', {
+      key: 'deliveries',
+      updatedAt: BigInt(1_700_000_000),
+    })
+
+    expect(prismaRef.current.applicationModule.update.mock.calls).toEqual([
+      [
+        {
+          where: { id: 'mod_delivery' },
+          data: {
+            key: 'deliveries',
+            updatedAt: BigInt(1_700_000_000),
+          },
+        },
+      ],
+    ])
   })
 })
