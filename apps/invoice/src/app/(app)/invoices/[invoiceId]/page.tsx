@@ -64,7 +64,10 @@ export default async function InvoiceDetailPage({ params }: Props) {
   const invoice = result.data
   const canWrite = canAccess(access, 'invoices.edit')
   const canRecordPayment = canAccess(access, 'payments.create')
-  const requestsEnabled = hasAccessFeature(access, INVOICE_REQUESTS_SLUG)
+  const requestsEnabled =
+    hasAccessFeature(access, INVOICE_REQUESTS_SLUG) &&
+    canAccess(access, 'requests.view')
+  const canCreateRequest = canAccess(access, 'requests.create')
   const recordPaymentHref = `/invoices/${encodeURIComponent(invoice.id)}/payments/new`
 
   const { number, status, recurringInvoiceId } = invoice
@@ -78,8 +81,6 @@ export default async function InvoiceDetailPage({ params }: Props) {
       )
   }
 
-  // Branding is a preference, not a dependency: an organization whose row
-  // cannot be read still gets its invoice document, without the letterhead.
   const seller = organization.data
     ? invoiceSeller(organization.data, context.orgName)
     : { name: context.orgName, countryLabel: null }
@@ -202,6 +203,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
                   currency: invoice.currency,
                   status: invoice.status,
                 }}
+                canCreate={canCreateRequest}
               />
             ) : null}
           </div>
