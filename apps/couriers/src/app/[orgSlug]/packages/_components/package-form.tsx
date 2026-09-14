@@ -16,6 +16,7 @@ import {
 import { Textarea } from '@876/ui/textarea'
 
 import type { PackageFormOption } from '../_lib/package-form-data'
+import { client } from '@/lib/client'
 
 const rowClassName = 'sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-3'
 
@@ -94,9 +95,7 @@ export function PackageForm({
     }
 
     startTransition(async () => {
-      const payload = {
-        orgSlug,
-        ...(pkg ? {} : { customer_id: customerId }),
+      const sharedPayload = {
         branch_id: branchId || null,
         category_id: categoryId || null,
         tracking_num: trackingNumber.trim() || null,
@@ -106,22 +105,14 @@ export function PackageForm({
         quantity: parsedQuantity,
         actual_weight: parsedWeight,
       }
-      const response = await fetch(
-        pkg
-          ? `/api/manage/packages/${encodeURIComponent(pkg.id)}`
-          : '/api/manage/packages',
-        {
-          method: pkg ? 'PATCH' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }
-      )
-      const result = (await response.json()) as {
-        data: Package | null
-        error: { message: string } | null
-      }
+      const result = pkg
+        ? await client.packages.update(orgSlug, pkg.id, sharedPayload)
+        : await client.packages.create(orgSlug, {
+            customer_id: customerId,
+            ...sharedPayload,
+          })
 
-      if (!response.ok || !result.data) {
+      if (!result.data) {
         setError(result.error?.message ?? 'The package could not be saved.')
         return
       }

@@ -8,6 +8,8 @@ import { requests } from './requests'
 import { team } from './team'
 import { warehouses } from './warehouses'
 import { items } from './items'
+import { packageCategories } from './package-categories'
+import { packages } from './packages'
 
 export const client = {
   addresses,
@@ -20,6 +22,8 @@ export const client = {
   team,
   warehouses,
   items,
+  packageCategories,
+  packages,
 }
 
 export { addresses } from './addresses'
@@ -32,4 +36,6 @@ export { requests } from './requests'
 export { team } from './team'
 export { warehouses } from './warehouses'
 export { items } from './items'
+export { packageCategories } from './package-categories'
+export { packages } from './packages'
 export type { ClientResult } from '@/types/api'
