@@ -30,8 +30,8 @@ function context(
 function routeSource(href: string): string {
   const segment = href === '/' ? '' : href
   const candidates = [
-    `src/app/(app)${segment}/layout.tsx`,
     `src/app/(app)${segment}/page.tsx`,
+    `src/app/(app)${segment}/layout.tsx`,
     `src/app/(app)${segment}/(list)/page.tsx`,
   ]
 
@@ -116,11 +116,7 @@ describe('Projects navigation access binding', () => {
   it('removes Issues, Board, and Labels when the issues module is not entitled', () => {
     const hrefs = resolveNavigation(
       navConfig,
-      context(
-        ['projects.view', 'issues.view', 'labels.view'],
-        [],
-        ['projects']
-      )
+      context(['projects.view', 'issues.view', 'labels.view'], [], ['projects'])
     ).flatMap((group) => group.entries.map(({ href }) => href))
 
     expect(hrefs).toContain('/projects')

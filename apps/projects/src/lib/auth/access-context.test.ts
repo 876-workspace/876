@@ -30,6 +30,7 @@ function membership(overrides: Record<string, unknown> = {}) {
     entitled: true,
     revoked_at: null,
     effective_permissions: ['requests.view', 'customers.view'],
+    entitled_modules: ['projects', 'issues'],
     ...overrides,
   }
 }
@@ -123,7 +124,7 @@ describe('Projects access context', () => {
       resolveAccessContext('user_6', 'org_6')
     ).resolves.toMatchObject({ status: 'ok', context: { permissions: [] } })
   })
-  it('keeps permissions when feature resolution fails', async () => {
+  it('keeps permissions when legacy feature resolution fails', async () => {
     mocks.retrieve.mockResolvedValue({ data: membership(), error: null })
     mocks.getFeatures.mockRejectedValue(new Error('feature provider down'))
     await expect(
@@ -136,7 +137,7 @@ describe('Projects access context', () => {
       },
     })
   })
-  it('maps enabled app features into the context', async () => {
+  it('maps entitled modules into the context and keeps features empty', async () => {
     mocks.retrieve.mockResolvedValue({ data: membership(), error: null })
     mocks.getFeatures.mockResolvedValue({
       uiFeatures: {
@@ -151,7 +152,7 @@ describe('Projects access context', () => {
       resolveAccessContext('user_8', 'org_8')
     ).resolves.toMatchObject({
       status: 'ok',
-      context: { features: ['crm-search-bar'] },
+      context: { modules: ['projects', 'issues'], features: [] },
     })
   })
   it('keeps experiments empty', async () => {
