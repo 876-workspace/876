@@ -1,6 +1,8 @@
 export interface AccessContext {
   /** The acting subject. */
   subject: { userId: string; accountType?: string | null }
+  /** Effective module keys for organization capabilities available this request. */
+  modules?: readonly string[]
   /** Effective permission keys, already resolved and catalog-intersected. */
   permissions: readonly string[]
   /** Enabled feature-flag keys. */
@@ -12,6 +14,18 @@ export interface AccessContext {
 function stringValues(value: unknown): readonly string[] {
   if (!Array.isArray(value)) return []
   return value.filter((item): item is string => typeof item === 'string')
+}
+
+/** Returns whether a request-scoped access context has a module available. */
+export function hasModule(context: AccessContext, module: string): boolean {
+  try {
+    if (typeof module !== 'string' || module.length === 0) return false
+
+    const value = context as unknown as { modules?: unknown } | null
+    return stringValues(value?.modules).includes(module)
+  } catch {
+    return false
+  }
 }
 
 /** Returns whether a request-scoped access context holds a permission. */
