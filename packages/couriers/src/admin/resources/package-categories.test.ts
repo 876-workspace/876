@@ -59,6 +59,20 @@ const updateBody = {
   is_active: false,
 }
 
+const reconcileBody = {
+  revision: 7,
+  categories: [
+    {
+      key: 'electronics',
+      name: 'Electronics',
+      description: 'Consumer electronics and accessories.',
+      icon: null,
+      sort_order: 40,
+      is_active: true,
+    },
+  ],
+}
+
 function createResource(fetchMock: typeof fetch, key?: string) {
   return createPackageCategoriesResource(
     buildAdminRuntime({ baseUrl, apiKey, internalKey: key, fetch: fetchMock })
@@ -165,6 +179,32 @@ describe('createPackageCategoriesResource', () => {
     )
   })
 
+  it('reconciles published defaults through the dedicated endpoint', async () => {
+    const reconciliation = {
+      object: 'package_category_reconciliation' as const,
+      revision: 7,
+      reconciled: 1,
+    }
+    const fetchMock = successFetch(reconciliation)
+    const resource = createResource(fetchMock, internalKey)
+
+    const result = await resource.reconcile(tenantId, reconcileBody)
+
+    expect(result).toEqual({ data: reconciliation, error: null })
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${baseUrl}/v1/tenants/ten_kingston%2F876/package-categories/reconcile`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-876-api-key': apiKey,
+          'x-internal-key': internalKey,
+        },
+        body: JSON.stringify(reconcileBody),
+      }
+    )
+  })
+
   it('archives a category through DELETE', async () => {
     const deleted = {
       object: 'package_category' as const,
@@ -201,6 +241,10 @@ describe('createPackageCategoriesResource', () => {
     {
       name: 'update',
       invoke: (resource) => resource.update(tenantId, categoryId, updateBody),
+    },
+    {
+      name: 'reconcile',
+      invoke: (resource) => resource.reconcile(tenantId, reconcileBody),
     },
     {
       name: 'delete',
