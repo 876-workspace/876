@@ -1,3 +1,4 @@
+import { isError } from '@876/core'
 import type { Request, Response } from 'express'
 
 import { listObject } from '@/http/envelope'
@@ -47,7 +48,7 @@ export async function reconcilePackageCategories(req: Request, res: Response) {
     tenantId,
     body.categories
   )
-  if ('httpStatus' in result) return sendAppResult(res, result)
+  if (isError(result)) return sendAppResult(res, result)
 
   return res.status(200).json({
     object: 'package_category_reconciliation',
