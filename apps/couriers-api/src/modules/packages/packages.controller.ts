@@ -1,6 +1,9 @@
 import type { Request, Response } from 'express'
+
 import { listObject } from '@/http/envelope'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
+import { sendAppResult } from '@/http/result'
+
 import * as service from './packages.service'
 import type {
   CreatePackageBody,
@@ -9,12 +12,14 @@ import type {
   TenantParams,
   UpdatePackageBody,
 } from './packages.schemas'
+
 export async function listPackages(req: Request, res: Response) {
   const { tenantId } = validParams<TenantParams>(req)
   const result = await service.listPackages(
     tenantId,
     validQuery<ListPackagesQuery>(req)
   )
+
   res.status(200).json(
     listObject({
       data: result.data,
@@ -23,27 +28,31 @@ export async function listPackages(req: Request, res: Response) {
     })
   )
 }
+
 export async function createPackage(req: Request, res: Response) {
   const { tenantId } = validParams<TenantParams>(req)
-  res
-    .status(201)
-    .json(
-      await service.createPackage(tenantId, validBody<CreatePackageBody>(req))
-    )
+  const result = await service.createPackage(
+    tenantId,
+    validBody<CreatePackageBody>(req)
+  )
+
+  return sendAppResult(res, result, 201)
 }
+
 export async function retrievePackage(req: Request, res: Response) {
   const { tenantId, id } = validParams<PackageParams>(req)
-  res.status(200).json(await service.retrievePackage(tenantId, id))
+  const result = await service.retrievePackage(tenantId, id)
+
+  return sendAppResult(res, result)
 }
+
 export async function updatePackage(req: Request, res: Response) {
   const { tenantId, id } = validParams<PackageParams>(req)
-  res
-    .status(200)
-    .json(
-      await service.updatePackage(
-        tenantId,
-        id,
-        validBody<UpdatePackageBody>(req)
-      )
-    )
+  const result = await service.updatePackage(
+    tenantId,
+    id,
+    validBody<UpdatePackageBody>(req)
+  )
+
+  return sendAppResult(res, result)
 }
