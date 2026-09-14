@@ -15,6 +15,7 @@ import {
 } from '@876/billing-ui/document/invoice-document-data'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
+import { getFeatures } from '@/lib/features'
 import { formatDate, formatMoney } from '@/lib/format'
 import { getBilling } from '@/lib/services/billing'
 import { getPlatformClient } from '@/lib/services/platform'
@@ -37,9 +38,10 @@ export default async function InvoiceDetailPage({ params }: Props) {
   const context = await getWorkspaceContext()
   if (!context) return null
 
-  const [billing, platform] = await Promise.all([
+  const [billing, platform, features] = await Promise.all([
     getBilling(),
     getPlatformClient(),
+    getFeatures({ userId: context.userId, organizationId: context.orgId }),
   ])
   const [invoiceResult, organization] = await Promise.all([
     billing.invoices.retrieve(invoiceId),
@@ -66,8 +68,6 @@ export default async function InvoiceDetailPage({ params }: Props) {
       )
   }
 
-  // Branding is a preference, not a dependency: an organization whose row
-  // cannot be read still gets its invoice document, without the letterhead.
   const seller = organization.data
     ? invoiceSeller(organization.data, context.tenant.name)
     : { name: context.tenant.name, countryLabel: null }
@@ -175,17 +175,19 @@ export default async function InvoiceDetailPage({ params }: Props) {
             </>
           }
         />
-        <RelatedRequestsClient
-          customerId={invoice.customerId}
-          resourceType="invoice"
-          resourceId={invoice.id}
-          snapshot={{
-            number: invoice.number,
-            amount: String(invoice.totalAmount),
-            currency: invoice.currency,
-            status: invoice.status,
-          }}
-        />
+        {features.productFeatures.requests ? (
+          <RelatedRequestsClient
+            customerId={invoice.customerId}
+            resourceType="invoice"
+            resourceId={invoice.id}
+            snapshot={{
+              number: invoice.number,
+              amount: String(invoice.totalAmount),
+              currency: invoice.currency,
+              status: invoice.status,
+            }}
+          />
+        ) : null}
       </div>
     </Page>
   )
