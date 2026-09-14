@@ -99,5 +99,89 @@ export function createCurrenciesRouter(resolveGuards: GuardResolver) {
     },
     handler: currenciesController.remove,
   })
+  const organization = z.strictObject({ organizationId: z.string().min(1) })
+  const integrationCurrency = organization.extend({
+    code: currencyParamsSchema.shape.code,
+  })
+  const integrationBase =
+    '/integrations/organizations/:organizationId/currencies'
+  const integrationRead = {
+    kind: 'integration' as const,
+    scope: 'billing.currencies.read',
+  }
+  const integrationWrite = {
+    kind: 'integration' as const,
+    scope: 'billing.currencies.write',
+  }
+  api.get({
+    path: integrationBase,
+    summary: 'List organization Billing currencies',
+    security: integrationRead,
+    request: { params: organization },
+    responses: {
+      200: {
+        description: 'Currency list',
+        schema: successEnvelopeSchema(
+          z.object({
+            object: z.literal('list'),
+            data: z.array(currencySchema),
+            has_more: z.boolean(),
+            total_count: z.number().int().nullable(),
+            url: z.string(),
+          })
+        ),
+      },
+      ...clientErrors,
+    },
+    handler: currenciesController.integrationList,
+  })
+  api.post({
+    path: integrationBase,
+    summary: 'Enable an organization Billing currency',
+    security: integrationWrite,
+    request: { params: organization, body: currencyEnableBodySchema },
+    responses: {
+      201: {
+        description: 'Currency enabled',
+        schema: successEnvelopeSchema(tenantCurrencyCreatedSchema),
+      },
+      ...clientErrors,
+    },
+    handler: currenciesController.create,
+  })
+  api.patch({
+    path: integrationBase,
+    summary: 'Set an organization Billing default currency',
+    security: integrationWrite,
+    request: { params: organization, body: currencyDefaultBodySchema },
+    responses: {
+      200: { description: 'Currency updated', schema: mutationResponse },
+      ...clientErrors,
+    },
+    handler: currenciesController.setDefault,
+  })
+  api.patch({
+    path: `${integrationBase}/:code`,
+    summary: 'Update an organization Billing currency',
+    security: integrationWrite,
+    request: { params: integrationCurrency, body: currencyUpdateBodySchema },
+    documentBody: false,
+    responses: {
+      200: { description: 'Currency updated', schema: mutationResponse },
+      ...clientErrors,
+    },
+    handler: currenciesController.update,
+  })
+  api.delete({
+    path: `${integrationBase}/:code`,
+    summary: 'Disable an organization Billing currency',
+    security: integrationWrite,
+    request: { params: integrationCurrency },
+    responses: {
+      200: { description: 'Currency disabled', schema: mutationResponse },
+      ...clientErrors,
+    },
+    handler: currenciesController.remove,
+  })
   return api.router
 }

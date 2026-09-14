@@ -712,6 +712,26 @@ export const v1OperationMetadata = {
       'Ported from `src/app/api/billing/currencies/[code]/route.ts`.',
     tags: ['Billing'],
   },
+  'GET /integrations/organizations/{organizationId}/currencies': {
+    summary: 'List organization Billing currencies',
+    tags: ['Billing'],
+  },
+  'POST /integrations/organizations/{organizationId}/currencies': {
+    summary: 'Enable an organization Billing currency',
+    tags: ['Billing'],
+  },
+  'PATCH /integrations/organizations/{organizationId}/currencies': {
+    summary: 'Set an organization Billing default currency',
+    tags: ['Billing'],
+  },
+  'PATCH /integrations/organizations/{organizationId}/currencies/{code}': {
+    summary: 'Update an organization Billing currency',
+    tags: ['Billing'],
+  },
+  'DELETE /integrations/organizations/{organizationId}/currencies/{code}': {
+    summary: 'Disable an organization Billing currency',
+    tags: ['Billing'],
+  },
   'GET /customers': {
     operationId: 'billing-billing_get_customers',
     summary: 'Billing GET /customers',
@@ -22984,6 +23004,623 @@ export const v1OperationContracts = {
           'application/json': {
             schema: {
               $ref: '#/components/schemas/HTTPValidationError',
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/currencies': {
+    tags: ['Billing'],
+    summary: 'List organization Billing currencies',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.currencies.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Currency list',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'currency',
+                          },
+                          currencyCode: {
+                            type: 'string',
+                            minLength: 3,
+                            maxLength: 3,
+                          },
+                          isDefault: {
+                            type: 'boolean',
+                          },
+                          isEnabled: {
+                            type: 'boolean',
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          currency: {
+                            type: 'object',
+                            properties: {
+                              code: {
+                                type: 'string',
+                                minLength: 3,
+                                maxLength: 3,
+                              },
+                              name: {
+                                type: 'string',
+                              },
+                              symbol: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              decimalPlaces: {
+                                type: 'integer',
+                                minimum: -9007199254740991,
+                                maximum: 9007199254740991,
+                              },
+                              isActive: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'code',
+                              'name',
+                              'symbol',
+                              'decimalPlaces',
+                              'isActive',
+                            ],
+                            additionalProperties: false,
+                          },
+                        },
+                        required: [
+                          'object',
+                          'currencyCode',
+                          'isDefault',
+                          'isEnabled',
+                          'createdAt',
+                          'updatedAt',
+                          'currency',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/currencies': {
+    tags: ['Billing'],
+    summary: 'Enable an organization Billing currency',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.currencies.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              currency: {
+                type: 'string',
+                minLength: 3,
+                maxLength: 3,
+              },
+            },
+            required: ['currency'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Currency enabled',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'tenant_currency',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                  },
+                  required: ['object', 'id'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /integrations/organizations/{organizationId}/currencies': {
+    tags: ['Billing'],
+    summary: 'Set an organization Billing default currency',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.currencies.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              currency: {
+                type: 'string',
+                minLength: 3,
+                maxLength: 3,
+              },
+            },
+            required: ['currency'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Currency updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'tenant_currency',
+                    },
+                    currency: {
+                      type: 'string',
+                      minLength: 3,
+                      maxLength: 3,
+                    },
+                  },
+                  required: ['object', 'currency'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /integrations/organizations/{organizationId}/currencies/{code}': {
+    tags: ['Billing'],
+    summary: 'Update an organization Billing currency',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.currencies.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'code',
+        schema: {
+          type: 'string',
+          minLength: 3,
+          maxLength: 3,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Currency updated',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'tenant_currency',
+                    },
+                    currency: {
+                      type: 'string',
+                      minLength: 3,
+                      maxLength: 3,
+                    },
+                  },
+                  required: ['object', 'currency'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'DELETE /integrations/organizations/{organizationId}/currencies/{code}': {
+    tags: ['Billing'],
+    summary: 'Disable an organization Billing currency',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.currencies.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'path',
+        name: 'code',
+        schema: {
+          type: 'string',
+          minLength: 3,
+          maxLength: 3,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Currency disabled',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'tenant_currency',
+                    },
+                    currency: {
+                      type: 'string',
+                      minLength: 3,
+                      maxLength: 3,
+                    },
+                  },
+                  required: ['object', 'currency'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },

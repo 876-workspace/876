@@ -31,14 +31,17 @@ export async function enabledCurrencyDecimalPlaces(
   return row?.currency.decimalPlaces ?? null
 }
 
-export async function listCurrencies(tenantId: string) {
+export async function listCurrencies(
+  tenantId: string,
+  url = '/api/v1/currencies'
+) {
   const rows = await listCurrencyRows(tenantId)
   return {
     object: 'list' as const,
     data: rows.map(serializeCurrency),
     has_more: false,
     total_count: rows.length,
-    url: '/api/v1/currencies',
+    url,
   }
 }
 
