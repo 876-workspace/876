@@ -1,7 +1,7 @@
 generator client {
   provider        = "prisma-client"
   output          = "../../src/db/generated/prisma"
-  previewFeatures = ["queryCompiler", "driverAdapters"]
+  previewFeatures = ["queryCompiler", "driverAdapters", "partialIndexes"]
 }
 
 // Prisma 7 rejects `url` here: the connection string lives in prisma.config.ts

@@ -36,7 +36,7 @@ model Package {
   chargeableWeight Float?        @map("chargeable_weight")
   length           Float?
   width            Float?
-  height            Float?
+  height           Float?
   dimensionalWeight Float?       @map("dimensional_weight")
   declaredValue    Int?          @map("declared_value")
   hsCode           String?       @map("hs_code")
