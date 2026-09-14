@@ -58,7 +58,10 @@ Display names remain tenant-editable.
 
 | Delegate | Brief | Status |
 | --- | --- | --- |
-| GPT Web | [`briefs/gpt-web/2026-09-14-package-categories.md`](./briefs/gpt-web/2026-09-14-package-categories.md) | IN_PROGRESS |
+| GPT Web | [`briefs/gpt-web/2026-09-14-package-categories.md`](./briefs/gpt-web/2026-09-14-package-categories.md) | HANDED OFF (see tracker.md) |
+| Codex gpt-5.6-terra medium | [`briefs/codex/2026-09-14-packages-edit-filter-portal.md`](./briefs/codex/2026-09-14-packages-edit-filter-portal.md) | IN_PROGRESS |
+| Codex muse profile | [`briefs/codex-muse/2026-09-14-package-categories-settings.md`](./briefs/codex-muse/2026-09-14-package-categories-settings.md) | IN_PROGRESS |
+| Cline | [`briefs/cline/2026-09-14-package-categories-docs.md`](./briefs/cline/2026-09-14-package-categories-docs.md) | QUEUED |
 
 ## Execution reports
 
@@ -136,3 +139,11 @@ Next step: inspect current Couriers provisioning/resource patterns, then impleme
 ## PR preparation summary
 
 Pending implementation and verification.
+
+## Orchestrator verification of the GPT Web handoff (2026-09-14)
+
+- `feature/couriers-package-categories` had zero commits beyond `main`; deleted. All work is on `-v2`, 0 behind `main`.
+- Found and fixed: Prisma client could not generate (partial indexes need the `partialIndexes` preview feature); checked-in client regenerated; category validation test asserted the registry default instead of the Zod message; OpenAPI snapshot out of date (additions only: 6 operations + `category_id`); two couriers-app type errors (Select null, readonly status options).
+- Security fix: managed package create/update routes lacked the admin/super-admin role check every other manage mutation route enforces.
+- Green after fixes: couriers-api typecheck/lint/boundaries/test (356), `@876/couriers` test (155), `@876/core` test (1148), `@876/api` typecheck, couriers-app typecheck, app-structure.
+- Pre-existing on `main`, not this branch: `@876/core` lint errors in `access/*.weird.test.ts`; couriers-app `api-envelope-routes.test.ts` failures for `manage/items` routes.
