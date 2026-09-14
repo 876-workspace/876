@@ -17,39 +17,46 @@
 - [x] Add canonical Couriers category error definitions to `@876/core`.
 - [x] Add tenant-scoped category list/retrieve/create/update/archive API.
 - [x] Implement create-missing category reconciliation that preserves tenant customization and can adopt an existing same-slug tenant row.
-- [x] Add package-category API/reconciliation test coverage.
+- [x] Add package-category API/reconciliation test coverage, including the admin reconciliation route.
 - [x] Extend Package API schemas with `category_id` and lightweight category reference.
 - [x] Add `category_id` package list filter.
 - [x] Validate active tenant-owned categories on package create/update.
 - [x] Migrate touched expected package failures to registered error values/results.
 - [x] Add `@876/couriers` package-category schema and admin resource implementation.
 - [x] Extend the canonical admin Package SDK schema with category fields.
+- [x] Wire `packageCategories` into the Couriers admin client and public admin exports.
+- [x] Add SDK tests for package category CRUD, reconciliation, package category fields, and filtering.
+- [x] Register `package_category` in the Core application provisioning catalog for `876-couriers`.
+- [x] Add a 26-category flat Couriers bootstrap catalog and build it into the one-time Couriers application manifest import.
+- [x] Preserve `create_missing` / tenant-override semantics in provisioning resource construction.
+- [x] Add provisioning builder/catalog coverage for the Couriers category defaults.
+- [x] Add a server-only Couriers provisioning manifest loader from the published platform application manifest.
+- [x] Add a dedicated package-category provisioning reconciliation API + SDK contract.
+- [x] Reconcile published package-category defaults into new and existing Couriers tenants during onboarding.
+- [x] Add registered onboarding errors for unavailable/failed package-category provisioning.
+- [x] Add onboarding and manifest-loader tests for provisioning success, retry/idempotent existing-tenant behavior, missing config, malformed config, and reconciliation failure.
 
 ## In progress
 
-- [ ] Wire `packageCategories` into the Couriers admin client and public admin exports.
-- [ ] Add SDK tests for package category CRUD and package category fields/filtering.
-- [ ] Add default `package_category` resources to the `876-couriers` application provisioning manifest.
-- [ ] Teach provisioning import builders to translate Couriers package-category defaults into typed application resources.
-- [ ] Reconcile provisioned categories into a Couriers tenant during onboarding/tenant preparation without overwriting tenant edits.
+- [ ] Re-audit the current root `/packages` and Package Categories settings UI against the fresh branch base before wiring presentation.
+- [ ] Replace the Package Categories settings placeholder with tenant category management using the canonical SDK.
+- [ ] Wire package list/category presentation without introducing another app-local category contract.
 
 ## Remaining UI work
 
-- [ ] Re-audit root `/packages` after backend/SDK work against any concurrent modernization on main.
 - [ ] Replace the empty root package table data source with real Couriers SDK data.
 - [ ] Add category display/filter to the package list.
 - [ ] Add/create package detail and edit surfaces using the current shared list/detail route pattern.
 - [ ] Add category selection to package create/edit.
-- [ ] Replace the Package Categories settings placeholder with tenant category CRUD.
 - [ ] Surface package category in portal package views where supported by the canonical portal contract.
 
 ## Closeout
 
 - [ ] Review the branch diff for duplicate local types, stale category helpers, compatibility residue, and raw/unregistered errors.
 - [ ] Add the GPT Web implementation report with exact changed files and test cases.
-- [ ] Record orchestrator verification commands and any expected migration steps.
+- [ ] Record orchestrator verification commands and any expected migration/provisioning steps.
 - [ ] Mark plan/tracker complete only after scoped implementation is committed.
 
 ## Verification state
 
-GPT Web cannot execute repository commands. No typecheck, lint, test, build, Prisma validation, migration apply, or drift check is claimed as passing yet. Those must be run by the orchestrator before merge.
+GPT Web cannot execute repository commands. No typecheck, lint, test, build, Prisma validation, migration apply, provisioning import, or drift check is claimed as passing yet. Those must be run by the orchestrator before merge.
