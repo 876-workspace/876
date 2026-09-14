@@ -4,6 +4,7 @@ import { getPrincipal } from '@/http/auth'
 import { errors } from '@/http/errors'
 import { listObject } from '@/http/envelope'
 import { validBody, validParams, validQuery } from '@/http/middleware/validate'
+import { sendAppResult } from '@/http/result'
 
 import type {
   PortalPackageParams,
@@ -63,6 +64,7 @@ export async function listPortalPackages(
     userId(req),
     validQuery<PortalPackagesQuery>(req)
   )
+
   res.status(200).json(
     listObject({
       data: result.data,
@@ -77,9 +79,9 @@ export async function retrievePortalPackage(
   res: Response
 ): Promise<void> {
   const { tenantId, id } = validParams<PortalPackageParams>(req)
-  res
-    .status(200)
-    .json(await service.retrievePortalPackage(tenantId, userId(req), id))
+  const result = await service.retrievePortalPackage(tenantId, userId(req), id)
+
+  sendAppResult(res, result)
 }
 
 export async function retrievePortalShippingAddress(
