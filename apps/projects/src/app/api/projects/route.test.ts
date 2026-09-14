@@ -204,11 +204,14 @@ describe('POST /api/issues', () => {
 })
 
 describe('POST /api/labels', () => {
-  it('authorizes on labels.create without inventing a Labels module', async () => {
+  it('authorizes labels within the issues module', async () => {
     await createLabelRoute(request('/api/labels', { name: 'bug' }))
 
-    expect(mocks.requirePermission).toHaveBeenCalledWith('labels.create')
-    expect(mocks.requireAccess).not.toHaveBeenCalled()
+    expect(mocks.requireAccess).toHaveBeenCalledWith({
+      module: 'issues',
+      permission: 'labels.create',
+    })
+    expect(mocks.requirePermission).not.toHaveBeenCalled()
   })
 
   it('creates the label scoped to the authorized organization', async () => {
@@ -229,8 +232,8 @@ describe('POST /api/labels', () => {
     expect(mocks.createLabel).not.toHaveBeenCalled()
   })
 
-  it('never calls the client when denied', async () => {
-    mocks.requirePermission.mockResolvedValue({
+  it('never calls the client when module or permission access is denied', async () => {
+    mocks.requireAccess.mockResolvedValue({
       response: new Response('{}', { status: 403 }),
     })
 
