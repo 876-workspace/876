@@ -14,7 +14,6 @@ import type {
   UpdateAppRoleBody,
 } from './app-access.schemas'
 import * as roleMutations from './app-access-role-mutations.service'
-import { retrieveMyAppRuntimeMembership } from './app-access-runtime.service'
 import * as service from './app-access.service'
 
 function principal(req: Request) {
@@ -325,5 +324,11 @@ export async function retrieveMyAppMembership(
   )
   res
     .status(200)
-    .json(await retrieveMyAppRuntimeMembership(org_id, app_id, principal(req)))
+    .json(
+      await service.retrieveMyAppRuntimeMembership(
+        org_id,
+        app_id,
+        principal(req)
+      )
+    )
 }
