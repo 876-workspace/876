@@ -20,6 +20,7 @@ import { IssueStatusBadge } from './status-badges'
 export type IssueDetailProps = {
   issue: Issue
   events?: readonly IssueEvent[]
+  parentIssue?: Issue | null
   subIssues?: readonly Issue[]
   customFields?: readonly CustomField[]
   userLabels?: Readonly<Record<string, string>>
@@ -64,6 +65,7 @@ function userLabel(
 export function IssueDetail({
   issue,
   events = [],
+  parentIssue = null,
   subIssues = [],
   customFields = [],
   userLabels = {},
@@ -142,17 +144,25 @@ export function IssueDetail({
                 <DetailCardFact
                   label="Parent"
                   value={
-                    issue.parentIssueId && issuesHref ? (
+                    parentIssue && issuesHref ? (
                       <Link
-                        href={`${issuesHref}/${encodeURIComponent(issue.parentIssueId)}`}
-                        className="font-mono text-xs text-sky-600 hover:underline dark:text-sky-400"
+                        href={`${issuesHref}/${parentIssue.identifier}`}
+                        className="text-sky-600 hover:underline dark:text-sky-400"
                       >
-                        {issue.parentIssueId}
+                        <span className="font-mono text-xs">
+                          {parentIssue.identifier}
+                        </span>{' '}
+                        — {parentIssue.title}
                       </Link>
+                    ) : parentIssue ? (
+                      `${parentIssue.identifier} — ${parentIssue.title}`
+                    ) : issue.parentIssueId ? (
+                      issue.parentIssueId
                     ) : (
-                      issue.parentIssueId ?? 'No parent'
+                      'No parent'
                     )
                   }
+                  mono={Boolean(issue.parentIssueId && !parentIssue)}
                 />
               </DetailCardFacts>
             </DetailCardSection>
