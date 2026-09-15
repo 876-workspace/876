@@ -58,6 +58,7 @@ export type CustomFieldRow = {
   tenantId: string
   key: string
   label: string
+  scope: string
   fieldType: string
   options: unknown
   required: boolean
@@ -140,6 +141,7 @@ export type SerializedCustomField = {
   tenantId: string
   key: string
   label: string
+  scope: string
   fieldType: string
   options: unknown
   required: boolean
@@ -234,6 +236,7 @@ export function serializeCustomField(
     tenantId: row.tenantId,
     key: row.key,
     label: row.label,
+    scope: row.scope,
     fieldType: row.fieldType,
     options: row.options,
     required: row.required,
