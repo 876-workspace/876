@@ -8,6 +8,8 @@ model Tenant {
 
   projects Project[]
   issues   Issue[]
+  issueRelations IssueRelation[]
+  issueDependencies IssueDependency[]
   labels   Label[]
   comments Comment[]
   events   IssueEvent[]
