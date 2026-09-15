@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
+import { COURIERS_MODULE_CATALOG } from '@/lib/modules'
+
 import {
   isSettingsPath,
   resolveSettingsActiveKey,
+  SETTINGS_NAV_GROUPS,
   settingsContext,
 } from './settings-nav'
+import { resolveSettingsNavIcon, SETTINGS_NAV_ICONS } from './nav-icons'
 
 describe('isSettingsPath', () => {
   it.each([
@@ -68,14 +72,39 @@ describe('settingsContext', () => {
         href: '/island-logistics/settings/subscription',
       },
       {
-        group: 'Product',
-        title: 'Modules',
-        href: '/island-logistics/settings/modules',
+        group: 'Modules',
+        title: 'Items',
+        href: '/island-logistics/settings/modules/items',
       },
       {
-        group: 'Product',
+        group: 'Modules',
+        title: 'Warehouse',
+        href: '/island-logistics/settings/modules/warehouse',
+      },
+      {
+        group: 'Modules',
+        title: 'Manifests',
+        href: '/island-logistics/settings/modules/manifests',
+      },
+      {
+        group: 'Modules',
+        title: 'Deliveries',
+        href: '/island-logistics/settings/modules/deliveries',
+      },
+      {
+        group: 'Modules',
+        title: 'Invoices',
+        href: '/island-logistics/settings/modules/invoices',
+      },
+      {
+        group: 'Modules',
+        title: 'Payments',
+        href: '/island-logistics/settings/modules/payments',
+      },
+      {
+        group: 'Modules',
         title: 'Customer portal',
-        href: '/island-logistics/settings/portal',
+        href: '/island-logistics/settings/modules/portal',
       },
       {
         group: 'Product',
@@ -126,7 +155,7 @@ describe('resolveSettingsActiveKey', () => {
     ['/island-logistics/settings/users/roles', 'roles'],
     ['/island-logistics/settings/users/roles/new', 'roles'],
     ['/island-logistics/settings/users/roles/role_admin', 'roles'],
-    ['/island-logistics/settings/modules/invoices', 'modules'],
+    ['/island-logistics/settings/modules/invoices', 'module-invoices'],
     ['/island-logistics/settings/finance', 'finance'],
     ['/island-logistics/settings', null],
     ['/island-logistics/customers', null],
@@ -143,5 +172,70 @@ describe('resolveSettingsActiveKey', () => {
         '/montego-express'
       )
     ).toBe('roles')
+  })
+
+  it("resolves the portal module page to 'module-portal'", () => {
+    expect(
+      resolveSettingsActiveKey(
+        '/island-logistics/settings/modules/portal',
+        '/island-logistics'
+      )
+    ).toBe('module-portal')
+  })
+})
+
+describe('settings modules group', () => {
+  it('links every entry to /settings/modules/<key> for a catalog key, excluding general', () => {
+    const catalogKeys = new Set<string>(
+      COURIERS_MODULE_CATALOG.map((module) => module.key)
+    )
+    const modulesGroup = SETTINGS_NAV_GROUPS.find(
+      (group) => group.key === 'modules'
+    )
+    expect(modulesGroup?.label).toBe('Modules')
+    expect(modulesGroup?.entries.length).toBeGreaterThan(0)
+
+    for (const entry of modulesGroup?.entries ?? []) {
+      const moduleKey = entry.href.replace('/settings/modules/', '')
+      expect(entry.href).toBe(`/settings/modules/${moduleKey}`)
+      expect(moduleKey).not.toBe('general')
+      expect(catalogKeys.has(moduleKey)).toBe(true)
+    }
+  })
+
+  it('lists exactly the specified sidebar modules, each once (anti-drift)', () => {
+    // NOTE: the runtime catalog holds three extra core-spread modules
+    // (customers, packages, pre-alerts) that intentionally have no sidebar
+    // entry — the Modules group is a hand-maintained literal, so this pins
+    // that literal instead of mirroring the catalog one-to-one.
+    const modulesGroup = SETTINGS_NAV_GROUPS.find(
+      (group) => group.key === 'modules'
+    )
+    const hrefs = modulesGroup?.entries.map((entry) => entry.href) ?? []
+    const expected = [
+      '/settings/modules/items',
+      '/settings/modules/warehouse',
+      '/settings/modules/manifests',
+      '/settings/modules/deliveries',
+      '/settings/modules/invoices',
+      '/settings/modules/payments',
+      '/settings/modules/portal',
+    ]
+
+    expect(hrefs).toHaveLength(expected.length)
+    expect([...hrefs].sort()).toEqual([...expected].sort())
+  })
+
+  it('resolves every entry icon to a registered component, never the fallback', () => {
+    for (const group of SETTINGS_NAV_GROUPS) {
+      for (const entry of group.entries) {
+        expect(
+          Object.prototype.hasOwnProperty.call(SETTINGS_NAV_ICONS, entry.icon)
+        ).toBe(true)
+        expect(resolveSettingsNavIcon(entry.icon)).toBe(
+          SETTINGS_NAV_ICONS[entry.icon]
+        )
+      }
+    }
   })
 })
