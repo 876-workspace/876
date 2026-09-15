@@ -68,7 +68,8 @@ export function PhaseForm(props: Props) {
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!name.trim() || !resolvedKey || (!editing && !projectId) || pending) return
+    if (!name.trim() || !resolvedKey || (!editing && !projectId) || pending)
+      return
 
     setPending(true)
     setError(null)
@@ -83,13 +84,14 @@ export function PhaseForm(props: Props) {
       position: Number.parseInt(position || '0', 10) || 0,
     }
 
-    const result = editing
-      ? await phasesClient.update(phase.id, common)
-      : await phasesClient.create({
-          ...common,
-          projectId,
-          key: resolvedKey,
-        })
+    const result =
+      props.mode === 'edit'
+        ? await phasesClient.update(props.phase.id, common)
+        : await phasesClient.create({
+            ...common,
+            projectId,
+            key: resolvedKey,
+          })
 
     setPending(false)
     if (result.error || !result.data) {
@@ -108,7 +110,9 @@ export function PhaseForm(props: Props) {
 
   return (
     <form onSubmit={onSubmit} className="max-w-3xl space-y-5">
-      {error ? <AppError title="Phase not saved" error={error} variant="banner" /> : null}
+      {error ? (
+        <AppError title="Phase not saved" error={error} variant="banner" />
+      ) : null}
 
       {!editing ? (
         <FormRow label="Project" htmlFor="phase-project" required>
@@ -231,7 +235,9 @@ export function PhaseForm(props: Props) {
         <Button
           type="submit"
           variant="info"
-          disabled={!name.trim() || !resolvedKey || (!editing && !projectId) || pending}
+          disabled={
+            !name.trim() || !resolvedKey || (!editing && !projectId) || pending
+          }
         >
           {pending ? 'Saving…' : editing ? 'Save changes' : 'Create phase'}
         </Button>
