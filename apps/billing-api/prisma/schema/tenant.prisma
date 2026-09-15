@@ -63,6 +63,8 @@ model Tenant {
   vendors                         Vendor[]
   documentSequences               DocumentSequence[]
   documentPreferences             DocumentPreference[]
+  documentTemplates               DocumentTemplate[]
+  brandingPreference              BrandingPreference?
   taxAuthorities                  TaxAuthority[]
   taxRates                        TaxRate[]
   bankAccounts                    BankAccount[]
