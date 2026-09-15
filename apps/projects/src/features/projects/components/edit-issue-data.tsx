@@ -6,7 +6,7 @@ import { requireProjectsContext } from '@/lib/auth/require-projects-context'
 import { projects } from '@/lib/services/projects'
 import { listProjectMilestones } from '@/lib/work-structure-data'
 
-import { EditIssueForm } from './new-issue-form'
+import { EditIssueForm } from './issue-form'
 
 export async function EditIssueData({ issueRef }: { issueRef: string }) {
   const { orgId } = await requireProjectsContext()
