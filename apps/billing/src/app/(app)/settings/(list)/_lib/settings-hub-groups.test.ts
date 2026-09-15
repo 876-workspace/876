@@ -114,6 +114,8 @@ describe('toSettingsHubGroups', () => {
     expect(money?.items.map((item) => item.href)).toEqual([
       '/settings/payment-modes',
       '/settings/billing',
+      '/settings/templates',
+      '/settings/branding',
       '/settings/subscriptions',
       '/settings/discounts',
     ])
