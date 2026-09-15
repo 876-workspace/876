@@ -38,6 +38,34 @@ function props(
 }
 
 describe('DocumentTemplateGallery', () => {
+  it('omits the create and edit links for a read-only viewer', () => {
+    // ARRANGE
+    render(
+      <DocumentTemplateGallery
+        {...props({ newHref: null, editHrefBase: null })}
+      />
+    )
+
+    // ASSERT
+    expect(screen.queryByRole('link', { name: 'New template' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Edit' })).toBeNull()
+    expect(screen.getByText('House standard')).toBeInTheDocument()
+  })
+
+  it('omits the customize link on the built-in card for a read-only viewer', () => {
+    // ARRANGE
+    render(
+      <DocumentTemplateGallery
+        {...props({ templates: [], newHref: null, editHrefBase: null })}
+      />
+    )
+
+    // ASSERT
+    expect(screen.queryByRole('link', { name: 'Customize' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Create a template' })).toBeNull()
+    expect(screen.getAllByText('Standard')).toHaveLength(2)
+  })
+
   it('renders a card per template with its layout label and edit link', () => {
     // ARRANGE
     render(<DocumentTemplateGallery {...props()} />)
