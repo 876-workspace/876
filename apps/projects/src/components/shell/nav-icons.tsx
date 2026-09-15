@@ -19,6 +19,7 @@ import {
 export const NAV_ICONS: Record<string, IconComponent> = {
   dashboard: Home,
   projects: Folder,
+  phases: RectangleStackIcon,
   issues: ExclamationCircleIcon,
   board: RectangleStackIcon,
   labels: TagIcon,
