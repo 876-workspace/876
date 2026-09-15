@@ -67,6 +67,7 @@ model Milestone {
   comments MilestoneComment[]
   events MilestoneEvent[]
   customFieldValues MilestoneCustomFieldValue[]
+  taskLists TaskList[]
 
   @@unique([projectId, key])
   @@index([tenantId, status])
@@ -114,18 +115,50 @@ model Cycle {
   projectId   String? @map("project_id")
   number      Int
   name        String
+  description String?
+  goal        String?
   startsAt    BigInt  @map("starts_at")
   endsAt      BigInt  @map("ends_at")
   completedAt BigInt? @map("completed_at")
+  deletedAt   BigInt? @map("deleted_at")
   createdAt   BigInt  @map("created_at")
   updatedAt   BigInt  @map("updated_at")
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
   issues Issue[]
 
   @@unique([tenantId, number])
   @@index([tenantId, startsAt])
+  @@index([projectId])
   @@map("projects_cycles")
+}
+
+model TaskList {
+  id          String  @id
+  tenantId    String  @map("tenant_id")
+  projectId   String  @map("project_id")
+  milestoneId String? @map("milestone_id")
+  name        String
+  description String?
+  ownerUserId String? @map("owner_user_id")
+  startDate   BigInt? @map("start_date")
+  targetDate  BigInt? @map("target_date")
+  position    Int     @default(0)
+  archivedAt  BigInt? @map("archived_at")
+  deletedAt   BigInt? @map("deleted_at")
+  createdAt   BigInt  @map("created_at")
+  updatedAt   BigInt  @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  issues Issue[]
+
+  @@index([tenantId, projectId])
+  @@index([projectId, position])
+  @@index([milestoneId])
+  @@map("projects_task_lists")
 }
 
 model CustomField {

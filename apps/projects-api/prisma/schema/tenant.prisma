@@ -17,6 +17,7 @@ model Tenant {
   milestoneComments MilestoneComment[]
   milestoneEvents MilestoneEvent[]
   cycles Cycle[]
+  taskLists TaskList[]
   customFields CustomField[]
   customFieldValues CustomFieldValue[]
   milestoneCustomFields MilestoneCustomField[]

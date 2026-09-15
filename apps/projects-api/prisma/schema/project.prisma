@@ -23,6 +23,8 @@ model Project {
   members ProjectMember[]
   issues  Issue[]
   milestones Milestone[]
+  taskLists TaskList[]
+  cycles Cycle[]
 
   @@unique([tenantId, key])
   @@unique([tenantId, slug])
