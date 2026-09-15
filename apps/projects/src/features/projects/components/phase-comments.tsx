@@ -5,7 +5,7 @@ import { AppError, type AppErrorValue } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { Markdown } from '@876/ui/markdown'
 import { MarkdownEditor } from '@876/ui/markdown-editor'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { phasesClient } from '@/lib/client'
 
@@ -39,7 +39,11 @@ export function PhaseComments({
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<AppErrorValue | null>(null)
 
-  useEffect(() => setItems([...comments]), [comments])
+  const [prevComments, setPrevComments] = useState(comments)
+  if (prevComments !== comments) {
+    setPrevComments(comments)
+    setItems([...comments])
+  }
 
   async function create() {
     const trimmed = body.trim()
@@ -66,7 +70,11 @@ export function PhaseComments({
     if (!trimmed || pending) return
     setPending(true)
     setError(null)
-    const result = await phasesClient.comments.update(phaseId, commentId, trimmed)
+    const result = await phasesClient.comments.update(
+      phaseId,
+      commentId,
+      trimmed
+    )
     setPending(false)
     if (result.error || !result.data) {
       setError(
@@ -105,7 +113,10 @@ export function PhaseComments({
   }
 
   return (
-    <section className="876-card space-y-5 p-5 sm:p-6" aria-label="Phase comments">
+    <section
+      className="876-card space-y-5 p-5 sm:p-6"
+      aria-label="Phase comments"
+    >
       <h2 className="text-sm font-semibold">Comments ({items.length})</h2>
       {items.length === 0 ? (
         <div className="border-border/60 text-muted-foreground rounded-lg border border-dashed p-6 text-center text-xs">
@@ -121,7 +132,8 @@ export function PhaseComments({
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="font-medium">
                     {comment.authorUserId
-                      ? userLabels[comment.authorUserId] ?? comment.authorUserId
+                      ? (userLabels[comment.authorUserId] ??
+                        comment.authorUserId)
                       : 'Unknown'}
                   </span>
                   <span className="text-muted-foreground">
@@ -198,13 +210,21 @@ export function PhaseComments({
         </div>
       )}
 
-      {error ? <AppError title="Comment action failed" error={error} variant="banner" /> : null}
+      {error ? (
+        <AppError
+          title="Comment action failed"
+          error={error}
+          variant="banner"
+        />
+      ) : null}
 
       {canEdit ? (
         <div className="border-border/60 bg-muted/20 rounded-xl border p-3 sm:p-4">
           <div className="mb-3 flex items-center justify-between gap-2">
             <h3 className="text-sm font-medium">Add a comment</h3>
-            <span className="text-muted-foreground text-xs">Markdown supported</span>
+            <span className="text-muted-foreground text-xs">
+              Markdown supported
+            </span>
           </div>
           <MarkdownEditor
             value={body}
