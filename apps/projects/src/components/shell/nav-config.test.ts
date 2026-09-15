@@ -80,6 +80,7 @@ describe('Projects navigation access binding', () => {
       '/',
       '/projects',
       '/phases',
+      '/cycles',
       '/issues',
       '/board',
       '/labels',
@@ -104,7 +105,7 @@ describe('Projects navigation access binding', () => {
     ).not.toContain('/projects')
   })
 
-  it('removes Projects and Phases when projects is not entitled', () => {
+  it('removes Projects, Phases, and Cycles when projects is not entitled', () => {
     const hrefs = resolveNavigation(
       navConfig,
       context(['projects.view', 'issues.view'], [], ['issues'])
@@ -112,6 +113,7 @@ describe('Projects navigation access binding', () => {
 
     expect(hrefs).not.toContain('/projects')
     expect(hrefs).not.toContain('/phases')
+    expect(hrefs).not.toContain('/cycles')
     expect(hrefs).toContain('/issues')
   })
 
@@ -123,6 +125,7 @@ describe('Projects navigation access binding', () => {
 
     expect(hrefs).toContain('/projects')
     expect(hrefs).toContain('/phases')
+    expect(hrefs).toContain('/cycles')
     expect(hrefs).not.toContain('/issues')
     expect(hrefs).not.toContain('/board')
     expect(hrefs).not.toContain('/labels')
