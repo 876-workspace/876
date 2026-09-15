@@ -1,9 +1,5 @@
 import Link from 'next/link'
-import type {
-  CustomField,
-  Issue,
-  IssueEvent,
-} from '@876/projects/contracts'
+import type { CustomField, Issue, IssueEvent } from '@876/projects/contracts'
 import { Badge } from '@876/ui/badge'
 import { buttonVariants } from '@876/ui/button'
 import {
@@ -49,7 +45,8 @@ function formatEventType(type: string): string {
 
 function formatCustomFieldValue(value: Issue['customFields'][number]['value']) {
   if (value === null || value === '') return 'Not set'
-  if (Array.isArray(value)) return value.length > 0 ? value.join(', ') : 'Not set'
+  if (Array.isArray(value))
+    return value.length > 0 ? value.join(', ') : 'Not set'
   if (typeof value === 'boolean') return value ? 'Yes' : 'No'
   return String(value)
 }
@@ -73,7 +70,9 @@ export function IssueDetail({
   projectHref,
   editHref,
 }: IssueDetailProps) {
-  const fieldLabels = new Map(customFields.map((field) => [field.id, field.label]))
+  const fieldLabels = new Map(
+    customFields.map((field) => [field.id, field.label])
+  )
 
   return (
     <div className="space-y-8">
@@ -96,6 +95,9 @@ export function IssueDetail({
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <IssueStatusBadge status={issue.status} />
             <IssuePriorityBadge priority={issue.priority} />
+            {issue.blocked ? (
+              <Badge variant="destructive">Blocked</Badge>
+            ) : null}
             {editHref ? (
               <Link
                 href={editHref}
@@ -241,7 +243,8 @@ export function IssueDetail({
                       <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                         <span className="text-foreground text-xs font-medium">
                           {event.actorUserId
-                            ? userLabels[event.actorUserId] ?? event.actorUserId
+                            ? (userLabels[event.actorUserId] ??
+                              event.actorUserId)
                             : 'System'}
                         </span>
                         <span className="text-muted-foreground">
@@ -301,7 +304,7 @@ export function IssueDetail({
                   label="Creator"
                   value={
                     issue.creatorUserId
-                      ? userLabels[issue.creatorUserId] ?? issue.creatorUserId
+                      ? (userLabels[issue.creatorUserId] ?? issue.creatorUserId)
                       : 'Unknown creator'
                   }
                   mono={Boolean(

@@ -44,6 +44,12 @@ export const projects = {
   get issues() {
     return getServiceClient().issues
   },
+  get issueRelations() {
+    return getServiceClient().issueRelations
+  },
+  get issueDependencies() {
+    return getServiceClient().issueDependencies
+  },
   get labels() {
     return getServiceClient().labels
   },
