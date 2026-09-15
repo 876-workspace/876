@@ -128,11 +128,22 @@ const event: IssueEvent = {
   createdAt: 2,
 }
 
+const parentIssue = makeIssue({
+  id: 'issue_1',
+  identifier: 'WEB-1',
+  number: 1,
+  title: 'Ship the release',
+  parentIssueId: null,
+  customFields: [],
+  subIssueCount: 1,
+})
+
 describe('IssueDetail foundation fields', () => {
   it('surfaces configured work structure, hierarchy, custom fields and resolved identities', () => {
     render(
       <IssueDetail
         issue={makeIssue()}
+        parentIssue={parentIssue}
         subIssues={[
           makeIssue({
             id: 'issue_3',
@@ -160,6 +171,10 @@ describe('IssueDetail foundation fields', () => {
     expect(screen.getByText('Ana Brown')).toBeInTheDocument()
     expect(screen.getByText('Ben Clarke')).toBeInTheDocument()
     expect(screen.getByText('Run smoke tests')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /WEB-1.*Ship the release/ })).toHaveAttribute(
+      'href',
+      '/issues/WEB-1'
+    )
     expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute(
       'href',
       '/issues/WEB-2/edit'
