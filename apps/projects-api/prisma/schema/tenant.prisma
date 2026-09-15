@@ -14,9 +14,12 @@ model Tenant {
   workItemTypes WorkItemType[]
   workflowStates WorkflowState[]
   milestones Milestone[]
+  milestoneComments MilestoneComment[]
+  milestoneEvents MilestoneEvent[]
   cycles Cycle[]
   customFields CustomField[]
   customFieldValues CustomFieldValue[]
+  milestoneCustomFieldValues MilestoneCustomFieldValue[]
 
   @@map("projects_tenants")
 }
