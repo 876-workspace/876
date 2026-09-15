@@ -7,6 +7,7 @@ import { buttonVariants, Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { NativeSelect } from '@876/ui/native-select'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 
 import type {
   IssueGroupBy,
@@ -150,7 +151,7 @@ function FilterSelect({
   label: string
   name: string
   value?: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <label className="space-y-1">
