@@ -4,6 +4,8 @@ import { createCommentsResource } from './resources/comments'
 import { createCustomFieldsResource } from './resources/custom-fields'
 import { createCustomFieldValuesResource } from './resources/custom-field-values'
 import { createIssuesResource } from './resources/issues'
+import { createIssueDependenciesResource } from './resources/issue-dependencies'
+import { createIssueRelationsResource } from './resources/issue-relations'
 import { createLabelsResource } from './resources/labels'
 import { createCyclesResource } from './resources/cycles'
 import { createMilestonesResource } from './resources/milestones'
@@ -22,6 +24,8 @@ export function create876ProjectsClient(options: ClientOptions = {}) {
     tenants: createTenantsResource(runtime),
     projects: createProjectsResource(runtime),
     issues: createIssuesResource(runtime),
+    issueRelations: createIssueRelationsResource(runtime),
+    issueDependencies: createIssueDependenciesResource(runtime),
     labels: createLabelsResource(runtime),
     comments: createCommentsResource(runtime),
     workItemTypes: createWorkItemTypesResource(runtime),

@@ -340,6 +340,12 @@ export const issueSchema = z.object({
   parentIssueId: z.string().nullable(),
   estimate: z.number().nullable(),
   dueDate: z.number().nullable(),
+  plannedStartDate: z.number().nullable(),
+  plannedFinishDate: z.number().nullable(),
+  plannedDurationMinutes: z.number().nullable(),
+  blocked: z.boolean(),
+  relationCount: z.number(),
+  dependencyCount: z.number(),
   position: z.number(),
   labels: z.array(labelSchema),
   commentCount: z.number(),
@@ -363,6 +369,69 @@ export const issueEventSchema = z.object({
   createdAt: z.number(),
 })
 export type IssueEvent = z.infer<typeof issueEventSchema>
+
+export const ISSUE_RELATION_TYPES = [
+  'relates-to',
+  'duplicates',
+  'blocks',
+] as const
+export const issueRelationTypeSchema = z.enum(ISSUE_RELATION_TYPES)
+export type IssueRelationType = z.infer<typeof issueRelationTypeSchema>
+
+export const ISSUE_DEPENDENCY_TYPES = [
+  'finish-to-start',
+  'start-to-start',
+  'finish-to-finish',
+  'start-to-finish',
+] as const
+export const issueDependencyTypeSchema = z.enum(ISSUE_DEPENDENCY_TYPES)
+export type IssueDependencyType = z.infer<typeof issueDependencyTypeSchema>
+
+export const issueRelationSchema = z.object({
+  object: z.literal('issue-relation'),
+  id: z.string(),
+  tenantId: z.string(),
+  sourceIssueId: z.string(),
+  targetIssueId: z.string(),
+  type: issueRelationTypeSchema,
+  createdBy: z.string().nullable(),
+  createdAt: z.number(),
+})
+export type IssueRelation = z.infer<typeof issueRelationSchema>
+
+export const issueDependencySchema = z.object({
+  object: z.literal('issue-dependency'),
+  id: z.string(),
+  tenantId: z.string(),
+  predecessorIssueId: z.string(),
+  successorIssueId: z.string(),
+  type: issueDependencyTypeSchema,
+  lagMinutes: z.number(),
+  createdBy: z.string().nullable(),
+  createdAt: z.number(),
+})
+export type IssueDependency = z.infer<typeof issueDependencySchema>
+
+export const issueDependencyViewSchema = z.object({
+  predecessors: z.array(issueDependencySchema),
+  successors: z.array(issueDependencySchema),
+})
+export type IssueDependencyView = z.infer<typeof issueDependencyViewSchema>
+
+export const scheduleConstraintSchema = z.object({
+  issueId: z.string(),
+  identifier: z.string(),
+  type: issueDependencyTypeSchema,
+  lagMinutes: z.number(),
+})
+export type ScheduleConstraint = z.infer<typeof scheduleConstraintSchema>
+
+export const scheduleSuggestionSchema = z.object({
+  earliestStart: z.number().nullable(),
+  earliestFinish: z.number().nullable(),
+  constrainedBy: z.array(scheduleConstraintSchema),
+})
+export type ScheduleSuggestion = z.infer<typeof scheduleSuggestionSchema>
 
 export const commentSchema = z.object({
   object: z.literal('projects.comment'),
@@ -450,6 +519,9 @@ export type IssueList = z.infer<typeof issueListSchema>
 
 export const issueEventListSchema = createListSchema(issueEventSchema)
 export type IssueEventList = z.infer<typeof issueEventListSchema>
+
+export const issueRelationListSchema = createListSchema(issueRelationSchema)
+export type IssueRelationList = z.infer<typeof issueRelationListSchema>
 
 export const commentListSchema = createListSchema(commentSchema)
 export type CommentList = z.infer<typeof commentListSchema>
@@ -561,6 +633,9 @@ export interface CreateIssueInput {
   parentIssueId?: string | null
   estimate?: number | null
   dueDate?: number | null
+  plannedStartDate?: number | null
+  plannedFinishDate?: number | null
+  plannedDurationMinutes?: number | null
   labelIds?: string[]
   customFields?: SetCustomFieldValueInput[]
   position?: number
@@ -581,10 +656,32 @@ export interface UpdateIssueInput {
   parentIssueId?: string | null
   estimate?: number | null
   dueDate?: number | null
+  plannedStartDate?: number | null
+  plannedFinishDate?: number | null
+  plannedDurationMinutes?: number | null
   labelIds?: string[]
   customFields?: SetCustomFieldValueInput[]
   position?: number
   actorUserId?: string | null
+}
+
+export interface CreateIssueRelationInput {
+  targetIssueId: string
+  type: IssueRelationType
+  actorUserId?: string | null
+}
+
+export interface CreateIssueDependencyInput {
+  predecessorIssueId: string
+  successorIssueId: string
+  type?: IssueDependencyType
+  lagMinutes?: number
+  actorUserId?: string | null
+}
+
+export interface UpdateIssueDependencyInput {
+  type?: IssueDependencyType
+  lagMinutes?: number
 }
 
 export interface CreateLabelInput {
