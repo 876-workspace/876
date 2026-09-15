@@ -133,6 +133,7 @@ model CustomField {
   tenantId    String  @map("tenant_id")
   key         String
   label       String
+  scope       String  @default("work-item")
   fieldType   String  @map("field_type")
   options     Json?
   required    Boolean @default(false)
@@ -148,6 +149,7 @@ model CustomField {
   milestoneValues MilestoneCustomFieldValue[]
 
   @@unique([tenantId, key])
+  @@index([tenantId, scope])
   @@map("projects_custom_fields")
 }
 
