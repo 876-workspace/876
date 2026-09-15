@@ -43,13 +43,15 @@ export async function resolveIssue(
   tenantId: string,
   issueRef: string
 ): Promise<IssueRow | null> {
-  if (issueRef.startsWith('iss_')) return repository.retrieve(tenantId, issueRef)
+  if (issueRef.startsWith('iss_'))
+    return repository.retrieve(tenantId, issueRef)
   return repository.retrieveByIdentifier(tenantId, issueRef.toUpperCase())
 }
 
 async function resolveTenant(organizationId: string) {
   const tenant = await tenants.resolveTenant(organizationId)
-  if (!tenant) return { tenant: null, error: getError('projects/tenant-not-found') }
+  if (!tenant)
+    return { tenant: null, error: getError('projects/tenant-not-found') }
   return { tenant, error: null }
 }
 
@@ -58,10 +60,12 @@ async function resolveProject(
   projectIdOrKey?: string
 ) {
   const target = projectIdOrKey ?? tenant.triageProjectId
-  if (!target) return { project: null, error: getError('projects/project-not-found') }
+  if (!target)
+    return { project: null, error: getError('projects/project-not-found') }
 
   const project = await projects.resolveProject(tenant.id, target)
-  if (!project) return { project: null, error: getError('projects/project-not-found') }
+  if (!project)
+    return { project: null, error: getError('projects/project-not-found') }
 
   return { project, error: null }
 }
@@ -258,6 +262,12 @@ export async function create(
   )
     return { data: null, error: getError('projects/milestone-not-found') }
 
+  const taskList = body.taskListId
+    ? await workStructure.resolveTaskListById(tenant.id, body.taskListId)
+    : null
+  if (body.taskListId && (!taskList || taskList.projectId !== targetProject.id))
+    return { data: null, error: getError('projects/task-list-not-found') }
+
   const customFieldValidation =
     await workStructure.validateIssueCustomFieldValues(
       tenant.id,
@@ -297,6 +307,7 @@ export async function create(
         typeKey,
         workItemTypeId: workItemType.id,
         milestoneId: milestone?.id ?? null,
+        taskListId: taskList?.id ?? null,
         priority,
         assigneeUserId: body.assigneeUserId ?? null,
         creatorUserId: body.creatorUserId ?? null,
@@ -465,6 +476,17 @@ export async function update(
   )
     return { data: null, error: getError('projects/milestone-not-found') }
 
+  const targetTaskList =
+    body.taskListId === undefined || body.taskListId === null
+      ? null
+      : await workStructure.resolveTaskListById(tenant.id, body.taskListId)
+  if (
+    body.taskListId !== undefined &&
+    body.taskListId !== null &&
+    (!targetTaskList || targetTaskList.projectId !== targetProjectId)
+  )
+    return { data: null, error: getError('projects/task-list-not-found') }
+
   if (body.customFields !== undefined || body.typeKey !== undefined) {
     const validation = await workStructure.validateIssueCustomFieldValues(
       tenant.id,
@@ -572,6 +594,28 @@ export async function update(
     })
   }
 
+  if (
+    body.milestoneId !== undefined &&
+    (existing.milestoneId ?? null) !== (targetMilestone?.id ?? null)
+  ) {
+    eventsToWrite.push({
+      type: 'milestone-changed',
+      fromValue: existing.milestoneId ?? null,
+      toValue: targetMilestone?.id ?? null,
+    })
+  }
+
+  if (
+    body.taskListId !== undefined &&
+    (existing.taskListId ?? null) !== (targetTaskList?.id ?? null)
+  ) {
+    eventsToWrite.push({
+      type: 'task-list-changed',
+      fromValue: existing.taskListId ?? null,
+      toValue: targetTaskList?.id ?? null,
+    })
+  }
+
   if (resolvedLabelIds !== undefined) {
     const existingLabelIds = existing.labels
       ? existing.labels.map((issueLabel) => issueLabel.label.id)
@@ -592,7 +636,8 @@ export async function update(
   const updateParams: repository.UpdateIssueParams = { updatedAt: timestamp }
   if (newProjectId !== undefined) updateParams.projectId = newProjectId
   if (body.title !== undefined) updateParams.title = body.title
-  if (body.description !== undefined) updateParams.description = body.description
+  if (body.description !== undefined)
+    updateParams.description = body.description
   if (body.status !== undefined) updateParams.status = body.status
   if (targetStatus) updateParams.workflowStateId = targetStatus.id
   if (body.typeKey !== undefined) {
@@ -601,6 +646,8 @@ export async function update(
   }
   if (body.milestoneId !== undefined)
     updateParams.milestoneId = targetMilestone?.id ?? null
+  if (body.taskListId !== undefined)
+    updateParams.taskListId = targetTaskList?.id ?? null
   if (body.priority !== undefined) updateParams.priority = body.priority
   if (body.assigneeUserId !== undefined)
     updateParams.assigneeUserId = body.assigneeUserId

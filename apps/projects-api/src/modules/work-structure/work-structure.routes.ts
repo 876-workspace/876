@@ -1,8 +1,10 @@
 import { Router } from 'express'
 
 import { requireInternalKey } from '../../http/internal-auth.js'
+import * as cycles from './cycles.controller.js'
 import * as milestoneDetails from './milestone-details.controller.js'
 import { listOrganizationMilestonesController } from './milestone-list.controller.js'
+import * as taskLists from './task-lists.controller.js'
 import * as controller from './work-structure.controller.js'
 
 export function createWorkStructureRouter(): Router {
@@ -64,7 +66,11 @@ export function createWorkStructureRouter(): Router {
     requireInternalKey,
     listOrganizationMilestonesController
   )
-  router.post('/milestones', requireInternalKey, milestoneDetails.createMilestone)
+  router.post(
+    '/milestones',
+    requireInternalKey,
+    milestoneDetails.createMilestone
+  )
   router.get(
     '/milestones/:id',
     requireInternalKey,
@@ -170,6 +176,57 @@ export function createWorkStructureRouter(): Router {
   )
   router.get('/presets', requireInternalKey, controller.listPresets)
   router.post('/presets/apply', requireInternalKey, controller.applyPreset)
+
+  router.get(
+    '/projects/:projectId/task-lists',
+    requireInternalKey,
+    taskLists.listTaskLists
+  )
+  router.post(
+    '/projects/:projectId/task-lists',
+    requireInternalKey,
+    taskLists.createTaskList
+  )
+  router.put(
+    '/projects/:projectId/task-lists/order',
+    requireInternalKey,
+    taskLists.reorderTaskLists
+  )
+  router.get(
+    '/projects/:projectId/work-breakdown',
+    requireInternalKey,
+    taskLists.workBreakdown
+  )
+  router.get('/task-lists/:id', requireInternalKey, taskLists.retrieveTaskList)
+  router.patch('/task-lists/:id', requireInternalKey, taskLists.updateTaskList)
+  router.delete('/task-lists/:id', requireInternalKey, taskLists.removeTaskList)
+  router.post(
+    '/task-lists/:id/archive',
+    requireInternalKey,
+    taskLists.archiveTaskList
+  )
+  router.post(
+    '/task-lists/:id/restore',
+    requireInternalKey,
+    taskLists.restoreTaskList
+  )
+  router.post(
+    '/task-lists/:id/issues',
+    requireInternalKey,
+    taskLists.moveIssues
+  )
+
+  router.get('/cycles', requireInternalKey, cycles.listCycles)
+  router.post('/cycles', requireInternalKey, cycles.createCycle)
+  router.get('/cycles/:id', requireInternalKey, cycles.retrieveCycle)
+  router.patch('/cycles/:id', requireInternalKey, cycles.updateCycle)
+  router.delete('/cycles/:id', requireInternalKey, cycles.removeCycle)
+  router.post('/cycles/:id/issues', requireInternalKey, cycles.assignIssues)
+  router.delete(
+    '/cycles/:id/issues/:issueId',
+    requireInternalKey,
+    cycles.unassignIssue
+  )
   return router
 }
 

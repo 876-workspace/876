@@ -8,7 +8,9 @@ import {
 import * as issues from '../issues/index.js'
 import * as projects from '../projects/index.js'
 import * as tenants from '../tenants/index.js'
+import * as cyclesRepository from './cycles.repository.js'
 import { getWorkStructurePreset, workStructurePresets } from './presets.js'
+import * as taskListsRepository from './task-lists.repository.js'
 import * as repository from './work-structure.repository.js'
 import type {
   CreateCustomFieldBody,
@@ -226,6 +228,14 @@ export async function resolveDefaultWorkItemType(tenantId: string) {
 
 export async function resolveMilestoneById(tenantId: string, id: string) {
   return repository.retrieveMilestone(tenantId, id)
+}
+
+export async function resolveTaskListById(tenantId: string, id: string) {
+  return taskListsRepository.retrieveTaskList(tenantId, id)
+}
+
+export async function resolveCycleById(tenantId: string, id: string) {
+  return cyclesRepository.retrieveCycle(tenantId, id)
 }
 
 export async function createWorkflowState(
@@ -710,9 +720,12 @@ export async function validateIssueCustomFieldValues(
   }
 
   for (const field of fields) {
-    if (!field.required || !appliesToWorkItemType(field, workItemTypeId)) continue
+    if (!field.required || !appliesToWorkItemType(field, workItemTypeId))
+      continue
     const input = inputByFieldId.get(field.id)
-    const hasValue = input ? !isEmpty(input.value) : existingFieldIds.has(field.id)
+    const hasValue = input
+      ? !isEmpty(input.value)
+      : existingFieldIds.has(field.id)
     if (!hasValue)
       return {
         data: null,
@@ -804,9 +817,7 @@ export async function getIssueStructure(
     repository.listCustomFieldValues(tenantId, issue.id),
   ])
   const customFields = customFieldRows
-    .filter(
-      (row) => !type || appliesToWorkItemType(row.field, type.id)
-    )
+    .filter((row) => !type || appliesToWorkItemType(row.field, type.id))
     .map((row) => serializeCustomFieldValue(row as CustomFieldValueRow))
   return {
     state: state ? serializeWorkflowState(state) : null,

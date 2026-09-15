@@ -47,6 +47,7 @@ export type CreateIssueParams = {
   typeKey: string
   workItemTypeId?: string | null
   milestoneId?: string | null
+  taskListId?: string | null
   priority: string
   assigneeUserId?: string | null
   creatorUserId?: string | null
@@ -81,6 +82,7 @@ export type UpdateIssueParams = {
   typeKey?: string
   workItemTypeId?: string | null
   milestoneId?: string | null
+  taskListId?: string | null
   priority?: string
   assigneeUserId?: string | null
   creatorUserId?: string | null

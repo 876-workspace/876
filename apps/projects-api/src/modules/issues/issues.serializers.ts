@@ -24,6 +24,8 @@ export type IssueRow = {
   typeKey: string
   workItemTypeId: string | null
   milestoneId: string | null
+  taskListId?: string | null
+  cycleId?: string | null
   priority: string
   assigneeUserId: string | null
   creatorUserId: string | null
@@ -75,6 +77,8 @@ export type SerializedIssue = {
   type: SerializedWorkItemType | null
   state: SerializedWorkflowState | null
   milestone: SerializedMilestone | null
+  taskListId: string | null
+  cycleId: string | null
   customFields: SerializedCustomFieldValue[]
   priority: string
   assigneeUserId: string | null
@@ -151,6 +155,8 @@ export function serializeIssue(
     type: options?.type ?? null,
     state: options?.state ?? null,
     milestone: options?.milestone ?? null,
+    taskListId: row.taskListId ?? null,
+    cycleId: row.cycleId ?? null,
     customFields: options?.customFields ?? [],
     priority: row.priority,
     assigneeUserId: row.assigneeUserId,

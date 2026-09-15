@@ -9,6 +9,8 @@ const {
   workStructureRepo,
   milestoneDetailsRepo,
   milestoneListRepo,
+  taskListsRepo,
+  cyclesRepo,
   repository,
   txMock,
 } = vi.hoisted(() => {
@@ -80,6 +82,30 @@ const {
       clearMilestoneCustomFieldValue: vi.fn(),
     },
     milestoneListRepo: { listOrganizationMilestones: vi.fn() },
+    taskListsRepo: {
+      listTaskLists: vi.fn(),
+      retrieveTaskList: vi.fn(),
+      createTaskList: vi.fn(),
+      updateTaskList: vi.fn(),
+      softDeleteTaskList: vi.fn(),
+      taskListProgress: vi.fn(),
+      countProjectTaskLists: vi.fn(),
+      listProjectIssuesForBreakdown: vi.fn(),
+      assignIssuesToTaskList: vi.fn(),
+    },
+    cyclesRepo: {
+      listCycles: vi.fn(),
+      retrieveCycle: vi.fn(),
+      retrieveCycleByNumber: vi.fn(),
+      maxCycleNumber: vi.fn(),
+      createCycle: vi.fn(),
+      updateCycle: vi.fn(),
+      softDeleteCycle: vi.fn(),
+      cycleProgress: vi.fn(),
+      cycleThroughput: vi.fn(),
+      assignIssuesToCycle: vi.fn(),
+      unassignIssueFromCycle: vi.fn(),
+    },
     repository: {
       list: vi.fn(),
       count: vi.fn(),
@@ -112,6 +138,8 @@ vi.mock(
   '../../work-structure/milestone-list.repository.js',
   () => milestoneListRepo
 )
+vi.mock('../../work-structure/task-lists.repository.js', () => taskListsRepo)
+vi.mock('../../work-structure/cycles.repository.js', () => cyclesRepo)
 vi.mock('../issues.repository.js', () => repository)
 
 const service = await import('../issues.service.js')
@@ -173,6 +201,8 @@ const mockIssueRow = {
   typeKey: 'task',
   workItemTypeId: 'wit_task_1',
   milestoneId: null,
+  taskListId: null,
+  cycleId: null,
   priority: 'none',
   assigneeUserId: null,
   creatorUserId: 'usr_creator_1',
@@ -1105,6 +1135,8 @@ describe('issues module', () => {
               updatedAt: 1787767200,
             },
             milestone: null,
+            taskListId: null,
+            cycleId: null,
             customFields: [],
             priority: 'none',
             assigneeUserId: null,

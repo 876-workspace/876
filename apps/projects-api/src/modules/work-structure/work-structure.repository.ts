@@ -259,13 +259,13 @@ export async function deleteMilestone(
 
 export async function listCycles(tenantId: string) {
   return prisma.cycle.findMany({
-    where: { tenantId },
+    where: { tenantId, deletedAt: null },
     orderBy: { startsAt: 'desc' },
   })
 }
 
 export async function retrieveCycle(tenantId: string, id: string) {
-  return prisma.cycle.findFirst({ where: { tenantId, id } })
+  return prisma.cycle.findFirst({ where: { tenantId, id, deletedAt: null } })
 }
 
 export async function listCustomFields(

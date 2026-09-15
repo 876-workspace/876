@@ -1,19 +1,46 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { repository, tenants, projects, issues } = vi.hoisted(() => ({
-  repository: {
-    retrieveDefaultWorkflowState: vi.fn(),
-    retrieveDefaultWorkItemType: vi.fn(),
-    retrieveWorkItemType: vi.fn(),
-    listCustomFields: vi.fn(),
-    listCustomFieldValues: vi.fn(),
-  },
-  tenants: { resolveTenant: vi.fn(), setPresetKey: vi.fn() },
-  projects: { resolveProject: vi.fn() },
-  issues: { resolveIssue: vi.fn() },
-}))
+const { repository, tenants, projects, issues, taskListsRepo, cyclesRepo } =
+  vi.hoisted(() => ({
+    repository: {
+      retrieveDefaultWorkflowState: vi.fn(),
+      retrieveDefaultWorkItemType: vi.fn(),
+      retrieveWorkItemType: vi.fn(),
+      listCustomFields: vi.fn(),
+      listCustomFieldValues: vi.fn(),
+    },
+    tenants: { resolveTenant: vi.fn(), setPresetKey: vi.fn() },
+    projects: { resolveProject: vi.fn() },
+    issues: { resolveIssue: vi.fn() },
+    taskListsRepo: {
+      listTaskLists: vi.fn(),
+      retrieveTaskList: vi.fn(),
+      createTaskList: vi.fn(),
+      updateTaskList: vi.fn(),
+      softDeleteTaskList: vi.fn(),
+      taskListProgress: vi.fn(),
+      countProjectTaskLists: vi.fn(),
+      listProjectIssuesForBreakdown: vi.fn(),
+      assignIssuesToTaskList: vi.fn(),
+    },
+    cyclesRepo: {
+      listCycles: vi.fn(),
+      retrieveCycle: vi.fn(),
+      retrieveCycleByNumber: vi.fn(),
+      maxCycleNumber: vi.fn(),
+      createCycle: vi.fn(),
+      updateCycle: vi.fn(),
+      softDeleteCycle: vi.fn(),
+      cycleProgress: vi.fn(),
+      cycleThroughput: vi.fn(),
+      assignIssuesToCycle: vi.fn(),
+      unassignIssueFromCycle: vi.fn(),
+    },
+  }))
 
 vi.mock('../work-structure.repository.js', () => repository)
+vi.mock('../task-lists.repository.js', () => taskListsRepo)
+vi.mock('../cycles.repository.js', () => cyclesRepo)
 vi.mock('../../tenants/index.js', () => tenants)
 vi.mock('../../projects/index.js', () => projects)
 vi.mock('../../issues/index.js', () => issues)
@@ -54,9 +81,9 @@ describe('issue work structure policy', () => {
     await expect(
       service.resolveDefaultWorkflowState('tenant_1')
     ).resolves.toEqual(state)
-    await expect(service.resolveDefaultWorkItemType('tenant_1')).resolves.toEqual(
-      type
-    )
+    await expect(
+      service.resolveDefaultWorkItemType('tenant_1')
+    ).resolves.toEqual(type)
     expect(repository.retrieveDefaultWorkflowState).toHaveBeenCalledWith(
       'tenant_1'
     )
