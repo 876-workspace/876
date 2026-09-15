@@ -3,8 +3,10 @@ import { createBankAccountsResource } from './resources/bank-accounts'
 import { createBankDirectoryResource } from './resources/bank-directory'
 import { createBankTransactionsResource } from './resources/bank-transactions'
 import { createBankingEngineResources } from './resources/banking-engine'
+import { createBrandingResource } from './resources/branding'
 import { createCatalogResources } from './resources/catalog'
 import { createCustomersResource } from './resources/customers'
+import { createDocumentTemplatesResource } from './resources/document-templates'
 import { createCreditNotesResource } from './resources/credit-notes'
 import { createCurrenciesResource } from './resources/currencies'
 import {
@@ -43,12 +45,14 @@ export function create876Client(options: ClientOptions = {}) {
     bankAccounts: createBankAccountsResource(runtime),
     bankDirectory: createBankDirectoryResource(runtime),
     bankTransactions: createBankTransactionsResource(runtime),
+    branding: createBrandingResource(runtime),
     ...banking,
     addons: catalog.addons,
     customers: createCustomersResource(runtime),
     creditNotes: createCreditNotesResource(runtime),
     currencies: createCurrenciesResource(runtime),
     discounts: createDiscountsResource(runtime),
+    documentTemplates: createDocumentTemplatesResource(runtime),
     invoices: createInvoicesResource(runtime),
     invoicePreferences: createInvoicePreferencesResource(runtime),
     items: createItemsResource(runtime),

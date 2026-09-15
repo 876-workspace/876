@@ -7,6 +7,29 @@
  */
 
 // Shared primitives and enums
+export type { Branding, BrandingUpdateParams } from './branding'
+export type {
+  DeletedDocumentTemplate,
+  DocumentTemplate,
+  DocumentTemplateCreateParams,
+  DocumentTemplateList,
+  DocumentTemplateListParams,
+  DocumentTemplateUpdateParams,
+  ResolvedDocumentTemplate,
+} from './document-template'
+export {
+  brandingResourceSchema,
+  brandingUpdateBodySchema,
+} from './branding.schema'
+export {
+  deletedDocumentTemplateSchema,
+  documentTemplateCreateBodySchema,
+  documentTemplateListSchema,
+  documentTemplateSchema,
+  documentTemplateUpdateBodySchema,
+  resolvedDocumentTemplateSchema,
+} from './document-template.schema'
+
 export type {
   Error,
   Result,

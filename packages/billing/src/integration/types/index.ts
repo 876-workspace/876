@@ -6,6 +6,27 @@
  */
 
 export type {
+  Branding,
+  BrandingUpdateParams,
+  DeletedDocumentTemplate,
+  DocumentTemplate,
+  DocumentTemplateCreateParams,
+  DocumentTemplateList,
+  DocumentTemplateListParams,
+  DocumentTemplateUpdateParams,
+  ResolvedDocumentTemplate,
+} from '../../types'
+export {
+  brandingResourceSchema,
+  brandingUpdateBodySchema,
+  deletedDocumentTemplateSchema,
+  documentTemplateCreateBodySchema,
+  documentTemplateListSchema,
+  documentTemplateSchema,
+  documentTemplateUpdateBodySchema,
+  resolvedDocumentTemplateSchema,
+} from '../../types'
+export type {
   IntegrationClientOptions,
   IntegrationCreateOptions,
   BillingSource,

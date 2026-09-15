@@ -3,6 +3,18 @@
  * Schemas live beside their contracts under `./types`.
  */
 export {
+  brandingResourceSchema,
+  brandingUpdateBodySchema,
+} from './types/branding.schema'
+export {
+  deletedDocumentTemplateSchema,
+  documentTemplateCreateBodySchema,
+  documentTemplateListSchema,
+  documentTemplateSchema,
+  documentTemplateUpdateBodySchema,
+  resolvedDocumentTemplateSchema,
+} from './types/document-template.schema'
+export {
   BankAccountCreatedSchema,
   BankAccountDeletedSchema,
   BankAccountListSchema,
