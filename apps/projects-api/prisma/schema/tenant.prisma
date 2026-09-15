@@ -19,6 +19,7 @@ model Tenant {
   cycles Cycle[]
   customFields CustomField[]
   customFieldValues CustomFieldValue[]
+  milestoneCustomFields MilestoneCustomField[]
   milestoneCustomFieldValues MilestoneCustomFieldValue[]
 
   @@map("projects_tenants")
