@@ -1,65 +1,65 @@
 'use client'
 
+import Link from 'next/link'
 import type { NavGroupDefinition } from '@876/core/access'
-import { cn } from '@876/core/utils'
+import { Logo } from '@876/ui/logo'
 import {
-  FloatingNavRail,
-  FloatingNavRailToggle,
-} from '@876/ui/floating-nav-rail'
-import { useSyncExternalStore } from 'react'
+  Sidebar as SidebarRoot,
+  SidebarContent,
+  SidebarGroup,
+  SidebarHeader,
+  useSidebar,
+} from '@876/ui/sidebar'
 
 import { resolveNavIcon } from './nav-icons'
 import { NavLink } from './nav-link'
-import {
-  readServerSidebarExpanded,
-  readSidebarExpanded,
-  subscribeSidebarExpanded,
-  writeSidebarExpanded,
-} from './sidebar-preferences'
 
 export function Sidebar({ navigation }: { navigation: NavGroupDefinition[] }) {
-  const expanded = useSyncExternalStore(
-    subscribeSidebarExpanded,
-    readSidebarExpanded,
-    readServerSidebarExpanded
-  )
+  const { state, isMobile } = useSidebar()
+  const expanded = isMobile || state === 'expanded'
 
   return (
-    <FloatingNavRail expanded={expanded} aria-label="Projects navigation">
-      <FloatingNavRailToggle
-        expanded={expanded}
-        onExpandedChange={writeSidebarExpanded}
-      />
-      <div className="bg-border/60 my-0.5 h-px w-full" />
-      {navigation.map((group, groupIndex) => (
-        <div
-          key={group.entries[0]?.key ?? groupIndex}
-          className={cn(
-            'flex flex-col gap-1.5',
-            expanded ? 'min-w-0' : 'items-center'
-          )}
+    <SidebarRoot variant="sidebar" collapsible="icon" className="bg-sidebar">
+      <SidebarHeader className="px-5 pt-5 pb-0 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3">
+        <Link
+          href="/"
+          aria-label="Projects home"
+          className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center"
         >
-          {groupIndex > 0 ? (
-            <div
-              className={cn(
-                'bg-border/60 my-0.5 h-px',
-                expanded ? 'w-full' : 'w-5'
-              )}
-            />
-          ) : null}
-          {group.entries.map((item) => (
-            <NavLink
-              key={item.title}
-              href={item.href}
-              title={item.title}
-              icon={resolveNavIcon(item.icon)}
-              colorClassName={item.colorClassName}
-              expanded={expanded}
-              side="right"
-            />
+          <span className="border-border/60 bg-muted/20 flex size-8 shrink-0 items-center justify-center rounded-xl border shadow-2xs">
+            <Logo className="text-foreground text-[0.8125rem] leading-none" />
+          </span>
+          <span className="text-sidebar-foreground truncate text-lg leading-6 font-medium tracking-[-0.02em] group-data-[collapsible=icon]:hidden">
+            Projects
+          </span>
+        </Link>
+      </SidebarHeader>
+
+      <SidebarContent className="flex flex-col px-3 pt-4 pb-4 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-2">
+        <nav
+          aria-label="Projects navigation"
+          className="flex flex-1 flex-col gap-4"
+        >
+          {navigation.map((group) => (
+            <SidebarGroup
+              key={group.key}
+              className="gap-1 p-0 group-data-[collapsible=icon]:items-center"
+            >
+              {group.entries.map((item) => (
+                <NavLink
+                  key={item.key}
+                  href={item.href}
+                  title={item.title}
+                  icon={resolveNavIcon(item.icon)}
+                  colorClassName={item.colorClassName}
+                  expanded={expanded}
+                  side="right"
+                />
+              ))}
+            </SidebarGroup>
           ))}
-        </div>
-      ))}
-    </FloatingNavRail>
+        </nav>
+      </SidebarContent>
+    </SidebarRoot>
   )
 }

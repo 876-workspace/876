@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react'
-import Link from 'next/link'
+import { cookies } from 'next/headers'
 
 import { AppSwitcher, type AppSwitcherApp } from '@876/ui/app-switcher'
-import { Logo } from '@876/ui/logo'
 import { NavProgress } from '@876/ui/nav-progress'
 import type { OrgSwitcherOrg } from '@876/ui/org-switcher'
 import type { SidebarUserMenuUser } from '@876/ui/sidebar-user-menu'
@@ -12,19 +11,22 @@ import {
   AppShellContent,
   AppShellHeader,
   AppShellMain,
+  AppShellSidebarArea,
 } from '@876/ui/app-shell'
+import { SidebarTrigger } from '@876/ui/sidebar'
 
 import type { ProjectsUiFeatures } from '@/types/features'
 import type { NavGroupDefinition } from '@876/core/access'
 
 import { Sidebar } from './sidebar'
-import { GlobalAdd } from './global-add'
+import { GlobalAdd, FloatingGlobalAdd } from './global-add'
 import { MobileNav } from './mobile-nav'
+import { TabBar } from './tab-bar'
 import { OrgSwitcher } from './org-switcher'
 import { TopbarSearch } from './topbar-search'
 import { UserMenu } from './user-menu'
 
-export function Shell({
+export async function Shell({
   children,
   user,
   currentOrg,
@@ -41,55 +43,29 @@ export function Shell({
   uiFeatures: ProjectsUiFeatures
   navigation: NavGroupDefinition[]
 }) {
+  const sidebarCookie = (await cookies()).get('sidebar_state')
+  const defaultSidebarOpen = sidebarCookie
+    ? sidebarCookie.value === 'true'
+    : true
+
   const searchNavigation = navigation.flatMap((group) =>
     group.entries.map(({ title, href }) => ({ title, href }))
   )
 
   return (
-    <AppShell defaultOpen={false}>
+    <AppShell defaultOpen={defaultSidebarOpen}>
       <NavProgress />
-      <AppShellContent>
-        <AppShellHeader>
-          <Link
-            href="/"
-            aria-label="Projects home"
-            className="focus-visible:ring-sidebar-ring flex items-center gap-2.5 rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-hidden"
-          >
-            <span className="border-border/60 bg-muted/20 flex size-8 shrink-0 items-center justify-center rounded-lg border shadow-2xs">
-              <Logo className="text-foreground text-[0.8125rem] leading-none" />
-            </span>
-            <span className="text-foreground hidden text-sm font-semibold tracking-tight sm:inline-block">
-              Projects
-            </span>
-          </Link>
-
-          <div className="sm:hidden">
-            <MobileNav
-              apps={apps}
-              currentOrg={currentOrg}
-              navigation={navigation}
-              orgs={orgs}
-              uiFeatures={uiFeatures}
-            />
-          </div>
+      <AppShellSidebarArea>
+        <Sidebar navigation={navigation} />
+      </AppShellSidebarArea>
+      <AppShellContent className="relative">
+        <AppShellHeader className="hidden sm:flex">
+          <SidebarTrigger />
 
           <div className="hidden min-w-0 flex-1 items-center sm:flex">
             {uiFeatures.searchBar ? (
               <TopbarSearch navigation={searchNavigation} />
             ) : null}
-          </div>
-
-          {uiFeatures.searchBar ? (
-            <div className="[&>button>svg]:text-muted-foreground ml-auto sm:hidden [&>button]:!flex [&>button]:!size-9 [&>button]:!w-9 [&>button]:!justify-center [&>button]:!p-0 [&>button]:text-transparent [&>button>kbd]:hidden [&>button>svg]:!mr-0">
-              <TopbarSearch navigation={searchNavigation} />
-            </div>
-          ) : null}
-
-          <div className="sm:hidden">
-            <UserMenu
-              user={user}
-              showThemeSwitcher={uiFeatures.themeSwitcher}
-            />
           </div>
 
           {/*
@@ -135,9 +111,34 @@ export function Shell({
           </div>
         </AppShellHeader>
         <AppShellBody>
-          <Sidebar navigation={navigation} />
-          <AppShellMain>{children}</AppShellMain>
+          <AppShellMain className="pt-[env(safe-area-inset-top)] pb-28 sm:pt-0 sm:pb-0">
+            {children}
+          </AppShellMain>
         </AppShellBody>
+        <TabBar
+          navigation={navigation}
+          more={
+            <MobileNav
+              apps={apps}
+              currentOrg={currentOrg}
+              navigation={navigation}
+              orgs={orgs}
+              uiFeatures={uiFeatures}
+              account={
+                <>
+                  {uiFeatures.searchBar ? (
+                    <TopbarSearch navigation={searchNavigation} />
+                  ) : null}
+                  <UserMenu
+                    user={user}
+                    showThemeSwitcher={uiFeatures.themeSwitcher}
+                  />
+                </>
+              }
+            />
+          }
+        />
+        {uiFeatures.globalAdd ? <FloatingGlobalAdd /> : null}
       </AppShellContent>
     </AppShell>
   )
