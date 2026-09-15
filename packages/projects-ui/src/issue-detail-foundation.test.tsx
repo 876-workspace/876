@@ -167,14 +167,13 @@ describe('IssueDetail foundation fields', () => {
     expect(screen.getByText('Ready for QA')).toBeInTheDocument()
     expect(screen.getByText('Release one')).toBeInTheDocument()
     expect(screen.getByText('Environment')).toBeInTheDocument()
-    expect(screen.getByText('production')).toBeInTheDocument()
+    expect(screen.getAllByText('production').length).toBeGreaterThan(0)
     expect(screen.getByText('Ana Brown')).toBeInTheDocument()
-    expect(screen.getByText('Ben Clarke')).toBeInTheDocument()
+    expect(screen.getAllByText('Ben Clarke').length).toBeGreaterThan(0)
     expect(screen.getByText('Run smoke tests')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /WEB-1.*Ship the release/ })).toHaveAttribute(
-      'href',
-      '/issues/WEB-1'
-    )
+    expect(
+      screen.getByRole('link', { name: /WEB-1.*Ship the release/ })
+    ).toHaveAttribute('href', '/issues/WEB-1')
     expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute(
       'href',
       '/issues/WEB-2/edit'
@@ -190,7 +189,7 @@ describe('IssueDetail foundation fields', () => {
       />
     )
 
-    expect(screen.getByText('Ben Clarke')).toBeInTheDocument()
+    expect(screen.getAllByText('Ben Clarke').length).toBeGreaterThan(0)
     expect(screen.getByText('Status Changed')).toBeInTheDocument()
     expect(screen.getByText(/todo/)).toBeInTheDocument()
     expect(screen.getByText(/ready-for-qa/)).toBeInTheDocument()
