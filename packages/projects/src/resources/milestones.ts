@@ -42,6 +42,11 @@ function toQueryString(
   return `?${search.toString()}`
 }
 
+function allQueryString(status?: 'open' | 'completed' | 'canceled') {
+  if (!status) return ''
+  return `?${new URLSearchParams({ status }).toString()}`
+}
+
 export function createMilestonesResource(runtime: Runtime) {
   return {
     list(
@@ -54,6 +59,23 @@ export function createMilestonesResource(runtime: Runtime) {
         {
           method: 'GET',
           path: `${root(organizationId)}${toQueryString(projectId, options)}`,
+          signal: options.signal,
+        },
+        milestoneDetailListSchema
+      )
+    },
+    listAll(
+      organizationId: string,
+      options: {
+        status?: 'open' | 'completed' | 'canceled'
+        signal?: AbortSignal
+      } = {}
+    ) {
+      return request(
+        runtime,
+        {
+          method: 'GET',
+          path: `${root(organizationId)}/all${allQueryString(options.status)}`,
           signal: options.signal,
         },
         milestoneDetailListSchema
