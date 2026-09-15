@@ -61,7 +61,7 @@ function groupLabel(
     case 'type':
       return issue.type?.name ?? issue.typeKey
     case 'milestone':
-      return issue.milestone?.name ?? 'No milestone'
+      return issue.milestone?.name ?? 'No phase'
     case 'status':
     default:
       return issue.state?.name ?? formatIssueStatus(issue.status)
