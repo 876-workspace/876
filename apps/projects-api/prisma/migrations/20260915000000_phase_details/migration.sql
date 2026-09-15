@@ -1,5 +1,6 @@
 -- AlterTable
 ALTER TABLE "projects_milestones" ADD COLUMN "owner_user_id" TEXT;
+ALTER TABLE "projects_custom_fields" ADD COLUMN "scope" TEXT NOT NULL DEFAULT 'work-item';
 
 -- CreateTable
 CREATE TABLE "projects_milestone_comments" (
@@ -48,6 +49,7 @@ CREATE TABLE "projects_milestone_custom_field_values" (
 
 -- CreateIndex
 CREATE INDEX "projects_milestones_tenant_id_owner_user_id_idx" ON "projects_milestones"("tenant_id", "owner_user_id");
+CREATE INDEX "projects_custom_fields_tenant_id_scope_idx" ON "projects_custom_fields"("tenant_id", "scope");
 CREATE INDEX "projects_milestone_comments_milestone_id_created_at_idx" ON "projects_milestone_comments"("milestone_id", "created_at");
 CREATE INDEX "projects_milestone_events_milestone_id_created_at_idx" ON "projects_milestone_events"("milestone_id", "created_at");
 CREATE UNIQUE INDEX "projects_milestone_custom_field_values_milestone_id_field_id_key" ON "projects_milestone_custom_field_values"("milestone_id", "field_id");
