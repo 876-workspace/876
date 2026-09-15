@@ -121,6 +121,7 @@ const issues = [
 
 function columnFor(statusName: string): HTMLElement {
   const heading = screen.getByRole('heading', { name: statusName })
+  // Headings belong to the desktop columns; the phone list uses sections.
   const header = heading.parentElement
   const column = header?.parentElement
 
@@ -197,7 +198,7 @@ describe('IssueBoard advanced', () => {
   it('board, with issues, shows the empty state in columns without issues', () => {
     render(<IssueBoard issues={issues} issuesHref={ISSUES_HREF} />)
 
-    expect(screen.getAllByText('No issues')).toHaveLength(2)
+    expect(screen.getAllByText('No issues')).toHaveLength(4)
     expect(
       within(columnFor('In Review')).getByText('No issues')
     ).toBeInTheDocument()
@@ -219,7 +220,7 @@ describe('IssueBoard advanced', () => {
   it('card, on render, shows the title and identifier', () => {
     render(<IssueBoard issues={issues} issuesHref={ISSUES_HREF} />)
 
-    expect(screen.getByText('Fix the auth race condition')).toBeInTheDocument()
+    expect(screen.getAllByText('Fix the auth race condition')).toHaveLength(2)
     expect(screen.getByText('CONSOLE-13')).toBeInTheDocument()
   })
 
@@ -268,18 +269,59 @@ describe('IssueBoard advanced', () => {
     expect(screen.getByText('High')).toBeInTheDocument()
   })
 
-  it('card, on render, shows the project key badge', () => {
-    render(<IssueBoard issues={issues} issuesHref={ISSUES_HREF} />)
-
-    expect(screen.getAllByText('CONSOLE')).toHaveLength(5)
-  })
-
   it('board, with no issues, shows six empty states and keeps every column', () => {
     render(<IssueBoard issues={[]} issuesHref={ISSUES_HREF} />)
 
-    expect(screen.getAllByText('No issues')).toHaveLength(6)
+    expect(screen.getAllByText('No issues')).toHaveLength(12)
     expect(screen.getByRole('heading', { name: 'Backlog' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Done' })).toBeInTheDocument()
     expect(screen.queryByRole('link')).toBeNull()
+  })
+})
+
+describe('IssueBoard mobile strip', () => {
+  afterEach(cleanup)
+
+  it('phone list, on render, groups issues under a section per status', () => {
+    render(<IssueBoard issues={issues} issuesHref={ISSUES_HREF} />)
+
+    const todo = screen.getByRole('region', { name: 'Todo' })
+    const link = within(todo).getByRole('link', {
+      name: 'View issue CONSOLE-13',
+    })
+
+    expect(link).toHaveAttribute('href', `${ISSUES_HREF}/CONSOLE-13`)
+    expect(screen.getAllByRole('region')).toHaveLength(6)
+  })
+
+  it('phone list, for an empty status, shows the empty row in its section', () => {
+    render(<IssueBoard issues={issues} issuesHref={ISSUES_HREF} />)
+
+    const review = screen.getByRole('region', { name: 'In Review' })
+
+    expect(within(review).getByText('No issues')).toBeInTheDocument()
+    expect(within(review).queryByRole('link')).toBeNull()
+  })
+
+  it('card, on render, links the identifier to the issue href', () => {
+    render(<IssueBoard issues={issues} issuesHref={ISSUES_HREF} />)
+
+    const column = columnFor('Todo')
+    const identifierLink = within(column).getByRole('link', {
+      name: 'CONSOLE-13',
+    })
+
+    expect(identifierLink).toHaveAttribute('href', `${ISSUES_HREF}/CONSOLE-13`)
+  })
+
+  it('card, on render, links the title to the same issue href', () => {
+    render(<IssueBoard issues={issues} issuesHref={ISSUES_HREF} />)
+
+    const column = columnFor('Todo')
+    const titleLink = within(column).getByRole('link', {
+      name: 'Fix the auth race condition',
+    })
+
+    expect(titleLink).toHaveAttribute('href', `${ISSUES_HREF}/CONSOLE-13`)
   })
 })

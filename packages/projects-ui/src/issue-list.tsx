@@ -22,7 +22,6 @@ import {
   ListPaneItem,
 } from '@876/ui/list-pane'
 import { useDetailSegments } from '@876/ui/list-detail-shell'
-import { ResponsiveList, type ListRowMapping } from '@876/ui/responsive-list'
 import {
   Table,
   TableBody,
@@ -34,7 +33,12 @@ import {
 
 import { isIssueStatus } from './status-options'
 import { IssuePriorityBadge } from './priority-badges'
-import { IssueStatusBadge } from './status-badges'
+import {
+  formatIssueStatus,
+  IssueStatusBadge,
+  issueStatusTone,
+} from './status-badges'
+import { MobileList, MobileListCell, MobileListEmpty } from './mobile-list'
 
 export type IssuesTableProps = {
   issues: readonly Issue[]
@@ -59,70 +63,24 @@ function formatDate(timestamp: number | null): string {
   })
 }
 
-function relativeTime(timestamp: number): string {
-  const seconds = Math.max(
-    0,
-    Math.floor((Date.now() - timestamp * 1000) / 1000)
-  )
-  if (seconds < 60) return 'now'
-
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m`
-
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h`
-
-  return `${Math.floor(hours / 24)}d`
-}
-
-function IssuePriorityDot({ priority }: Pick<Issue, 'priority'>) {
-  const colorClassName = {
-    urgent: 'bg-destructive',
-    high: 'bg-warning',
-    medium: 'bg-info',
-    low: 'bg-muted-foreground',
-    none: 'bg-muted-foreground/40',
-  }[priority]
-
+function IssueCell({
+  issue,
+  issuesHref,
+}: {
+  issue: Issue
+  issuesHref: string
+}) {
   return (
-    <span
-      aria-hidden="true"
-      className={`size-2.5 rounded-full ${colorClassName}`}
+    <MobileListCell
+      href={`${issuesHref}/${issue.identifier}`}
+      label={`View issue ${issue.identifier}`}
+      avatar={issue.projectKey.slice(0, 2)}
+      avatarClassName={issueStatusTone(issue.status)}
+      title={issue.title}
+      subtitle={`${issue.identifier} · ${formatIssueStatus(issue.status)}`}
+      meta={formatDate(issue.dueDate ?? issue.updatedAt)}
     />
   )
-}
-
-function createIssueRow(issuesHref: string): ListRowMapping<Issue> {
-  return {
-    key: (issue) => issue.id,
-    href: (issue) => `${issuesHref}/${issue.identifier}`,
-    leading: (issue) => <IssuePriorityDot priority={issue.priority} />,
-    title: (issue) => issue.title,
-    subtitle: (issue) => (
-      <span className="flex flex-wrap items-center gap-1 whitespace-normal">
-        <span className="font-mono whitespace-nowrap">
-          {`${issue.identifier} · ${issue.projectKey}`}
-        </span>
-        {issue.labels.slice(0, 2).map((label) => (
-          <Badge
-            key={label.id}
-            variant="outline"
-            className="h-4 px-1 text-[0.625rem]"
-            style={label.color ? { borderColor: label.color } : undefined}
-          >
-            {label.name}
-          </Badge>
-        ))}
-        {issue.labels.length > 2 ? (
-          <Badge variant="outline" className="h-4 px-1 text-[0.625rem]">
-            {`+${issue.labels.length - 2}`}
-          </Badge>
-        ) : null}
-      </span>
-    ),
-    meta: (issue) => relativeTime(issue.updatedAt),
-    trailing: (issue) => <IssueStatusBadge status={issue.status} />,
-  }
 }
 
 function RowLink({
@@ -217,86 +175,86 @@ export function IssuesTable({
   emptyState,
 }: IssuesTableProps) {
   return (
-    <ResponsiveList
-      rows={issues}
-      mapping={createIssueRow(issuesHref)}
-      empty={
-        <li className="text-muted-foreground px-4 py-10 text-center text-sm">
-          No issues yet
-        </li>
-      }
-      table={
-        <div className="876-card overflow-hidden">
-          <Table>
-            <TableHeader className="876-header-row">
+    <>
+      <MobileList>
+        {issues.length === 0 ? (
+          <MobileListEmpty>No issues yet</MobileListEmpty>
+        ) : (
+          issues.map((issue) => (
+            <IssueCell key={issue.id} issue={issue} issuesHref={issuesHref} />
+          ))
+        )}
+      </MobileList>
+      <div className="876-card hidden w-full overflow-hidden sm:block">
+        <Table>
+          <TableHeader className="876-header-row">
+            <TableRow>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Identifier
+              </TableHead>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Title
+              </TableHead>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Status
+              </TableHead>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Priority
+              </TableHead>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Project
+              </TableHead>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Assignee
+              </TableHead>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Updated
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {issues.length === 0 ? (
               <TableRow>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Identifier
-                </TableHead>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Title
-                </TableHead>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Status
-                </TableHead>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Priority
-                </TableHead>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Project
-                </TableHead>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Assignee
-                </TableHead>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Updated
-                </TableHead>
+                <TableCell colSpan={7} className="p-0">
+                  {emptyState ?? (
+                    <Empty className="py-14">
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                          <ClipboardList className="size-6" />
+                        </EmptyMedia>
+                        <EmptyTitle>No issues yet</EmptyTitle>
+                      </EmptyHeader>
+                      {newIssueHref ? (
+                        <EmptyContent>
+                          <Link
+                            href={newIssueHref}
+                            className={buttonVariants({
+                              variant: 'info',
+                              size: 'sm',
+                            })}
+                          >
+                            <Plus className="size-4" strokeWidth={2.25} />
+                            Add
+                          </Link>
+                        </EmptyContent>
+                      ) : null}
+                    </Empty>
+                  )}
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {issues.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="p-0">
-                    {emptyState ?? (
-                      <Empty className="py-14">
-                        <EmptyHeader>
-                          <EmptyMedia variant="icon">
-                            <ClipboardList className="size-6" />
-                          </EmptyMedia>
-                          <EmptyTitle>No issues yet</EmptyTitle>
-                        </EmptyHeader>
-                        {newIssueHref ? (
-                          <EmptyContent>
-                            <Link
-                              href={newIssueHref}
-                              className={buttonVariants({
-                                variant: 'info',
-                                size: 'sm',
-                              })}
-                            >
-                              <Plus className="size-4" strokeWidth={2.25} />
-                              Add
-                            </Link>
-                          </EmptyContent>
-                        ) : null}
-                      </Empty>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                issues.map((issue) => (
-                  <IssueTableRow
-                    key={issue.id}
-                    issue={issue}
-                    issuesHref={issuesHref}
-                  />
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      }
-    />
+            ) : (
+              issues.map((issue) => (
+                <IssueTableRow
+                  key={issue.id}
+                  issue={issue}
+                  issuesHref={issuesHref}
+                />
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   )
 }
 

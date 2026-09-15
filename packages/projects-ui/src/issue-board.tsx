@@ -6,10 +6,10 @@ import {
   type Issue,
   type IssueStatus,
 } from '@876/projects/contracts'
-import { Badge } from '@876/ui/badge'
 
-import { IssuePriorityBadge } from './priority-badges'
-import { formatIssueStatus } from './status-badges'
+import { formatIssuePriority } from './priority-badges'
+import { formatIssueStatus, issueStatusTone } from './status-badges'
+import { MobileList, MobileListCell, MobileListEmpty } from './mobile-list'
 
 export type IssueBoardProps = {
   issues: readonly Issue[]
@@ -24,44 +24,38 @@ export function IssueBoardCard({
   issuesHref: string
 }) {
   return (
-    <div className="876-card hover:border-border/80 group relative flex flex-col gap-2 p-3 transition-colors">
-      <div className="flex items-center justify-between gap-2">
-        <Link
-          href={`${issuesHref}/${issue.identifier}`}
-          className="text-info focus-visible:ring-ring rounded-xs font-mono text-xs font-semibold hover:underline focus-visible:ring-2 focus-visible:outline-none"
-        >
-          {issue.identifier}
-        </Link>
-        <IssuePriorityBadge priority={issue.priority} />
-      </div>
-
+    <div className="bg-card active:bg-muted/70 group relative flex flex-col gap-1.5 rounded-2xl px-3.5 py-3 transition-colors">
       <Link
         href={`${issuesHref}/${issue.identifier}`}
-        className="text-[0.8125rem] leading-snug font-medium group-hover:text-sky-600 dark:group-hover:text-sky-400"
+        className="text-[0.9375rem] leading-snug focus-visible:outline-none"
       >
         {issue.title}
       </Link>
 
-      <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-1.5 pt-1 text-xs">
-        <Badge variant="outline" className="px-1.5 py-0 text-[0.6875rem]">
-          {issue.projectKey}
-        </Badge>
+      <div className="text-muted-foreground flex items-center gap-2 text-[0.8125rem]">
+        <Link
+          href={`${issuesHref}/${issue.identifier}`}
+          className="focus-visible:ring-ring shrink-0 rounded-xs tabular-nums focus-visible:ring-2 focus-visible:outline-none"
+        >
+          {issue.identifier}
+        </Link>
+        {issue.priority !== 'none' ? (
+          <span className="shrink-0">
+            {formatIssuePriority(issue.priority)}
+          </span>
+        ) : null}
         {issue.labels.map((label) => (
-          <Badge
-            key={label.id}
-            variant="secondary"
-            className="px-1.5 py-0 text-[0.6875rem]"
-            style={
-              label.color
-                ? { borderLeft: `3px solid ${label.color}` }
-                : undefined
-            }
-          >
-            {label.name}
-          </Badge>
+          <span key={label.id} className="flex min-w-0 items-center gap-1">
+            <span
+              aria-hidden="true"
+              className="size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: label.color ?? 'currentColor' }}
+            />
+            <span className="truncate">{label.name}</span>
+          </span>
         ))}
         {issue.assigneeUserId ? (
-          <span className="ml-auto font-mono text-[0.6875rem]">
+          <span className="ml-auto truncate text-xs">
             {issue.assigneeUserId}
           </span>
         ) : null}
@@ -80,19 +74,19 @@ export function IssueBoardColumn({
   issuesHref: string
 }) {
   return (
-    <div className="bg-muted/30 border-border/60 flex min-w-[280px] flex-1 flex-col rounded-xl border p-3 sm:min-w-0">
-      <div className="mb-3 flex items-center justify-between px-1">
-        <h2 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+    <div className="bg-muted/40 flex min-w-0 flex-1 flex-col rounded-[1.375rem] p-2.5">
+      <div className="mb-2 flex items-center justify-between px-2 pt-1">
+        <h2 className="text-[0.9375rem] font-semibold tracking-tight">
           {formatIssueStatus(status)}
         </h2>
-        <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium tabular-nums">
+        <span className="text-muted-foreground text-[0.8125rem] tabular-nums">
           {issues.length}
         </span>
       </div>
 
       <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto">
         {issues.length === 0 ? (
-          <div className="border-border/40 text-muted-foreground/60 flex flex-1 items-center justify-center rounded-lg border border-dashed py-8 text-xs">
+          <div className="text-muted-foreground/60 flex flex-1 items-center justify-center py-8 text-[0.8125rem]">
             No issues
           </div>
         ) : (
@@ -123,15 +117,60 @@ export function IssueBoard({ issues, issuesHref }: IssueBoardProps) {
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 sm:overflow-x-visible lg:grid-cols-3 xl:grid-cols-6">
-      {ISSUE_STATUSES.map((status) => (
-        <IssueBoardColumn
-          key={status}
-          status={status}
-          issues={byStatus[status] ?? []}
-          issuesHref={issuesHref}
-        />
-      ))}
-    </div>
+    <>
+      <div className="-mx-4 sm:hidden">
+        {ISSUE_STATUSES.map((status) => {
+          const bucket = byStatus[status] ?? []
+
+          return (
+            <section key={status} aria-label={formatIssueStatus(status)}>
+              <div className="bg-876-canvas/90 sticky top-0 z-10 flex items-center gap-2 px-4 pt-5 pb-1.5 backdrop-blur-xl">
+                <span
+                  aria-hidden="true"
+                  className={`size-2.5 rounded-full ${issueStatusTone(status)}`}
+                />
+                <span className="text-[0.9375rem] font-semibold">
+                  {formatIssueStatus(status)}
+                </span>
+                <span className="text-muted-foreground ml-auto text-[0.8125rem] tabular-nums">
+                  {bucket.length}
+                </span>
+              </div>
+              <MobileList className="mx-0">
+                {bucket.length === 0 ? (
+                  <MobileListEmpty>No issues</MobileListEmpty>
+                ) : (
+                  bucket.map((issue) => (
+                    <MobileListCell
+                      key={issue.id}
+                      href={`${issuesHref}/${issue.identifier}`}
+                      label={`View issue ${issue.identifier}`}
+                      avatar={issue.projectKey.slice(0, 2)}
+                      avatarClassName={issueStatusTone(issue.status)}
+                      title={issue.title}
+                      subtitle={
+                        issue.priority === 'none'
+                          ? issue.identifier
+                          : `${issue.identifier} · ${formatIssuePriority(issue.priority)}`
+                      }
+                    />
+                  ))
+                )}
+              </MobileList>
+            </section>
+          )
+        })}
+      </div>
+      <div className="hidden gap-4 pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {ISSUE_STATUSES.map((status) => (
+          <IssueBoardColumn
+            key={status}
+            status={status}
+            issues={byStatus[status] ?? []}
+            issuesHref={issuesHref}
+          />
+        ))}
+      </div>
+    </>
   )
 }

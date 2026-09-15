@@ -89,10 +89,12 @@ describe('ProjectsList', () => {
     expect(screen.getByText('ALP')).toBeInTheDocument()
     expect(screen.getByText('BET')).toBeInTheDocument()
     expect(screen.queryByText('Projects')).not.toBeInTheDocument()
-    const link = screen.getByRole('link', {
+    const links = screen.getAllByRole('link', {
       name: 'View project Alpha Project',
     })
-    expect(link).toHaveAttribute('href', '/projects/proj_alpha')
+    expect(links).toHaveLength(2)
+    for (const link of links)
+      expect(link).toHaveAttribute('href', '/projects/proj_alpha')
   })
 
   it('renders the condensed pane when one is open', () => {

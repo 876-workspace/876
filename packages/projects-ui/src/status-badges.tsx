@@ -184,3 +184,21 @@ export function ProjectHealthBadge({
       )
   }
 }
+
+/** Solid avatar colour for an issue's workflow state on phone lists. */
+export function issueStatusTone(status: string): string {
+  switch (status) {
+    case 'todo':
+      return 'bg-sky-500'
+    case 'in-progress':
+      return 'bg-amber-500'
+    case 'in-review':
+      return 'bg-violet-500'
+    case 'done':
+      return 'bg-emerald-500'
+    case 'canceled':
+      return 'bg-zinc-400'
+    default:
+      return 'bg-slate-400'
+  }
+}

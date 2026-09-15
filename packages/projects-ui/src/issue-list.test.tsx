@@ -17,7 +17,7 @@ vi.mock('@876/ui/list-detail-shell', () => ({
   useDetailSegments: () => mocks.segments,
 }))
 
-import { IssuesList } from './issue-list'
+import { IssuesList, IssuesTable } from './issue-list'
 
 const sampleType = {
   object: 'projects.work-item-type' as const,
@@ -137,8 +137,10 @@ describe('IssuesList', () => {
     expect(screen.getByText('ALP-13')).toBeInTheDocument()
     expect(screen.getAllByText('Add dark mode support')).toHaveLength(2)
     expect(screen.queryByText('Issues')).not.toBeInTheDocument()
-    const link = screen.getByRole('link', { name: 'View issue ALP-12' })
-    expect(link).toHaveAttribute('href', '/issues/ALP-12')
+    const links = screen.getAllByRole('link', { name: 'View issue ALP-12' })
+    expect(links).toHaveLength(2)
+    for (const link of links)
+      expect(link).toHaveAttribute('href', '/issues/ALP-12')
   })
 
   it('renders the desktop table and mobile rows together with one accessible issue link per table row', () => {
@@ -151,7 +153,11 @@ describe('IssuesList', () => {
     )
 
     expect(screen.getByRole('table')).toBeInTheDocument()
-    expect(container.querySelectorAll('[data-slot="list-row"]')).toHaveLength(2)
+    const mobileList = container.querySelector('ul')
+    expect(mobileList).toBeInTheDocument()
+    expect(within(mobileList as HTMLElement).getAllByRole('link')).toHaveLength(
+      2
+    )
 
     const issueRow = screen.getByRole('row', {
       name: /ALP-12.*Fix the auth race condition/,
@@ -165,6 +171,48 @@ describe('IssuesList', () => {
     expect(
       within(issueRow).getAllByRole('link', { name: 'View issue ALP-12' })
     ).toHaveLength(1)
+  })
+
+  it('mobile cell, on render, links to the issue href with the desktop row label', () => {
+    const { container } = render(
+      <IssuesTable issues={mockIssues} issuesHref="/issues" />
+    )
+
+    const mobileList = container.querySelector('ul')
+    expect(mobileList).toBeInTheDocument()
+
+    const mobileLink = within(mobileList as HTMLElement).getByRole('link', {
+      name: 'View issue ALP-12',
+    })
+    expect(mobileLink).toHaveAttribute('href', '/issues/ALP-12')
+    expect(
+      within(mobileLink as HTMLElement).getByText('Fix the auth race condition')
+    ).toBeInTheDocument()
+    expect(
+      within(mobileLink as HTMLElement).getByText('ALP-12 · In Progress')
+    ).toBeInTheDocument()
+  })
+
+  it('mobile cell, on render, shows status as text without badges', () => {
+    const { container } = render(
+      <IssuesTable issues={mockIssues} issuesHref="/issues" />
+    )
+
+    const mobileList = container.querySelector('ul')
+    const mobileLink = within(mobileList as HTMLElement).getByRole('link', {
+      name: 'View issue ALP-12',
+    })
+
+    expect(
+      within(mobileLink as HTMLElement).getByText('ALP-12 · In Progress')
+    ).toBeInTheDocument()
+    expect(within(mobileLink as HTMLElement).queryByText('High')).toBeNull()
+  })
+
+  it('empty table, on render, shows the no-issues message in both mobile and desktop forms', () => {
+    render(<IssuesTable issues={[]} issuesHref="/issues" />)
+
+    expect(screen.getAllByText('No issues yet')).toHaveLength(2)
   })
 
   it('renders the condensed pane when one is open', () => {

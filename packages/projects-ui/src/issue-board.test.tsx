@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest'
-import { render, screen } from '@testing-library/react'
+import { render, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import type { Issue } from '@876/projects/contracts'
 
@@ -91,24 +91,25 @@ const mockIssues: Issue[] = [
 
 describe('IssueBoard', () => {
   it('renders all 6 status columns and places issues in the correct columns', () => {
-    render(
+    const { container } = render(
       <IssueBoard
         issues={mockIssues}
         issuesHref="/orgs/test-org/workspace/projects/issues"
       />
     )
+    const board = within(container.querySelector('.sm\\:grid') as HTMLElement)
 
-    expect(screen.getByText('Backlog')).toBeInTheDocument()
-    expect(screen.getByText('Todo')).toBeInTheDocument()
-    expect(screen.getByText('In Progress')).toBeInTheDocument()
-    expect(screen.getByText('In Review')).toBeInTheDocument()
-    expect(screen.getByText('Done')).toBeInTheDocument()
-    expect(screen.getByText('Canceled')).toBeInTheDocument()
+    expect(board.getByText('Backlog')).toBeInTheDocument()
+    expect(board.getByText('Todo')).toBeInTheDocument()
+    expect(board.getByText('In Progress')).toBeInTheDocument()
+    expect(board.getByText('In Review')).toBeInTheDocument()
+    expect(board.getByText('Done')).toBeInTheDocument()
+    expect(board.getByText('Canceled')).toBeInTheDocument()
 
-    expect(screen.getByText('ALP-1')).toBeInTheDocument()
-    expect(screen.getByText('Backlog item')).toBeInTheDocument()
-    expect(screen.getByText('ALP-2')).toBeInTheDocument()
-    expect(screen.getByText('In progress item')).toBeInTheDocument()
-    expect(screen.getByText('Urgent')).toBeInTheDocument()
+    expect(board.getByText('ALP-1')).toBeInTheDocument()
+    expect(board.getByText('Backlog item')).toBeInTheDocument()
+    expect(board.getByText('ALP-2')).toBeInTheDocument()
+    expect(board.getByText('In progress item')).toBeInTheDocument()
+    expect(board.getByText('Urgent')).toBeInTheDocument()
   })
 })
