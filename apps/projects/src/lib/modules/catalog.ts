@@ -36,7 +36,7 @@ export const PROJECTS_SURFACES: readonly ProjectsSurface[] = [
     key: 'comments',
     label: 'Comments',
     description: 'Discussion on issues.',
-    available: false,
+    available: true,
   },
   {
     key: 'labels',
