@@ -113,6 +113,12 @@ export const SETTINGS_NAV_GROUPS: readonly NavGroupDefinition[] = [
         icon: 'finance',
       },
       {
+        key: 'templates',
+        title: 'Templates',
+        href: '/settings/templates',
+        icon: 'templates',
+      },
+      {
         key: 'customization',
         title: 'Customization',
         href: '/settings/customization',

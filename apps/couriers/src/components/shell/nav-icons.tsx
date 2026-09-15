@@ -41,6 +41,7 @@ export const SETTINGS_NAV_ICONS: Record<string, IconComponent> = {
   'module-payments': ReceiptPercentIcon,
   'module-portal': WindowIcon,
   finance: CalculatorIcon,
+  templates: DocumentTextIcon,
   customization: AdjustmentsHorizontalIcon,
   notifications: BellAlertIcon,
   integrations: SquaresPlusIcon,
