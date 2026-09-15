@@ -16,6 +16,8 @@ export const ENTITY_PREFIXES = {
   cycle: 'cyc_',
   customField: 'cf_',
   customFieldValue: 'cfv_',
+  issueRelation: 'isr_',
+  issueDependency: 'isd_',
 } as const
 
 export type EntityType = keyof typeof ENTITY_PREFIXES
