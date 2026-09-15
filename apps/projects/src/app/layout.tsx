@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
 
+import { ServiceWorkerRegistration } from '@876/ui/service-worker-registration'
 import { Toaster } from '@876/ui/sonner'
-
 import { ThemeProvider } from '@876/ui/theme'
 import { ThemeScript } from '@876/ui/theme-script'
 import './globals.css'
@@ -21,9 +21,18 @@ export const metadata: Metadata = {
   metadataBase: new URL(PROJECTS_URL),
   applicationName: '876 Projects',
   title: { default: '876 Projects', template: '%s | 876 Projects' },
-  description:
-    'Simple customer relationship and ticket management for 876 organizations.',
+  description: 'Project and issue tracking for 876 organizations.',
   robots: { index: false, follow: false },
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: '876 Projects',
+  },
+  formatDetection: { telephone: false },
+  icons: {
+    apple: '/pwa/apple-touch-icon.png',
+  },
 }
 
 export const viewport: Viewport = {
@@ -45,6 +54,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider>{children}</ThemeProvider>
+        <ServiceWorkerRegistration />
         <Toaster />
       </body>
     </html>
