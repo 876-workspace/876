@@ -27,6 +27,9 @@ const createIssueSchema = z.strictObject({
   parentIssueId: z.string().trim().min(1).nullable().optional(),
   estimate: z.number().int().min(0).max(100).nullable().optional(),
   dueDate: z.number().int().nullable().optional(),
+  plannedStartDate: z.number().int().nullable().optional(),
+  plannedFinishDate: z.number().int().nullable().optional(),
+  plannedDurationMinutes: z.number().int().min(0).nullable().optional(),
   labelIds: z.array(z.string().trim().min(1)).optional(),
   customFields: z
     .array(
