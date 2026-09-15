@@ -36,7 +36,6 @@ const updateIssueSchema = z
     milestoneId: z.string().trim().min(1).nullable().optional(),
     priority: issuePrioritySchema.optional(),
     assigneeUserId: z.string().trim().min(1).nullable().optional(),
-    creatorUserId: z.string().trim().min(1).nullable().optional(),
     parentIssueId: z.string().trim().min(1).nullable().optional(),
     estimate: z.number().int().min(0).max(100).nullable().optional(),
     dueDate: z.number().int().nullable().optional(),
