@@ -1,6 +1,5 @@
 -- AlterTable
 ALTER TABLE "projects_milestones" ADD COLUMN "owner_user_id" TEXT;
-ALTER TABLE "projects_custom_fields" ADD COLUMN "scope" TEXT NOT NULL DEFAULT 'work-item';
 
 -- CreateTable
 CREATE TABLE "projects_milestone_comments" (
@@ -29,6 +28,23 @@ CREATE TABLE "projects_milestone_events" (
 );
 
 -- CreateTable
+CREATE TABLE "projects_milestone_custom_fields" (
+    "id" TEXT NOT NULL,
+    "tenant_id" TEXT NOT NULL,
+    "key" TEXT NOT NULL,
+    "label" TEXT NOT NULL,
+    "field_type" TEXT NOT NULL,
+    "options" JSONB,
+    "required" BOOLEAN NOT NULL DEFAULT false,
+    "description" TEXT,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "archived_at" BIGINT,
+    "created_at" BIGINT NOT NULL,
+    "updated_at" BIGINT NOT NULL,
+    CONSTRAINT "projects_milestone_custom_fields_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "projects_milestone_custom_field_values" (
     "id" TEXT NOT NULL,
     "tenant_id" TEXT NOT NULL,
@@ -49,9 +65,9 @@ CREATE TABLE "projects_milestone_custom_field_values" (
 
 -- CreateIndex
 CREATE INDEX "projects_milestones_tenant_id_owner_user_id_idx" ON "projects_milestones"("tenant_id", "owner_user_id");
-CREATE INDEX "projects_custom_fields_tenant_id_scope_idx" ON "projects_custom_fields"("tenant_id", "scope");
 CREATE INDEX "projects_milestone_comments_milestone_id_created_at_idx" ON "projects_milestone_comments"("milestone_id", "created_at");
 CREATE INDEX "projects_milestone_events_milestone_id_created_at_idx" ON "projects_milestone_events"("milestone_id", "created_at");
+CREATE UNIQUE INDEX "projects_milestone_custom_fields_tenant_id_key_key" ON "projects_milestone_custom_fields"("tenant_id", "key");
 CREATE UNIQUE INDEX "projects_milestone_custom_field_values_milestone_id_field_id_key" ON "projects_milestone_custom_field_values"("milestone_id", "field_id");
 CREATE INDEX "projects_milestone_custom_field_values_tenant_id_field_id_idx" ON "projects_milestone_custom_field_values"("tenant_id", "field_id");
 
@@ -60,6 +76,7 @@ ALTER TABLE "projects_milestone_comments" ADD CONSTRAINT "projects_milestone_com
 ALTER TABLE "projects_milestone_comments" ADD CONSTRAINT "projects_milestone_comments_milestone_id_fkey" FOREIGN KEY ("milestone_id") REFERENCES "projects_milestones"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "projects_milestone_events" ADD CONSTRAINT "projects_milestone_events_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "projects_tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "projects_milestone_events" ADD CONSTRAINT "projects_milestone_events_milestone_id_fkey" FOREIGN KEY ("milestone_id") REFERENCES "projects_milestones"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "projects_milestone_custom_fields" ADD CONSTRAINT "projects_milestone_custom_fields_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "projects_tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "projects_milestone_custom_field_values" ADD CONSTRAINT "projects_milestone_custom_field_values_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "projects_tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "projects_milestone_custom_field_values" ADD CONSTRAINT "projects_milestone_custom_field_values_milestone_id_fkey" FOREIGN KEY ("milestone_id") REFERENCES "projects_milestones"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "projects_milestone_custom_field_values" ADD CONSTRAINT "projects_milestone_custom_field_values_field_id_fkey" FOREIGN KEY ("field_id") REFERENCES "projects_custom_fields"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "projects_milestone_custom_field_values" ADD CONSTRAINT "projects_milestone_custom_field_values_field_id_fkey" FOREIGN KEY ("field_id") REFERENCES "projects_milestone_custom_fields"("id") ON DELETE CASCADE ON UPDATE CASCADE;
