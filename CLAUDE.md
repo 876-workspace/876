@@ -48,7 +48,9 @@ Use **pnpm** only: `pnpm install`, `pnpm dev`, `pnpm --filter <package> <script>
 | `@876/core`      | `packages/core`      | Errors, ID generation, timestamps, shared utilities.                                                                                                                                         |
 | `@876/ui`        | `packages/ui`        | shadcn/ui primitives (Base UI + Tailwind v4) + shared design tokens/auth CSS. Subpath imports only. Embeddable auth UI lives at `@876/ui/auth` (presentation + flow only; no session state). |
 
-## Cloudflare Deployment
+## Cloudflare Deployment (retired)
+
+> **Retired.** Apps and services deploy to **Vercel** only; Cloudflare is used solely for dev Tunnels, and CI status is ignored. Read `.claude/rules/deployment.md` — it overrides this section.
 
 Each Next.js app deploys independently to **Cloudflare Workers** using **`@opennextjs/cloudflare`** (OpenNext). The container services (`@876/api`, now Express; `@876/billing-api`, still FastAPI) deploy as **Cloudflare Containers** (Dockerfile + Worker front door). See `docs/cloudflare.md` for the full layout.
 
@@ -111,6 +113,7 @@ See `.claude/rules/cli.md` before spawning any sub-agent or driving Codex/`agy`/
 
 ## Required Context
 
+- Read `.claude/rules/deployment.md` before deploying, merging, or reading a check status. **Vercel only; do not deploy to Cloudflare** (retired, dev Tunnels only). GitHub Actions minutes are exhausted — ignore CI; local verification is the merge gate.
 - Read `.claude/rules/execution-autonomy.md` before ending a turn. **Do not stop working to report progress.** When given a phased plan, the plan — not the phase — is the unit of completion: finish a phase, commit it, start the next in the same turn, and keep going until the whole plan is done. Background long-running work and keep working on anything independent of it.
 - Read `.claude/rules/ai-code-quality.md` before non-trivial implementation or refactoring work. It is the reuse-first standard: search for the existing owner before adding a helper, type, schema, service, or dependency; never write a third copy of behaviour two apps already share; and review the finished diff for duplicates, compatibility residue, and swallowed errors.
 - Read `.claude/rules/performance.md` (index — open only the relevant category file(s)), `.claude/rules/types.md`, `.claude/rules/code-style.md`, and `.claude/rules/data-fetching.md` before editing app code.
