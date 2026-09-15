@@ -133,7 +133,6 @@ model CustomField {
   tenantId    String  @map("tenant_id")
   key         String
   label       String
-  scope       String  @default("work-item")
   fieldType   String  @map("field_type")
   options     Json?
   required    Boolean @default(false)
@@ -146,10 +145,8 @@ model CustomField {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   types CustomFieldOnType[]
   values CustomFieldValue[]
-  milestoneValues MilestoneCustomFieldValue[]
 
   @@unique([tenantId, key])
-  @@index([tenantId, scope])
   @@map("projects_custom_fields")
 }
 
@@ -189,6 +186,27 @@ model CustomFieldValue {
   @@map("projects_custom_field_values")
 }
 
+model MilestoneCustomField {
+  id          String  @id
+  tenantId    String  @map("tenant_id")
+  key         String
+  label       String
+  fieldType   String  @map("field_type")
+  options     Json?
+  required    Boolean @default(false)
+  description String?
+  position    Int     @default(0)
+  archivedAt  BigInt? @map("archived_at")
+  createdAt   BigInt  @map("created_at")
+  updatedAt   BigInt  @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  values MilestoneCustomFieldValue[]
+
+  @@unique([tenantId, key])
+  @@map("projects_milestone_custom_fields")
+}
+
 model MilestoneCustomFieldValue {
   id           String   @id
   tenantId     String   @map("tenant_id")
@@ -207,7 +225,7 @@ model MilestoneCustomFieldValue {
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   milestone Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
-  field CustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  field MilestoneCustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
 
   @@unique([milestoneId, fieldId])
   @@index([tenantId, fieldId])
