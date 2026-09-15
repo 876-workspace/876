@@ -57,12 +57,8 @@ describe('resolveBillingNavigation', () => {
   })
 
   it('shows Requests only when permission and feature are both present', () => {
-    expect(
-      resolvedEntry(['customers:read'], [], 'requests')
-    ).toBeUndefined()
-    expect(
-      resolvedEntry([], ['billing-requests'], 'requests')
-    ).toBeUndefined()
+    expect(resolvedEntry(['customers:read'], [], 'requests')).toBeUndefined()
+    expect(resolvedEntry([], ['billing-requests'], 'requests')).toBeUndefined()
 
     const requests = resolvedEntry(
       ['customers:read'],
@@ -300,6 +296,34 @@ describe('getVisibleSettingsSections', () => {
       'Payment Providers',
       'Accounting Providers',
       'Roles & Permissions',
+    ])
+  })
+
+  it('exposes Templates and Branding to sales readers with their settings hrefs', () => {
+    expect(
+      getVisibleSettingsSections(['billing:access', 'sales:read']).map(
+        (section) => ({
+          title: section.title,
+          href: section.href,
+          permissions: section.permissions,
+        })
+      )
+    ).toEqual([
+      {
+        title: 'Billing & Sales',
+        href: '/settings/billing',
+        permissions: ['sales:read'],
+      },
+      {
+        title: 'Templates',
+        href: '/settings/templates',
+        permissions: ['sales:read'],
+      },
+      {
+        title: 'Branding',
+        href: '/settings/branding',
+        permissions: ['sales:read'],
+      },
     ])
   })
 })

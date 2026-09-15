@@ -25,8 +25,10 @@ export interface DocumentTemplateGalleryProps {
   documentType: DocumentTemplateType
   templates: DocumentTemplateGalleryTemplate[]
   branding: Branding
-  newHref: string
-  editHrefBase: string
+  /** `null` for a viewer who may not create templates: the create links are omitted. */
+  newHref: string | null
+  /** `null` for a viewer who may not edit templates: the edit links are omitted. */
+  editHrefBase: string | null
   /** Already-rendered host actions per template id (set-default/delete). */
   cardActions?: Record<string, ReactNode>
 }
@@ -56,27 +58,31 @@ export function DocumentTemplateGallery({
           editHref={newHref}
           editLabel="Customize"
         />
-        <p className="mt-4">
-          <a
-            href={newHref}
-            className="text-sm font-medium underline underline-offset-4"
-          >
-            Create a template
-          </a>
-        </p>
+        {newHref ? (
+          <p className="mt-4">
+            <a
+              href={newHref}
+              className="text-sm font-medium underline underline-offset-4"
+            >
+              Create a template
+            </a>
+          </p>
+        ) : null}
       </div>
     )
   }
   return (
     <div>
-      <p className="mb-4">
-        <a
-          href={newHref}
-          className="text-sm font-medium underline underline-offset-4"
-        >
-          New template
-        </a>
-      </p>
+      {newHref ? (
+        <p className="mb-4">
+          <a
+            href={newHref}
+            className="text-sm font-medium underline underline-offset-4"
+          >
+            New template
+          </a>
+        </p>
+      ) : null}
       <ul className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {templates.map((template) => (
           <li key={template.id}>
@@ -87,7 +93,7 @@ export function DocumentTemplateGallery({
               isDefault={template.isDefault}
               settings={template.settings}
               branding={branding}
-              editHref={`${editHrefBase}/${template.id}`}
+              editHref={editHrefBase ? `${editHrefBase}/${template.id}` : null}
               editLabel="Edit"
               actions={cardActions?.[template.id]}
             />
@@ -115,7 +121,7 @@ function TemplateCard({
   isDefault: boolean
   settings: DocumentTemplateSettings
   branding: Branding
-  editHref: string
+  editHref: string | null
   editLabel: string
   actions?: ReactNode
 }) {
@@ -144,12 +150,14 @@ function TemplateCard({
         ) : null}
       </div>
       <div className="flex items-center gap-3 border-t p-3">
-        <a
-          href={editHref}
-          className="text-sm font-medium underline underline-offset-4"
-        >
-          {editLabel}
-        </a>
+        {editHref ? (
+          <a
+            href={editHref}
+            className="text-sm font-medium underline underline-offset-4"
+          >
+            {editLabel}
+          </a>
+        ) : null}
         {actions}
       </div>
     </div>

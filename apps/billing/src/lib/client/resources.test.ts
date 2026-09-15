@@ -14,10 +14,12 @@ import {
   bankStatementLines,
 } from './banking-engine'
 import { bankTransactions } from './bank-transactions'
+import { branding } from './branding'
 import { creditNotes } from './credit-notes'
 import { currencies } from './currencies'
 import { customers } from './customers'
 import { discounts } from './discounts'
+import { documentTemplates } from './document-templates'
 import { invoices } from './invoices'
 import { invoicePreferences } from './invoice-preferences'
 import { items } from './items'
@@ -226,6 +228,58 @@ const cases: RequestCase[] = [
     act: () => invoicePreferences.assessLateFees(),
     url: '/api/v1/invoice-preferences/assess-late-fees',
     init: { method: 'POST' },
+  },
+  {
+    name: 'lists document templates with the exact document type query',
+    act: () => documentTemplates.list({ documentType: 'invoice' }),
+    url: '/api/v1/document-templates?documentType=invoice',
+  },
+  {
+    name: 'creates a document template',
+    act: () => documentTemplates.create(EMPTY),
+    url: '/api/v1/document-templates',
+    init: { method: 'POST', body: '{}' },
+  },
+  {
+    name: 'retrieves a document template',
+    act: () => documentTemplates.retrieve('dtpl /1'),
+    url: '/api/v1/document-templates/dtpl%20%2F1',
+    init: { method: 'GET' },
+  },
+  {
+    name: 'updates a document template',
+    act: () => documentTemplates.update('dtpl /1', EMPTY),
+    url: '/api/v1/document-templates/dtpl%20%2F1',
+    init: { method: 'PATCH', body: '{}' },
+  },
+  {
+    name: 'deletes a document template',
+    act: () => documentTemplates.delete('dtpl /1'),
+    url: '/api/v1/document-templates/dtpl%20%2F1',
+    init: { method: 'DELETE' },
+  },
+  {
+    name: 'sets the default document template',
+    act: () => documentTemplates.setDefault('dtpl /1'),
+    url: '/api/v1/document-templates/dtpl%20%2F1/set-default',
+    init: { method: 'POST', body: '{}' },
+  },
+  {
+    name: 'resolves a document template with its template id',
+    act: () => documentTemplates.resolve('invoice', 'dtpl_1'),
+    url: '/api/v1/document-templates/resolved?documentType=invoice&templateId=dtpl_1',
+  },
+  {
+    name: 'retrieves branding',
+    act: () => branding.retrieve(),
+    url: '/api/v1/branding',
+    init: { method: 'GET' },
+  },
+  {
+    name: 'updates branding',
+    act: () => branding.update(EMPTY),
+    url: '/api/v1/branding',
+    init: { method: 'PATCH', body: '{}' },
   },
   {
     name: 'lists invites',
@@ -652,10 +706,12 @@ describe('Billing browser resource clients', () => {
       bankStatementImports,
       bankStatementLines,
       bankTransactions,
+      branding,
       creditNotes,
       currencies,
       customers,
       discounts,
+      documentTemplates,
       invoices,
       invoicePreferences,
       invites,

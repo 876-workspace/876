@@ -328,6 +328,12 @@ export const service = {
         `/banking/accounts/${id(accountId)}/transactions/${id(transactionId)}`
       ),
   },
+  branding: {
+    retrieve: (_tenantId: string) => {
+      void _tenantId
+      return detail('/branding')
+    },
+  },
   creditNotes,
   currencies: {
     list: (_tenantId: string) => {
@@ -344,6 +350,23 @@ export const service = {
       }) as Promise<any>,
   },
   discounts,
+  documentTemplates: {
+    list: (_tenantId: string, documentType?: string) => {
+      void _tenantId
+      return list(
+        '/document-templates',
+        documentType ? { documentType } : undefined
+      )
+    },
+    retrieve: (_tenantId: string, templateId: string) => {
+      void _tenantId
+      return detail(`/document-templates/${id(templateId)}`)
+    },
+    resolve: (_tenantId: string, documentType: string, templateId?: string) => {
+      void _tenantId
+      return data('/document-templates/resolved', { documentType, templateId })
+    },
+  },
   financeConnections: {
     retrieve: (_tenantId: string, appId: string) =>
       detail(`/finance-connections/${id(appId)}`),

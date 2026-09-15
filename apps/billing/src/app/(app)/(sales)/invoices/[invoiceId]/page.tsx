@@ -43,13 +43,24 @@ export default async function InvoiceDetailPage({ params }: Props) {
     getPlatformClient(),
     getFeatures({ userId: context.userId, organizationId: context.orgId }),
   ])
-  const [invoiceResult, organization] = await Promise.all([
+  const [invoiceResult, organization, templateResult] = await Promise.all([
     billing.invoices.retrieve(invoiceId),
     platform.organizations.retrieve({ id: context.orgId }),
+    billing.documentTemplates.resolve('invoice'),
   ])
   if (invoiceResult.error?.code === 'invoice/not-found') notFound()
   if (invoiceResult.error || !invoiceResult.data) notFound()
   const invoice = invoiceResult.data
+
+  // A template outage must never block an invoice: without a resolved
+  // template the panel falls back to its built-in layout and brand.
+  const template = templateResult.data
+    ? {
+        layout: templateResult.data.layout,
+        settings: templateResult.data.settings,
+      }
+    : undefined
+  const templateBranding = templateResult.data?.branding
 
   const canWrite = context.permissions.includes('sales:write')
   const canRecordPayment = context.permissions.includes('payments:write')
@@ -149,6 +160,8 @@ export default async function InvoiceDetailPage({ params }: Props) {
         <InvoiceDocumentPanel
           {...invoiceDocumentData(invoice, formatDate, formatMoney)}
           seller={seller}
+          template={template}
+          branding={templateBranding}
           footer={
             <>
               <p>
