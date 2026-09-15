@@ -6,6 +6,7 @@ import {
   milestoneCustomFieldListSchema,
   milestoneCustomFieldSchema,
   milestoneCustomFieldValueListSchema,
+  milestoneDetailListSchema,
   milestoneDetailSchema,
   milestoneEventListSchema,
   milestoneSummarySchema,
@@ -20,7 +21,6 @@ import {
 } from '../milestone-details'
 import {
   deletedSchema,
-  milestoneListSchema,
   type MilestoneListParams,
   type RequestOptions,
 } from '../types'
@@ -56,7 +56,7 @@ export function createMilestonesResource(runtime: Runtime) {
           path: `${root(organizationId)}${toQueryString(projectId, options)}`,
           signal: options.signal,
         },
-        milestoneListSchema
+        milestoneDetailListSchema
       )
     },
     create(
