@@ -69,6 +69,7 @@ pnpm --filter @876/couriers-api dev
 - Read `.agents/rules/product-org-signup.md` before changing authentication,
   sign-up, onboarding, or root dynamic organization routing in an org-workspace
   product app.
+- Read `.agents/rules/production-render-errors.md` before debugging a page that fails only in a production build (React #441, Serwist `no-response`), before passing a prop from a Server Component to a Client Component, and before adding an authenticated route segment.
 - Read `.agents/rules/api-backend.md` before editing `apps/api`, API contracts, OpenAPI docs, repositories, provider integrations, or API client methods.
 - Read `.agents/rules/stripe-api-pattern.md` before changing API contracts, SDK contracts, service results, provider errors, or serialized resources.
 - Read `.agents/rules/feature-flags.md` before creating, renaming, seeding, or evaluating any feature flag (app-prefixed `<app>_<group>_<child>` key standard, parent/child group semantics, PostHog + local catalog sync).
