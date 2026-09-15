@@ -1,2 +1,5 @@
+import { globalIgnores } from 'eslint/config'
 import config from '../../eslint.config.mjs'
-export default config
+import { generatedIgnores } from '../../eslint.ignores.mjs'
+
+export default [...config, globalIgnores(generatedIgnores)]

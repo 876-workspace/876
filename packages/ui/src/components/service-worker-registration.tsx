@@ -26,14 +26,19 @@ export function ServiceWorkerRegistration() {
       )
       void navigator.serviceWorker.register('/sw.js', { scope: '/' })
 
-      return () =>
+      return () => {
+        window.removeEventListener('online', reloadWhenBackOnline)
         navigator.serviceWorker.removeEventListener(
           'controllerchange',
           reloadForWorkerUpdate
         )
-    } else if ('serviceWorker' in navigator) {
-      // A development service worker can serve client chunks from an earlier
-      // compile, leaving React with mismatched server and client component props.
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      // A development service worker can retain application assets from an
+      // earlier compile. Remove registrations and caches so local hydration
+      // always uses the current development build.
       void Promise.all([
         navigator.serviceWorker.getRegistrations(),
         'caches' in globalThis ? caches.keys() : Promise.resolve([]),

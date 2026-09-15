@@ -3,12 +3,12 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
 
 import { Toaster } from '@876/ui/sonner'
+import { ServiceWorkerRegistration } from '@876/ui/service-worker-registration'
 
 import { LinkProvider } from '@/components/providers/link-provider'
 import { PwaProvider } from '@/components/providers/pwa-provider'
 import { ThemeProvider } from '@876/ui/theme'
 import { ThemeScript } from '@876/ui/theme-script'
-import { ServiceWorkerRegistration } from '@/components/providers/service-worker-registration'
 
 import './globals.css'
 

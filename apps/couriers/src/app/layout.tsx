@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
 
+import { ServiceWorkerRegistration } from '@876/ui/service-worker-registration'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
-import { ServiceWorkerRegistration } from '@/components/providers/service-worker-registration'
 import { ThemeProvider } from '@/components/providers/providers'
 import './globals.css'
 import { ThemeScript } from '@876/ui/theme-script'
