@@ -61,6 +61,9 @@
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-foreground: var(--brand-accent-foreground);
+  --color-brand-accent-subtle: var(--brand-accent-subtle);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -142,6 +145,13 @@
   /* [C1] Info aligned with --876-blue — the old 0.45-lightness blue read dark
      and dense on light surfaces. */
   --info: oklch(0.55 0.15 255);
+  /* Organization brand tokens (@876/core/branding `brandTokens`). Defaults
+     follow the platform blue; a surface applies an organization's brand by
+     setting these three properties on a wrapper, never by editing components.
+     Declared in both :root and .dark so a .dark subtree re-resolves them. */
+  --brand-accent: var(--info);
+  --brand-accent-foreground: oklch(0.985 0 0);
+  --brand-accent-subtle: color-mix(in oklab, var(--brand-accent) 12%, transparent);
   --border: oklch(
     0.94 0.003 260
   ); /* [B1] hairline divider — mirror of docs [A1] */
@@ -660,6 +670,13 @@
   --warning: oklch(0.75 0.14 82);
   --warning-foreground: oklch(0.18 0.02 82);
   --info: oklch(0.68 0.2 258);
+  /* Organization brand tokens (@876/core/branding `brandTokens`). Defaults
+     follow the platform blue; a surface applies an organization's brand by
+     setting these three properties on a wrapper, never by editing components.
+     Declared in both :root and .dark so a .dark subtree re-resolves them. */
+  --brand-accent: var(--info);
+  --brand-accent-foreground: oklch(0.985 0 0);
+  --brand-accent-subtle: color-mix(in oklab, var(--brand-accent) 12%, transparent);
   --border: oklch(1 0 0 / 14%);
   --border-strong: oklch(1 0 0 / 22%); /* [C2] interactive-control border */
   --input: oklch(1 0 0 / 18%);
