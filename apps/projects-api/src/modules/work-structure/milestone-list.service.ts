@@ -1,7 +1,10 @@
 import { getError, type ProjectsError } from '../../http/errors.js'
 import * as tenants from '../tenants/index.js'
-import { prisma } from '../../db/index.js'
-import { serializeMilestone, type SerializedMilestone } from './work-structure.serializers.js'
+import * as repository from './milestone-list.repository.js'
+import {
+  serializeMilestone,
+  type SerializedMilestone,
+} from './work-structure.serializers.js'
 
 export type ServiceResult<T> =
   | { data: T; error: null }
@@ -15,14 +18,6 @@ export async function listOrganizationMilestones(
   if (!tenant)
     return { data: null, error: getError('projects/tenant-not-found') }
 
-  const rows = await prisma.milestone.findMany({
-    where: {
-      tenantId: tenant.id,
-      deletedAt: null,
-      ...(status ? { status } : {}),
-    },
-    orderBy: [{ projectId: 'asc' }, { position: 'asc' }, { key: 'asc' }],
-  })
-
+  const rows = await repository.listOrganizationMilestones(tenant.id, status)
   return { data: rows.map(serializeMilestone), error: null }
 }
