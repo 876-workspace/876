@@ -1,15 +1,8 @@
-import { PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
+import { PageHeader, PageTitle } from '@876/ui/page'
 
-type Props = { orgSlug: string }
-
-export function ProfileSettingsShell({ orgSlug }: Props) {
+export function ProfileSettingsShell() {
   return (
     <>
-      <PageBreadcrumb
-        href={`/${orgSlug}/settings`}
-        label="Settings"
-        className="mb-4"
-      />
       <PageHeader className="mb-6">
         <PageTitle>Organization profile</PageTitle>
       </PageHeader>

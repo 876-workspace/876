@@ -1,22 +1,10 @@
-import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
+import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 export const metadata = { title: 'Duties & customs — Settings' }
 
-export default async function DutiesCustomsSettingsPage({
-  params,
-}: {
-  params: Promise<{ orgSlug: string }>
-}) {
-  const { orgSlug } = await params
-
+export default async function DutiesCustomsSettingsPage() {
   return (
     <Page>
-      <PageBreadcrumb
-        href={`/${orgSlug}/settings`}
-        label="Settings"
-        className="mb-4"
-      />
-
       <PageHeader className="mb-8">
         <PageTitle>Duties & customs</PageTitle>
       </PageHeader>

@@ -55,21 +55,57 @@ export const SETTINGS_NAV_GROUPS: readonly NavGroupDefinition[] = [
     ],
   },
   {
+    key: 'modules',
+    label: 'Modules',
+    entries: [
+      {
+        key: 'module-items',
+        title: 'Items',
+        href: '/settings/modules/items',
+        icon: 'module-items',
+      },
+      {
+        key: 'module-warehouse',
+        title: 'Warehouse',
+        href: '/settings/modules/warehouse',
+        icon: 'module-warehouse',
+      },
+      {
+        key: 'module-manifests',
+        title: 'Manifests',
+        href: '/settings/modules/manifests',
+        icon: 'module-manifests',
+      },
+      {
+        key: 'module-deliveries',
+        title: 'Deliveries',
+        href: '/settings/modules/deliveries',
+        icon: 'module-deliveries',
+      },
+      {
+        key: 'module-invoices',
+        title: 'Invoices',
+        href: '/settings/modules/invoices',
+        icon: 'module-invoices',
+      },
+      {
+        key: 'module-payments',
+        title: 'Payments',
+        href: '/settings/modules/payments',
+        icon: 'module-payments',
+      },
+      {
+        key: 'module-portal',
+        title: 'Customer portal',
+        href: '/settings/modules/portal',
+        icon: 'module-portal',
+      },
+    ],
+  },
+  {
     key: 'product',
     label: 'Product',
     entries: [
-      {
-        key: 'modules',
-        title: 'Modules',
-        href: '/settings/modules',
-        icon: 'modules',
-      },
-      {
-        key: 'portal',
-        title: 'Customer portal',
-        href: '/settings/portal',
-        icon: 'portal',
-      },
       {
         key: 'finance',
         title: 'Finance',

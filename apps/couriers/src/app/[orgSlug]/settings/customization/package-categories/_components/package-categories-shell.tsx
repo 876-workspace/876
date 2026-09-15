@@ -1,4 +1,3 @@
-import { PageBreadcrumb } from '@876/ui/page'
 import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import {
   StatusFilterHeading,
@@ -43,11 +42,6 @@ type Props = { orgSlug: string; status: PackageCategoryStatusFilter }
 export function PackageCategoriesShell({ orgSlug, status }: Props) {
   return (
     <>
-      <PageBreadcrumb
-        href={`/${orgSlug}/settings`}
-        label="Settings"
-        className="mb-4"
-      />
       <ResourceToolbar
         title="Package categories"
         titleFilter={
