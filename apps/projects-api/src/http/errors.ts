@@ -77,6 +77,18 @@ export const PROJECTS_ERRORS = {
     message: 'Another milestone in this project already uses that key.',
     httpStatus: 409 as HttpStatusCode,
   },
+  'projects/task-list-not-found': {
+    message: 'The task list could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/cycle-not-found': {
+    message: 'The cycle could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/cycle-number-taken': {
+    message: 'Another cycle already uses that number.',
+    httpStatus: 409 as HttpStatusCode,
+  },
   'projects/custom-field-not-found': {
     message: 'The custom field could not be found.',
     httpStatus: 404 as HttpStatusCode,

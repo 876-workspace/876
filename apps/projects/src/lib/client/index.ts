@@ -1,4 +1,5 @@
 import { appMemberships } from './app-memberships'
+import { cyclesClient } from './cycles'
 import { phaseCustomFieldsClient } from './phase-custom-fields'
 import {
   commentsClient,
@@ -12,6 +13,7 @@ import {
   workflowStatesClient,
 } from './projects'
 import { onboarding } from './onboarding'
+import { taskListsClient } from './task-lists'
 
 export const client = {
   appMemberships,
@@ -19,6 +21,8 @@ export const client = {
   projects: projectsClient,
   issues: issuesClient,
   phases: phasesClient,
+  cycles: cyclesClient,
+  taskLists: taskListsClient,
   phaseCustomFields: phaseCustomFieldsClient,
   labels: labelsClient,
   comments: commentsClient,
@@ -29,7 +33,9 @@ export const client = {
 }
 
 export { appMemberships } from './app-memberships'
+export { cyclesClient } from './cycles'
 export { onboarding } from './onboarding'
+export { taskListsClient } from './task-lists'
 export { phaseCustomFieldsClient } from './phase-custom-fields'
 export {
   projectsClient,

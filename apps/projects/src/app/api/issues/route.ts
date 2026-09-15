@@ -20,6 +20,8 @@ const createIssueSchema = z.strictObject({
     .optional(),
   typeKey: z.string().trim().min(1).max(100).optional(),
   milestoneId: z.string().trim().min(1).nullable().optional(),
+  taskListId: z.string().trim().min(1).nullable().optional(),
+  cycleId: z.string().trim().min(1).nullable().optional(),
   priority: z.enum(['none', 'low', 'medium', 'high', 'urgent']).optional(),
   assigneeUserId: z.string().trim().min(1).nullable().optional(),
   parentIssueId: z.string().trim().min(1).nullable().optional(),
@@ -59,8 +61,11 @@ export async function POST(request: NextRequest) {
     ...parsed.data,
     creatorUserId: auth.userId,
   })
-  if (result.error)
-    return apiJson({ error: result.error.message }, { status: 400 })
+  if (result.error || !result.data)
+    return apiJson(
+      { error: result.error?.message ?? 'The issue could not be created.' },
+      { status: 400 }
+    )
 
   return apiJson({ data: result.data }, { status: 201 })
 }

@@ -11,6 +11,7 @@ model Issue {
   typeKey        String  @default("task") @map("type_key")
   workItemTypeId String? @map("work_item_type_id")
   milestoneId    String? @map("milestone_id")
+  taskListId     String? @map("task_list_id")
   cycleId        String? @map("cycle_id")
   priority       String  @default("none")      // none|low|medium|high|urgent
   assigneeUserId String? @map("assignee_user_id")
@@ -36,6 +37,7 @@ model Issue {
   workflowState WorkflowState? @relation(fields: [workflowStateId], references: [id], onDelete: Restrict)
   workItemType WorkItemType? @relation(fields: [workItemTypeId], references: [id], onDelete: Restrict)
   milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  taskList TaskList? @relation(fields: [taskListId], references: [id], onDelete: SetNull)
   cycle Cycle? @relation(fields: [cycleId], references: [id], onDelete: SetNull)
   customFieldValues CustomFieldValue[]
 
@@ -46,6 +48,8 @@ model Issue {
   @@index([tenantId, updatedAt])
   @@index([projectId, status])
   @@index([tenantId, milestoneId])
+  @@index([tenantId, taskListId])
+  @@index([projectId, taskListId])
   @@map("projects_issues")
 }
 

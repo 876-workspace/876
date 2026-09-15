@@ -52,6 +52,8 @@ const sampleIssue: Issue = {
   type: sampleType,
   state: sampleState,
   milestone: null,
+  taskListId: null,
+  cycleId: null,
   customFields: [],
   priority: 'high',
   assigneeUserId: 'usr_1',
@@ -89,10 +91,13 @@ function jsonResponse(data: unknown, status = 200) {
 }
 
 function errorResponse(code: string, message: string, status = 404) {
-  return new Response(JSON.stringify({ data: null, error: { code, message } }), {
-    status,
-    headers: { 'content-type': 'application/json' },
-  })
+  return new Response(
+    JSON.stringify({ data: null, error: { code, message } }),
+    {
+      status,
+      headers: { 'content-type': 'application/json' },
+    }
+  )
 }
 
 describe('resources — issues', () => {
@@ -359,7 +364,11 @@ describe('resources — issues', () => {
 
   it('a 404 response is returned as an error value, not thrown', async () => {
     fetch.mockResolvedValueOnce(
-      errorResponse('projects/issue-not-found', 'The issue could not be found.', 404)
+      errorResponse(
+        'projects/issue-not-found',
+        'The issue could not be found.',
+        404
+      )
     )
 
     const result = await client.issues.retrieve('org_1', 'nonexistent')

@@ -67,6 +67,8 @@ const validIssue: Issue = {
   type: sampleType,
   state: sampleState,
   milestone: null,
+  taskListId: null,
+  cycleId: null,
   customFields: [],
   priority: 'high',
   assigneeUserId: 'usr_1',

@@ -1,7 +1,9 @@
 import { ProjectDetail } from '@876/projects-ui/project-detail'
 import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
+import { WorkBreakdownData } from '@/features/projects/components/work-breakdown-data'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { projects } from '@/lib/services/projects'
 
@@ -51,11 +53,16 @@ export async function ProjectDetailData({
         issuesHasMore={issuesResult.data?.has_more ?? false}
         leadLabel={
           projectResult.data.leadUserId
-            ? membersResult.labels[projectResult.data.leadUserId] ?? null
+            ? (membersResult.labels[projectResult.data.leadUserId] ?? null)
             : null
         }
         issuesHref="/issues"
       />
+      <Suspense
+        fallback={<div className="876-card h-64 animate-pulse" aria-hidden />}
+      >
+        <WorkBreakdownData orgId={orgId} projectId={projectId} />
+      </Suspense>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { createElement } from 'react'
 import type { IconComponent } from '@876/ui/icons'
 import {
   Home,
+  ArrowPathIcon,
   Building2,
   DocumentTextIcon,
   ExclamationCircleIcon,
@@ -20,6 +21,7 @@ export const NAV_ICONS: Record<string, IconComponent> = {
   dashboard: Home,
   projects: Folder,
   phases: RectangleStackIcon,
+  cycles: ArrowPathIcon,
   issues: ExclamationCircleIcon,
   board: RectangleStackIcon,
   labels: TagIcon,

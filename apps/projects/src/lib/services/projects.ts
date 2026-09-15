@@ -59,6 +59,12 @@ export const projects = {
   get milestones() {
     return getServiceClient().milestones
   },
+  get cycles() {
+    return getServiceClient().cycles
+  },
+  get taskLists() {
+    return getServiceClient().taskLists
+  },
   get customFields() {
     return getServiceClient().customFields
   },

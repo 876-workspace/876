@@ -1,11 +1,13 @@
 'use client'
 
 import type {
+  Cycle,
   CustomField,
   Issue,
   Label,
   Milestone,
   Project,
+  TaskList,
   WorkItemType,
   WorkflowState,
 } from '@876/projects/contracts'
@@ -29,6 +31,8 @@ type Props = {
   projects: Project[]
   milestones: Milestone[]
   customFields: CustomField[]
+  taskLists?: TaskList[]
+  cycles?: Cycle[]
   labels?: Label[]
   members?: MemberOption[]
   issues?: Issue[]
@@ -113,6 +117,8 @@ function IssueForm({
   projects,
   milestones,
   customFields,
+  taskLists = [],
+  cycles = [],
   labels = [],
   members = [],
   issues = [],
@@ -130,6 +136,8 @@ function IssueForm({
     issue?.status ?? workflowStates.find((state) => state.isDefault)?.key ?? ''
   )
   const [milestoneId, setMilestoneId] = useState(issue?.milestone?.id ?? '')
+  const [taskListId, setTaskListId] = useState(issue?.taskListId ?? '')
+  const [cycleId, setCycleId] = useState(issue?.cycleId ?? '')
   const [priority, setPriority] = useState<
     'none' | 'low' | 'medium' | 'high' | 'urgent'
   >(issue?.priority ?? 'none')
@@ -159,6 +167,21 @@ function IssueForm({
   const availableMilestones = useMemo(
     () => milestones.filter((milestone) => milestone.projectId === projectId),
     [milestones, projectId]
+  )
+  const availableTaskLists = useMemo(
+    () => taskLists.filter((taskList) => taskList.projectId === projectId),
+    [taskLists, projectId]
+  )
+  const availableCycles = useMemo(
+    () =>
+      cycles.filter(
+        (cycle) =>
+          cycle.status !== 'completed' &&
+          (!projectId ||
+            cycle.projectId === null ||
+            cycle.projectId === projectId)
+      ),
+    [cycles, projectId]
   )
   const applicableFields = useMemo(
     () =>
@@ -226,6 +249,12 @@ function IssueForm({
           dueDate: parsedDueDate,
           labelIds,
           customFields: customFieldValues,
+          ...(taskListId !== (issue.taskListId ?? '')
+            ? { taskListId: taskListId || null }
+            : {}),
+          ...(cycleId !== (issue.cycleId ?? '')
+            ? { cycleId: cycleId || null }
+            : {}),
         })
       : await issuesClient.create({
           title: title.trim(),
@@ -234,6 +263,8 @@ function IssueForm({
           typeKey: typeKey || undefined,
           status: status || undefined,
           ...(milestoneId ? { milestoneId } : {}),
+          ...(taskListId ? { taskListId } : {}),
+          ...(cycleId ? { cycleId } : {}),
           ...(priority !== 'none' ? { priority } : {}),
           ...(assigneeUserId ? { assigneeUserId } : {}),
           ...(parentIssueId ? { parentIssueId } : {}),
@@ -294,6 +325,8 @@ function IssueForm({
           onChange={(event) => {
             setProjectId(event.target.value)
             setMilestoneId('')
+            setTaskListId('')
+            setCycleId('')
             setParentIssueId('')
           }}
           className="w-full"
@@ -348,6 +381,37 @@ function IssueForm({
           {availableMilestones.map((milestone) => (
             <option key={milestone.id} value={milestone.id}>
               {milestone.name}
+            </option>
+          ))}
+        </NativeSelect>
+      </FormRow>
+      <FormRow label="Task list" htmlFor="task-list">
+        <NativeSelect
+          id="task-list"
+          value={taskListId}
+          onChange={(event) => setTaskListId(event.target.value)}
+          className="w-full"
+          disabled={!projectId}
+        >
+          <option value="">No task list</option>
+          {availableTaskLists.map((taskList) => (
+            <option key={taskList.id} value={taskList.id}>
+              {taskList.name}
+            </option>
+          ))}
+        </NativeSelect>
+      </FormRow>
+      <FormRow label="Cycle" htmlFor="cycle">
+        <NativeSelect
+          id="cycle"
+          value={cycleId}
+          onChange={(event) => setCycleId(event.target.value)}
+          className="w-full"
+        >
+          <option value="">No cycle</option>
+          {availableCycles.map((cycle) => (
+            <option key={cycle.id} value={cycle.id}>
+              {cycle.name}
             </option>
           ))}
         </NativeSelect>

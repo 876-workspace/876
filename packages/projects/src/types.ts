@@ -159,6 +159,100 @@ export const milestoneSchema = z.object({
 })
 export type Milestone = z.infer<typeof milestoneSchema>
 
+export const taskListProgressSchema = z.object({
+  total: z.number(),
+  completed: z.number(),
+})
+export type TaskListProgress = z.infer<typeof taskListProgressSchema>
+
+export const taskListSchema = z.object({
+  object: z.literal('task-list'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  milestoneId: z.string().nullable(),
+  name: z.string(),
+  description: z.string().nullable(),
+  ownerUserId: z.string().nullable(),
+  startDate: z.number().nullable(),
+  targetDate: z.number().nullable(),
+  position: z.number(),
+  archivedAt: z.number().nullable(),
+  progress: taskListProgressSchema,
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type TaskList = z.infer<typeof taskListSchema>
+
+export const cycleProgressSchema = z.object({
+  total: z.number(),
+  completed: z.number(),
+  estimatePoints: z.number(),
+  completedEstimatePoints: z.number(),
+})
+export type CycleProgress = z.infer<typeof cycleProgressSchema>
+
+export const cycleThroughputSchema = z.object({
+  completedInWindow: z.number(),
+  windowStart: z.number(),
+  windowEnd: z.number(),
+})
+export type CycleThroughput = z.infer<typeof cycleThroughputSchema>
+
+export const cycleSchema = z.object({
+  object: z.literal('cycle'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string().nullable(),
+  number: z.number(),
+  name: z.string(),
+  description: z.string().nullable(),
+  goal: z.string().nullable(),
+  startsAt: z.number(),
+  endsAt: z.number(),
+  completedAt: z.number().nullable(),
+  status: z.enum(['upcoming', 'active', 'completed']),
+  progress: cycleProgressSchema,
+  throughput: cycleThroughputSchema,
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type Cycle = z.infer<typeof cycleSchema>
+
+export const workBreakdownIssueSchema = z.object({
+  id: z.string(),
+  identifier: z.string(),
+  title: z.string(),
+  status: z.string(),
+  taskListId: z.string().nullable(),
+  milestoneId: z.string().nullable(),
+  parentIssueId: z.string().nullable(),
+  subIssueCount: z.number(),
+})
+export type WorkBreakdownIssue = z.infer<typeof workBreakdownIssueSchema>
+
+export const workBreakdownTaskListSchema = z.object({
+  taskList: taskListSchema,
+  issues: z.array(workBreakdownIssueSchema),
+})
+export type WorkBreakdownTaskList = z.infer<typeof workBreakdownTaskListSchema>
+
+export const workBreakdownPhaseSchema = z.object({
+  milestone: milestoneSchema,
+  taskLists: z.array(workBreakdownTaskListSchema),
+  unlistedIssues: z.array(workBreakdownIssueSchema),
+})
+export type WorkBreakdownPhase = z.infer<typeof workBreakdownPhaseSchema>
+
+export const workBreakdownSchema = z.object({
+  object: z.literal('work-breakdown'),
+  projectId: z.string(),
+  phases: z.array(workBreakdownPhaseSchema),
+  unphasedTaskLists: z.array(workBreakdownTaskListSchema),
+  unlistedIssues: z.array(workBreakdownIssueSchema),
+})
+export type WorkBreakdown = z.infer<typeof workBreakdownSchema>
+
 export const customFieldSchema = z.object({
   object: z.literal('projects.custom-field'),
   id: z.string(),
@@ -237,6 +331,8 @@ export const issueSchema = z.object({
   type: workItemTypeSchema.nullable(),
   state: workflowStateSchema.nullable(),
   milestone: milestoneSchema.nullable(),
+  taskListId: z.string().nullable(),
+  cycleId: z.string().nullable(),
   customFields: z.array(customFieldValueSchema),
   priority: issuePrioritySchema,
   assigneeUserId: z.string().nullable(),
@@ -370,6 +466,12 @@ export type WorkflowStateList = z.infer<typeof workflowStateListSchema>
 export const milestoneListSchema = createListSchema(milestoneSchema)
 export type MilestoneList = z.infer<typeof milestoneListSchema>
 
+export const taskListListSchema = createListSchema(taskListSchema)
+export type TaskListList = z.infer<typeof taskListListSchema>
+
+export const cycleListSchema = createListSchema(cycleSchema)
+export type CycleList = z.infer<typeof cycleListSchema>
+
 export const customFieldListSchema = createListSchema(customFieldSchema)
 export type CustomFieldList = z.infer<typeof customFieldListSchema>
 
@@ -451,6 +553,8 @@ export interface CreateIssueInput {
   status?: WorkflowStateKey
   typeKey?: string
   milestoneId?: string | null
+  taskListId?: string | null
+  cycleId?: string | null
   priority?: IssuePriority
   assigneeUserId?: string | null
   creatorUserId?: string | null
@@ -469,6 +573,8 @@ export interface UpdateIssueInput {
   status?: WorkflowStateKey
   typeKey?: string
   milestoneId?: string | null
+  taskListId?: string | null
+  cycleId?: string | null
   priority?: IssuePriority
   assigneeUserId?: string | null
   creatorUserId?: string | null
@@ -571,6 +677,74 @@ export interface UpdateMilestoneInput {
 export interface MilestoneListParams {
   projectId: string
   status?: 'open' | 'completed' | 'canceled'
+}
+
+export interface TaskListListParams {
+  includeArchived?: boolean
+}
+
+export interface CreateTaskListInput {
+  name: string
+  description?: string | null
+  milestoneId?: string | null
+  ownerUserId?: string | null
+  startDate?: number | null
+  targetDate?: number | null
+  position?: number
+  actorUserId?: string | null
+}
+
+export interface UpdateTaskListInput {
+  name?: string
+  description?: string | null
+  milestoneId?: string | null
+  ownerUserId?: string | null
+  startDate?: number | null
+  targetDate?: number | null
+  position?: number
+  actorUserId?: string | null
+}
+
+export interface ReorderTaskListsInput {
+  orderedIds: string[]
+  actorUserId?: string | null
+}
+
+export interface MoveTaskListIssuesInput {
+  issueIds: string[]
+  actorUserId?: string | null
+}
+
+export interface ListCyclesQuery {
+  projectId?: string
+  status?: 'upcoming' | 'active' | 'completed'
+}
+
+export interface CreateCycleInput {
+  projectId?: string | null
+  number?: number
+  name: string
+  description?: string | null
+  goal?: string | null
+  startsAt: number
+  endsAt: number
+  actorUserId?: string | null
+}
+
+export interface UpdateCycleInput {
+  projectId?: string | null
+  name?: string
+  description?: string | null
+  goal?: string | null
+  startsAt?: number
+  endsAt?: number
+  completedAt?: number | null
+  actorUserId?: string | null
+}
+
+export interface AssignCycleIssuesInput {
+  issueIds: string[]
+  actorUserId?: string | null
 }
 
 export interface CustomFieldOption {

@@ -7,6 +7,8 @@ const {
   workStructureRepo,
   milestoneDetailsRepo,
   milestoneListRepo,
+  taskListsRepo,
+  cyclesRepo,
   projectsRepo,
   commentsRepo,
   issuesRepo,
@@ -52,6 +54,30 @@ const {
     clearMilestoneCustomFieldValue: vi.fn(),
   },
   milestoneListRepo: { listOrganizationMilestones: vi.fn() },
+  taskListsRepo: {
+    listTaskLists: vi.fn(),
+    retrieveTaskList: vi.fn(),
+    createTaskList: vi.fn(),
+    updateTaskList: vi.fn(),
+    softDeleteTaskList: vi.fn(),
+    taskListProgress: vi.fn(),
+    countProjectTaskLists: vi.fn(),
+    listProjectIssuesForBreakdown: vi.fn(),
+    assignIssuesToTaskList: vi.fn(),
+  },
+  cyclesRepo: {
+    listCycles: vi.fn(),
+    retrieveCycle: vi.fn(),
+    retrieveCycleByNumber: vi.fn(),
+    maxCycleNumber: vi.fn(),
+    createCycle: vi.fn(),
+    updateCycle: vi.fn(),
+    softDeleteCycle: vi.fn(),
+    cycleProgress: vi.fn(),
+    cycleThroughput: vi.fn(),
+    assignIssuesToCycle: vi.fn(),
+    unassignIssueFromCycle: vi.fn(),
+  },
   projectsRepo: { retrieve: vi.fn(), retrieveByKey: vi.fn() },
   commentsRepo: {
     list: vi.fn(),
@@ -90,6 +116,8 @@ vi.mock(
   '../../work-structure/milestone-list.repository.js',
   () => milestoneListRepo
 )
+vi.mock('../../work-structure/task-lists.repository.js', () => taskListsRepo)
+vi.mock('../../work-structure/cycles.repository.js', () => cyclesRepo)
 vi.mock('../../projects/projects.repository.js', () => projectsRepo)
 vi.mock('../../comments/comments.repository.js', () => commentsRepo)
 vi.mock('../../issues/issues.repository.js', () => issuesRepo)

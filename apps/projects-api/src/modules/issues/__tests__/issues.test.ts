@@ -9,6 +9,8 @@ const {
   workStructureRepo,
   milestoneDetailsRepo,
   milestoneListRepo,
+  taskListsRepo,
+  cyclesRepo,
   repository,
   txMock,
 } = vi.hoisted(() => {
@@ -80,6 +82,30 @@ const {
       clearMilestoneCustomFieldValue: vi.fn(),
     },
     milestoneListRepo: { listOrganizationMilestones: vi.fn() },
+    taskListsRepo: {
+      listTaskLists: vi.fn(),
+      retrieveTaskList: vi.fn(),
+      createTaskList: vi.fn(),
+      updateTaskList: vi.fn(),
+      softDeleteTaskList: vi.fn(),
+      taskListProgress: vi.fn(),
+      countProjectTaskLists: vi.fn(),
+      listProjectIssuesForBreakdown: vi.fn(),
+      assignIssuesToTaskList: vi.fn(),
+    },
+    cyclesRepo: {
+      listCycles: vi.fn(),
+      retrieveCycle: vi.fn(),
+      retrieveCycleByNumber: vi.fn(),
+      maxCycleNumber: vi.fn(),
+      createCycle: vi.fn(),
+      updateCycle: vi.fn(),
+      softDeleteCycle: vi.fn(),
+      cycleProgress: vi.fn(),
+      cycleThroughput: vi.fn(),
+      assignIssuesToCycle: vi.fn(),
+      unassignIssueFromCycle: vi.fn(),
+    },
     repository: {
       list: vi.fn(),
       count: vi.fn(),
@@ -112,6 +138,8 @@ vi.mock(
   '../../work-structure/milestone-list.repository.js',
   () => milestoneListRepo
 )
+vi.mock('../../work-structure/task-lists.repository.js', () => taskListsRepo)
+vi.mock('../../work-structure/cycles.repository.js', () => cyclesRepo)
 vi.mock('../issues.repository.js', () => repository)
 
 const service = await import('../issues.service.js')
@@ -173,6 +201,8 @@ const mockIssueRow = {
   typeKey: 'task',
   workItemTypeId: 'wit_task_1',
   milestoneId: null,
+  taskListId: null,
+  cycleId: null,
   priority: 'none',
   assigneeUserId: null,
   creatorUserId: 'usr_creator_1',
@@ -1105,6 +1135,8 @@ describe('issues module', () => {
               updatedAt: 1787767200,
             },
             milestone: null,
+            taskListId: null,
+            cycleId: null,
             customFields: [],
             priority: 'none',
             assigneeUserId: null,
@@ -1167,5 +1199,239 @@ describe('issues module', () => {
       },
     })
     expect(repository.list).not.toHaveBeenCalled()
+  })
+
+  it('create persists cycleId when the cycle belongs to the target project', async () => {
+    cyclesRepo.retrieveCycle.mockResolvedValue({
+      id: 'cyc_1',
+      tenantId: tenant.id,
+      projectId: mockProjectRow.id,
+    })
+
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'Cycle scoped issue',
+      cycleId: 'cyc_1',
+    })
+
+    expect(result.error).toBeNull()
+    expect(result.data?.cycleId).toBe('cyc_1')
+    expect(txMock.createIssue).toHaveBeenCalledWith(
+      expect.objectContaining({ cycleId: 'cyc_1' })
+    )
+  })
+
+  it('create treats an explicit null cycleId as unassigned', async () => {
+    cyclesRepo.retrieveCycle.mockResolvedValue(null)
+
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'Unassigned cycle issue',
+      cycleId: null,
+    })
+
+    expect(result.error).toBeNull()
+    expect(result.data?.cycleId).toBeNull()
+    expect(txMock.createIssue).toHaveBeenCalledWith(
+      expect.objectContaining({ cycleId: null })
+    )
+    expect(cyclesRepo.retrieveCycle).not.toHaveBeenCalled()
+  })
+
+  it('create returns projects/cycle-not-found for an unknown cycle', async () => {
+    cyclesRepo.retrieveCycle.mockResolvedValue(null)
+
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'Unknown cycle issue',
+      cycleId: 'cyc_missing',
+    })
+
+    expect(result.data).toBeNull()
+    expect(result.error).toEqual({
+      code: 'projects/cycle-not-found',
+      message: 'The cycle could not be found.',
+      httpStatus: 404,
+    })
+    expect(repository.transaction).not.toHaveBeenCalled()
+  })
+
+  it('create returns projects/cycle-not-found when the cycle belongs to another project', async () => {
+    cyclesRepo.retrieveCycle.mockResolvedValue({
+      id: 'cyc_other',
+      tenantId: tenant.id,
+      projectId: 'prj_beta_2',
+    })
+
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'Wrong project cycle issue',
+      cycleId: 'cyc_other',
+    })
+
+    expect(result.data).toBeNull()
+    expect(result.error).toEqual({
+      code: 'projects/cycle-not-found',
+      message: 'The cycle could not be found.',
+      httpStatus: 404,
+    })
+    expect(repository.transaction).not.toHaveBeenCalled()
+  })
+
+  it('create accepts a global cycle with no project for any project', async () => {
+    cyclesRepo.retrieveCycle.mockResolvedValue({
+      id: 'cyc_global',
+      tenantId: tenant.id,
+      projectId: null,
+    })
+
+    const result = await service.create('org_test_1', {
+      projectId: mockProjectRow.id,
+      title: 'Global cycle issue',
+      cycleId: 'cyc_global',
+    })
+
+    expect(result.error).toBeNull()
+    expect(result.data?.cycleId).toBe('cyc_global')
+    expect(txMock.createIssue).toHaveBeenCalledWith(
+      expect.objectContaining({ cycleId: 'cyc_global' })
+    )
+  })
+
+  it('update sets the cycle and persists the new cycleId', async () => {
+    repository.retrieve.mockResolvedValue({ ...mockIssueRow, cycleId: null })
+    cyclesRepo.retrieveCycle.mockResolvedValue({
+      id: 'cyc_1',
+      tenantId: tenant.id,
+      projectId: mockProjectRow.id,
+    })
+
+    const result = await service.update('org_test_1', mockIssueRow.id, {
+      cycleId: 'cyc_1',
+    })
+
+    expect(result.error).toBeNull()
+    expect(result.data?.cycleId).toBe('cyc_1')
+    expect(txMock.updateIssue).toHaveBeenCalledWith(
+      mockIssueRow.id,
+      expect.objectContaining({ cycleId: 'cyc_1' })
+    )
+  })
+
+  it('update clears the cycle when cycleId is null', async () => {
+    repository.retrieve.mockResolvedValue({ ...mockIssueRow, cycleId: 'cyc_9' })
+    cyclesRepo.retrieveCycle.mockResolvedValue(null)
+
+    const result = await service.update('org_test_1', mockIssueRow.id, {
+      cycleId: null,
+    })
+
+    expect(result.error).toBeNull()
+    expect(result.data?.cycleId).toBeNull()
+    expect(txMock.updateIssue).toHaveBeenCalledWith(
+      mockIssueRow.id,
+      expect.objectContaining({ cycleId: null })
+    )
+    expect(cyclesRepo.retrieveCycle).not.toHaveBeenCalled()
+  })
+
+  it('update returns projects/cycle-not-found for an unknown cycle', async () => {
+    repository.retrieve.mockResolvedValue(mockIssueRow)
+    cyclesRepo.retrieveCycle.mockResolvedValue(null)
+
+    const result = await service.update('org_test_1', mockIssueRow.id, {
+      cycleId: 'cyc_missing',
+    })
+
+    expect(result.data).toBeNull()
+    expect(result.error).toEqual({
+      code: 'projects/cycle-not-found',
+      message: 'The cycle could not be found.',
+      httpStatus: 404,
+    })
+    expect(repository.transaction).not.toHaveBeenCalled()
+  })
+
+  it('update returns projects/cycle-not-found when the cycle belongs to another project', async () => {
+    repository.retrieve.mockResolvedValue(mockIssueRow)
+    cyclesRepo.retrieveCycle.mockResolvedValue({
+      id: 'cyc_other',
+      tenantId: tenant.id,
+      projectId: 'prj_beta_2',
+    })
+
+    const result = await service.update('org_test_1', mockIssueRow.id, {
+      cycleId: 'cyc_other',
+    })
+
+    expect(result.data).toBeNull()
+    expect(result.error).toEqual({
+      code: 'projects/cycle-not-found',
+      message: 'The cycle could not be found.',
+      httpStatus: 404,
+    })
+    expect(repository.transaction).not.toHaveBeenCalled()
+  })
+
+  it('update writes a cycle-changed event when the cycle changes', async () => {
+    repository.retrieve.mockResolvedValue({ ...mockIssueRow, cycleId: null })
+    cyclesRepo.retrieveCycle.mockResolvedValue({
+      id: 'cyc_1',
+      tenantId: tenant.id,
+      projectId: mockProjectRow.id,
+    })
+
+    const result = await service.update('org_test_1', mockIssueRow.id, {
+      cycleId: 'cyc_1',
+    })
+
+    expect(result.error).toBeNull()
+    expect(txMock.createEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'cycle-changed',
+        fromValue: null,
+        toValue: 'cyc_1',
+      })
+    )
+  })
+
+  it('update writes no cycle-changed event when the cycle is unchanged', async () => {
+    repository.retrieve.mockResolvedValue({ ...mockIssueRow, cycleId: 'cyc_1' })
+    cyclesRepo.retrieveCycle.mockResolvedValue({
+      id: 'cyc_1',
+      tenantId: tenant.id,
+      projectId: mockProjectRow.id,
+    })
+
+    const result = await service.update('org_test_1', mockIssueRow.id, {
+      cycleId: 'cyc_1',
+    })
+
+    expect(result.error).toBeNull()
+    expect(txMock.createEvent).not.toHaveBeenCalled()
+  })
+
+  it('POST /v1/organizations/:organizationId/issues accepts cycleId and exposes it in the serializer', async () => {
+    cyclesRepo.retrieveCycle.mockResolvedValue({
+      id: 'cyc_1',
+      tenantId: tenant.id,
+      projectId: mockProjectRow.id,
+    })
+
+    const response = await requestJson(
+      'POST',
+      '/v1/organizations/org_test_1/issues',
+      {
+        projectId: mockProjectRow.id,
+        title: 'HTTP cycle issue',
+        cycleId: 'cyc_1',
+      }
+    )
+
+    expect(response.status).toBe(201)
+    expect(response.body.error).toBeNull()
+    expect(response.body.data.object).toBe('projects.issue')
+    expect(response.body.data.cycleId).toBe('cyc_1')
+    expect(response.body.data.taskListId).toBeNull()
   })
 })
