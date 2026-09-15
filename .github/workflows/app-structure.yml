@@ -49,6 +49,12 @@ jobs:
       - name: Structural invariants
         run: pnpm check:structure
 
+      # A function prop from a Server Component to a Client Component builds
+      # green and only fails in a production render, as React error #441.
+      # See .claude/rules/production-render-errors.md.
+      - name: RSC boundary props
+        run: pnpm check:rsc-boundaries
+
       # Every Next app must build transpilePackages from the shared list, or a
       # shared UI package renders as `undefined` in the browser with no build
       # error. See scripts/shared-ui-packages.mjs.
