@@ -108,12 +108,26 @@ describe('ProjectDetail', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders project facts in the summary row', () => {
+  it('renders project facts in the overview', () => {
     render(<ProjectDetail project={makeProject()} issuesHref="/issues" />)
 
+    expect(screen.getByRole('heading', { name: 'Overview' })).toBeInTheDocument()
     expect(screen.getByText('Project lead')).toBeInTheDocument()
     expect(screen.getByText('Target date')).toBeInTheDocument()
     expect(screen.getByText('Members')).toBeInTheDocument()
+    expect(screen.getByText('Customer')).toBeInTheDocument()
+  })
+
+  it('renders a resolved project lead when supplied by the host', () => {
+    render(
+      <ProjectDetail
+        project={makeProject()}
+        issuesHref="/issues"
+        leadLabel="Ana Brown"
+      />
+    )
+
+    expect(screen.getByText('Ana Brown')).toBeInTheDocument()
   })
 
   it('renders a clean empty state for an unassigned project lead', () => {
@@ -127,7 +141,25 @@ describe('ProjectDetail', () => {
     expect(screen.getByText('No lead assigned')).toBeInTheDocument()
   })
 
-  it('renders the project issues table under its section heading', () => {
+  it('renders work overview counts from a complete loaded issue set', () => {
+    render(
+      <ProjectDetail
+        project={makeProject()}
+        issues={[makeIssue()]}
+        issueTotal={1}
+        issuesHasMore={false}
+        issuesHref="/issues"
+      />
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Work overview' })
+    ).toBeInTheDocument()
+    expect(screen.getByText('Open')).toBeInTheDocument()
+    expect(screen.getByText('Completed')).toBeInTheDocument()
+  })
+
+  it('renders the project work table under its section heading', () => {
     render(
       <ProjectDetail
         project={makeProject()}
@@ -136,7 +168,7 @@ describe('ProjectDetail', () => {
       />
     )
 
-    expect(screen.getByRole('heading', { name: 'Issues' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Work' })).toBeInTheDocument()
     expect(screen.getByRole('table')).toBeInTheDocument()
     expect(screen.getAllByText('Set the typography scale')).toHaveLength(2)
   })
@@ -144,8 +176,6 @@ describe('ProjectDetail', () => {
   it('does not render a second back-to-projects control', () => {
     render(<ProjectDetail project={makeProject()} issuesHref="/issues" />)
 
-    // The host owns the back affordance through its own breadcrumb, so the
-    // shared component must not render one in any form.
     expect(screen.queryByRole('link', { name: /back to projects/i })).toBeNull()
     expect(
       screen.queryByRole('button', { name: /back to projects/i })
