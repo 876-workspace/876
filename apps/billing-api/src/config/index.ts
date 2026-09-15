@@ -27,6 +27,7 @@ const booleanish = () =>
 const envSchema = z.object({
   PORT: optionalNumber(4004),
   ENVIRONMENT: optionalString('production'),
+  DELETION_MODE: z.enum(['hard', 'soft']).optional(),
   LOG_LEVEL: optionalString('info'),
   BILLING_DATABASE_URL: optionalString(),
   BILLING_DIRECT_DATABASE_URL: optionalString(),
@@ -163,6 +164,11 @@ function build(env: NodeJS.ProcessEnv) {
     },
     secureFieldKey: value.SECURE_FIELD_KEY,
     isProduction: value.ENVIRONMENT === 'production',
+    deletionMode:
+      value.DELETION_MODE ??
+      (value.ENVIRONMENT === 'production'
+        ? ('soft' as const)
+        : ('hard' as const)),
   })
 }
 

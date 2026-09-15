@@ -95,6 +95,7 @@ const entityPrefixes: Record<string, string> = {
   PaymentIntent: 'pi',
   CustomerLedgerEntry: 'cled',
   LateFeeAssessment: 'lfa',
+  DocumentTemplate: 'dtpl',
 }
 
 export function generateId(prefix: string): string {
