@@ -24,7 +24,7 @@ const createPhaseSchema = z.strictObject({
 export async function POST(request: Request) {
   const auth: ApiContext = await requireApiAccess({
     module: 'projects',
-    permission: 'projects.edit',
+    permission: 'projects.create',
   })
   if (auth.response) return auth.response
 
