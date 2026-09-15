@@ -1,143 +1,24 @@
 'use client'
 
 import Link from 'next/link'
-import { ISSUE_STATUSES, type Issue } from '@876/projects/contracts'
+import type { Issue } from '@876/projects/contracts'
 
+import {
+  createIssueGroups,
+  type IssueGroup,
+  type IssueGrouping,
+} from './issue-grouping'
 import { formatIssuePriority } from './priority-badges'
-import { formatIssueStatus, issueStatusTone } from './status-badges'
+import { issueStatusTone } from './status-badges'
 import { MobileList, MobileListCell, MobileListEmpty } from './mobile-list'
 
-export type IssueBoardGroupBy =
-  | 'status'
-  | 'project'
-  | 'priority'
-  | 'assignee'
-  | 'type'
-  | 'milestone'
+export type IssueBoardGroupBy = IssueGrouping
 
 export type IssueBoardProps = {
   issues: readonly Issue[]
   issuesHref: string
   groupBy?: IssueBoardGroupBy
   userLabels?: Readonly<Record<string, string>>
-}
-
-type IssueGroup = {
-  key: string
-  label: string
-  tone: string
-  issues: Issue[]
-  order: number
-}
-
-const PRIORITY_ORDER = new Map([
-  ['urgent', 0],
-  ['high', 1],
-  ['medium', 2],
-  ['low', 3],
-  ['none', 4],
-])
-
-function issueGroupKey(issue: Issue, groupBy: IssueBoardGroupBy): string {
-  switch (groupBy) {
-    case 'project':
-      return issue.projectId
-    case 'priority':
-      return issue.priority
-    case 'assignee':
-      return issue.assigneeUserId ?? 'unassigned'
-    case 'type':
-      return issue.type?.id ?? issue.typeKey
-    case 'milestone':
-      return issue.milestone?.id ?? 'no-milestone'
-    case 'status':
-    default:
-      return issue.status
-  }
-}
-
-function issueGroupLabel(
-  issue: Issue,
-  groupBy: IssueBoardGroupBy,
-  userLabels: Readonly<Record<string, string>>
-): string {
-  switch (groupBy) {
-    case 'project':
-      return issue.projectKey
-    case 'priority':
-      return formatIssuePriority(issue.priority)
-    case 'assignee':
-      return issue.assigneeUserId
-        ? userLabels[issue.assigneeUserId] ?? issue.assigneeUserId
-        : 'Unassigned'
-    case 'type':
-      return issue.type?.name ?? issue.typeKey
-    case 'milestone':
-      return issue.milestone?.name ?? 'No milestone'
-    case 'status':
-    default:
-      return issue.state?.name ?? formatIssueStatus(issue.status)
-  }
-}
-
-function issueGroupOrder(issue: Issue, groupBy: IssueBoardGroupBy): number {
-  switch (groupBy) {
-    case 'priority':
-      return PRIORITY_ORDER.get(issue.priority) ?? Number.MAX_SAFE_INTEGER
-    case 'status': {
-      const legacyIndex = ISSUE_STATUSES.indexOf(
-        issue.status as (typeof ISSUE_STATUSES)[number]
-      )
-      if (legacyIndex >= 0) return legacyIndex
-      return ISSUE_STATUSES.length + (issue.state?.position ?? 1000)
-    }
-    default:
-      return Number.MAX_SAFE_INTEGER
-  }
-}
-
-function createGroups(
-  issues: readonly Issue[],
-  groupBy: IssueBoardGroupBy,
-  userLabels: Readonly<Record<string, string>>
-): IssueGroup[] {
-  const groups = new Map<string, IssueGroup>()
-
-  if (groupBy === 'status') {
-    ISSUE_STATUSES.forEach((status, order) => {
-      groups.set(status, {
-        key: status,
-        label: formatIssueStatus(status),
-        tone: issueStatusTone(status),
-        issues: [],
-        order,
-      })
-    })
-  }
-
-  for (const issue of issues) {
-    const key = issueGroupKey(issue, groupBy)
-    const existing = groups.get(key)
-    if (existing) {
-      existing.issues.push(issue)
-      if (groupBy === 'status' && issue.state?.name)
-        existing.label = issue.state.name
-      continue
-    }
-
-    groups.set(key, {
-      key,
-      label: issueGroupLabel(issue, groupBy, userLabels),
-      tone: groupBy === 'status' ? issueStatusTone(issue.status) : 'bg-slate-400',
-      issues: [issue],
-      order: issueGroupOrder(issue, groupBy),
-    })
-  }
-
-  return [...groups.values()].sort((left, right) => {
-    if (left.order !== right.order) return left.order - right.order
-    return left.label.localeCompare(right.label)
-  })
 }
 
 export function IssueBoardCard({
@@ -234,7 +115,7 @@ export function IssueBoard({
   groupBy = 'status',
   userLabels = {},
 }: IssueBoardProps) {
-  const groups = createGroups(issues, groupBy, userLabels)
+  const groups = createIssueGroups(issues, groupBy, userLabels, groupBy === 'status')
 
   return (
     <>
@@ -244,7 +125,7 @@ export function IssueBoard({
             <div className="bg-876-canvas/90 sticky top-0 z-10 flex items-center gap-2 px-4 pt-5 pb-1.5 backdrop-blur-xl">
               <span
                 aria-hidden="true"
-                className={`size-2.5 rounded-full ${group.tone}`}
+                className={`size-2.5 rounded-full ${groupBy === 'status' ? issueStatusTone(group.key) : 'bg-slate-400'}`}
               />
               <span className="text-[0.9375rem] font-semibold">
                 {group.label}
