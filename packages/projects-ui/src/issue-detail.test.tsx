@@ -45,6 +45,8 @@ function makeIssue(overrides?: Partial<Issue>): Issue {
     assigneeUserId: 'user_ana',
     creatorUserId: 'user_ben',
     parentIssueId: null,
+    taskListId: null,
+    cycleId: null,
     estimate: 3,
     dueDate: 1720000000,
     position: 1,

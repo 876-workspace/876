@@ -41,6 +41,8 @@ function makeIssue(overrides: Partial<Issue> = {}): Issue {
     assigneeUserId: 'user_ana',
     creatorUserId: 'user_ben',
     parentIssueId: null,
+    taskListId: null,
+    cycleId: null,
     estimate: 3,
     dueDate: null,
     position: 0,
@@ -64,7 +66,9 @@ describe('IssueBoard grouping', () => {
       .parentElement?.parentElement
 
     expect(customColumn).not.toBeNull()
-    expect(within(customColumn as HTMLElement).getByText('Review the release')).toBeInTheDocument()
+    expect(
+      within(customColumn as HTMLElement).getByText('Review the release')
+    ).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Backlog' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Done' })).toBeInTheDocument()
   })
@@ -83,6 +87,8 @@ describe('IssueBoard grouping', () => {
     const group = heading.parentElement?.parentElement
 
     expect(group).not.toBeNull()
-    expect(within(group as HTMLElement).getByText('Review the release')).toBeInTheDocument()
+    expect(
+      within(group as HTMLElement).getByText('Review the release')
+    ).toBeInTheDocument()
   })
 })

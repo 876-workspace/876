@@ -57,6 +57,8 @@ function makeIssue(): Issue {
     assigneeUserId: null,
     creatorUserId: null,
     parentIssueId: null,
+    taskListId: null,
+    cycleId: null,
     estimate: null,
     dueDate: null,
     position: 0,
@@ -111,7 +113,9 @@ describe('ProjectDetail', () => {
   it('renders project facts in the overview', () => {
     render(<ProjectDetail project={makeProject()} issuesHref="/issues" />)
 
-    expect(screen.getByRole('heading', { name: 'Overview' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Overview' })
+    ).toBeInTheDocument()
     expect(screen.getByText('Project lead')).toBeInTheDocument()
     expect(screen.getByText('Target date')).toBeInTheDocument()
     expect(screen.getByText('Members')).toBeInTheDocument()
