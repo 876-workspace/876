@@ -131,7 +131,11 @@ export async function listMilestoneCustomFieldValues(
   milestoneId: string
 ) {
   return prisma.milestoneCustomFieldValue.findMany({
-    where: { tenantId, milestoneId },
+    where: {
+      tenantId,
+      milestoneId,
+      field: { is: { archivedAt: null } },
+    },
     include: { field: true },
     orderBy: { field: { position: 'asc' } },
   })
