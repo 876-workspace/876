@@ -42,18 +42,28 @@ export async function IssueDetailData({
     parent: issueResult.data.id,
     limit: 100,
   })
-  const [eventsResult, fieldsResult, membersResult, subIssuesResult] =
-    await Promise.all([
-      eventsPromise,
-      fieldsPromise,
-      membersPromise,
-      subIssuesPromise,
-    ])
+  const parentPromise = issueResult.data.parentIssueId
+    ? projects.issues.retrieve(orgId, issueResult.data.parentIssueId)
+    : Promise.resolve({ data: null, error: null })
+  const [
+    eventsResult,
+    fieldsResult,
+    membersResult,
+    subIssuesResult,
+    parentResult,
+  ] = await Promise.all([
+    eventsPromise,
+    fieldsPromise,
+    membersPromise,
+    subIssuesPromise,
+    parentPromise,
+  ])
   const enrichmentError =
     eventsResult.error ??
     fieldsResult.error ??
     membersResult.error ??
-    subIssuesResult.error
+    subIssuesResult.error ??
+    parentResult.error
 
   return (
     <>
@@ -68,6 +78,7 @@ export async function IssueDetailData({
         <IssueDetail
           issue={issueResult.data}
           events={eventsResult.data?.data ?? []}
+          parentIssue={parentResult.data}
           subIssues={subIssuesResult.data?.data ?? []}
           customFields={fieldsResult.data?.data ?? []}
           userLabels={membersResult.labels}
