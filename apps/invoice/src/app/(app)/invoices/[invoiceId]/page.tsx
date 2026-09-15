@@ -44,9 +44,10 @@ export default async function InvoiceDetailPage({ params }: Props) {
     getBilling(context.orgId),
     getPlatformClient(),
   ])
-  const [result, organization] = await Promise.all([
+  const [result, organization, resolvedTemplate] = await Promise.all([
     billing.invoices.retrieve(invoiceId),
     platform.organizations.retrieve({ id: context.orgId }),
+    billing.documentTemplates.resolve('invoice'),
   ])
   if (result.error?.code === 'invoice/not-found') notFound()
   if (result.error) {
@@ -84,6 +85,19 @@ export default async function InvoiceDetailPage({ params }: Props) {
   const seller = organization.data
     ? invoiceSeller(organization.data, context.orgName)
     : { name: context.orgName, countryLabel: null }
+
+  // A template outage must never block an invoice: without a resolved
+  // template the panel falls back to its built-in defaults.
+  const templateProps =
+    resolvedTemplate.error || !resolvedTemplate.data
+      ? {}
+      : {
+          template: {
+            layout: resolvedTemplate.data.layout,
+            settings: resolvedTemplate.data.settings,
+          },
+          branding: resolvedTemplate.data.branding,
+        }
 
   return (
     <>
@@ -160,6 +174,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
             <InvoiceDocumentPanel
               {...invoiceDocumentData(invoice, formatDate, formatMoney)}
               seller={seller}
+              {...templateProps}
               footer={
                 <>
                   <p>
