@@ -28,6 +28,10 @@
       "types": "./src/auth/*.ts",
       "default": "./src/auth/*.ts"
     },
+    "./branding": {
+      "types": "./src/lib/branding/index.ts",
+      "default": "./src/lib/branding/index.ts"
+    },
     "./client": {
       "types": "./src/client/index.ts",
       "default": "./src/client/index.ts"
@@ -46,6 +50,10 @@
     "./db": {
       "types": "./src/db/worker-client.ts",
       "default": "./src/db/worker-client.ts"
+    },
+    "./document-templates": {
+      "types": "./src/lib/document-templates/index.ts",
+      "default": "./src/lib/document-templates/index.ts"
     },
     "./errors": {
       "types": "./src/lib/errors/index.ts",
