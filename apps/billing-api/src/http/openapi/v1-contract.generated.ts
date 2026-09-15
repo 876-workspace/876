@@ -871,6 +871,83 @@ export const v1OperationMetadata = {
     summary: 'Create a promotion code',
     tags: ['Discounts'],
   },
+  'GET /document-templates': {
+    summary: 'List document templates',
+    tags: ['Document templates'],
+  },
+  'POST /document-templates': {
+    summary: 'Create a document template',
+    tags: ['Document templates'],
+  },
+  'GET /document-templates/resolved': {
+    summary: 'Resolve a document template',
+    tags: ['Document templates'],
+  },
+  'GET /document-templates/{templateId}': {
+    summary: 'Retrieve a document template',
+    tags: ['Document templates'],
+  },
+  'PATCH /document-templates/{templateId}': {
+    summary: 'Update a document template',
+    tags: ['Document templates'],
+  },
+  'DELETE /document-templates/{templateId}': {
+    summary: 'Delete a document template',
+    tags: ['Document templates'],
+  },
+  'POST /document-templates/{templateId}/set-default': {
+    summary: 'Set the default document template',
+    tags: ['Document templates'],
+  },
+  'GET /branding': {
+    summary: 'Retrieve branding',
+    tags: ['Document templates'],
+  },
+  'PATCH /branding': {
+    summary: 'Update branding',
+    tags: ['Document templates'],
+  },
+  'GET /integrations/organizations/{organizationId}/document-templates': {
+    summary: 'List organization document templates',
+    tags: ['Document templates'],
+  },
+  'POST /integrations/organizations/{organizationId}/document-templates': {
+    summary: 'Create an organization document template',
+    tags: ['Document templates'],
+  },
+  'GET /integrations/organizations/{organizationId}/document-templates/resolved':
+    {
+      summary: 'Resolve an organization document template',
+      tags: ['Document templates'],
+    },
+  'GET /integrations/organizations/{organizationId}/document-templates/{templateId}':
+    {
+      summary: 'Retrieve an organization document template',
+      tags: ['Document templates'],
+    },
+  'PATCH /integrations/organizations/{organizationId}/document-templates/{templateId}':
+    {
+      summary: 'Update an organization document template',
+      tags: ['Document templates'],
+    },
+  'DELETE /integrations/organizations/{organizationId}/document-templates/{templateId}':
+    {
+      summary: 'Delete an organization document template',
+      tags: ['Document templates'],
+    },
+  'POST /integrations/organizations/{organizationId}/document-templates/{templateId}/set-default':
+    {
+      summary: 'Set an organization default document template',
+      tags: ['Document templates'],
+    },
+  'GET /integrations/organizations/{organizationId}/branding': {
+    summary: 'Retrieve organization branding',
+    tags: ['Document templates'],
+  },
+  'PATCH /integrations/organizations/{organizationId}/branding': {
+    summary: 'Update organization branding',
+    tags: ['Document templates'],
+  },
   'GET /quotes': {
     operationId: 'billing-billing_get_quotes',
     summary: 'Billing GET /quotes',
@@ -26276,6 +26353,21028 @@ export const v1OperationContracts = {
               },
               required: ['data', 'error'],
               type: 'object',
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /document-templates': {
+    tags: ['Document templates'],
+    summary: 'List document templates',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'documentType',
+        schema: {
+          type: 'string',
+          enum: [
+            'invoice',
+            'quote',
+            'sales-receipt',
+            'credit-note',
+            'payment-receipt',
+          ],
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'document-template',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          documentType: {
+                            type: 'string',
+                            enum: [
+                              'invoice',
+                              'quote',
+                              'sales-receipt',
+                              'credit-note',
+                              'payment-receipt',
+                            ],
+                          },
+                          name: {
+                            type: 'string',
+                          },
+                          layout: {
+                            type: 'string',
+                            enum: [
+                              'standard',
+                              'european',
+                              'spreadsheet',
+                              'elegant',
+                              'retail',
+                            ],
+                          },
+                          isDefault: {
+                            type: 'boolean',
+                          },
+                          settings: {
+                            type: 'object',
+                            properties: {
+                              general: {
+                                type: 'object',
+                                properties: {
+                                  paperSize: {
+                                    type: 'string',
+                                    enum: ['a4', 'letter', 'receipt-80mm'],
+                                  },
+                                  orientation: {
+                                    type: 'string',
+                                    enum: ['portrait', 'landscape'],
+                                  },
+                                  margins: {
+                                    type: 'object',
+                                    properties: {
+                                      top: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                      bottom: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                      left: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                      right: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                    },
+                                    required: [
+                                      'top',
+                                      'bottom',
+                                      'left',
+                                      'right',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  fontFamily: {
+                                    type: 'string',
+                                    enum: [
+                                      'inter',
+                                      'roboto',
+                                      'open-sans',
+                                      'lato',
+                                      'noto-sans',
+                                      'merriweather',
+                                      'source-serif',
+                                      'ubuntu-mono',
+                                    ],
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  labelColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundImageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  backgroundImagePosition: {
+                                    type: 'string',
+                                    enum: [
+                                      'center',
+                                      'top-left',
+                                      'top-right',
+                                      'bottom-left',
+                                      'bottom-right',
+                                      'tile',
+                                    ],
+                                  },
+                                  accentColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  includePaymentStub: {
+                                    type: 'boolean',
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              header: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  backgroundImageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  content: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                  firstPageOnly: {
+                                    type: 'boolean',
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              footer: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  backgroundImageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  content: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                  showPageNumber: {
+                                    type: 'boolean',
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              organization: {
+                                type: 'object',
+                                properties: {
+                                  showLogo: {
+                                    type: 'boolean',
+                                  },
+                                  logoHeight: {
+                                    type: 'integer',
+                                    minimum: 24,
+                                    maximum: 240,
+                                  },
+                                  showName: {
+                                    type: 'boolean',
+                                  },
+                                  name: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                  showAddress: {
+                                    type: 'boolean',
+                                  },
+                                  addressFormat: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              customer: {
+                                type: 'object',
+                                properties: {
+                                  name: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                  showBillTo: {
+                                    type: 'boolean',
+                                  },
+                                  billToLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  billingAddressFormat: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                  showShipTo: {
+                                    type: 'boolean',
+                                  },
+                                  shipToLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  shippingAddressFormat: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              documentDetails: {
+                                type: 'object',
+                                properties: {
+                                  showTitle: {
+                                    type: 'boolean',
+                                  },
+                                  title: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  titleStyle: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                  fields: {
+                                    maxItems: 20,
+                                    type: 'array',
+                                    items: {
+                                      type: 'object',
+                                      properties: {
+                                        key: {
+                                          type: 'string',
+                                          enum: [
+                                            'number',
+                                            'date',
+                                            'due-date',
+                                            'expiry-date',
+                                            'terms',
+                                            'reference',
+                                            'salesperson',
+                                            'subject',
+                                            'payment-mode',
+                                          ],
+                                        },
+                                        show: {
+                                          type: 'boolean',
+                                        },
+                                        label: {
+                                          type: 'string',
+                                          maxLength: 60,
+                                        },
+                                      },
+                                      required: ['key', 'show', 'label'],
+                                      additionalProperties: false,
+                                    },
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              table: {
+                                type: 'object',
+                                properties: {
+                                  columns: {
+                                    maxItems: 20,
+                                    type: 'array',
+                                    items: {
+                                      type: 'object',
+                                      properties: {
+                                        key: {
+                                          type: 'string',
+                                          enum: [
+                                            'line-number',
+                                            'item',
+                                            'quantity',
+                                            'unit',
+                                            'rate',
+                                            'discount',
+                                            'tax',
+                                            'amount',
+                                          ],
+                                        },
+                                        show: {
+                                          type: 'boolean',
+                                        },
+                                        label: {
+                                          type: 'string',
+                                          maxLength: 60,
+                                        },
+                                        widthPercent: {
+                                          anyOf: [
+                                            {
+                                              type: 'integer',
+                                              minimum: 4,
+                                              maximum: 80,
+                                            },
+                                            {
+                                              type: 'null',
+                                            },
+                                          ],
+                                        },
+                                      },
+                                      required: [
+                                        'key',
+                                        'show',
+                                        'label',
+                                        'widthPercent',
+                                      ],
+                                      additionalProperties: false,
+                                    },
+                                  },
+                                  showItemDescription: {
+                                    type: 'boolean',
+                                  },
+                                  showBorders: {
+                                    type: 'boolean',
+                                  },
+                                  header: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  row: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  description: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              totals: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  showPaymentDetails: {
+                                    type: 'boolean',
+                                  },
+                                  showAmountInWords: {
+                                    type: 'boolean',
+                                  },
+                                  showCurrencySymbol: {
+                                    type: 'boolean',
+                                  },
+                                  showQuantityTotal: {
+                                    type: 'boolean',
+                                  },
+                                  showTaxSummary: {
+                                    type: 'boolean',
+                                  },
+                                  subtotalLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  totalLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  balanceDueLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  totalStyle: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  balanceDueStyle: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              otherDetails: {
+                                type: 'object',
+                                properties: {
+                                  notes: {
+                                    type: 'object',
+                                    properties: {
+                                      show: {
+                                        type: 'boolean',
+                                      },
+                                      label: {
+                                        type: 'string',
+                                        maxLength: 60,
+                                      },
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                    },
+                                    required: ['show', 'label', 'fontSize'],
+                                    additionalProperties: false,
+                                  },
+                                  terms: {
+                                    type: 'object',
+                                    properties: {
+                                      show: {
+                                        type: 'boolean',
+                                      },
+                                      label: {
+                                        type: 'string',
+                                        maxLength: 60,
+                                      },
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                    },
+                                    required: ['show', 'label', 'fontSize'],
+                                    additionalProperties: false,
+                                  },
+                                  showPaymentOptions: {
+                                    type: 'boolean',
+                                  },
+                                  showBankDetails: {
+                                    type: 'boolean',
+                                  },
+                                  showQrCode: {
+                                    type: 'boolean',
+                                  },
+                                  signature: {
+                                    type: 'object',
+                                    properties: {
+                                      show: {
+                                        type: 'boolean',
+                                      },
+                                      label: {
+                                        type: 'string',
+                                        maxLength: 60,
+                                      },
+                                      imageFileId: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^file_[A-Za-z0-9]+$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: ['show', 'label', 'imageFileId'],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          resolvedSettings: {
+                            type: 'object',
+                            properties: {
+                              general: {
+                                type: 'object',
+                                properties: {
+                                  paperSize: {
+                                    type: 'string',
+                                    enum: ['a4', 'letter', 'receipt-80mm'],
+                                  },
+                                  orientation: {
+                                    type: 'string',
+                                    enum: ['portrait', 'landscape'],
+                                  },
+                                  margins: {
+                                    type: 'object',
+                                    properties: {
+                                      top: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                      bottom: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                      left: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                      right: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                    },
+                                    required: [
+                                      'top',
+                                      'bottom',
+                                      'left',
+                                      'right',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  fontFamily: {
+                                    type: 'string',
+                                    enum: [
+                                      'inter',
+                                      'roboto',
+                                      'open-sans',
+                                      'lato',
+                                      'noto-sans',
+                                      'merriweather',
+                                      'source-serif',
+                                      'ubuntu-mono',
+                                    ],
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  labelColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundImageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  backgroundImagePosition: {
+                                    type: 'string',
+                                    enum: [
+                                      'center',
+                                      'top-left',
+                                      'top-right',
+                                      'bottom-left',
+                                      'bottom-right',
+                                      'tile',
+                                    ],
+                                  },
+                                  accentColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  includePaymentStub: {
+                                    type: 'boolean',
+                                  },
+                                },
+                                required: [
+                                  'paperSize',
+                                  'orientation',
+                                  'margins',
+                                  'fontFamily',
+                                  'fontSize',
+                                  'fontColor',
+                                  'labelColor',
+                                  'backgroundColor',
+                                  'backgroundImageFileId',
+                                  'backgroundImagePosition',
+                                  'accentColor',
+                                  'includePaymentStub',
+                                ],
+                                additionalProperties: false,
+                              },
+                              header: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  backgroundImageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  content: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                  firstPageOnly: {
+                                    type: 'boolean',
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                  'show',
+                                  'backgroundImageFileId',
+                                  'content',
+                                  'firstPageOnly',
+                                ],
+                                additionalProperties: false,
+                              },
+                              footer: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  backgroundImageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  content: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                  showPageNumber: {
+                                    type: 'boolean',
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                  'show',
+                                  'backgroundImageFileId',
+                                  'content',
+                                  'showPageNumber',
+                                ],
+                                additionalProperties: false,
+                              },
+                              organization: {
+                                type: 'object',
+                                properties: {
+                                  showLogo: {
+                                    type: 'boolean',
+                                  },
+                                  logoHeight: {
+                                    type: 'integer',
+                                    minimum: 24,
+                                    maximum: 240,
+                                  },
+                                  showName: {
+                                    type: 'boolean',
+                                  },
+                                  name: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                  showAddress: {
+                                    type: 'boolean',
+                                  },
+                                  addressFormat: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                },
+                                required: [
+                                  'showLogo',
+                                  'logoHeight',
+                                  'showName',
+                                  'name',
+                                  'showAddress',
+                                  'addressFormat',
+                                ],
+                                additionalProperties: false,
+                              },
+                              customer: {
+                                type: 'object',
+                                properties: {
+                                  name: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                  showBillTo: {
+                                    type: 'boolean',
+                                  },
+                                  billToLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  billingAddressFormat: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                  showShipTo: {
+                                    type: 'boolean',
+                                  },
+                                  shipToLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  shippingAddressFormat: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                },
+                                required: [
+                                  'name',
+                                  'showBillTo',
+                                  'billToLabel',
+                                  'billingAddressFormat',
+                                  'showShipTo',
+                                  'shipToLabel',
+                                  'shippingAddressFormat',
+                                ],
+                                additionalProperties: false,
+                              },
+                              documentDetails: {
+                                type: 'object',
+                                properties: {
+                                  showTitle: {
+                                    type: 'boolean',
+                                  },
+                                  title: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  titleStyle: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                  fields: {
+                                    maxItems: 20,
+                                    type: 'array',
+                                    items: {
+                                      type: 'object',
+                                      properties: {
+                                        key: {
+                                          type: 'string',
+                                          enum: [
+                                            'number',
+                                            'date',
+                                            'due-date',
+                                            'expiry-date',
+                                            'terms',
+                                            'reference',
+                                            'salesperson',
+                                            'subject',
+                                            'payment-mode',
+                                          ],
+                                        },
+                                        show: {
+                                          type: 'boolean',
+                                        },
+                                        label: {
+                                          type: 'string',
+                                          maxLength: 60,
+                                        },
+                                      },
+                                      required: ['key', 'show', 'label'],
+                                      additionalProperties: false,
+                                    },
+                                  },
+                                },
+                                required: [
+                                  'showTitle',
+                                  'title',
+                                  'titleStyle',
+                                  'fields',
+                                ],
+                                additionalProperties: false,
+                              },
+                              table: {
+                                type: 'object',
+                                properties: {
+                                  columns: {
+                                    maxItems: 20,
+                                    type: 'array',
+                                    items: {
+                                      type: 'object',
+                                      properties: {
+                                        key: {
+                                          type: 'string',
+                                          enum: [
+                                            'line-number',
+                                            'item',
+                                            'quantity',
+                                            'unit',
+                                            'rate',
+                                            'discount',
+                                            'tax',
+                                            'amount',
+                                          ],
+                                        },
+                                        show: {
+                                          type: 'boolean',
+                                        },
+                                        label: {
+                                          type: 'string',
+                                          maxLength: 60,
+                                        },
+                                        widthPercent: {
+                                          anyOf: [
+                                            {
+                                              type: 'integer',
+                                              minimum: 4,
+                                              maximum: 80,
+                                            },
+                                            {
+                                              type: 'null',
+                                            },
+                                          ],
+                                        },
+                                      },
+                                      required: [
+                                        'key',
+                                        'show',
+                                        'label',
+                                        'widthPercent',
+                                      ],
+                                      additionalProperties: false,
+                                    },
+                                  },
+                                  showItemDescription: {
+                                    type: 'boolean',
+                                  },
+                                  showBorders: {
+                                    type: 'boolean',
+                                  },
+                                  header: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  row: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  description: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                required: [
+                                  'columns',
+                                  'showItemDescription',
+                                  'showBorders',
+                                  'header',
+                                  'row',
+                                  'description',
+                                ],
+                                additionalProperties: false,
+                              },
+                              totals: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  showPaymentDetails: {
+                                    type: 'boolean',
+                                  },
+                                  showAmountInWords: {
+                                    type: 'boolean',
+                                  },
+                                  showCurrencySymbol: {
+                                    type: 'boolean',
+                                  },
+                                  showQuantityTotal: {
+                                    type: 'boolean',
+                                  },
+                                  showTaxSummary: {
+                                    type: 'boolean',
+                                  },
+                                  subtotalLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  totalLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  balanceDueLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  totalStyle: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  balanceDueStyle: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                required: [
+                                  'show',
+                                  'showPaymentDetails',
+                                  'showAmountInWords',
+                                  'showCurrencySymbol',
+                                  'showQuantityTotal',
+                                  'showTaxSummary',
+                                  'subtotalLabel',
+                                  'totalLabel',
+                                  'balanceDueLabel',
+                                  'totalStyle',
+                                  'balanceDueStyle',
+                                ],
+                                additionalProperties: false,
+                              },
+                              otherDetails: {
+                                type: 'object',
+                                properties: {
+                                  notes: {
+                                    type: 'object',
+                                    properties: {
+                                      show: {
+                                        type: 'boolean',
+                                      },
+                                      label: {
+                                        type: 'string',
+                                        maxLength: 60,
+                                      },
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                    },
+                                    required: ['show', 'label', 'fontSize'],
+                                    additionalProperties: false,
+                                  },
+                                  terms: {
+                                    type: 'object',
+                                    properties: {
+                                      show: {
+                                        type: 'boolean',
+                                      },
+                                      label: {
+                                        type: 'string',
+                                        maxLength: 60,
+                                      },
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                    },
+                                    required: ['show', 'label', 'fontSize'],
+                                    additionalProperties: false,
+                                  },
+                                  showPaymentOptions: {
+                                    type: 'boolean',
+                                  },
+                                  showBankDetails: {
+                                    type: 'boolean',
+                                  },
+                                  showQrCode: {
+                                    type: 'boolean',
+                                  },
+                                  signature: {
+                                    type: 'object',
+                                    properties: {
+                                      show: {
+                                        type: 'boolean',
+                                      },
+                                      label: {
+                                        type: 'string',
+                                        maxLength: 60,
+                                      },
+                                      imageFileId: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^file_[A-Za-z0-9]+$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: ['show', 'label', 'imageFileId'],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                required: [
+                                  'notes',
+                                  'terms',
+                                  'showPaymentOptions',
+                                  'showBankDetails',
+                                  'showQrCode',
+                                  'signature',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'general',
+                              'header',
+                              'footer',
+                              'organization',
+                              'customer',
+                              'documentDetails',
+                              'table',
+                              'totals',
+                              'otherDetails',
+                            ],
+                            additionalProperties: false,
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'documentType',
+                          'name',
+                          'layout',
+                          'isDefault',
+                          'settings',
+                          'resolvedSettings',
+                          'createdAt',
+                          'updatedAt',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /document-templates': {
+    tags: ['Document templates'],
+    summary: 'Create a document template',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              documentType: {
+                type: 'string',
+                enum: [
+                  'invoice',
+                  'quote',
+                  'sales-receipt',
+                  'credit-note',
+                  'payment-receipt',
+                ],
+              },
+              name: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 80,
+              },
+              layout: {
+                type: 'string',
+                enum: [
+                  'standard',
+                  'european',
+                  'spreadsheet',
+                  'elegant',
+                  'retail',
+                ],
+              },
+              settings: {
+                default: {},
+                type: 'object',
+                properties: {
+                  general: {
+                    type: 'object',
+                    properties: {
+                      paperSize: {
+                        type: 'string',
+                        enum: ['a4', 'letter', 'receipt-80mm'],
+                      },
+                      orientation: {
+                        type: 'string',
+                        enum: ['portrait', 'landscape'],
+                      },
+                      margins: {
+                        type: 'object',
+                        properties: {
+                          top: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 2,
+                          },
+                          bottom: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 2,
+                          },
+                          left: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 2,
+                          },
+                          right: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 2,
+                          },
+                        },
+                        required: ['top', 'bottom', 'left', 'right'],
+                        additionalProperties: false,
+                      },
+                      fontFamily: {
+                        type: 'string',
+                        enum: [
+                          'inter',
+                          'roboto',
+                          'open-sans',
+                          'lato',
+                          'noto-sans',
+                          'merriweather',
+                          'source-serif',
+                          'ubuntu-mono',
+                        ],
+                      },
+                      fontSize: {
+                        type: 'integer',
+                        minimum: 6,
+                        maximum: 36,
+                      },
+                      fontColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      labelColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      backgroundColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      backgroundImageFileId: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^file_[A-Za-z0-9]+$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      backgroundImagePosition: {
+                        type: 'string',
+                        enum: [
+                          'center',
+                          'top-left',
+                          'top-right',
+                          'bottom-left',
+                          'bottom-right',
+                          'tile',
+                        ],
+                      },
+                      accentColor: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      includePaymentStub: {
+                        type: 'boolean',
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  header: {
+                    type: 'object',
+                    properties: {
+                      fontSize: {
+                        type: 'integer',
+                        minimum: 6,
+                        maximum: 36,
+                      },
+                      fontColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      backgroundColor: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      show: {
+                        type: 'boolean',
+                      },
+                      backgroundImageFileId: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^file_[A-Za-z0-9]+$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      content: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                      firstPageOnly: {
+                        type: 'boolean',
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  footer: {
+                    type: 'object',
+                    properties: {
+                      fontSize: {
+                        type: 'integer',
+                        minimum: 6,
+                        maximum: 36,
+                      },
+                      fontColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      backgroundColor: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      show: {
+                        type: 'boolean',
+                      },
+                      backgroundImageFileId: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^file_[A-Za-z0-9]+$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      content: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                      showPageNumber: {
+                        type: 'boolean',
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  organization: {
+                    type: 'object',
+                    properties: {
+                      showLogo: {
+                        type: 'boolean',
+                      },
+                      logoHeight: {
+                        type: 'integer',
+                        minimum: 24,
+                        maximum: 240,
+                      },
+                      showName: {
+                        type: 'boolean',
+                      },
+                      name: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                        },
+                        required: ['fontSize', 'fontColor'],
+                        additionalProperties: false,
+                      },
+                      showAddress: {
+                        type: 'boolean',
+                      },
+                      addressFormat: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  customer: {
+                    type: 'object',
+                    properties: {
+                      name: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                        },
+                        required: ['fontSize', 'fontColor'],
+                        additionalProperties: false,
+                      },
+                      showBillTo: {
+                        type: 'boolean',
+                      },
+                      billToLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      billingAddressFormat: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                      showShipTo: {
+                        type: 'boolean',
+                      },
+                      shipToLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      shippingAddressFormat: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  documentDetails: {
+                    type: 'object',
+                    properties: {
+                      showTitle: {
+                        type: 'boolean',
+                      },
+                      title: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      titleStyle: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                        },
+                        required: ['fontSize', 'fontColor'],
+                        additionalProperties: false,
+                      },
+                      fields: {
+                        maxItems: 20,
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            key: {
+                              type: 'string',
+                              enum: [
+                                'number',
+                                'date',
+                                'due-date',
+                                'expiry-date',
+                                'terms',
+                                'reference',
+                                'salesperson',
+                                'subject',
+                                'payment-mode',
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            label: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                          },
+                          required: ['key', 'show', 'label'],
+                          additionalProperties: false,
+                        },
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  table: {
+                    type: 'object',
+                    properties: {
+                      columns: {
+                        maxItems: 20,
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            key: {
+                              type: 'string',
+                              enum: [
+                                'line-number',
+                                'item',
+                                'quantity',
+                                'unit',
+                                'rate',
+                                'discount',
+                                'tax',
+                                'amount',
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            label: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            widthPercent: {
+                              anyOf: [
+                                {
+                                  type: 'integer',
+                                  minimum: 4,
+                                  maximum: 80,
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                          },
+                          required: ['key', 'show', 'label', 'widthPercent'],
+                          additionalProperties: false,
+                        },
+                      },
+                      showItemDescription: {
+                        type: 'boolean',
+                      },
+                      showBorders: {
+                        type: 'boolean',
+                      },
+                      header: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          backgroundColor: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['fontSize', 'fontColor', 'backgroundColor'],
+                        additionalProperties: false,
+                      },
+                      row: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          backgroundColor: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['fontSize', 'fontColor', 'backgroundColor'],
+                        additionalProperties: false,
+                      },
+                      description: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                        },
+                        required: ['fontSize', 'fontColor'],
+                        additionalProperties: false,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  totals: {
+                    type: 'object',
+                    properties: {
+                      show: {
+                        type: 'boolean',
+                      },
+                      showPaymentDetails: {
+                        type: 'boolean',
+                      },
+                      showAmountInWords: {
+                        type: 'boolean',
+                      },
+                      showCurrencySymbol: {
+                        type: 'boolean',
+                      },
+                      showQuantityTotal: {
+                        type: 'boolean',
+                      },
+                      showTaxSummary: {
+                        type: 'boolean',
+                      },
+                      subtotalLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      totalLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      balanceDueLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      totalStyle: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          backgroundColor: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['fontSize', 'fontColor', 'backgroundColor'],
+                        additionalProperties: false,
+                      },
+                      balanceDueStyle: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          backgroundColor: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['fontSize', 'fontColor', 'backgroundColor'],
+                        additionalProperties: false,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  otherDetails: {
+                    type: 'object',
+                    properties: {
+                      notes: {
+                        type: 'object',
+                        properties: {
+                          show: {
+                            type: 'boolean',
+                          },
+                          label: {
+                            type: 'string',
+                            maxLength: 60,
+                          },
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                        },
+                        required: ['show', 'label', 'fontSize'],
+                        additionalProperties: false,
+                      },
+                      terms: {
+                        type: 'object',
+                        properties: {
+                          show: {
+                            type: 'boolean',
+                          },
+                          label: {
+                            type: 'string',
+                            maxLength: 60,
+                          },
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                        },
+                        required: ['show', 'label', 'fontSize'],
+                        additionalProperties: false,
+                      },
+                      showPaymentOptions: {
+                        type: 'boolean',
+                      },
+                      showBankDetails: {
+                        type: 'boolean',
+                      },
+                      showQrCode: {
+                        type: 'boolean',
+                      },
+                      signature: {
+                        type: 'object',
+                        properties: {
+                          show: {
+                            type: 'boolean',
+                          },
+                          label: {
+                            type: 'string',
+                            maxLength: 60,
+                          },
+                          imageFileId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^file_[A-Za-z0-9]+$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['show', 'label', 'imageFileId'],
+                        additionalProperties: false,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                },
+                additionalProperties: false,
+              },
+              isDefault: {
+                default: false,
+                type: 'boolean',
+              },
+            },
+            required: ['documentType', 'name', 'layout'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'document-template',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    documentType: {
+                      type: 'string',
+                      enum: [
+                        'invoice',
+                        'quote',
+                        'sales-receipt',
+                        'credit-note',
+                        'payment-receipt',
+                      ],
+                    },
+                    name: {
+                      type: 'string',
+                    },
+                    layout: {
+                      type: 'string',
+                      enum: [
+                        'standard',
+                        'european',
+                        'spreadsheet',
+                        'elegant',
+                        'retail',
+                      ],
+                    },
+                    isDefault: {
+                      type: 'boolean',
+                    },
+                    settings: {
+                      type: 'object',
+                      properties: {
+                        general: {
+                          type: 'object',
+                          properties: {
+                            paperSize: {
+                              type: 'string',
+                              enum: ['a4', 'letter', 'receipt-80mm'],
+                            },
+                            orientation: {
+                              type: 'string',
+                              enum: ['portrait', 'landscape'],
+                            },
+                            margins: {
+                              type: 'object',
+                              properties: {
+                                top: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                bottom: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                left: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                right: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                              },
+                              required: ['top', 'bottom', 'left', 'right'],
+                              additionalProperties: false,
+                            },
+                            fontFamily: {
+                              type: 'string',
+                              enum: [
+                                'inter',
+                                'roboto',
+                                'open-sans',
+                                'lato',
+                                'noto-sans',
+                                'merriweather',
+                                'source-serif',
+                                'ubuntu-mono',
+                              ],
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            labelColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            backgroundImagePosition: {
+                              type: 'string',
+                              enum: [
+                                'center',
+                                'top-left',
+                                'top-right',
+                                'bottom-left',
+                                'bottom-right',
+                                'tile',
+                              ],
+                            },
+                            accentColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            includePaymentStub: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        header: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            firstPageOnly: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        footer: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showPageNumber: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        organization: {
+                          type: 'object',
+                          properties: {
+                            showLogo: {
+                              type: 'boolean',
+                            },
+                            logoHeight: {
+                              type: 'integer',
+                              minimum: 24,
+                              maximum: 240,
+                            },
+                            showName: {
+                              type: 'boolean',
+                            },
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showAddress: {
+                              type: 'boolean',
+                            },
+                            addressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        customer: {
+                          type: 'object',
+                          properties: {
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showBillTo: {
+                              type: 'boolean',
+                            },
+                            billToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            billingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showShipTo: {
+                              type: 'boolean',
+                            },
+                            shipToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            shippingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        documentDetails: {
+                          type: 'object',
+                          properties: {
+                            showTitle: {
+                              type: 'boolean',
+                            },
+                            title: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            titleStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            fields: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'number',
+                                      'date',
+                                      'due-date',
+                                      'expiry-date',
+                                      'terms',
+                                      'reference',
+                                      'salesperson',
+                                      'subject',
+                                      'payment-mode',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                },
+                                required: ['key', 'show', 'label'],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        table: {
+                          type: 'object',
+                          properties: {
+                            columns: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'line-number',
+                                      'item',
+                                      'quantity',
+                                      'unit',
+                                      'rate',
+                                      'discount',
+                                      'tax',
+                                      'amount',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  widthPercent: {
+                                    anyOf: [
+                                      {
+                                        type: 'integer',
+                                        minimum: 4,
+                                        maximum: 80,
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'show',
+                                  'label',
+                                  'widthPercent',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            showItemDescription: {
+                              type: 'boolean',
+                            },
+                            showBorders: {
+                              type: 'boolean',
+                            },
+                            header: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            row: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            description: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        totals: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            showPaymentDetails: {
+                              type: 'boolean',
+                            },
+                            showAmountInWords: {
+                              type: 'boolean',
+                            },
+                            showCurrencySymbol: {
+                              type: 'boolean',
+                            },
+                            showQuantityTotal: {
+                              type: 'boolean',
+                            },
+                            showTaxSummary: {
+                              type: 'boolean',
+                            },
+                            subtotalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            balanceDueLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            balanceDueStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        otherDetails: {
+                          type: 'object',
+                          properties: {
+                            notes: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            terms: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            showPaymentOptions: {
+                              type: 'boolean',
+                            },
+                            showBankDetails: {
+                              type: 'boolean',
+                            },
+                            showQrCode: {
+                              type: 'boolean',
+                            },
+                            signature: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                imageFileId: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^file_[A-Za-z0-9]+$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: ['show', 'label', 'imageFileId'],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    resolvedSettings: {
+                      type: 'object',
+                      properties: {
+                        general: {
+                          type: 'object',
+                          properties: {
+                            paperSize: {
+                              type: 'string',
+                              enum: ['a4', 'letter', 'receipt-80mm'],
+                            },
+                            orientation: {
+                              type: 'string',
+                              enum: ['portrait', 'landscape'],
+                            },
+                            margins: {
+                              type: 'object',
+                              properties: {
+                                top: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                bottom: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                left: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                right: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                              },
+                              required: ['top', 'bottom', 'left', 'right'],
+                              additionalProperties: false,
+                            },
+                            fontFamily: {
+                              type: 'string',
+                              enum: [
+                                'inter',
+                                'roboto',
+                                'open-sans',
+                                'lato',
+                                'noto-sans',
+                                'merriweather',
+                                'source-serif',
+                                'ubuntu-mono',
+                              ],
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            labelColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            backgroundImagePosition: {
+                              type: 'string',
+                              enum: [
+                                'center',
+                                'top-left',
+                                'top-right',
+                                'bottom-left',
+                                'bottom-right',
+                                'tile',
+                              ],
+                            },
+                            accentColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            includePaymentStub: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'paperSize',
+                            'orientation',
+                            'margins',
+                            'fontFamily',
+                            'fontSize',
+                            'fontColor',
+                            'labelColor',
+                            'backgroundColor',
+                            'backgroundImageFileId',
+                            'backgroundImagePosition',
+                            'accentColor',
+                            'includePaymentStub',
+                          ],
+                          additionalProperties: false,
+                        },
+                        header: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            firstPageOnly: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                            'show',
+                            'backgroundImageFileId',
+                            'content',
+                            'firstPageOnly',
+                          ],
+                          additionalProperties: false,
+                        },
+                        footer: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showPageNumber: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                            'show',
+                            'backgroundImageFileId',
+                            'content',
+                            'showPageNumber',
+                          ],
+                          additionalProperties: false,
+                        },
+                        organization: {
+                          type: 'object',
+                          properties: {
+                            showLogo: {
+                              type: 'boolean',
+                            },
+                            logoHeight: {
+                              type: 'integer',
+                              minimum: 24,
+                              maximum: 240,
+                            },
+                            showName: {
+                              type: 'boolean',
+                            },
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showAddress: {
+                              type: 'boolean',
+                            },
+                            addressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          required: [
+                            'showLogo',
+                            'logoHeight',
+                            'showName',
+                            'name',
+                            'showAddress',
+                            'addressFormat',
+                          ],
+                          additionalProperties: false,
+                        },
+                        customer: {
+                          type: 'object',
+                          properties: {
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showBillTo: {
+                              type: 'boolean',
+                            },
+                            billToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            billingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showShipTo: {
+                              type: 'boolean',
+                            },
+                            shipToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            shippingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          required: [
+                            'name',
+                            'showBillTo',
+                            'billToLabel',
+                            'billingAddressFormat',
+                            'showShipTo',
+                            'shipToLabel',
+                            'shippingAddressFormat',
+                          ],
+                          additionalProperties: false,
+                        },
+                        documentDetails: {
+                          type: 'object',
+                          properties: {
+                            showTitle: {
+                              type: 'boolean',
+                            },
+                            title: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            titleStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            fields: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'number',
+                                      'date',
+                                      'due-date',
+                                      'expiry-date',
+                                      'terms',
+                                      'reference',
+                                      'salesperson',
+                                      'subject',
+                                      'payment-mode',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                },
+                                required: ['key', 'show', 'label'],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          required: [
+                            'showTitle',
+                            'title',
+                            'titleStyle',
+                            'fields',
+                          ],
+                          additionalProperties: false,
+                        },
+                        table: {
+                          type: 'object',
+                          properties: {
+                            columns: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'line-number',
+                                      'item',
+                                      'quantity',
+                                      'unit',
+                                      'rate',
+                                      'discount',
+                                      'tax',
+                                      'amount',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  widthPercent: {
+                                    anyOf: [
+                                      {
+                                        type: 'integer',
+                                        minimum: 4,
+                                        maximum: 80,
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'show',
+                                  'label',
+                                  'widthPercent',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            showItemDescription: {
+                              type: 'boolean',
+                            },
+                            showBorders: {
+                              type: 'boolean',
+                            },
+                            header: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            row: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            description: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'columns',
+                            'showItemDescription',
+                            'showBorders',
+                            'header',
+                            'row',
+                            'description',
+                          ],
+                          additionalProperties: false,
+                        },
+                        totals: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            showPaymentDetails: {
+                              type: 'boolean',
+                            },
+                            showAmountInWords: {
+                              type: 'boolean',
+                            },
+                            showCurrencySymbol: {
+                              type: 'boolean',
+                            },
+                            showQuantityTotal: {
+                              type: 'boolean',
+                            },
+                            showTaxSummary: {
+                              type: 'boolean',
+                            },
+                            subtotalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            balanceDueLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            balanceDueStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'show',
+                            'showPaymentDetails',
+                            'showAmountInWords',
+                            'showCurrencySymbol',
+                            'showQuantityTotal',
+                            'showTaxSummary',
+                            'subtotalLabel',
+                            'totalLabel',
+                            'balanceDueLabel',
+                            'totalStyle',
+                            'balanceDueStyle',
+                          ],
+                          additionalProperties: false,
+                        },
+                        otherDetails: {
+                          type: 'object',
+                          properties: {
+                            notes: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            terms: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            showPaymentOptions: {
+                              type: 'boolean',
+                            },
+                            showBankDetails: {
+                              type: 'boolean',
+                            },
+                            showQrCode: {
+                              type: 'boolean',
+                            },
+                            signature: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                imageFileId: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^file_[A-Za-z0-9]+$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: ['show', 'label', 'imageFileId'],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'notes',
+                            'terms',
+                            'showPaymentOptions',
+                            'showBankDetails',
+                            'showQrCode',
+                            'signature',
+                          ],
+                          additionalProperties: false,
+                        },
+                      },
+                      required: [
+                        'general',
+                        'header',
+                        'footer',
+                        'organization',
+                        'customer',
+                        'documentDetails',
+                        'table',
+                        'totals',
+                        'otherDetails',
+                      ],
+                      additionalProperties: false,
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'documentType',
+                    'name',
+                    'layout',
+                    'isDefault',
+                    'settings',
+                    'resolvedSettings',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /document-templates/resolved': {
+    tags: ['Document templates'],
+    summary: 'Resolve a document template',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'query',
+        name: 'documentType',
+        schema: {
+          type: 'string',
+          enum: [
+            'invoice',
+            'quote',
+            'sales-receipt',
+            'credit-note',
+            'payment-receipt',
+          ],
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'templateId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'resolved-document-template',
+                    },
+                    documentType: {
+                      type: 'string',
+                      enum: [
+                        'invoice',
+                        'quote',
+                        'sales-receipt',
+                        'credit-note',
+                        'payment-receipt',
+                      ],
+                    },
+                    templateId: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    name: {
+                      anyOf: [
+                        {
+                          type: 'string',
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    layout: {
+                      type: 'string',
+                      enum: [
+                        'standard',
+                        'european',
+                        'spreadsheet',
+                        'elegant',
+                        'retail',
+                      ],
+                    },
+                    settings: {
+                      type: 'object',
+                      properties: {
+                        general: {
+                          type: 'object',
+                          properties: {
+                            paperSize: {
+                              type: 'string',
+                              enum: ['a4', 'letter', 'receipt-80mm'],
+                            },
+                            orientation: {
+                              type: 'string',
+                              enum: ['portrait', 'landscape'],
+                            },
+                            margins: {
+                              type: 'object',
+                              properties: {
+                                top: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                bottom: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                left: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                right: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                              },
+                              required: ['top', 'bottom', 'left', 'right'],
+                              additionalProperties: false,
+                            },
+                            fontFamily: {
+                              type: 'string',
+                              enum: [
+                                'inter',
+                                'roboto',
+                                'open-sans',
+                                'lato',
+                                'noto-sans',
+                                'merriweather',
+                                'source-serif',
+                                'ubuntu-mono',
+                              ],
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            labelColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            backgroundImagePosition: {
+                              type: 'string',
+                              enum: [
+                                'center',
+                                'top-left',
+                                'top-right',
+                                'bottom-left',
+                                'bottom-right',
+                                'tile',
+                              ],
+                            },
+                            accentColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            includePaymentStub: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'paperSize',
+                            'orientation',
+                            'margins',
+                            'fontFamily',
+                            'fontSize',
+                            'fontColor',
+                            'labelColor',
+                            'backgroundColor',
+                            'backgroundImageFileId',
+                            'backgroundImagePosition',
+                            'accentColor',
+                            'includePaymentStub',
+                          ],
+                          additionalProperties: false,
+                        },
+                        header: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            firstPageOnly: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                            'show',
+                            'backgroundImageFileId',
+                            'content',
+                            'firstPageOnly',
+                          ],
+                          additionalProperties: false,
+                        },
+                        footer: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showPageNumber: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                            'show',
+                            'backgroundImageFileId',
+                            'content',
+                            'showPageNumber',
+                          ],
+                          additionalProperties: false,
+                        },
+                        organization: {
+                          type: 'object',
+                          properties: {
+                            showLogo: {
+                              type: 'boolean',
+                            },
+                            logoHeight: {
+                              type: 'integer',
+                              minimum: 24,
+                              maximum: 240,
+                            },
+                            showName: {
+                              type: 'boolean',
+                            },
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showAddress: {
+                              type: 'boolean',
+                            },
+                            addressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          required: [
+                            'showLogo',
+                            'logoHeight',
+                            'showName',
+                            'name',
+                            'showAddress',
+                            'addressFormat',
+                          ],
+                          additionalProperties: false,
+                        },
+                        customer: {
+                          type: 'object',
+                          properties: {
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showBillTo: {
+                              type: 'boolean',
+                            },
+                            billToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            billingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showShipTo: {
+                              type: 'boolean',
+                            },
+                            shipToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            shippingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          required: [
+                            'name',
+                            'showBillTo',
+                            'billToLabel',
+                            'billingAddressFormat',
+                            'showShipTo',
+                            'shipToLabel',
+                            'shippingAddressFormat',
+                          ],
+                          additionalProperties: false,
+                        },
+                        documentDetails: {
+                          type: 'object',
+                          properties: {
+                            showTitle: {
+                              type: 'boolean',
+                            },
+                            title: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            titleStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            fields: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'number',
+                                      'date',
+                                      'due-date',
+                                      'expiry-date',
+                                      'terms',
+                                      'reference',
+                                      'salesperson',
+                                      'subject',
+                                      'payment-mode',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                },
+                                required: ['key', 'show', 'label'],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          required: [
+                            'showTitle',
+                            'title',
+                            'titleStyle',
+                            'fields',
+                          ],
+                          additionalProperties: false,
+                        },
+                        table: {
+                          type: 'object',
+                          properties: {
+                            columns: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'line-number',
+                                      'item',
+                                      'quantity',
+                                      'unit',
+                                      'rate',
+                                      'discount',
+                                      'tax',
+                                      'amount',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  widthPercent: {
+                                    anyOf: [
+                                      {
+                                        type: 'integer',
+                                        minimum: 4,
+                                        maximum: 80,
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'show',
+                                  'label',
+                                  'widthPercent',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            showItemDescription: {
+                              type: 'boolean',
+                            },
+                            showBorders: {
+                              type: 'boolean',
+                            },
+                            header: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            row: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            description: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'columns',
+                            'showItemDescription',
+                            'showBorders',
+                            'header',
+                            'row',
+                            'description',
+                          ],
+                          additionalProperties: false,
+                        },
+                        totals: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            showPaymentDetails: {
+                              type: 'boolean',
+                            },
+                            showAmountInWords: {
+                              type: 'boolean',
+                            },
+                            showCurrencySymbol: {
+                              type: 'boolean',
+                            },
+                            showQuantityTotal: {
+                              type: 'boolean',
+                            },
+                            showTaxSummary: {
+                              type: 'boolean',
+                            },
+                            subtotalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            balanceDueLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            balanceDueStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'show',
+                            'showPaymentDetails',
+                            'showAmountInWords',
+                            'showCurrencySymbol',
+                            'showQuantityTotal',
+                            'showTaxSummary',
+                            'subtotalLabel',
+                            'totalLabel',
+                            'balanceDueLabel',
+                            'totalStyle',
+                            'balanceDueStyle',
+                          ],
+                          additionalProperties: false,
+                        },
+                        otherDetails: {
+                          type: 'object',
+                          properties: {
+                            notes: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            terms: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            showPaymentOptions: {
+                              type: 'boolean',
+                            },
+                            showBankDetails: {
+                              type: 'boolean',
+                            },
+                            showQrCode: {
+                              type: 'boolean',
+                            },
+                            signature: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                imageFileId: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^file_[A-Za-z0-9]+$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: ['show', 'label', 'imageFileId'],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'notes',
+                            'terms',
+                            'showPaymentOptions',
+                            'showBankDetails',
+                            'showQrCode',
+                            'signature',
+                          ],
+                          additionalProperties: false,
+                        },
+                      },
+                      required: [
+                        'general',
+                        'header',
+                        'footer',
+                        'organization',
+                        'customer',
+                        'documentDetails',
+                        'table',
+                        'totals',
+                        'otherDetails',
+                      ],
+                      additionalProperties: false,
+                    },
+                    branding: {
+                      type: 'object',
+                      properties: {
+                        accentColor: {
+                          type: 'string',
+                          pattern: '^#[0-9a-f]{6}$',
+                        },
+                        appearance: {
+                          type: 'string',
+                          enum: ['system', 'light', 'dark'],
+                        },
+                        sidebarTone: {
+                          type: 'string',
+                          enum: ['light', 'dark'],
+                        },
+                      },
+                      required: ['accentColor', 'appearance', 'sidebarTone'],
+                      additionalProperties: false,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'documentType',
+                    'templateId',
+                    'name',
+                    'layout',
+                    'settings',
+                    'branding',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /document-templates/{templateId}': {
+    tags: ['Document templates'],
+    summary: 'Retrieve a document template',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'templateId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'document-template',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    documentType: {
+                      type: 'string',
+                      enum: [
+                        'invoice',
+                        'quote',
+                        'sales-receipt',
+                        'credit-note',
+                        'payment-receipt',
+                      ],
+                    },
+                    name: {
+                      type: 'string',
+                    },
+                    layout: {
+                      type: 'string',
+                      enum: [
+                        'standard',
+                        'european',
+                        'spreadsheet',
+                        'elegant',
+                        'retail',
+                      ],
+                    },
+                    isDefault: {
+                      type: 'boolean',
+                    },
+                    settings: {
+                      type: 'object',
+                      properties: {
+                        general: {
+                          type: 'object',
+                          properties: {
+                            paperSize: {
+                              type: 'string',
+                              enum: ['a4', 'letter', 'receipt-80mm'],
+                            },
+                            orientation: {
+                              type: 'string',
+                              enum: ['portrait', 'landscape'],
+                            },
+                            margins: {
+                              type: 'object',
+                              properties: {
+                                top: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                bottom: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                left: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                right: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                              },
+                              required: ['top', 'bottom', 'left', 'right'],
+                              additionalProperties: false,
+                            },
+                            fontFamily: {
+                              type: 'string',
+                              enum: [
+                                'inter',
+                                'roboto',
+                                'open-sans',
+                                'lato',
+                                'noto-sans',
+                                'merriweather',
+                                'source-serif',
+                                'ubuntu-mono',
+                              ],
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            labelColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            backgroundImagePosition: {
+                              type: 'string',
+                              enum: [
+                                'center',
+                                'top-left',
+                                'top-right',
+                                'bottom-left',
+                                'bottom-right',
+                                'tile',
+                              ],
+                            },
+                            accentColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            includePaymentStub: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        header: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            firstPageOnly: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        footer: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showPageNumber: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        organization: {
+                          type: 'object',
+                          properties: {
+                            showLogo: {
+                              type: 'boolean',
+                            },
+                            logoHeight: {
+                              type: 'integer',
+                              minimum: 24,
+                              maximum: 240,
+                            },
+                            showName: {
+                              type: 'boolean',
+                            },
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showAddress: {
+                              type: 'boolean',
+                            },
+                            addressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        customer: {
+                          type: 'object',
+                          properties: {
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showBillTo: {
+                              type: 'boolean',
+                            },
+                            billToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            billingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showShipTo: {
+                              type: 'boolean',
+                            },
+                            shipToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            shippingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        documentDetails: {
+                          type: 'object',
+                          properties: {
+                            showTitle: {
+                              type: 'boolean',
+                            },
+                            title: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            titleStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            fields: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'number',
+                                      'date',
+                                      'due-date',
+                                      'expiry-date',
+                                      'terms',
+                                      'reference',
+                                      'salesperson',
+                                      'subject',
+                                      'payment-mode',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                },
+                                required: ['key', 'show', 'label'],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        table: {
+                          type: 'object',
+                          properties: {
+                            columns: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'line-number',
+                                      'item',
+                                      'quantity',
+                                      'unit',
+                                      'rate',
+                                      'discount',
+                                      'tax',
+                                      'amount',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  widthPercent: {
+                                    anyOf: [
+                                      {
+                                        type: 'integer',
+                                        minimum: 4,
+                                        maximum: 80,
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'show',
+                                  'label',
+                                  'widthPercent',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            showItemDescription: {
+                              type: 'boolean',
+                            },
+                            showBorders: {
+                              type: 'boolean',
+                            },
+                            header: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            row: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            description: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        totals: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            showPaymentDetails: {
+                              type: 'boolean',
+                            },
+                            showAmountInWords: {
+                              type: 'boolean',
+                            },
+                            showCurrencySymbol: {
+                              type: 'boolean',
+                            },
+                            showQuantityTotal: {
+                              type: 'boolean',
+                            },
+                            showTaxSummary: {
+                              type: 'boolean',
+                            },
+                            subtotalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            balanceDueLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            balanceDueStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        otherDetails: {
+                          type: 'object',
+                          properties: {
+                            notes: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            terms: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            showPaymentOptions: {
+                              type: 'boolean',
+                            },
+                            showBankDetails: {
+                              type: 'boolean',
+                            },
+                            showQrCode: {
+                              type: 'boolean',
+                            },
+                            signature: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                imageFileId: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^file_[A-Za-z0-9]+$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: ['show', 'label', 'imageFileId'],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    resolvedSettings: {
+                      type: 'object',
+                      properties: {
+                        general: {
+                          type: 'object',
+                          properties: {
+                            paperSize: {
+                              type: 'string',
+                              enum: ['a4', 'letter', 'receipt-80mm'],
+                            },
+                            orientation: {
+                              type: 'string',
+                              enum: ['portrait', 'landscape'],
+                            },
+                            margins: {
+                              type: 'object',
+                              properties: {
+                                top: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                bottom: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                left: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                right: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                              },
+                              required: ['top', 'bottom', 'left', 'right'],
+                              additionalProperties: false,
+                            },
+                            fontFamily: {
+                              type: 'string',
+                              enum: [
+                                'inter',
+                                'roboto',
+                                'open-sans',
+                                'lato',
+                                'noto-sans',
+                                'merriweather',
+                                'source-serif',
+                                'ubuntu-mono',
+                              ],
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            labelColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            backgroundImagePosition: {
+                              type: 'string',
+                              enum: [
+                                'center',
+                                'top-left',
+                                'top-right',
+                                'bottom-left',
+                                'bottom-right',
+                                'tile',
+                              ],
+                            },
+                            accentColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            includePaymentStub: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'paperSize',
+                            'orientation',
+                            'margins',
+                            'fontFamily',
+                            'fontSize',
+                            'fontColor',
+                            'labelColor',
+                            'backgroundColor',
+                            'backgroundImageFileId',
+                            'backgroundImagePosition',
+                            'accentColor',
+                            'includePaymentStub',
+                          ],
+                          additionalProperties: false,
+                        },
+                        header: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            firstPageOnly: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                            'show',
+                            'backgroundImageFileId',
+                            'content',
+                            'firstPageOnly',
+                          ],
+                          additionalProperties: false,
+                        },
+                        footer: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showPageNumber: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                            'show',
+                            'backgroundImageFileId',
+                            'content',
+                            'showPageNumber',
+                          ],
+                          additionalProperties: false,
+                        },
+                        organization: {
+                          type: 'object',
+                          properties: {
+                            showLogo: {
+                              type: 'boolean',
+                            },
+                            logoHeight: {
+                              type: 'integer',
+                              minimum: 24,
+                              maximum: 240,
+                            },
+                            showName: {
+                              type: 'boolean',
+                            },
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showAddress: {
+                              type: 'boolean',
+                            },
+                            addressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          required: [
+                            'showLogo',
+                            'logoHeight',
+                            'showName',
+                            'name',
+                            'showAddress',
+                            'addressFormat',
+                          ],
+                          additionalProperties: false,
+                        },
+                        customer: {
+                          type: 'object',
+                          properties: {
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showBillTo: {
+                              type: 'boolean',
+                            },
+                            billToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            billingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showShipTo: {
+                              type: 'boolean',
+                            },
+                            shipToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            shippingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          required: [
+                            'name',
+                            'showBillTo',
+                            'billToLabel',
+                            'billingAddressFormat',
+                            'showShipTo',
+                            'shipToLabel',
+                            'shippingAddressFormat',
+                          ],
+                          additionalProperties: false,
+                        },
+                        documentDetails: {
+                          type: 'object',
+                          properties: {
+                            showTitle: {
+                              type: 'boolean',
+                            },
+                            title: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            titleStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            fields: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'number',
+                                      'date',
+                                      'due-date',
+                                      'expiry-date',
+                                      'terms',
+                                      'reference',
+                                      'salesperson',
+                                      'subject',
+                                      'payment-mode',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                },
+                                required: ['key', 'show', 'label'],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          required: [
+                            'showTitle',
+                            'title',
+                            'titleStyle',
+                            'fields',
+                          ],
+                          additionalProperties: false,
+                        },
+                        table: {
+                          type: 'object',
+                          properties: {
+                            columns: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'line-number',
+                                      'item',
+                                      'quantity',
+                                      'unit',
+                                      'rate',
+                                      'discount',
+                                      'tax',
+                                      'amount',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  widthPercent: {
+                                    anyOf: [
+                                      {
+                                        type: 'integer',
+                                        minimum: 4,
+                                        maximum: 80,
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'show',
+                                  'label',
+                                  'widthPercent',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            showItemDescription: {
+                              type: 'boolean',
+                            },
+                            showBorders: {
+                              type: 'boolean',
+                            },
+                            header: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            row: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            description: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'columns',
+                            'showItemDescription',
+                            'showBorders',
+                            'header',
+                            'row',
+                            'description',
+                          ],
+                          additionalProperties: false,
+                        },
+                        totals: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            showPaymentDetails: {
+                              type: 'boolean',
+                            },
+                            showAmountInWords: {
+                              type: 'boolean',
+                            },
+                            showCurrencySymbol: {
+                              type: 'boolean',
+                            },
+                            showQuantityTotal: {
+                              type: 'boolean',
+                            },
+                            showTaxSummary: {
+                              type: 'boolean',
+                            },
+                            subtotalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            balanceDueLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            balanceDueStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'show',
+                            'showPaymentDetails',
+                            'showAmountInWords',
+                            'showCurrencySymbol',
+                            'showQuantityTotal',
+                            'showTaxSummary',
+                            'subtotalLabel',
+                            'totalLabel',
+                            'balanceDueLabel',
+                            'totalStyle',
+                            'balanceDueStyle',
+                          ],
+                          additionalProperties: false,
+                        },
+                        otherDetails: {
+                          type: 'object',
+                          properties: {
+                            notes: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            terms: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            showPaymentOptions: {
+                              type: 'boolean',
+                            },
+                            showBankDetails: {
+                              type: 'boolean',
+                            },
+                            showQrCode: {
+                              type: 'boolean',
+                            },
+                            signature: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                imageFileId: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^file_[A-Za-z0-9]+$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: ['show', 'label', 'imageFileId'],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'notes',
+                            'terms',
+                            'showPaymentOptions',
+                            'showBankDetails',
+                            'showQrCode',
+                            'signature',
+                          ],
+                          additionalProperties: false,
+                        },
+                      },
+                      required: [
+                        'general',
+                        'header',
+                        'footer',
+                        'organization',
+                        'customer',
+                        'documentDetails',
+                        'table',
+                        'totals',
+                        'otherDetails',
+                      ],
+                      additionalProperties: false,
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'documentType',
+                    'name',
+                    'layout',
+                    'isDefault',
+                    'settings',
+                    'resolvedSettings',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /document-templates/{templateId}': {
+    tags: ['Document templates'],
+    summary: 'Update a document template',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'templateId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 80,
+              },
+              layout: {
+                type: 'string',
+                enum: [
+                  'standard',
+                  'european',
+                  'spreadsheet',
+                  'elegant',
+                  'retail',
+                ],
+              },
+              settings: {
+                type: 'object',
+                properties: {
+                  general: {
+                    type: 'object',
+                    properties: {
+                      paperSize: {
+                        type: 'string',
+                        enum: ['a4', 'letter', 'receipt-80mm'],
+                      },
+                      orientation: {
+                        type: 'string',
+                        enum: ['portrait', 'landscape'],
+                      },
+                      margins: {
+                        type: 'object',
+                        properties: {
+                          top: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 2,
+                          },
+                          bottom: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 2,
+                          },
+                          left: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 2,
+                          },
+                          right: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 2,
+                          },
+                        },
+                        required: ['top', 'bottom', 'left', 'right'],
+                        additionalProperties: false,
+                      },
+                      fontFamily: {
+                        type: 'string',
+                        enum: [
+                          'inter',
+                          'roboto',
+                          'open-sans',
+                          'lato',
+                          'noto-sans',
+                          'merriweather',
+                          'source-serif',
+                          'ubuntu-mono',
+                        ],
+                      },
+                      fontSize: {
+                        type: 'integer',
+                        minimum: 6,
+                        maximum: 36,
+                      },
+                      fontColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      labelColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      backgroundColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      backgroundImageFileId: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^file_[A-Za-z0-9]+$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      backgroundImagePosition: {
+                        type: 'string',
+                        enum: [
+                          'center',
+                          'top-left',
+                          'top-right',
+                          'bottom-left',
+                          'bottom-right',
+                          'tile',
+                        ],
+                      },
+                      accentColor: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      includePaymentStub: {
+                        type: 'boolean',
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  header: {
+                    type: 'object',
+                    properties: {
+                      fontSize: {
+                        type: 'integer',
+                        minimum: 6,
+                        maximum: 36,
+                      },
+                      fontColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      backgroundColor: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      show: {
+                        type: 'boolean',
+                      },
+                      backgroundImageFileId: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^file_[A-Za-z0-9]+$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      content: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                      firstPageOnly: {
+                        type: 'boolean',
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  footer: {
+                    type: 'object',
+                    properties: {
+                      fontSize: {
+                        type: 'integer',
+                        minimum: 6,
+                        maximum: 36,
+                      },
+                      fontColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      backgroundColor: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      show: {
+                        type: 'boolean',
+                      },
+                      backgroundImageFileId: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^file_[A-Za-z0-9]+$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      content: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                      showPageNumber: {
+                        type: 'boolean',
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  organization: {
+                    type: 'object',
+                    properties: {
+                      showLogo: {
+                        type: 'boolean',
+                      },
+                      logoHeight: {
+                        type: 'integer',
+                        minimum: 24,
+                        maximum: 240,
+                      },
+                      showName: {
+                        type: 'boolean',
+                      },
+                      name: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                        },
+                        required: ['fontSize', 'fontColor'],
+                        additionalProperties: false,
+                      },
+                      showAddress: {
+                        type: 'boolean',
+                      },
+                      addressFormat: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  customer: {
+                    type: 'object',
+                    properties: {
+                      name: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                        },
+                        required: ['fontSize', 'fontColor'],
+                        additionalProperties: false,
+                      },
+                      showBillTo: {
+                        type: 'boolean',
+                      },
+                      billToLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      billingAddressFormat: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                      showShipTo: {
+                        type: 'boolean',
+                      },
+                      shipToLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      shippingAddressFormat: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  documentDetails: {
+                    type: 'object',
+                    properties: {
+                      showTitle: {
+                        type: 'boolean',
+                      },
+                      title: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      titleStyle: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                        },
+                        required: ['fontSize', 'fontColor'],
+                        additionalProperties: false,
+                      },
+                      fields: {
+                        maxItems: 20,
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            key: {
+                              type: 'string',
+                              enum: [
+                                'number',
+                                'date',
+                                'due-date',
+                                'expiry-date',
+                                'terms',
+                                'reference',
+                                'salesperson',
+                                'subject',
+                                'payment-mode',
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            label: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                          },
+                          required: ['key', 'show', 'label'],
+                          additionalProperties: false,
+                        },
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  table: {
+                    type: 'object',
+                    properties: {
+                      columns: {
+                        maxItems: 20,
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            key: {
+                              type: 'string',
+                              enum: [
+                                'line-number',
+                                'item',
+                                'quantity',
+                                'unit',
+                                'rate',
+                                'discount',
+                                'tax',
+                                'amount',
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            label: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            widthPercent: {
+                              anyOf: [
+                                {
+                                  type: 'integer',
+                                  minimum: 4,
+                                  maximum: 80,
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                          },
+                          required: ['key', 'show', 'label', 'widthPercent'],
+                          additionalProperties: false,
+                        },
+                      },
+                      showItemDescription: {
+                        type: 'boolean',
+                      },
+                      showBorders: {
+                        type: 'boolean',
+                      },
+                      header: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          backgroundColor: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['fontSize', 'fontColor', 'backgroundColor'],
+                        additionalProperties: false,
+                      },
+                      row: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          backgroundColor: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['fontSize', 'fontColor', 'backgroundColor'],
+                        additionalProperties: false,
+                      },
+                      description: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                        },
+                        required: ['fontSize', 'fontColor'],
+                        additionalProperties: false,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  totals: {
+                    type: 'object',
+                    properties: {
+                      show: {
+                        type: 'boolean',
+                      },
+                      showPaymentDetails: {
+                        type: 'boolean',
+                      },
+                      showAmountInWords: {
+                        type: 'boolean',
+                      },
+                      showCurrencySymbol: {
+                        type: 'boolean',
+                      },
+                      showQuantityTotal: {
+                        type: 'boolean',
+                      },
+                      showTaxSummary: {
+                        type: 'boolean',
+                      },
+                      subtotalLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      totalLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      balanceDueLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      totalStyle: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          backgroundColor: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['fontSize', 'fontColor', 'backgroundColor'],
+                        additionalProperties: false,
+                      },
+                      balanceDueStyle: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          backgroundColor: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['fontSize', 'fontColor', 'backgroundColor'],
+                        additionalProperties: false,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  otherDetails: {
+                    type: 'object',
+                    properties: {
+                      notes: {
+                        type: 'object',
+                        properties: {
+                          show: {
+                            type: 'boolean',
+                          },
+                          label: {
+                            type: 'string',
+                            maxLength: 60,
+                          },
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                        },
+                        required: ['show', 'label', 'fontSize'],
+                        additionalProperties: false,
+                      },
+                      terms: {
+                        type: 'object',
+                        properties: {
+                          show: {
+                            type: 'boolean',
+                          },
+                          label: {
+                            type: 'string',
+                            maxLength: 60,
+                          },
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                        },
+                        required: ['show', 'label', 'fontSize'],
+                        additionalProperties: false,
+                      },
+                      showPaymentOptions: {
+                        type: 'boolean',
+                      },
+                      showBankDetails: {
+                        type: 'boolean',
+                      },
+                      showQrCode: {
+                        type: 'boolean',
+                      },
+                      signature: {
+                        type: 'object',
+                        properties: {
+                          show: {
+                            type: 'boolean',
+                          },
+                          label: {
+                            type: 'string',
+                            maxLength: 60,
+                          },
+                          imageFileId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^file_[A-Za-z0-9]+$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['show', 'label', 'imageFileId'],
+                        additionalProperties: false,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                },
+                additionalProperties: false,
+              },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'document-template',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    documentType: {
+                      type: 'string',
+                      enum: [
+                        'invoice',
+                        'quote',
+                        'sales-receipt',
+                        'credit-note',
+                        'payment-receipt',
+                      ],
+                    },
+                    name: {
+                      type: 'string',
+                    },
+                    layout: {
+                      type: 'string',
+                      enum: [
+                        'standard',
+                        'european',
+                        'spreadsheet',
+                        'elegant',
+                        'retail',
+                      ],
+                    },
+                    isDefault: {
+                      type: 'boolean',
+                    },
+                    settings: {
+                      type: 'object',
+                      properties: {
+                        general: {
+                          type: 'object',
+                          properties: {
+                            paperSize: {
+                              type: 'string',
+                              enum: ['a4', 'letter', 'receipt-80mm'],
+                            },
+                            orientation: {
+                              type: 'string',
+                              enum: ['portrait', 'landscape'],
+                            },
+                            margins: {
+                              type: 'object',
+                              properties: {
+                                top: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                bottom: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                left: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                right: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                              },
+                              required: ['top', 'bottom', 'left', 'right'],
+                              additionalProperties: false,
+                            },
+                            fontFamily: {
+                              type: 'string',
+                              enum: [
+                                'inter',
+                                'roboto',
+                                'open-sans',
+                                'lato',
+                                'noto-sans',
+                                'merriweather',
+                                'source-serif',
+                                'ubuntu-mono',
+                              ],
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            labelColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            backgroundImagePosition: {
+                              type: 'string',
+                              enum: [
+                                'center',
+                                'top-left',
+                                'top-right',
+                                'bottom-left',
+                                'bottom-right',
+                                'tile',
+                              ],
+                            },
+                            accentColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            includePaymentStub: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        header: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            firstPageOnly: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        footer: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showPageNumber: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        organization: {
+                          type: 'object',
+                          properties: {
+                            showLogo: {
+                              type: 'boolean',
+                            },
+                            logoHeight: {
+                              type: 'integer',
+                              minimum: 24,
+                              maximum: 240,
+                            },
+                            showName: {
+                              type: 'boolean',
+                            },
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showAddress: {
+                              type: 'boolean',
+                            },
+                            addressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        customer: {
+                          type: 'object',
+                          properties: {
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showBillTo: {
+                              type: 'boolean',
+                            },
+                            billToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            billingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showShipTo: {
+                              type: 'boolean',
+                            },
+                            shipToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            shippingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        documentDetails: {
+                          type: 'object',
+                          properties: {
+                            showTitle: {
+                              type: 'boolean',
+                            },
+                            title: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            titleStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            fields: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'number',
+                                      'date',
+                                      'due-date',
+                                      'expiry-date',
+                                      'terms',
+                                      'reference',
+                                      'salesperson',
+                                      'subject',
+                                      'payment-mode',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                },
+                                required: ['key', 'show', 'label'],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        table: {
+                          type: 'object',
+                          properties: {
+                            columns: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'line-number',
+                                      'item',
+                                      'quantity',
+                                      'unit',
+                                      'rate',
+                                      'discount',
+                                      'tax',
+                                      'amount',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  widthPercent: {
+                                    anyOf: [
+                                      {
+                                        type: 'integer',
+                                        minimum: 4,
+                                        maximum: 80,
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'show',
+                                  'label',
+                                  'widthPercent',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            showItemDescription: {
+                              type: 'boolean',
+                            },
+                            showBorders: {
+                              type: 'boolean',
+                            },
+                            header: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            row: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            description: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        totals: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            showPaymentDetails: {
+                              type: 'boolean',
+                            },
+                            showAmountInWords: {
+                              type: 'boolean',
+                            },
+                            showCurrencySymbol: {
+                              type: 'boolean',
+                            },
+                            showQuantityTotal: {
+                              type: 'boolean',
+                            },
+                            showTaxSummary: {
+                              type: 'boolean',
+                            },
+                            subtotalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            balanceDueLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            balanceDueStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        otherDetails: {
+                          type: 'object',
+                          properties: {
+                            notes: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            terms: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            showPaymentOptions: {
+                              type: 'boolean',
+                            },
+                            showBankDetails: {
+                              type: 'boolean',
+                            },
+                            showQrCode: {
+                              type: 'boolean',
+                            },
+                            signature: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                imageFileId: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^file_[A-Za-z0-9]+$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: ['show', 'label', 'imageFileId'],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    resolvedSettings: {
+                      type: 'object',
+                      properties: {
+                        general: {
+                          type: 'object',
+                          properties: {
+                            paperSize: {
+                              type: 'string',
+                              enum: ['a4', 'letter', 'receipt-80mm'],
+                            },
+                            orientation: {
+                              type: 'string',
+                              enum: ['portrait', 'landscape'],
+                            },
+                            margins: {
+                              type: 'object',
+                              properties: {
+                                top: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                bottom: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                left: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                right: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                              },
+                              required: ['top', 'bottom', 'left', 'right'],
+                              additionalProperties: false,
+                            },
+                            fontFamily: {
+                              type: 'string',
+                              enum: [
+                                'inter',
+                                'roboto',
+                                'open-sans',
+                                'lato',
+                                'noto-sans',
+                                'merriweather',
+                                'source-serif',
+                                'ubuntu-mono',
+                              ],
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            labelColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            backgroundImagePosition: {
+                              type: 'string',
+                              enum: [
+                                'center',
+                                'top-left',
+                                'top-right',
+                                'bottom-left',
+                                'bottom-right',
+                                'tile',
+                              ],
+                            },
+                            accentColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            includePaymentStub: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'paperSize',
+                            'orientation',
+                            'margins',
+                            'fontFamily',
+                            'fontSize',
+                            'fontColor',
+                            'labelColor',
+                            'backgroundColor',
+                            'backgroundImageFileId',
+                            'backgroundImagePosition',
+                            'accentColor',
+                            'includePaymentStub',
+                          ],
+                          additionalProperties: false,
+                        },
+                        header: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            firstPageOnly: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                            'show',
+                            'backgroundImageFileId',
+                            'content',
+                            'firstPageOnly',
+                          ],
+                          additionalProperties: false,
+                        },
+                        footer: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showPageNumber: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                            'show',
+                            'backgroundImageFileId',
+                            'content',
+                            'showPageNumber',
+                          ],
+                          additionalProperties: false,
+                        },
+                        organization: {
+                          type: 'object',
+                          properties: {
+                            showLogo: {
+                              type: 'boolean',
+                            },
+                            logoHeight: {
+                              type: 'integer',
+                              minimum: 24,
+                              maximum: 240,
+                            },
+                            showName: {
+                              type: 'boolean',
+                            },
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showAddress: {
+                              type: 'boolean',
+                            },
+                            addressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          required: [
+                            'showLogo',
+                            'logoHeight',
+                            'showName',
+                            'name',
+                            'showAddress',
+                            'addressFormat',
+                          ],
+                          additionalProperties: false,
+                        },
+                        customer: {
+                          type: 'object',
+                          properties: {
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showBillTo: {
+                              type: 'boolean',
+                            },
+                            billToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            billingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showShipTo: {
+                              type: 'boolean',
+                            },
+                            shipToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            shippingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          required: [
+                            'name',
+                            'showBillTo',
+                            'billToLabel',
+                            'billingAddressFormat',
+                            'showShipTo',
+                            'shipToLabel',
+                            'shippingAddressFormat',
+                          ],
+                          additionalProperties: false,
+                        },
+                        documentDetails: {
+                          type: 'object',
+                          properties: {
+                            showTitle: {
+                              type: 'boolean',
+                            },
+                            title: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            titleStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            fields: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'number',
+                                      'date',
+                                      'due-date',
+                                      'expiry-date',
+                                      'terms',
+                                      'reference',
+                                      'salesperson',
+                                      'subject',
+                                      'payment-mode',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                },
+                                required: ['key', 'show', 'label'],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          required: [
+                            'showTitle',
+                            'title',
+                            'titleStyle',
+                            'fields',
+                          ],
+                          additionalProperties: false,
+                        },
+                        table: {
+                          type: 'object',
+                          properties: {
+                            columns: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'line-number',
+                                      'item',
+                                      'quantity',
+                                      'unit',
+                                      'rate',
+                                      'discount',
+                                      'tax',
+                                      'amount',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  widthPercent: {
+                                    anyOf: [
+                                      {
+                                        type: 'integer',
+                                        minimum: 4,
+                                        maximum: 80,
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'show',
+                                  'label',
+                                  'widthPercent',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            showItemDescription: {
+                              type: 'boolean',
+                            },
+                            showBorders: {
+                              type: 'boolean',
+                            },
+                            header: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            row: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            description: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'columns',
+                            'showItemDescription',
+                            'showBorders',
+                            'header',
+                            'row',
+                            'description',
+                          ],
+                          additionalProperties: false,
+                        },
+                        totals: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            showPaymentDetails: {
+                              type: 'boolean',
+                            },
+                            showAmountInWords: {
+                              type: 'boolean',
+                            },
+                            showCurrencySymbol: {
+                              type: 'boolean',
+                            },
+                            showQuantityTotal: {
+                              type: 'boolean',
+                            },
+                            showTaxSummary: {
+                              type: 'boolean',
+                            },
+                            subtotalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            balanceDueLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            balanceDueStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'show',
+                            'showPaymentDetails',
+                            'showAmountInWords',
+                            'showCurrencySymbol',
+                            'showQuantityTotal',
+                            'showTaxSummary',
+                            'subtotalLabel',
+                            'totalLabel',
+                            'balanceDueLabel',
+                            'totalStyle',
+                            'balanceDueStyle',
+                          ],
+                          additionalProperties: false,
+                        },
+                        otherDetails: {
+                          type: 'object',
+                          properties: {
+                            notes: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            terms: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            showPaymentOptions: {
+                              type: 'boolean',
+                            },
+                            showBankDetails: {
+                              type: 'boolean',
+                            },
+                            showQrCode: {
+                              type: 'boolean',
+                            },
+                            signature: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                imageFileId: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^file_[A-Za-z0-9]+$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: ['show', 'label', 'imageFileId'],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'notes',
+                            'terms',
+                            'showPaymentOptions',
+                            'showBankDetails',
+                            'showQrCode',
+                            'signature',
+                          ],
+                          additionalProperties: false,
+                        },
+                      },
+                      required: [
+                        'general',
+                        'header',
+                        'footer',
+                        'organization',
+                        'customer',
+                        'documentDetails',
+                        'table',
+                        'totals',
+                        'otherDetails',
+                      ],
+                      additionalProperties: false,
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'documentType',
+                    'name',
+                    'layout',
+                    'isDefault',
+                    'settings',
+                    'resolvedSettings',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'DELETE /document-templates/{templateId}': {
+    tags: ['Document templates'],
+    summary: 'Delete a document template',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'templateId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'document-template',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    deleted: {
+                      type: 'boolean',
+                      const: true,
+                    },
+                  },
+                  required: ['object', 'id', 'deleted'],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /document-templates/{templateId}/set-default': {
+    tags: ['Document templates'],
+    summary: 'Set the default document template',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'templateId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'document-template',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    documentType: {
+                      type: 'string',
+                      enum: [
+                        'invoice',
+                        'quote',
+                        'sales-receipt',
+                        'credit-note',
+                        'payment-receipt',
+                      ],
+                    },
+                    name: {
+                      type: 'string',
+                    },
+                    layout: {
+                      type: 'string',
+                      enum: [
+                        'standard',
+                        'european',
+                        'spreadsheet',
+                        'elegant',
+                        'retail',
+                      ],
+                    },
+                    isDefault: {
+                      type: 'boolean',
+                    },
+                    settings: {
+                      type: 'object',
+                      properties: {
+                        general: {
+                          type: 'object',
+                          properties: {
+                            paperSize: {
+                              type: 'string',
+                              enum: ['a4', 'letter', 'receipt-80mm'],
+                            },
+                            orientation: {
+                              type: 'string',
+                              enum: ['portrait', 'landscape'],
+                            },
+                            margins: {
+                              type: 'object',
+                              properties: {
+                                top: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                bottom: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                left: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                right: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                              },
+                              required: ['top', 'bottom', 'left', 'right'],
+                              additionalProperties: false,
+                            },
+                            fontFamily: {
+                              type: 'string',
+                              enum: [
+                                'inter',
+                                'roboto',
+                                'open-sans',
+                                'lato',
+                                'noto-sans',
+                                'merriweather',
+                                'source-serif',
+                                'ubuntu-mono',
+                              ],
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            labelColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            backgroundImagePosition: {
+                              type: 'string',
+                              enum: [
+                                'center',
+                                'top-left',
+                                'top-right',
+                                'bottom-left',
+                                'bottom-right',
+                                'tile',
+                              ],
+                            },
+                            accentColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            includePaymentStub: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        header: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            firstPageOnly: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        footer: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showPageNumber: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        organization: {
+                          type: 'object',
+                          properties: {
+                            showLogo: {
+                              type: 'boolean',
+                            },
+                            logoHeight: {
+                              type: 'integer',
+                              minimum: 24,
+                              maximum: 240,
+                            },
+                            showName: {
+                              type: 'boolean',
+                            },
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showAddress: {
+                              type: 'boolean',
+                            },
+                            addressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        customer: {
+                          type: 'object',
+                          properties: {
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showBillTo: {
+                              type: 'boolean',
+                            },
+                            billToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            billingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showShipTo: {
+                              type: 'boolean',
+                            },
+                            shipToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            shippingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        documentDetails: {
+                          type: 'object',
+                          properties: {
+                            showTitle: {
+                              type: 'boolean',
+                            },
+                            title: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            titleStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            fields: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'number',
+                                      'date',
+                                      'due-date',
+                                      'expiry-date',
+                                      'terms',
+                                      'reference',
+                                      'salesperson',
+                                      'subject',
+                                      'payment-mode',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                },
+                                required: ['key', 'show', 'label'],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        table: {
+                          type: 'object',
+                          properties: {
+                            columns: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'line-number',
+                                      'item',
+                                      'quantity',
+                                      'unit',
+                                      'rate',
+                                      'discount',
+                                      'tax',
+                                      'amount',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  widthPercent: {
+                                    anyOf: [
+                                      {
+                                        type: 'integer',
+                                        minimum: 4,
+                                        maximum: 80,
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'show',
+                                  'label',
+                                  'widthPercent',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            showItemDescription: {
+                              type: 'boolean',
+                            },
+                            showBorders: {
+                              type: 'boolean',
+                            },
+                            header: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            row: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            description: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        totals: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            showPaymentDetails: {
+                              type: 'boolean',
+                            },
+                            showAmountInWords: {
+                              type: 'boolean',
+                            },
+                            showCurrencySymbol: {
+                              type: 'boolean',
+                            },
+                            showQuantityTotal: {
+                              type: 'boolean',
+                            },
+                            showTaxSummary: {
+                              type: 'boolean',
+                            },
+                            subtotalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            balanceDueLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            balanceDueStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        otherDetails: {
+                          type: 'object',
+                          properties: {
+                            notes: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            terms: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            showPaymentOptions: {
+                              type: 'boolean',
+                            },
+                            showBankDetails: {
+                              type: 'boolean',
+                            },
+                            showQrCode: {
+                              type: 'boolean',
+                            },
+                            signature: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                imageFileId: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^file_[A-Za-z0-9]+$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: ['show', 'label', 'imageFileId'],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    resolvedSettings: {
+                      type: 'object',
+                      properties: {
+                        general: {
+                          type: 'object',
+                          properties: {
+                            paperSize: {
+                              type: 'string',
+                              enum: ['a4', 'letter', 'receipt-80mm'],
+                            },
+                            orientation: {
+                              type: 'string',
+                              enum: ['portrait', 'landscape'],
+                            },
+                            margins: {
+                              type: 'object',
+                              properties: {
+                                top: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                bottom: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                left: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                right: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                              },
+                              required: ['top', 'bottom', 'left', 'right'],
+                              additionalProperties: false,
+                            },
+                            fontFamily: {
+                              type: 'string',
+                              enum: [
+                                'inter',
+                                'roboto',
+                                'open-sans',
+                                'lato',
+                                'noto-sans',
+                                'merriweather',
+                                'source-serif',
+                                'ubuntu-mono',
+                              ],
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            labelColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            backgroundImagePosition: {
+                              type: 'string',
+                              enum: [
+                                'center',
+                                'top-left',
+                                'top-right',
+                                'bottom-left',
+                                'bottom-right',
+                                'tile',
+                              ],
+                            },
+                            accentColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            includePaymentStub: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'paperSize',
+                            'orientation',
+                            'margins',
+                            'fontFamily',
+                            'fontSize',
+                            'fontColor',
+                            'labelColor',
+                            'backgroundColor',
+                            'backgroundImageFileId',
+                            'backgroundImagePosition',
+                            'accentColor',
+                            'includePaymentStub',
+                          ],
+                          additionalProperties: false,
+                        },
+                        header: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            firstPageOnly: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                            'show',
+                            'backgroundImageFileId',
+                            'content',
+                            'firstPageOnly',
+                          ],
+                          additionalProperties: false,
+                        },
+                        footer: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showPageNumber: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                            'show',
+                            'backgroundImageFileId',
+                            'content',
+                            'showPageNumber',
+                          ],
+                          additionalProperties: false,
+                        },
+                        organization: {
+                          type: 'object',
+                          properties: {
+                            showLogo: {
+                              type: 'boolean',
+                            },
+                            logoHeight: {
+                              type: 'integer',
+                              minimum: 24,
+                              maximum: 240,
+                            },
+                            showName: {
+                              type: 'boolean',
+                            },
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showAddress: {
+                              type: 'boolean',
+                            },
+                            addressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          required: [
+                            'showLogo',
+                            'logoHeight',
+                            'showName',
+                            'name',
+                            'showAddress',
+                            'addressFormat',
+                          ],
+                          additionalProperties: false,
+                        },
+                        customer: {
+                          type: 'object',
+                          properties: {
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showBillTo: {
+                              type: 'boolean',
+                            },
+                            billToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            billingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showShipTo: {
+                              type: 'boolean',
+                            },
+                            shipToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            shippingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          required: [
+                            'name',
+                            'showBillTo',
+                            'billToLabel',
+                            'billingAddressFormat',
+                            'showShipTo',
+                            'shipToLabel',
+                            'shippingAddressFormat',
+                          ],
+                          additionalProperties: false,
+                        },
+                        documentDetails: {
+                          type: 'object',
+                          properties: {
+                            showTitle: {
+                              type: 'boolean',
+                            },
+                            title: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            titleStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            fields: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'number',
+                                      'date',
+                                      'due-date',
+                                      'expiry-date',
+                                      'terms',
+                                      'reference',
+                                      'salesperson',
+                                      'subject',
+                                      'payment-mode',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                },
+                                required: ['key', 'show', 'label'],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          required: [
+                            'showTitle',
+                            'title',
+                            'titleStyle',
+                            'fields',
+                          ],
+                          additionalProperties: false,
+                        },
+                        table: {
+                          type: 'object',
+                          properties: {
+                            columns: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'line-number',
+                                      'item',
+                                      'quantity',
+                                      'unit',
+                                      'rate',
+                                      'discount',
+                                      'tax',
+                                      'amount',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  widthPercent: {
+                                    anyOf: [
+                                      {
+                                        type: 'integer',
+                                        minimum: 4,
+                                        maximum: 80,
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'show',
+                                  'label',
+                                  'widthPercent',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            showItemDescription: {
+                              type: 'boolean',
+                            },
+                            showBorders: {
+                              type: 'boolean',
+                            },
+                            header: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            row: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            description: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'columns',
+                            'showItemDescription',
+                            'showBorders',
+                            'header',
+                            'row',
+                            'description',
+                          ],
+                          additionalProperties: false,
+                        },
+                        totals: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            showPaymentDetails: {
+                              type: 'boolean',
+                            },
+                            showAmountInWords: {
+                              type: 'boolean',
+                            },
+                            showCurrencySymbol: {
+                              type: 'boolean',
+                            },
+                            showQuantityTotal: {
+                              type: 'boolean',
+                            },
+                            showTaxSummary: {
+                              type: 'boolean',
+                            },
+                            subtotalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            balanceDueLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            balanceDueStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'show',
+                            'showPaymentDetails',
+                            'showAmountInWords',
+                            'showCurrencySymbol',
+                            'showQuantityTotal',
+                            'showTaxSummary',
+                            'subtotalLabel',
+                            'totalLabel',
+                            'balanceDueLabel',
+                            'totalStyle',
+                            'balanceDueStyle',
+                          ],
+                          additionalProperties: false,
+                        },
+                        otherDetails: {
+                          type: 'object',
+                          properties: {
+                            notes: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            terms: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            showPaymentOptions: {
+                              type: 'boolean',
+                            },
+                            showBankDetails: {
+                              type: 'boolean',
+                            },
+                            showQrCode: {
+                              type: 'boolean',
+                            },
+                            signature: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                imageFileId: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^file_[A-Za-z0-9]+$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: ['show', 'label', 'imageFileId'],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'notes',
+                            'terms',
+                            'showPaymentOptions',
+                            'showBankDetails',
+                            'showQrCode',
+                            'signature',
+                          ],
+                          additionalProperties: false,
+                        },
+                      },
+                      required: [
+                        'general',
+                        'header',
+                        'footer',
+                        'organization',
+                        'customer',
+                        'documentDetails',
+                        'table',
+                        'totals',
+                        'otherDetails',
+                      ],
+                      additionalProperties: false,
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'documentType',
+                    'name',
+                    'layout',
+                    'isDefault',
+                    'settings',
+                    'resolvedSettings',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /branding': {
+    tags: ['Document templates'],
+    summary: 'Retrieve branding',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'branding',
+                    },
+                    accentColor: {
+                      type: 'string',
+                      pattern: '^#[0-9a-f]{6}$',
+                    },
+                    appearance: {
+                      type: 'string',
+                      enum: ['system', 'light', 'dark'],
+                    },
+                    sidebarTone: {
+                      type: 'string',
+                      enum: ['light', 'dark'],
+                    },
+                    updatedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'accentColor',
+                    'appearance',
+                    'sidebarTone',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /branding': {
+    tags: ['Document templates'],
+    summary: 'Update branding',
+    security: [
+      {
+        tenantOAuth: [],
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              accentColor: {
+                type: 'string',
+                pattern: '^#[0-9a-f]{6}$',
+              },
+              appearance: {
+                type: 'string',
+                enum: ['system', 'light', 'dark'],
+              },
+              sidebarTone: {
+                type: 'string',
+                enum: ['light', 'dark'],
+              },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'branding',
+                    },
+                    accentColor: {
+                      type: 'string',
+                      pattern: '^#[0-9a-f]{6}$',
+                    },
+                    appearance: {
+                      type: 'string',
+                      enum: ['system', 'light', 'dark'],
+                    },
+                    sidebarTone: {
+                      type: 'string',
+                      enum: ['light', 'dark'],
+                    },
+                    updatedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'accentColor',
+                    'appearance',
+                    'sidebarTone',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/document-templates': {
+    tags: ['Document templates'],
+    summary: 'List organization document templates',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.invoices.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+      {
+        in: 'query',
+        name: 'documentType',
+        schema: {
+          type: 'string',
+          enum: [
+            'invoice',
+            'quote',
+            'sales-receipt',
+            'credit-note',
+            'payment-receipt',
+          ],
+        },
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'list',
+                    },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          object: {
+                            type: 'string',
+                            const: 'document-template',
+                          },
+                          id: {
+                            type: 'string',
+                          },
+                          documentType: {
+                            type: 'string',
+                            enum: [
+                              'invoice',
+                              'quote',
+                              'sales-receipt',
+                              'credit-note',
+                              'payment-receipt',
+                            ],
+                          },
+                          name: {
+                            type: 'string',
+                          },
+                          layout: {
+                            type: 'string',
+                            enum: [
+                              'standard',
+                              'european',
+                              'spreadsheet',
+                              'elegant',
+                              'retail',
+                            ],
+                          },
+                          isDefault: {
+                            type: 'boolean',
+                          },
+                          settings: {
+                            type: 'object',
+                            properties: {
+                              general: {
+                                type: 'object',
+                                properties: {
+                                  paperSize: {
+                                    type: 'string',
+                                    enum: ['a4', 'letter', 'receipt-80mm'],
+                                  },
+                                  orientation: {
+                                    type: 'string',
+                                    enum: ['portrait', 'landscape'],
+                                  },
+                                  margins: {
+                                    type: 'object',
+                                    properties: {
+                                      top: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                      bottom: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                      left: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                      right: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                    },
+                                    required: [
+                                      'top',
+                                      'bottom',
+                                      'left',
+                                      'right',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  fontFamily: {
+                                    type: 'string',
+                                    enum: [
+                                      'inter',
+                                      'roboto',
+                                      'open-sans',
+                                      'lato',
+                                      'noto-sans',
+                                      'merriweather',
+                                      'source-serif',
+                                      'ubuntu-mono',
+                                    ],
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  labelColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundImageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  backgroundImagePosition: {
+                                    type: 'string',
+                                    enum: [
+                                      'center',
+                                      'top-left',
+                                      'top-right',
+                                      'bottom-left',
+                                      'bottom-right',
+                                      'tile',
+                                    ],
+                                  },
+                                  accentColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  includePaymentStub: {
+                                    type: 'boolean',
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              header: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  backgroundImageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  content: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                  firstPageOnly: {
+                                    type: 'boolean',
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              footer: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  backgroundImageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  content: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                  showPageNumber: {
+                                    type: 'boolean',
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              organization: {
+                                type: 'object',
+                                properties: {
+                                  showLogo: {
+                                    type: 'boolean',
+                                  },
+                                  logoHeight: {
+                                    type: 'integer',
+                                    minimum: 24,
+                                    maximum: 240,
+                                  },
+                                  showName: {
+                                    type: 'boolean',
+                                  },
+                                  name: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                  showAddress: {
+                                    type: 'boolean',
+                                  },
+                                  addressFormat: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              customer: {
+                                type: 'object',
+                                properties: {
+                                  name: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                  showBillTo: {
+                                    type: 'boolean',
+                                  },
+                                  billToLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  billingAddressFormat: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                  showShipTo: {
+                                    type: 'boolean',
+                                  },
+                                  shipToLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  shippingAddressFormat: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              documentDetails: {
+                                type: 'object',
+                                properties: {
+                                  showTitle: {
+                                    type: 'boolean',
+                                  },
+                                  title: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  titleStyle: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                  fields: {
+                                    maxItems: 20,
+                                    type: 'array',
+                                    items: {
+                                      type: 'object',
+                                      properties: {
+                                        key: {
+                                          type: 'string',
+                                          enum: [
+                                            'number',
+                                            'date',
+                                            'due-date',
+                                            'expiry-date',
+                                            'terms',
+                                            'reference',
+                                            'salesperson',
+                                            'subject',
+                                            'payment-mode',
+                                          ],
+                                        },
+                                        show: {
+                                          type: 'boolean',
+                                        },
+                                        label: {
+                                          type: 'string',
+                                          maxLength: 60,
+                                        },
+                                      },
+                                      required: ['key', 'show', 'label'],
+                                      additionalProperties: false,
+                                    },
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              table: {
+                                type: 'object',
+                                properties: {
+                                  columns: {
+                                    maxItems: 20,
+                                    type: 'array',
+                                    items: {
+                                      type: 'object',
+                                      properties: {
+                                        key: {
+                                          type: 'string',
+                                          enum: [
+                                            'line-number',
+                                            'item',
+                                            'quantity',
+                                            'unit',
+                                            'rate',
+                                            'discount',
+                                            'tax',
+                                            'amount',
+                                          ],
+                                        },
+                                        show: {
+                                          type: 'boolean',
+                                        },
+                                        label: {
+                                          type: 'string',
+                                          maxLength: 60,
+                                        },
+                                        widthPercent: {
+                                          anyOf: [
+                                            {
+                                              type: 'integer',
+                                              minimum: 4,
+                                              maximum: 80,
+                                            },
+                                            {
+                                              type: 'null',
+                                            },
+                                          ],
+                                        },
+                                      },
+                                      required: [
+                                        'key',
+                                        'show',
+                                        'label',
+                                        'widthPercent',
+                                      ],
+                                      additionalProperties: false,
+                                    },
+                                  },
+                                  showItemDescription: {
+                                    type: 'boolean',
+                                  },
+                                  showBorders: {
+                                    type: 'boolean',
+                                  },
+                                  header: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  row: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  description: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              totals: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  showPaymentDetails: {
+                                    type: 'boolean',
+                                  },
+                                  showAmountInWords: {
+                                    type: 'boolean',
+                                  },
+                                  showCurrencySymbol: {
+                                    type: 'boolean',
+                                  },
+                                  showQuantityTotal: {
+                                    type: 'boolean',
+                                  },
+                                  showTaxSummary: {
+                                    type: 'boolean',
+                                  },
+                                  subtotalLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  totalLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  balanceDueLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  totalStyle: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  balanceDueStyle: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                              otherDetails: {
+                                type: 'object',
+                                properties: {
+                                  notes: {
+                                    type: 'object',
+                                    properties: {
+                                      show: {
+                                        type: 'boolean',
+                                      },
+                                      label: {
+                                        type: 'string',
+                                        maxLength: 60,
+                                      },
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                    },
+                                    required: ['show', 'label', 'fontSize'],
+                                    additionalProperties: false,
+                                  },
+                                  terms: {
+                                    type: 'object',
+                                    properties: {
+                                      show: {
+                                        type: 'boolean',
+                                      },
+                                      label: {
+                                        type: 'string',
+                                        maxLength: 60,
+                                      },
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                    },
+                                    required: ['show', 'label', 'fontSize'],
+                                    additionalProperties: false,
+                                  },
+                                  showPaymentOptions: {
+                                    type: 'boolean',
+                                  },
+                                  showBankDetails: {
+                                    type: 'boolean',
+                                  },
+                                  showQrCode: {
+                                    type: 'boolean',
+                                  },
+                                  signature: {
+                                    type: 'object',
+                                    properties: {
+                                      show: {
+                                        type: 'boolean',
+                                      },
+                                      label: {
+                                        type: 'string',
+                                        maxLength: 60,
+                                      },
+                                      imageFileId: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^file_[A-Za-z0-9]+$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: ['show', 'label', 'imageFileId'],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                additionalProperties: false,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          resolvedSettings: {
+                            type: 'object',
+                            properties: {
+                              general: {
+                                type: 'object',
+                                properties: {
+                                  paperSize: {
+                                    type: 'string',
+                                    enum: ['a4', 'letter', 'receipt-80mm'],
+                                  },
+                                  orientation: {
+                                    type: 'string',
+                                    enum: ['portrait', 'landscape'],
+                                  },
+                                  margins: {
+                                    type: 'object',
+                                    properties: {
+                                      top: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                      bottom: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                      left: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                      right: {
+                                        type: 'number',
+                                        minimum: 0,
+                                        maximum: 2,
+                                      },
+                                    },
+                                    required: [
+                                      'top',
+                                      'bottom',
+                                      'left',
+                                      'right',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  fontFamily: {
+                                    type: 'string',
+                                    enum: [
+                                      'inter',
+                                      'roboto',
+                                      'open-sans',
+                                      'lato',
+                                      'noto-sans',
+                                      'merriweather',
+                                      'source-serif',
+                                      'ubuntu-mono',
+                                    ],
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  labelColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundImageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  backgroundImagePosition: {
+                                    type: 'string',
+                                    enum: [
+                                      'center',
+                                      'top-left',
+                                      'top-right',
+                                      'bottom-left',
+                                      'bottom-right',
+                                      'tile',
+                                    ],
+                                  },
+                                  accentColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  includePaymentStub: {
+                                    type: 'boolean',
+                                  },
+                                },
+                                required: [
+                                  'paperSize',
+                                  'orientation',
+                                  'margins',
+                                  'fontFamily',
+                                  'fontSize',
+                                  'fontColor',
+                                  'labelColor',
+                                  'backgroundColor',
+                                  'backgroundImageFileId',
+                                  'backgroundImagePosition',
+                                  'accentColor',
+                                  'includePaymentStub',
+                                ],
+                                additionalProperties: false,
+                              },
+                              header: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  backgroundImageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  content: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                  firstPageOnly: {
+                                    type: 'boolean',
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                  'show',
+                                  'backgroundImageFileId',
+                                  'content',
+                                  'firstPageOnly',
+                                ],
+                                additionalProperties: false,
+                              },
+                              footer: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  backgroundImageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                  content: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                  showPageNumber: {
+                                    type: 'boolean',
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                  'show',
+                                  'backgroundImageFileId',
+                                  'content',
+                                  'showPageNumber',
+                                ],
+                                additionalProperties: false,
+                              },
+                              organization: {
+                                type: 'object',
+                                properties: {
+                                  showLogo: {
+                                    type: 'boolean',
+                                  },
+                                  logoHeight: {
+                                    type: 'integer',
+                                    minimum: 24,
+                                    maximum: 240,
+                                  },
+                                  showName: {
+                                    type: 'boolean',
+                                  },
+                                  name: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                  showAddress: {
+                                    type: 'boolean',
+                                  },
+                                  addressFormat: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                },
+                                required: [
+                                  'showLogo',
+                                  'logoHeight',
+                                  'showName',
+                                  'name',
+                                  'showAddress',
+                                  'addressFormat',
+                                ],
+                                additionalProperties: false,
+                              },
+                              customer: {
+                                type: 'object',
+                                properties: {
+                                  name: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                  showBillTo: {
+                                    type: 'boolean',
+                                  },
+                                  billToLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  billingAddressFormat: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                  showShipTo: {
+                                    type: 'boolean',
+                                  },
+                                  shipToLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  shippingAddressFormat: {
+                                    type: 'string',
+                                    maxLength: 2000,
+                                  },
+                                },
+                                required: [
+                                  'name',
+                                  'showBillTo',
+                                  'billToLabel',
+                                  'billingAddressFormat',
+                                  'showShipTo',
+                                  'shipToLabel',
+                                  'shippingAddressFormat',
+                                ],
+                                additionalProperties: false,
+                              },
+                              documentDetails: {
+                                type: 'object',
+                                properties: {
+                                  showTitle: {
+                                    type: 'boolean',
+                                  },
+                                  title: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  titleStyle: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                  fields: {
+                                    maxItems: 20,
+                                    type: 'array',
+                                    items: {
+                                      type: 'object',
+                                      properties: {
+                                        key: {
+                                          type: 'string',
+                                          enum: [
+                                            'number',
+                                            'date',
+                                            'due-date',
+                                            'expiry-date',
+                                            'terms',
+                                            'reference',
+                                            'salesperson',
+                                            'subject',
+                                            'payment-mode',
+                                          ],
+                                        },
+                                        show: {
+                                          type: 'boolean',
+                                        },
+                                        label: {
+                                          type: 'string',
+                                          maxLength: 60,
+                                        },
+                                      },
+                                      required: ['key', 'show', 'label'],
+                                      additionalProperties: false,
+                                    },
+                                  },
+                                },
+                                required: [
+                                  'showTitle',
+                                  'title',
+                                  'titleStyle',
+                                  'fields',
+                                ],
+                                additionalProperties: false,
+                              },
+                              table: {
+                                type: 'object',
+                                properties: {
+                                  columns: {
+                                    maxItems: 20,
+                                    type: 'array',
+                                    items: {
+                                      type: 'object',
+                                      properties: {
+                                        key: {
+                                          type: 'string',
+                                          enum: [
+                                            'line-number',
+                                            'item',
+                                            'quantity',
+                                            'unit',
+                                            'rate',
+                                            'discount',
+                                            'tax',
+                                            'amount',
+                                          ],
+                                        },
+                                        show: {
+                                          type: 'boolean',
+                                        },
+                                        label: {
+                                          type: 'string',
+                                          maxLength: 60,
+                                        },
+                                        widthPercent: {
+                                          anyOf: [
+                                            {
+                                              type: 'integer',
+                                              minimum: 4,
+                                              maximum: 80,
+                                            },
+                                            {
+                                              type: 'null',
+                                            },
+                                          ],
+                                        },
+                                      },
+                                      required: [
+                                        'key',
+                                        'show',
+                                        'label',
+                                        'widthPercent',
+                                      ],
+                                      additionalProperties: false,
+                                    },
+                                  },
+                                  showItemDescription: {
+                                    type: 'boolean',
+                                  },
+                                  showBorders: {
+                                    type: 'boolean',
+                                  },
+                                  header: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  row: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  description: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                    },
+                                    required: ['fontSize', 'fontColor'],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                required: [
+                                  'columns',
+                                  'showItemDescription',
+                                  'showBorders',
+                                  'header',
+                                  'row',
+                                  'description',
+                                ],
+                                additionalProperties: false,
+                              },
+                              totals: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  showPaymentDetails: {
+                                    type: 'boolean',
+                                  },
+                                  showAmountInWords: {
+                                    type: 'boolean',
+                                  },
+                                  showCurrencySymbol: {
+                                    type: 'boolean',
+                                  },
+                                  showQuantityTotal: {
+                                    type: 'boolean',
+                                  },
+                                  showTaxSummary: {
+                                    type: 'boolean',
+                                  },
+                                  subtotalLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  totalLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  balanceDueLabel: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  totalStyle: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                  balanceDueStyle: {
+                                    type: 'object',
+                                    properties: {
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                      fontColor: {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      backgroundColor: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^#[0-9a-f]{6}$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: [
+                                      'fontSize',
+                                      'fontColor',
+                                      'backgroundColor',
+                                    ],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                required: [
+                                  'show',
+                                  'showPaymentDetails',
+                                  'showAmountInWords',
+                                  'showCurrencySymbol',
+                                  'showQuantityTotal',
+                                  'showTaxSummary',
+                                  'subtotalLabel',
+                                  'totalLabel',
+                                  'balanceDueLabel',
+                                  'totalStyle',
+                                  'balanceDueStyle',
+                                ],
+                                additionalProperties: false,
+                              },
+                              otherDetails: {
+                                type: 'object',
+                                properties: {
+                                  notes: {
+                                    type: 'object',
+                                    properties: {
+                                      show: {
+                                        type: 'boolean',
+                                      },
+                                      label: {
+                                        type: 'string',
+                                        maxLength: 60,
+                                      },
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                    },
+                                    required: ['show', 'label', 'fontSize'],
+                                    additionalProperties: false,
+                                  },
+                                  terms: {
+                                    type: 'object',
+                                    properties: {
+                                      show: {
+                                        type: 'boolean',
+                                      },
+                                      label: {
+                                        type: 'string',
+                                        maxLength: 60,
+                                      },
+                                      fontSize: {
+                                        type: 'integer',
+                                        minimum: 6,
+                                        maximum: 36,
+                                      },
+                                    },
+                                    required: ['show', 'label', 'fontSize'],
+                                    additionalProperties: false,
+                                  },
+                                  showPaymentOptions: {
+                                    type: 'boolean',
+                                  },
+                                  showBankDetails: {
+                                    type: 'boolean',
+                                  },
+                                  showQrCode: {
+                                    type: 'boolean',
+                                  },
+                                  signature: {
+                                    type: 'object',
+                                    properties: {
+                                      show: {
+                                        type: 'boolean',
+                                      },
+                                      label: {
+                                        type: 'string',
+                                        maxLength: 60,
+                                      },
+                                      imageFileId: {
+                                        anyOf: [
+                                          {
+                                            type: 'string',
+                                            pattern: '^file_[A-Za-z0-9]+$',
+                                          },
+                                          {
+                                            type: 'null',
+                                          },
+                                        ],
+                                      },
+                                    },
+                                    required: ['show', 'label', 'imageFileId'],
+                                    additionalProperties: false,
+                                  },
+                                },
+                                required: [
+                                  'notes',
+                                  'terms',
+                                  'showPaymentOptions',
+                                  'showBankDetails',
+                                  'showQrCode',
+                                  'signature',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'general',
+                              'header',
+                              'footer',
+                              'organization',
+                              'customer',
+                              'documentDetails',
+                              'table',
+                              'totals',
+                              'otherDetails',
+                            ],
+                            additionalProperties: false,
+                          },
+                          createdAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                          updatedAt: {
+                            type: 'integer',
+                            minimum: -9007199254740991,
+                            maximum: 9007199254740991,
+                          },
+                        },
+                        required: [
+                          'object',
+                          'id',
+                          'documentType',
+                          'name',
+                          'layout',
+                          'isDefault',
+                          'settings',
+                          'resolvedSettings',
+                          'createdAt',
+                          'updatedAt',
+                        ],
+                        additionalProperties: false,
+                      },
+                    },
+                    has_more: {
+                      type: 'boolean',
+                    },
+                    total_count: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                    url: {
+                      type: 'string',
+                    },
+                  },
+                  required: [
+                    'object',
+                    'data',
+                    'has_more',
+                    'total_count',
+                    'url',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'POST /integrations/organizations/{organizationId}/document-templates': {
+    tags: ['Document templates'],
+    summary: 'Create an organization document template',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.invoices.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              documentType: {
+                type: 'string',
+                enum: [
+                  'invoice',
+                  'quote',
+                  'sales-receipt',
+                  'credit-note',
+                  'payment-receipt',
+                ],
+              },
+              name: {
+                type: 'string',
+                minLength: 1,
+                maxLength: 80,
+              },
+              layout: {
+                type: 'string',
+                enum: [
+                  'standard',
+                  'european',
+                  'spreadsheet',
+                  'elegant',
+                  'retail',
+                ],
+              },
+              settings: {
+                default: {},
+                type: 'object',
+                properties: {
+                  general: {
+                    type: 'object',
+                    properties: {
+                      paperSize: {
+                        type: 'string',
+                        enum: ['a4', 'letter', 'receipt-80mm'],
+                      },
+                      orientation: {
+                        type: 'string',
+                        enum: ['portrait', 'landscape'],
+                      },
+                      margins: {
+                        type: 'object',
+                        properties: {
+                          top: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 2,
+                          },
+                          bottom: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 2,
+                          },
+                          left: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 2,
+                          },
+                          right: {
+                            type: 'number',
+                            minimum: 0,
+                            maximum: 2,
+                          },
+                        },
+                        required: ['top', 'bottom', 'left', 'right'],
+                        additionalProperties: false,
+                      },
+                      fontFamily: {
+                        type: 'string',
+                        enum: [
+                          'inter',
+                          'roboto',
+                          'open-sans',
+                          'lato',
+                          'noto-sans',
+                          'merriweather',
+                          'source-serif',
+                          'ubuntu-mono',
+                        ],
+                      },
+                      fontSize: {
+                        type: 'integer',
+                        minimum: 6,
+                        maximum: 36,
+                      },
+                      fontColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      labelColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      backgroundColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      backgroundImageFileId: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^file_[A-Za-z0-9]+$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      backgroundImagePosition: {
+                        type: 'string',
+                        enum: [
+                          'center',
+                          'top-left',
+                          'top-right',
+                          'bottom-left',
+                          'bottom-right',
+                          'tile',
+                        ],
+                      },
+                      accentColor: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      includePaymentStub: {
+                        type: 'boolean',
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  header: {
+                    type: 'object',
+                    properties: {
+                      fontSize: {
+                        type: 'integer',
+                        minimum: 6,
+                        maximum: 36,
+                      },
+                      fontColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      backgroundColor: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      show: {
+                        type: 'boolean',
+                      },
+                      backgroundImageFileId: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^file_[A-Za-z0-9]+$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      content: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                      firstPageOnly: {
+                        type: 'boolean',
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  footer: {
+                    type: 'object',
+                    properties: {
+                      fontSize: {
+                        type: 'integer',
+                        minimum: 6,
+                        maximum: 36,
+                      },
+                      fontColor: {
+                        type: 'string',
+                        pattern: '^#[0-9a-f]{6}$',
+                      },
+                      backgroundColor: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      show: {
+                        type: 'boolean',
+                      },
+                      backgroundImageFileId: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                            pattern: '^file_[A-Za-z0-9]+$',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      content: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                      showPageNumber: {
+                        type: 'boolean',
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  organization: {
+                    type: 'object',
+                    properties: {
+                      showLogo: {
+                        type: 'boolean',
+                      },
+                      logoHeight: {
+                        type: 'integer',
+                        minimum: 24,
+                        maximum: 240,
+                      },
+                      showName: {
+                        type: 'boolean',
+                      },
+                      name: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                        },
+                        required: ['fontSize', 'fontColor'],
+                        additionalProperties: false,
+                      },
+                      showAddress: {
+                        type: 'boolean',
+                      },
+                      addressFormat: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  customer: {
+                    type: 'object',
+                    properties: {
+                      name: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                        },
+                        required: ['fontSize', 'fontColor'],
+                        additionalProperties: false,
+                      },
+                      showBillTo: {
+                        type: 'boolean',
+                      },
+                      billToLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      billingAddressFormat: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                      showShipTo: {
+                        type: 'boolean',
+                      },
+                      shipToLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      shippingAddressFormat: {
+                        type: 'string',
+                        maxLength: 2000,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  documentDetails: {
+                    type: 'object',
+                    properties: {
+                      showTitle: {
+                        type: 'boolean',
+                      },
+                      title: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      titleStyle: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                        },
+                        required: ['fontSize', 'fontColor'],
+                        additionalProperties: false,
+                      },
+                      fields: {
+                        maxItems: 20,
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            key: {
+                              type: 'string',
+                              enum: [
+                                'number',
+                                'date',
+                                'due-date',
+                                'expiry-date',
+                                'terms',
+                                'reference',
+                                'salesperson',
+                                'subject',
+                                'payment-mode',
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            label: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                          },
+                          required: ['key', 'show', 'label'],
+                          additionalProperties: false,
+                        },
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  table: {
+                    type: 'object',
+                    properties: {
+                      columns: {
+                        maxItems: 20,
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            key: {
+                              type: 'string',
+                              enum: [
+                                'line-number',
+                                'item',
+                                'quantity',
+                                'unit',
+                                'rate',
+                                'discount',
+                                'tax',
+                                'amount',
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            label: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            widthPercent: {
+                              anyOf: [
+                                {
+                                  type: 'integer',
+                                  minimum: 4,
+                                  maximum: 80,
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                          },
+                          required: ['key', 'show', 'label', 'widthPercent'],
+                          additionalProperties: false,
+                        },
+                      },
+                      showItemDescription: {
+                        type: 'boolean',
+                      },
+                      showBorders: {
+                        type: 'boolean',
+                      },
+                      header: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          backgroundColor: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['fontSize', 'fontColor', 'backgroundColor'],
+                        additionalProperties: false,
+                      },
+                      row: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          backgroundColor: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['fontSize', 'fontColor', 'backgroundColor'],
+                        additionalProperties: false,
+                      },
+                      description: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                        },
+                        required: ['fontSize', 'fontColor'],
+                        additionalProperties: false,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  totals: {
+                    type: 'object',
+                    properties: {
+                      show: {
+                        type: 'boolean',
+                      },
+                      showPaymentDetails: {
+                        type: 'boolean',
+                      },
+                      showAmountInWords: {
+                        type: 'boolean',
+                      },
+                      showCurrencySymbol: {
+                        type: 'boolean',
+                      },
+                      showQuantityTotal: {
+                        type: 'boolean',
+                      },
+                      showTaxSummary: {
+                        type: 'boolean',
+                      },
+                      subtotalLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      totalLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      balanceDueLabel: {
+                        type: 'string',
+                        maxLength: 60,
+                      },
+                      totalStyle: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          backgroundColor: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['fontSize', 'fontColor', 'backgroundColor'],
+                        additionalProperties: false,
+                      },
+                      balanceDueStyle: {
+                        type: 'object',
+                        properties: {
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                          fontColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          backgroundColor: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['fontSize', 'fontColor', 'backgroundColor'],
+                        additionalProperties: false,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                  otherDetails: {
+                    type: 'object',
+                    properties: {
+                      notes: {
+                        type: 'object',
+                        properties: {
+                          show: {
+                            type: 'boolean',
+                          },
+                          label: {
+                            type: 'string',
+                            maxLength: 60,
+                          },
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                        },
+                        required: ['show', 'label', 'fontSize'],
+                        additionalProperties: false,
+                      },
+                      terms: {
+                        type: 'object',
+                        properties: {
+                          show: {
+                            type: 'boolean',
+                          },
+                          label: {
+                            type: 'string',
+                            maxLength: 60,
+                          },
+                          fontSize: {
+                            type: 'integer',
+                            minimum: 6,
+                            maximum: 36,
+                          },
+                        },
+                        required: ['show', 'label', 'fontSize'],
+                        additionalProperties: false,
+                      },
+                      showPaymentOptions: {
+                        type: 'boolean',
+                      },
+                      showBankDetails: {
+                        type: 'boolean',
+                      },
+                      showQrCode: {
+                        type: 'boolean',
+                      },
+                      signature: {
+                        type: 'object',
+                        properties: {
+                          show: {
+                            type: 'boolean',
+                          },
+                          label: {
+                            type: 'string',
+                            maxLength: 60,
+                          },
+                          imageFileId: {
+                            anyOf: [
+                              {
+                                type: 'string',
+                                pattern: '^file_[A-Za-z0-9]+$',
+                              },
+                              {
+                                type: 'null',
+                              },
+                            ],
+                          },
+                        },
+                        required: ['show', 'label', 'imageFileId'],
+                        additionalProperties: false,
+                      },
+                    },
+                    additionalProperties: false,
+                  },
+                },
+                additionalProperties: false,
+              },
+              isDefault: {
+                default: false,
+                type: 'boolean',
+              },
+            },
+            required: ['documentType', 'name', 'layout'],
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '201': {
+        description: 'Created',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'document-template',
+                    },
+                    id: {
+                      type: 'string',
+                    },
+                    documentType: {
+                      type: 'string',
+                      enum: [
+                        'invoice',
+                        'quote',
+                        'sales-receipt',
+                        'credit-note',
+                        'payment-receipt',
+                      ],
+                    },
+                    name: {
+                      type: 'string',
+                    },
+                    layout: {
+                      type: 'string',
+                      enum: [
+                        'standard',
+                        'european',
+                        'spreadsheet',
+                        'elegant',
+                        'retail',
+                      ],
+                    },
+                    isDefault: {
+                      type: 'boolean',
+                    },
+                    settings: {
+                      type: 'object',
+                      properties: {
+                        general: {
+                          type: 'object',
+                          properties: {
+                            paperSize: {
+                              type: 'string',
+                              enum: ['a4', 'letter', 'receipt-80mm'],
+                            },
+                            orientation: {
+                              type: 'string',
+                              enum: ['portrait', 'landscape'],
+                            },
+                            margins: {
+                              type: 'object',
+                              properties: {
+                                top: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                bottom: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                left: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                right: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                              },
+                              required: ['top', 'bottom', 'left', 'right'],
+                              additionalProperties: false,
+                            },
+                            fontFamily: {
+                              type: 'string',
+                              enum: [
+                                'inter',
+                                'roboto',
+                                'open-sans',
+                                'lato',
+                                'noto-sans',
+                                'merriweather',
+                                'source-serif',
+                                'ubuntu-mono',
+                              ],
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            labelColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            backgroundImagePosition: {
+                              type: 'string',
+                              enum: [
+                                'center',
+                                'top-left',
+                                'top-right',
+                                'bottom-left',
+                                'bottom-right',
+                                'tile',
+                              ],
+                            },
+                            accentColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            includePaymentStub: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        header: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            firstPageOnly: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        footer: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showPageNumber: {
+                              type: 'boolean',
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        organization: {
+                          type: 'object',
+                          properties: {
+                            showLogo: {
+                              type: 'boolean',
+                            },
+                            logoHeight: {
+                              type: 'integer',
+                              minimum: 24,
+                              maximum: 240,
+                            },
+                            showName: {
+                              type: 'boolean',
+                            },
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showAddress: {
+                              type: 'boolean',
+                            },
+                            addressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        customer: {
+                          type: 'object',
+                          properties: {
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showBillTo: {
+                              type: 'boolean',
+                            },
+                            billToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            billingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showShipTo: {
+                              type: 'boolean',
+                            },
+                            shipToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            shippingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        documentDetails: {
+                          type: 'object',
+                          properties: {
+                            showTitle: {
+                              type: 'boolean',
+                            },
+                            title: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            titleStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            fields: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'number',
+                                      'date',
+                                      'due-date',
+                                      'expiry-date',
+                                      'terms',
+                                      'reference',
+                                      'salesperson',
+                                      'subject',
+                                      'payment-mode',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                },
+                                required: ['key', 'show', 'label'],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        table: {
+                          type: 'object',
+                          properties: {
+                            columns: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'line-number',
+                                      'item',
+                                      'quantity',
+                                      'unit',
+                                      'rate',
+                                      'discount',
+                                      'tax',
+                                      'amount',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  widthPercent: {
+                                    anyOf: [
+                                      {
+                                        type: 'integer',
+                                        minimum: 4,
+                                        maximum: 80,
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'show',
+                                  'label',
+                                  'widthPercent',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            showItemDescription: {
+                              type: 'boolean',
+                            },
+                            showBorders: {
+                              type: 'boolean',
+                            },
+                            header: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            row: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            description: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        totals: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            showPaymentDetails: {
+                              type: 'boolean',
+                            },
+                            showAmountInWords: {
+                              type: 'boolean',
+                            },
+                            showCurrencySymbol: {
+                              type: 'boolean',
+                            },
+                            showQuantityTotal: {
+                              type: 'boolean',
+                            },
+                            showTaxSummary: {
+                              type: 'boolean',
+                            },
+                            subtotalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            balanceDueLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            balanceDueStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                        otherDetails: {
+                          type: 'object',
+                          properties: {
+                            notes: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            terms: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            showPaymentOptions: {
+                              type: 'boolean',
+                            },
+                            showBankDetails: {
+                              type: 'boolean',
+                            },
+                            showQrCode: {
+                              type: 'boolean',
+                            },
+                            signature: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                imageFileId: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^file_[A-Za-z0-9]+$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: ['show', 'label', 'imageFileId'],
+                              additionalProperties: false,
+                            },
+                          },
+                          additionalProperties: false,
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    resolvedSettings: {
+                      type: 'object',
+                      properties: {
+                        general: {
+                          type: 'object',
+                          properties: {
+                            paperSize: {
+                              type: 'string',
+                              enum: ['a4', 'letter', 'receipt-80mm'],
+                            },
+                            orientation: {
+                              type: 'string',
+                              enum: ['portrait', 'landscape'],
+                            },
+                            margins: {
+                              type: 'object',
+                              properties: {
+                                top: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                bottom: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                left: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                                right: {
+                                  type: 'number',
+                                  minimum: 0,
+                                  maximum: 2,
+                                },
+                              },
+                              required: ['top', 'bottom', 'left', 'right'],
+                              additionalProperties: false,
+                            },
+                            fontFamily: {
+                              type: 'string',
+                              enum: [
+                                'inter',
+                                'roboto',
+                                'open-sans',
+                                'lato',
+                                'noto-sans',
+                                'merriweather',
+                                'source-serif',
+                                'ubuntu-mono',
+                              ],
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            labelColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            backgroundImagePosition: {
+                              type: 'string',
+                              enum: [
+                                'center',
+                                'top-left',
+                                'top-right',
+                                'bottom-left',
+                                'bottom-right',
+                                'tile',
+                              ],
+                            },
+                            accentColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            includePaymentStub: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'paperSize',
+                            'orientation',
+                            'margins',
+                            'fontFamily',
+                            'fontSize',
+                            'fontColor',
+                            'labelColor',
+                            'backgroundColor',
+                            'backgroundImageFileId',
+                            'backgroundImagePosition',
+                            'accentColor',
+                            'includePaymentStub',
+                          ],
+                          additionalProperties: false,
+                        },
+                        header: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            firstPageOnly: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                            'show',
+                            'backgroundImageFileId',
+                            'content',
+                            'firstPageOnly',
+                          ],
+                          additionalProperties: false,
+                        },
+                        footer: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            show: {
+                              type: 'boolean',
+                            },
+                            backgroundImageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                            content: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showPageNumber: {
+                              type: 'boolean',
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                            'show',
+                            'backgroundImageFileId',
+                            'content',
+                            'showPageNumber',
+                          ],
+                          additionalProperties: false,
+                        },
+                        organization: {
+                          type: 'object',
+                          properties: {
+                            showLogo: {
+                              type: 'boolean',
+                            },
+                            logoHeight: {
+                              type: 'integer',
+                              minimum: 24,
+                              maximum: 240,
+                            },
+                            showName: {
+                              type: 'boolean',
+                            },
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showAddress: {
+                              type: 'boolean',
+                            },
+                            addressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          required: [
+                            'showLogo',
+                            'logoHeight',
+                            'showName',
+                            'name',
+                            'showAddress',
+                            'addressFormat',
+                          ],
+                          additionalProperties: false,
+                        },
+                        customer: {
+                          type: 'object',
+                          properties: {
+                            name: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            showBillTo: {
+                              type: 'boolean',
+                            },
+                            billToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            billingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                            showShipTo: {
+                              type: 'boolean',
+                            },
+                            shipToLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            shippingAddressFormat: {
+                              type: 'string',
+                              maxLength: 2000,
+                            },
+                          },
+                          required: [
+                            'name',
+                            'showBillTo',
+                            'billToLabel',
+                            'billingAddressFormat',
+                            'showShipTo',
+                            'shipToLabel',
+                            'shippingAddressFormat',
+                          ],
+                          additionalProperties: false,
+                        },
+                        documentDetails: {
+                          type: 'object',
+                          properties: {
+                            showTitle: {
+                              type: 'boolean',
+                            },
+                            title: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            titleStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                            fields: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'number',
+                                      'date',
+                                      'due-date',
+                                      'expiry-date',
+                                      'terms',
+                                      'reference',
+                                      'salesperson',
+                                      'subject',
+                                      'payment-mode',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                },
+                                required: ['key', 'show', 'label'],
+                                additionalProperties: false,
+                              },
+                            },
+                          },
+                          required: [
+                            'showTitle',
+                            'title',
+                            'titleStyle',
+                            'fields',
+                          ],
+                          additionalProperties: false,
+                        },
+                        table: {
+                          type: 'object',
+                          properties: {
+                            columns: {
+                              maxItems: 20,
+                              type: 'array',
+                              items: {
+                                type: 'object',
+                                properties: {
+                                  key: {
+                                    type: 'string',
+                                    enum: [
+                                      'line-number',
+                                      'item',
+                                      'quantity',
+                                      'unit',
+                                      'rate',
+                                      'discount',
+                                      'tax',
+                                      'amount',
+                                    ],
+                                  },
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  widthPercent: {
+                                    anyOf: [
+                                      {
+                                        type: 'integer',
+                                        minimum: 4,
+                                        maximum: 80,
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'key',
+                                  'show',
+                                  'label',
+                                  'widthPercent',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            showItemDescription: {
+                              type: 'boolean',
+                            },
+                            showBorders: {
+                              type: 'boolean',
+                            },
+                            header: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            row: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            description: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                              },
+                              required: ['fontSize', 'fontColor'],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'columns',
+                            'showItemDescription',
+                            'showBorders',
+                            'header',
+                            'row',
+                            'description',
+                          ],
+                          additionalProperties: false,
+                        },
+                        totals: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            showPaymentDetails: {
+                              type: 'boolean',
+                            },
+                            showAmountInWords: {
+                              type: 'boolean',
+                            },
+                            showCurrencySymbol: {
+                              type: 'boolean',
+                            },
+                            showQuantityTotal: {
+                              type: 'boolean',
+                            },
+                            showTaxSummary: {
+                              type: 'boolean',
+                            },
+                            subtotalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            balanceDueLabel: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            totalStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                            balanceDueStyle: {
+                              type: 'object',
+                              properties: {
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                                fontColor: {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                backgroundColor: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^#[0-9a-f]{6}$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: [
+                                'fontSize',
+                                'fontColor',
+                                'backgroundColor',
+                              ],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'show',
+                            'showPaymentDetails',
+                            'showAmountInWords',
+                            'showCurrencySymbol',
+                            'showQuantityTotal',
+                            'showTaxSummary',
+                            'subtotalLabel',
+                            'totalLabel',
+                            'balanceDueLabel',
+                            'totalStyle',
+                            'balanceDueStyle',
+                          ],
+                          additionalProperties: false,
+                        },
+                        otherDetails: {
+                          type: 'object',
+                          properties: {
+                            notes: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            terms: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                fontSize: {
+                                  type: 'integer',
+                                  minimum: 6,
+                                  maximum: 36,
+                                },
+                              },
+                              required: ['show', 'label', 'fontSize'],
+                              additionalProperties: false,
+                            },
+                            showPaymentOptions: {
+                              type: 'boolean',
+                            },
+                            showBankDetails: {
+                              type: 'boolean',
+                            },
+                            showQrCode: {
+                              type: 'boolean',
+                            },
+                            signature: {
+                              type: 'object',
+                              properties: {
+                                show: {
+                                  type: 'boolean',
+                                },
+                                label: {
+                                  type: 'string',
+                                  maxLength: 60,
+                                },
+                                imageFileId: {
+                                  anyOf: [
+                                    {
+                                      type: 'string',
+                                      pattern: '^file_[A-Za-z0-9]+$',
+                                    },
+                                    {
+                                      type: 'null',
+                                    },
+                                  ],
+                                },
+                              },
+                              required: ['show', 'label', 'imageFileId'],
+                              additionalProperties: false,
+                            },
+                          },
+                          required: [
+                            'notes',
+                            'terms',
+                            'showPaymentOptions',
+                            'showBankDetails',
+                            'showQrCode',
+                            'signature',
+                          ],
+                          additionalProperties: false,
+                        },
+                      },
+                      required: [
+                        'general',
+                        'header',
+                        'footer',
+                        'organization',
+                        'customer',
+                        'documentDetails',
+                        'table',
+                        'totals',
+                        'otherDetails',
+                      ],
+                      additionalProperties: false,
+                    },
+                    createdAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                    updatedAt: {
+                      type: 'integer',
+                      minimum: -9007199254740991,
+                      maximum: 9007199254740991,
+                    },
+                  },
+                  required: [
+                    'object',
+                    'id',
+                    'documentType',
+                    'name',
+                    'layout',
+                    'isDefault',
+                    'settings',
+                    'resolvedSettings',
+                    'createdAt',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'GET /integrations/organizations/{organizationId}/document-templates/resolved':
+    {
+      tags: ['Document templates'],
+      summary: 'Resolve an organization document template',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.read'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'query',
+          name: 'documentType',
+          schema: {
+            type: 'string',
+            enum: [
+              'invoice',
+              'quote',
+              'sales-receipt',
+              'credit-note',
+              'payment-receipt',
+            ],
+          },
+          required: true,
+        },
+        {
+          in: 'query',
+          name: 'templateId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Successful Response',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'resolved-document-template',
+                      },
+                      documentType: {
+                        type: 'string',
+                        enum: [
+                          'invoice',
+                          'quote',
+                          'sales-receipt',
+                          'credit-note',
+                          'payment-receipt',
+                        ],
+                      },
+                      templateId: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      name: {
+                        anyOf: [
+                          {
+                            type: 'string',
+                          },
+                          {
+                            type: 'null',
+                          },
+                        ],
+                      },
+                      layout: {
+                        type: 'string',
+                        enum: [
+                          'standard',
+                          'european',
+                          'spreadsheet',
+                          'elegant',
+                          'retail',
+                        ],
+                      },
+                      settings: {
+                        type: 'object',
+                        properties: {
+                          general: {
+                            type: 'object',
+                            properties: {
+                              paperSize: {
+                                type: 'string',
+                                enum: ['a4', 'letter', 'receipt-80mm'],
+                              },
+                              orientation: {
+                                type: 'string',
+                                enum: ['portrait', 'landscape'],
+                              },
+                              margins: {
+                                type: 'object',
+                                properties: {
+                                  top: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  bottom: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  left: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  right: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                },
+                                required: ['top', 'bottom', 'left', 'right'],
+                                additionalProperties: false,
+                              },
+                              fontFamily: {
+                                type: 'string',
+                                enum: [
+                                  'inter',
+                                  'roboto',
+                                  'open-sans',
+                                  'lato',
+                                  'noto-sans',
+                                  'merriweather',
+                                  'source-serif',
+                                  'ubuntu-mono',
+                                ],
+                              },
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              labelColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              backgroundImagePosition: {
+                                type: 'string',
+                                enum: [
+                                  'center',
+                                  'top-left',
+                                  'top-right',
+                                  'bottom-left',
+                                  'bottom-right',
+                                  'tile',
+                                ],
+                              },
+                              accentColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              includePaymentStub: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'paperSize',
+                              'orientation',
+                              'margins',
+                              'fontFamily',
+                              'fontSize',
+                              'fontColor',
+                              'labelColor',
+                              'backgroundColor',
+                              'backgroundImageFileId',
+                              'backgroundImagePosition',
+                              'accentColor',
+                              'includePaymentStub',
+                            ],
+                            additionalProperties: false,
+                          },
+                          header: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              firstPageOnly: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'fontSize',
+                              'fontColor',
+                              'backgroundColor',
+                              'show',
+                              'backgroundImageFileId',
+                              'content',
+                              'firstPageOnly',
+                            ],
+                            additionalProperties: false,
+                          },
+                          footer: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showPageNumber: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'fontSize',
+                              'fontColor',
+                              'backgroundColor',
+                              'show',
+                              'backgroundImageFileId',
+                              'content',
+                              'showPageNumber',
+                            ],
+                            additionalProperties: false,
+                          },
+                          organization: {
+                            type: 'object',
+                            properties: {
+                              showLogo: {
+                                type: 'boolean',
+                              },
+                              logoHeight: {
+                                type: 'integer',
+                                minimum: 24,
+                                maximum: 240,
+                              },
+                              showName: {
+                                type: 'boolean',
+                              },
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showAddress: {
+                                type: 'boolean',
+                              },
+                              addressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            required: [
+                              'showLogo',
+                              'logoHeight',
+                              'showName',
+                              'name',
+                              'showAddress',
+                              'addressFormat',
+                            ],
+                            additionalProperties: false,
+                          },
+                          customer: {
+                            type: 'object',
+                            properties: {
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showBillTo: {
+                                type: 'boolean',
+                              },
+                              billToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              billingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showShipTo: {
+                                type: 'boolean',
+                              },
+                              shipToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              shippingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            required: [
+                              'name',
+                              'showBillTo',
+                              'billToLabel',
+                              'billingAddressFormat',
+                              'showShipTo',
+                              'shipToLabel',
+                              'shippingAddressFormat',
+                            ],
+                            additionalProperties: false,
+                          },
+                          documentDetails: {
+                            type: 'object',
+                            properties: {
+                              showTitle: {
+                                type: 'boolean',
+                              },
+                              title: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              titleStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              fields: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'number',
+                                        'date',
+                                        'due-date',
+                                        'expiry-date',
+                                        'terms',
+                                        'reference',
+                                        'salesperson',
+                                        'subject',
+                                        'payment-mode',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                  },
+                                  required: ['key', 'show', 'label'],
+                                  additionalProperties: false,
+                                },
+                              },
+                            },
+                            required: [
+                              'showTitle',
+                              'title',
+                              'titleStyle',
+                              'fields',
+                            ],
+                            additionalProperties: false,
+                          },
+                          table: {
+                            type: 'object',
+                            properties: {
+                              columns: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'line-number',
+                                        'item',
+                                        'quantity',
+                                        'unit',
+                                        'rate',
+                                        'discount',
+                                        'tax',
+                                        'amount',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                    widthPercent: {
+                                      anyOf: [
+                                        {
+                                          type: 'integer',
+                                          minimum: 4,
+                                          maximum: 80,
+                                        },
+                                        {
+                                          type: 'null',
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  required: [
+                                    'key',
+                                    'show',
+                                    'label',
+                                    'widthPercent',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                              },
+                              showItemDescription: {
+                                type: 'boolean',
+                              },
+                              showBorders: {
+                                type: 'boolean',
+                              },
+                              header: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              row: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              description: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'columns',
+                              'showItemDescription',
+                              'showBorders',
+                              'header',
+                              'row',
+                              'description',
+                            ],
+                            additionalProperties: false,
+                          },
+                          totals: {
+                            type: 'object',
+                            properties: {
+                              show: {
+                                type: 'boolean',
+                              },
+                              showPaymentDetails: {
+                                type: 'boolean',
+                              },
+                              showAmountInWords: {
+                                type: 'boolean',
+                              },
+                              showCurrencySymbol: {
+                                type: 'boolean',
+                              },
+                              showQuantityTotal: {
+                                type: 'boolean',
+                              },
+                              showTaxSummary: {
+                                type: 'boolean',
+                              },
+                              subtotalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              balanceDueLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              balanceDueStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'show',
+                              'showPaymentDetails',
+                              'showAmountInWords',
+                              'showCurrencySymbol',
+                              'showQuantityTotal',
+                              'showTaxSummary',
+                              'subtotalLabel',
+                              'totalLabel',
+                              'balanceDueLabel',
+                              'totalStyle',
+                              'balanceDueStyle',
+                            ],
+                            additionalProperties: false,
+                          },
+                          otherDetails: {
+                            type: 'object',
+                            properties: {
+                              notes: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              terms: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              showPaymentOptions: {
+                                type: 'boolean',
+                              },
+                              showBankDetails: {
+                                type: 'boolean',
+                              },
+                              showQrCode: {
+                                type: 'boolean',
+                              },
+                              signature: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  imageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: ['show', 'label', 'imageFileId'],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'notes',
+                              'terms',
+                              'showPaymentOptions',
+                              'showBankDetails',
+                              'showQrCode',
+                              'signature',
+                            ],
+                            additionalProperties: false,
+                          },
+                        },
+                        required: [
+                          'general',
+                          'header',
+                          'footer',
+                          'organization',
+                          'customer',
+                          'documentDetails',
+                          'table',
+                          'totals',
+                          'otherDetails',
+                        ],
+                        additionalProperties: false,
+                      },
+                      branding: {
+                        type: 'object',
+                        properties: {
+                          accentColor: {
+                            type: 'string',
+                            pattern: '^#[0-9a-f]{6}$',
+                          },
+                          appearance: {
+                            type: 'string',
+                            enum: ['system', 'light', 'dark'],
+                          },
+                          sidebarTone: {
+                            type: 'string',
+                            enum: ['light', 'dark'],
+                          },
+                        },
+                        required: ['accentColor', 'appearance', 'sidebarTone'],
+                        additionalProperties: false,
+                      },
+                    },
+                    required: [
+                      'object',
+                      'documentType',
+                      'templateId',
+                      'name',
+                      'layout',
+                      'settings',
+                      'branding',
+                    ],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /integrations/organizations/{organizationId}/document-templates/{templateId}':
+    {
+      tags: ['Document templates'],
+      summary: 'Retrieve an organization document template',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.read'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'templateId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Successful Response',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'document-template',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                      documentType: {
+                        type: 'string',
+                        enum: [
+                          'invoice',
+                          'quote',
+                          'sales-receipt',
+                          'credit-note',
+                          'payment-receipt',
+                        ],
+                      },
+                      name: {
+                        type: 'string',
+                      },
+                      layout: {
+                        type: 'string',
+                        enum: [
+                          'standard',
+                          'european',
+                          'spreadsheet',
+                          'elegant',
+                          'retail',
+                        ],
+                      },
+                      isDefault: {
+                        type: 'boolean',
+                      },
+                      settings: {
+                        type: 'object',
+                        properties: {
+                          general: {
+                            type: 'object',
+                            properties: {
+                              paperSize: {
+                                type: 'string',
+                                enum: ['a4', 'letter', 'receipt-80mm'],
+                              },
+                              orientation: {
+                                type: 'string',
+                                enum: ['portrait', 'landscape'],
+                              },
+                              margins: {
+                                type: 'object',
+                                properties: {
+                                  top: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  bottom: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  left: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  right: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                },
+                                required: ['top', 'bottom', 'left', 'right'],
+                                additionalProperties: false,
+                              },
+                              fontFamily: {
+                                type: 'string',
+                                enum: [
+                                  'inter',
+                                  'roboto',
+                                  'open-sans',
+                                  'lato',
+                                  'noto-sans',
+                                  'merriweather',
+                                  'source-serif',
+                                  'ubuntu-mono',
+                                ],
+                              },
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              labelColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              backgroundImagePosition: {
+                                type: 'string',
+                                enum: [
+                                  'center',
+                                  'top-left',
+                                  'top-right',
+                                  'bottom-left',
+                                  'bottom-right',
+                                  'tile',
+                                ],
+                              },
+                              accentColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              includePaymentStub: {
+                                type: 'boolean',
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          header: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              firstPageOnly: {
+                                type: 'boolean',
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          footer: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showPageNumber: {
+                                type: 'boolean',
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          organization: {
+                            type: 'object',
+                            properties: {
+                              showLogo: {
+                                type: 'boolean',
+                              },
+                              logoHeight: {
+                                type: 'integer',
+                                minimum: 24,
+                                maximum: 240,
+                              },
+                              showName: {
+                                type: 'boolean',
+                              },
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showAddress: {
+                                type: 'boolean',
+                              },
+                              addressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          customer: {
+                            type: 'object',
+                            properties: {
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showBillTo: {
+                                type: 'boolean',
+                              },
+                              billToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              billingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showShipTo: {
+                                type: 'boolean',
+                              },
+                              shipToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              shippingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          documentDetails: {
+                            type: 'object',
+                            properties: {
+                              showTitle: {
+                                type: 'boolean',
+                              },
+                              title: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              titleStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              fields: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'number',
+                                        'date',
+                                        'due-date',
+                                        'expiry-date',
+                                        'terms',
+                                        'reference',
+                                        'salesperson',
+                                        'subject',
+                                        'payment-mode',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                  },
+                                  required: ['key', 'show', 'label'],
+                                  additionalProperties: false,
+                                },
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          table: {
+                            type: 'object',
+                            properties: {
+                              columns: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'line-number',
+                                        'item',
+                                        'quantity',
+                                        'unit',
+                                        'rate',
+                                        'discount',
+                                        'tax',
+                                        'amount',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                    widthPercent: {
+                                      anyOf: [
+                                        {
+                                          type: 'integer',
+                                          minimum: 4,
+                                          maximum: 80,
+                                        },
+                                        {
+                                          type: 'null',
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  required: [
+                                    'key',
+                                    'show',
+                                    'label',
+                                    'widthPercent',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                              },
+                              showItemDescription: {
+                                type: 'boolean',
+                              },
+                              showBorders: {
+                                type: 'boolean',
+                              },
+                              header: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              row: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              description: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          totals: {
+                            type: 'object',
+                            properties: {
+                              show: {
+                                type: 'boolean',
+                              },
+                              showPaymentDetails: {
+                                type: 'boolean',
+                              },
+                              showAmountInWords: {
+                                type: 'boolean',
+                              },
+                              showCurrencySymbol: {
+                                type: 'boolean',
+                              },
+                              showQuantityTotal: {
+                                type: 'boolean',
+                              },
+                              showTaxSummary: {
+                                type: 'boolean',
+                              },
+                              subtotalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              balanceDueLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              balanceDueStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          otherDetails: {
+                            type: 'object',
+                            properties: {
+                              notes: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              terms: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              showPaymentOptions: {
+                                type: 'boolean',
+                              },
+                              showBankDetails: {
+                                type: 'boolean',
+                              },
+                              showQrCode: {
+                                type: 'boolean',
+                              },
+                              signature: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  imageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: ['show', 'label', 'imageFileId'],
+                                additionalProperties: false,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                        },
+                        additionalProperties: false,
+                      },
+                      resolvedSettings: {
+                        type: 'object',
+                        properties: {
+                          general: {
+                            type: 'object',
+                            properties: {
+                              paperSize: {
+                                type: 'string',
+                                enum: ['a4', 'letter', 'receipt-80mm'],
+                              },
+                              orientation: {
+                                type: 'string',
+                                enum: ['portrait', 'landscape'],
+                              },
+                              margins: {
+                                type: 'object',
+                                properties: {
+                                  top: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  bottom: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  left: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  right: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                },
+                                required: ['top', 'bottom', 'left', 'right'],
+                                additionalProperties: false,
+                              },
+                              fontFamily: {
+                                type: 'string',
+                                enum: [
+                                  'inter',
+                                  'roboto',
+                                  'open-sans',
+                                  'lato',
+                                  'noto-sans',
+                                  'merriweather',
+                                  'source-serif',
+                                  'ubuntu-mono',
+                                ],
+                              },
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              labelColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              backgroundImagePosition: {
+                                type: 'string',
+                                enum: [
+                                  'center',
+                                  'top-left',
+                                  'top-right',
+                                  'bottom-left',
+                                  'bottom-right',
+                                  'tile',
+                                ],
+                              },
+                              accentColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              includePaymentStub: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'paperSize',
+                              'orientation',
+                              'margins',
+                              'fontFamily',
+                              'fontSize',
+                              'fontColor',
+                              'labelColor',
+                              'backgroundColor',
+                              'backgroundImageFileId',
+                              'backgroundImagePosition',
+                              'accentColor',
+                              'includePaymentStub',
+                            ],
+                            additionalProperties: false,
+                          },
+                          header: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              firstPageOnly: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'fontSize',
+                              'fontColor',
+                              'backgroundColor',
+                              'show',
+                              'backgroundImageFileId',
+                              'content',
+                              'firstPageOnly',
+                            ],
+                            additionalProperties: false,
+                          },
+                          footer: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showPageNumber: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'fontSize',
+                              'fontColor',
+                              'backgroundColor',
+                              'show',
+                              'backgroundImageFileId',
+                              'content',
+                              'showPageNumber',
+                            ],
+                            additionalProperties: false,
+                          },
+                          organization: {
+                            type: 'object',
+                            properties: {
+                              showLogo: {
+                                type: 'boolean',
+                              },
+                              logoHeight: {
+                                type: 'integer',
+                                minimum: 24,
+                                maximum: 240,
+                              },
+                              showName: {
+                                type: 'boolean',
+                              },
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showAddress: {
+                                type: 'boolean',
+                              },
+                              addressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            required: [
+                              'showLogo',
+                              'logoHeight',
+                              'showName',
+                              'name',
+                              'showAddress',
+                              'addressFormat',
+                            ],
+                            additionalProperties: false,
+                          },
+                          customer: {
+                            type: 'object',
+                            properties: {
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showBillTo: {
+                                type: 'boolean',
+                              },
+                              billToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              billingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showShipTo: {
+                                type: 'boolean',
+                              },
+                              shipToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              shippingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            required: [
+                              'name',
+                              'showBillTo',
+                              'billToLabel',
+                              'billingAddressFormat',
+                              'showShipTo',
+                              'shipToLabel',
+                              'shippingAddressFormat',
+                            ],
+                            additionalProperties: false,
+                          },
+                          documentDetails: {
+                            type: 'object',
+                            properties: {
+                              showTitle: {
+                                type: 'boolean',
+                              },
+                              title: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              titleStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              fields: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'number',
+                                        'date',
+                                        'due-date',
+                                        'expiry-date',
+                                        'terms',
+                                        'reference',
+                                        'salesperson',
+                                        'subject',
+                                        'payment-mode',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                  },
+                                  required: ['key', 'show', 'label'],
+                                  additionalProperties: false,
+                                },
+                              },
+                            },
+                            required: [
+                              'showTitle',
+                              'title',
+                              'titleStyle',
+                              'fields',
+                            ],
+                            additionalProperties: false,
+                          },
+                          table: {
+                            type: 'object',
+                            properties: {
+                              columns: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'line-number',
+                                        'item',
+                                        'quantity',
+                                        'unit',
+                                        'rate',
+                                        'discount',
+                                        'tax',
+                                        'amount',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                    widthPercent: {
+                                      anyOf: [
+                                        {
+                                          type: 'integer',
+                                          minimum: 4,
+                                          maximum: 80,
+                                        },
+                                        {
+                                          type: 'null',
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  required: [
+                                    'key',
+                                    'show',
+                                    'label',
+                                    'widthPercent',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                              },
+                              showItemDescription: {
+                                type: 'boolean',
+                              },
+                              showBorders: {
+                                type: 'boolean',
+                              },
+                              header: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              row: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              description: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'columns',
+                              'showItemDescription',
+                              'showBorders',
+                              'header',
+                              'row',
+                              'description',
+                            ],
+                            additionalProperties: false,
+                          },
+                          totals: {
+                            type: 'object',
+                            properties: {
+                              show: {
+                                type: 'boolean',
+                              },
+                              showPaymentDetails: {
+                                type: 'boolean',
+                              },
+                              showAmountInWords: {
+                                type: 'boolean',
+                              },
+                              showCurrencySymbol: {
+                                type: 'boolean',
+                              },
+                              showQuantityTotal: {
+                                type: 'boolean',
+                              },
+                              showTaxSummary: {
+                                type: 'boolean',
+                              },
+                              subtotalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              balanceDueLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              balanceDueStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'show',
+                              'showPaymentDetails',
+                              'showAmountInWords',
+                              'showCurrencySymbol',
+                              'showQuantityTotal',
+                              'showTaxSummary',
+                              'subtotalLabel',
+                              'totalLabel',
+                              'balanceDueLabel',
+                              'totalStyle',
+                              'balanceDueStyle',
+                            ],
+                            additionalProperties: false,
+                          },
+                          otherDetails: {
+                            type: 'object',
+                            properties: {
+                              notes: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              terms: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              showPaymentOptions: {
+                                type: 'boolean',
+                              },
+                              showBankDetails: {
+                                type: 'boolean',
+                              },
+                              showQrCode: {
+                                type: 'boolean',
+                              },
+                              signature: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  imageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: ['show', 'label', 'imageFileId'],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'notes',
+                              'terms',
+                              'showPaymentOptions',
+                              'showBankDetails',
+                              'showQrCode',
+                              'signature',
+                            ],
+                            additionalProperties: false,
+                          },
+                        },
+                        required: [
+                          'general',
+                          'header',
+                          'footer',
+                          'organization',
+                          'customer',
+                          'documentDetails',
+                          'table',
+                          'totals',
+                          'otherDetails',
+                        ],
+                        additionalProperties: false,
+                      },
+                      createdAt: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                      updatedAt: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                    },
+                    required: [
+                      'object',
+                      'id',
+                      'documentType',
+                      'name',
+                      'layout',
+                      'isDefault',
+                      'settings',
+                      'resolvedSettings',
+                      'createdAt',
+                      'updatedAt',
+                    ],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'PATCH /integrations/organizations/{organizationId}/document-templates/{templateId}':
+    {
+      tags: ['Document templates'],
+      summary: 'Update an organization document template',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'templateId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                name: {
+                  type: 'string',
+                  minLength: 1,
+                  maxLength: 80,
+                },
+                layout: {
+                  type: 'string',
+                  enum: [
+                    'standard',
+                    'european',
+                    'spreadsheet',
+                    'elegant',
+                    'retail',
+                  ],
+                },
+                settings: {
+                  type: 'object',
+                  properties: {
+                    general: {
+                      type: 'object',
+                      properties: {
+                        paperSize: {
+                          type: 'string',
+                          enum: ['a4', 'letter', 'receipt-80mm'],
+                        },
+                        orientation: {
+                          type: 'string',
+                          enum: ['portrait', 'landscape'],
+                        },
+                        margins: {
+                          type: 'object',
+                          properties: {
+                            top: {
+                              type: 'number',
+                              minimum: 0,
+                              maximum: 2,
+                            },
+                            bottom: {
+                              type: 'number',
+                              minimum: 0,
+                              maximum: 2,
+                            },
+                            left: {
+                              type: 'number',
+                              minimum: 0,
+                              maximum: 2,
+                            },
+                            right: {
+                              type: 'number',
+                              minimum: 0,
+                              maximum: 2,
+                            },
+                          },
+                          required: ['top', 'bottom', 'left', 'right'],
+                          additionalProperties: false,
+                        },
+                        fontFamily: {
+                          type: 'string',
+                          enum: [
+                            'inter',
+                            'roboto',
+                            'open-sans',
+                            'lato',
+                            'noto-sans',
+                            'merriweather',
+                            'source-serif',
+                            'ubuntu-mono',
+                          ],
+                        },
+                        fontSize: {
+                          type: 'integer',
+                          minimum: 6,
+                          maximum: 36,
+                        },
+                        fontColor: {
+                          type: 'string',
+                          pattern: '^#[0-9a-f]{6}$',
+                        },
+                        labelColor: {
+                          type: 'string',
+                          pattern: '^#[0-9a-f]{6}$',
+                        },
+                        backgroundColor: {
+                          type: 'string',
+                          pattern: '^#[0-9a-f]{6}$',
+                        },
+                        backgroundImageFileId: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                              pattern: '^file_[A-Za-z0-9]+$',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        backgroundImagePosition: {
+                          type: 'string',
+                          enum: [
+                            'center',
+                            'top-left',
+                            'top-right',
+                            'bottom-left',
+                            'bottom-right',
+                            'tile',
+                          ],
+                        },
+                        accentColor: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        includePaymentStub: {
+                          type: 'boolean',
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    header: {
+                      type: 'object',
+                      properties: {
+                        fontSize: {
+                          type: 'integer',
+                          minimum: 6,
+                          maximum: 36,
+                        },
+                        fontColor: {
+                          type: 'string',
+                          pattern: '^#[0-9a-f]{6}$',
+                        },
+                        backgroundColor: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        show: {
+                          type: 'boolean',
+                        },
+                        backgroundImageFileId: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                              pattern: '^file_[A-Za-z0-9]+$',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        content: {
+                          type: 'string',
+                          maxLength: 2000,
+                        },
+                        firstPageOnly: {
+                          type: 'boolean',
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    footer: {
+                      type: 'object',
+                      properties: {
+                        fontSize: {
+                          type: 'integer',
+                          minimum: 6,
+                          maximum: 36,
+                        },
+                        fontColor: {
+                          type: 'string',
+                          pattern: '^#[0-9a-f]{6}$',
+                        },
+                        backgroundColor: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        show: {
+                          type: 'boolean',
+                        },
+                        backgroundImageFileId: {
+                          anyOf: [
+                            {
+                              type: 'string',
+                              pattern: '^file_[A-Za-z0-9]+$',
+                            },
+                            {
+                              type: 'null',
+                            },
+                          ],
+                        },
+                        content: {
+                          type: 'string',
+                          maxLength: 2000,
+                        },
+                        showPageNumber: {
+                          type: 'boolean',
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    organization: {
+                      type: 'object',
+                      properties: {
+                        showLogo: {
+                          type: 'boolean',
+                        },
+                        logoHeight: {
+                          type: 'integer',
+                          minimum: 24,
+                          maximum: 240,
+                        },
+                        showName: {
+                          type: 'boolean',
+                        },
+                        name: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                          },
+                          required: ['fontSize', 'fontColor'],
+                          additionalProperties: false,
+                        },
+                        showAddress: {
+                          type: 'boolean',
+                        },
+                        addressFormat: {
+                          type: 'string',
+                          maxLength: 2000,
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    customer: {
+                      type: 'object',
+                      properties: {
+                        name: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                          },
+                          required: ['fontSize', 'fontColor'],
+                          additionalProperties: false,
+                        },
+                        showBillTo: {
+                          type: 'boolean',
+                        },
+                        billToLabel: {
+                          type: 'string',
+                          maxLength: 60,
+                        },
+                        billingAddressFormat: {
+                          type: 'string',
+                          maxLength: 2000,
+                        },
+                        showShipTo: {
+                          type: 'boolean',
+                        },
+                        shipToLabel: {
+                          type: 'string',
+                          maxLength: 60,
+                        },
+                        shippingAddressFormat: {
+                          type: 'string',
+                          maxLength: 2000,
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    documentDetails: {
+                      type: 'object',
+                      properties: {
+                        showTitle: {
+                          type: 'boolean',
+                        },
+                        title: {
+                          type: 'string',
+                          maxLength: 60,
+                        },
+                        titleStyle: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                          },
+                          required: ['fontSize', 'fontColor'],
+                          additionalProperties: false,
+                        },
+                        fields: {
+                          maxItems: 20,
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              key: {
+                                type: 'string',
+                                enum: [
+                                  'number',
+                                  'date',
+                                  'due-date',
+                                  'expiry-date',
+                                  'terms',
+                                  'reference',
+                                  'salesperson',
+                                  'subject',
+                                  'payment-mode',
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              label: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                            },
+                            required: ['key', 'show', 'label'],
+                            additionalProperties: false,
+                          },
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    table: {
+                      type: 'object',
+                      properties: {
+                        columns: {
+                          maxItems: 20,
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              key: {
+                                type: 'string',
+                                enum: [
+                                  'line-number',
+                                  'item',
+                                  'quantity',
+                                  'unit',
+                                  'rate',
+                                  'discount',
+                                  'tax',
+                                  'amount',
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              label: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              widthPercent: {
+                                anyOf: [
+                                  {
+                                    type: 'integer',
+                                    minimum: 4,
+                                    maximum: 80,
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                            },
+                            required: ['key', 'show', 'label', 'widthPercent'],
+                            additionalProperties: false,
+                          },
+                        },
+                        showItemDescription: {
+                          type: 'boolean',
+                        },
+                        showBorders: {
+                          type: 'boolean',
+                        },
+                        header: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                          ],
+                          additionalProperties: false,
+                        },
+                        row: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                          ],
+                          additionalProperties: false,
+                        },
+                        description: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                          },
+                          required: ['fontSize', 'fontColor'],
+                          additionalProperties: false,
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    totals: {
+                      type: 'object',
+                      properties: {
+                        show: {
+                          type: 'boolean',
+                        },
+                        showPaymentDetails: {
+                          type: 'boolean',
+                        },
+                        showAmountInWords: {
+                          type: 'boolean',
+                        },
+                        showCurrencySymbol: {
+                          type: 'boolean',
+                        },
+                        showQuantityTotal: {
+                          type: 'boolean',
+                        },
+                        showTaxSummary: {
+                          type: 'boolean',
+                        },
+                        subtotalLabel: {
+                          type: 'string',
+                          maxLength: 60,
+                        },
+                        totalLabel: {
+                          type: 'string',
+                          maxLength: 60,
+                        },
+                        balanceDueLabel: {
+                          type: 'string',
+                          maxLength: 60,
+                        },
+                        totalStyle: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                          ],
+                          additionalProperties: false,
+                        },
+                        balanceDueStyle: {
+                          type: 'object',
+                          properties: {
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                            fontColor: {
+                              type: 'string',
+                              pattern: '^#[0-9a-f]{6}$',
+                            },
+                            backgroundColor: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^#[0-9a-f]{6}$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                          },
+                          required: [
+                            'fontSize',
+                            'fontColor',
+                            'backgroundColor',
+                          ],
+                          additionalProperties: false,
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                    otherDetails: {
+                      type: 'object',
+                      properties: {
+                        notes: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            label: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                          },
+                          required: ['show', 'label', 'fontSize'],
+                          additionalProperties: false,
+                        },
+                        terms: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            label: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            fontSize: {
+                              type: 'integer',
+                              minimum: 6,
+                              maximum: 36,
+                            },
+                          },
+                          required: ['show', 'label', 'fontSize'],
+                          additionalProperties: false,
+                        },
+                        showPaymentOptions: {
+                          type: 'boolean',
+                        },
+                        showBankDetails: {
+                          type: 'boolean',
+                        },
+                        showQrCode: {
+                          type: 'boolean',
+                        },
+                        signature: {
+                          type: 'object',
+                          properties: {
+                            show: {
+                              type: 'boolean',
+                            },
+                            label: {
+                              type: 'string',
+                              maxLength: 60,
+                            },
+                            imageFileId: {
+                              anyOf: [
+                                {
+                                  type: 'string',
+                                  pattern: '^file_[A-Za-z0-9]+$',
+                                },
+                                {
+                                  type: 'null',
+                                },
+                              ],
+                            },
+                          },
+                          required: ['show', 'label', 'imageFileId'],
+                          additionalProperties: false,
+                        },
+                      },
+                      additionalProperties: false,
+                    },
+                  },
+                  additionalProperties: false,
+                },
+              },
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      responses: {
+        '200': {
+          description: 'Successful Response',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'document-template',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                      documentType: {
+                        type: 'string',
+                        enum: [
+                          'invoice',
+                          'quote',
+                          'sales-receipt',
+                          'credit-note',
+                          'payment-receipt',
+                        ],
+                      },
+                      name: {
+                        type: 'string',
+                      },
+                      layout: {
+                        type: 'string',
+                        enum: [
+                          'standard',
+                          'european',
+                          'spreadsheet',
+                          'elegant',
+                          'retail',
+                        ],
+                      },
+                      isDefault: {
+                        type: 'boolean',
+                      },
+                      settings: {
+                        type: 'object',
+                        properties: {
+                          general: {
+                            type: 'object',
+                            properties: {
+                              paperSize: {
+                                type: 'string',
+                                enum: ['a4', 'letter', 'receipt-80mm'],
+                              },
+                              orientation: {
+                                type: 'string',
+                                enum: ['portrait', 'landscape'],
+                              },
+                              margins: {
+                                type: 'object',
+                                properties: {
+                                  top: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  bottom: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  left: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  right: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                },
+                                required: ['top', 'bottom', 'left', 'right'],
+                                additionalProperties: false,
+                              },
+                              fontFamily: {
+                                type: 'string',
+                                enum: [
+                                  'inter',
+                                  'roboto',
+                                  'open-sans',
+                                  'lato',
+                                  'noto-sans',
+                                  'merriweather',
+                                  'source-serif',
+                                  'ubuntu-mono',
+                                ],
+                              },
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              labelColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              backgroundImagePosition: {
+                                type: 'string',
+                                enum: [
+                                  'center',
+                                  'top-left',
+                                  'top-right',
+                                  'bottom-left',
+                                  'bottom-right',
+                                  'tile',
+                                ],
+                              },
+                              accentColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              includePaymentStub: {
+                                type: 'boolean',
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          header: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              firstPageOnly: {
+                                type: 'boolean',
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          footer: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showPageNumber: {
+                                type: 'boolean',
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          organization: {
+                            type: 'object',
+                            properties: {
+                              showLogo: {
+                                type: 'boolean',
+                              },
+                              logoHeight: {
+                                type: 'integer',
+                                minimum: 24,
+                                maximum: 240,
+                              },
+                              showName: {
+                                type: 'boolean',
+                              },
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showAddress: {
+                                type: 'boolean',
+                              },
+                              addressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          customer: {
+                            type: 'object',
+                            properties: {
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showBillTo: {
+                                type: 'boolean',
+                              },
+                              billToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              billingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showShipTo: {
+                                type: 'boolean',
+                              },
+                              shipToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              shippingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          documentDetails: {
+                            type: 'object',
+                            properties: {
+                              showTitle: {
+                                type: 'boolean',
+                              },
+                              title: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              titleStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              fields: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'number',
+                                        'date',
+                                        'due-date',
+                                        'expiry-date',
+                                        'terms',
+                                        'reference',
+                                        'salesperson',
+                                        'subject',
+                                        'payment-mode',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                  },
+                                  required: ['key', 'show', 'label'],
+                                  additionalProperties: false,
+                                },
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          table: {
+                            type: 'object',
+                            properties: {
+                              columns: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'line-number',
+                                        'item',
+                                        'quantity',
+                                        'unit',
+                                        'rate',
+                                        'discount',
+                                        'tax',
+                                        'amount',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                    widthPercent: {
+                                      anyOf: [
+                                        {
+                                          type: 'integer',
+                                          minimum: 4,
+                                          maximum: 80,
+                                        },
+                                        {
+                                          type: 'null',
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  required: [
+                                    'key',
+                                    'show',
+                                    'label',
+                                    'widthPercent',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                              },
+                              showItemDescription: {
+                                type: 'boolean',
+                              },
+                              showBorders: {
+                                type: 'boolean',
+                              },
+                              header: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              row: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              description: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          totals: {
+                            type: 'object',
+                            properties: {
+                              show: {
+                                type: 'boolean',
+                              },
+                              showPaymentDetails: {
+                                type: 'boolean',
+                              },
+                              showAmountInWords: {
+                                type: 'boolean',
+                              },
+                              showCurrencySymbol: {
+                                type: 'boolean',
+                              },
+                              showQuantityTotal: {
+                                type: 'boolean',
+                              },
+                              showTaxSummary: {
+                                type: 'boolean',
+                              },
+                              subtotalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              balanceDueLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              balanceDueStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          otherDetails: {
+                            type: 'object',
+                            properties: {
+                              notes: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              terms: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              showPaymentOptions: {
+                                type: 'boolean',
+                              },
+                              showBankDetails: {
+                                type: 'boolean',
+                              },
+                              showQrCode: {
+                                type: 'boolean',
+                              },
+                              signature: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  imageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: ['show', 'label', 'imageFileId'],
+                                additionalProperties: false,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                        },
+                        additionalProperties: false,
+                      },
+                      resolvedSettings: {
+                        type: 'object',
+                        properties: {
+                          general: {
+                            type: 'object',
+                            properties: {
+                              paperSize: {
+                                type: 'string',
+                                enum: ['a4', 'letter', 'receipt-80mm'],
+                              },
+                              orientation: {
+                                type: 'string',
+                                enum: ['portrait', 'landscape'],
+                              },
+                              margins: {
+                                type: 'object',
+                                properties: {
+                                  top: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  bottom: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  left: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  right: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                },
+                                required: ['top', 'bottom', 'left', 'right'],
+                                additionalProperties: false,
+                              },
+                              fontFamily: {
+                                type: 'string',
+                                enum: [
+                                  'inter',
+                                  'roboto',
+                                  'open-sans',
+                                  'lato',
+                                  'noto-sans',
+                                  'merriweather',
+                                  'source-serif',
+                                  'ubuntu-mono',
+                                ],
+                              },
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              labelColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              backgroundImagePosition: {
+                                type: 'string',
+                                enum: [
+                                  'center',
+                                  'top-left',
+                                  'top-right',
+                                  'bottom-left',
+                                  'bottom-right',
+                                  'tile',
+                                ],
+                              },
+                              accentColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              includePaymentStub: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'paperSize',
+                              'orientation',
+                              'margins',
+                              'fontFamily',
+                              'fontSize',
+                              'fontColor',
+                              'labelColor',
+                              'backgroundColor',
+                              'backgroundImageFileId',
+                              'backgroundImagePosition',
+                              'accentColor',
+                              'includePaymentStub',
+                            ],
+                            additionalProperties: false,
+                          },
+                          header: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              firstPageOnly: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'fontSize',
+                              'fontColor',
+                              'backgroundColor',
+                              'show',
+                              'backgroundImageFileId',
+                              'content',
+                              'firstPageOnly',
+                            ],
+                            additionalProperties: false,
+                          },
+                          footer: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showPageNumber: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'fontSize',
+                              'fontColor',
+                              'backgroundColor',
+                              'show',
+                              'backgroundImageFileId',
+                              'content',
+                              'showPageNumber',
+                            ],
+                            additionalProperties: false,
+                          },
+                          organization: {
+                            type: 'object',
+                            properties: {
+                              showLogo: {
+                                type: 'boolean',
+                              },
+                              logoHeight: {
+                                type: 'integer',
+                                minimum: 24,
+                                maximum: 240,
+                              },
+                              showName: {
+                                type: 'boolean',
+                              },
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showAddress: {
+                                type: 'boolean',
+                              },
+                              addressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            required: [
+                              'showLogo',
+                              'logoHeight',
+                              'showName',
+                              'name',
+                              'showAddress',
+                              'addressFormat',
+                            ],
+                            additionalProperties: false,
+                          },
+                          customer: {
+                            type: 'object',
+                            properties: {
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showBillTo: {
+                                type: 'boolean',
+                              },
+                              billToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              billingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showShipTo: {
+                                type: 'boolean',
+                              },
+                              shipToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              shippingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            required: [
+                              'name',
+                              'showBillTo',
+                              'billToLabel',
+                              'billingAddressFormat',
+                              'showShipTo',
+                              'shipToLabel',
+                              'shippingAddressFormat',
+                            ],
+                            additionalProperties: false,
+                          },
+                          documentDetails: {
+                            type: 'object',
+                            properties: {
+                              showTitle: {
+                                type: 'boolean',
+                              },
+                              title: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              titleStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              fields: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'number',
+                                        'date',
+                                        'due-date',
+                                        'expiry-date',
+                                        'terms',
+                                        'reference',
+                                        'salesperson',
+                                        'subject',
+                                        'payment-mode',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                  },
+                                  required: ['key', 'show', 'label'],
+                                  additionalProperties: false,
+                                },
+                              },
+                            },
+                            required: [
+                              'showTitle',
+                              'title',
+                              'titleStyle',
+                              'fields',
+                            ],
+                            additionalProperties: false,
+                          },
+                          table: {
+                            type: 'object',
+                            properties: {
+                              columns: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'line-number',
+                                        'item',
+                                        'quantity',
+                                        'unit',
+                                        'rate',
+                                        'discount',
+                                        'tax',
+                                        'amount',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                    widthPercent: {
+                                      anyOf: [
+                                        {
+                                          type: 'integer',
+                                          minimum: 4,
+                                          maximum: 80,
+                                        },
+                                        {
+                                          type: 'null',
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  required: [
+                                    'key',
+                                    'show',
+                                    'label',
+                                    'widthPercent',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                              },
+                              showItemDescription: {
+                                type: 'boolean',
+                              },
+                              showBorders: {
+                                type: 'boolean',
+                              },
+                              header: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              row: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              description: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'columns',
+                              'showItemDescription',
+                              'showBorders',
+                              'header',
+                              'row',
+                              'description',
+                            ],
+                            additionalProperties: false,
+                          },
+                          totals: {
+                            type: 'object',
+                            properties: {
+                              show: {
+                                type: 'boolean',
+                              },
+                              showPaymentDetails: {
+                                type: 'boolean',
+                              },
+                              showAmountInWords: {
+                                type: 'boolean',
+                              },
+                              showCurrencySymbol: {
+                                type: 'boolean',
+                              },
+                              showQuantityTotal: {
+                                type: 'boolean',
+                              },
+                              showTaxSummary: {
+                                type: 'boolean',
+                              },
+                              subtotalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              balanceDueLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              balanceDueStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'show',
+                              'showPaymentDetails',
+                              'showAmountInWords',
+                              'showCurrencySymbol',
+                              'showQuantityTotal',
+                              'showTaxSummary',
+                              'subtotalLabel',
+                              'totalLabel',
+                              'balanceDueLabel',
+                              'totalStyle',
+                              'balanceDueStyle',
+                            ],
+                            additionalProperties: false,
+                          },
+                          otherDetails: {
+                            type: 'object',
+                            properties: {
+                              notes: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              terms: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              showPaymentOptions: {
+                                type: 'boolean',
+                              },
+                              showBankDetails: {
+                                type: 'boolean',
+                              },
+                              showQrCode: {
+                                type: 'boolean',
+                              },
+                              signature: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  imageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: ['show', 'label', 'imageFileId'],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'notes',
+                              'terms',
+                              'showPaymentOptions',
+                              'showBankDetails',
+                              'showQrCode',
+                              'signature',
+                            ],
+                            additionalProperties: false,
+                          },
+                        },
+                        required: [
+                          'general',
+                          'header',
+                          'footer',
+                          'organization',
+                          'customer',
+                          'documentDetails',
+                          'table',
+                          'totals',
+                          'otherDetails',
+                        ],
+                        additionalProperties: false,
+                      },
+                      createdAt: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                      updatedAt: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                    },
+                    required: [
+                      'object',
+                      'id',
+                      'documentType',
+                      'name',
+                      'layout',
+                      'isDefault',
+                      'settings',
+                      'resolvedSettings',
+                      'createdAt',
+                      'updatedAt',
+                    ],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'DELETE /integrations/organizations/{organizationId}/document-templates/{templateId}':
+    {
+      tags: ['Document templates'],
+      summary: 'Delete an organization document template',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'templateId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Successful Response',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'document-template',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                      deleted: {
+                        type: 'boolean',
+                        const: true,
+                      },
+                    },
+                    required: ['object', 'id', 'deleted'],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'POST /integrations/organizations/{organizationId}/document-templates/{templateId}/set-default':
+    {
+      tags: ['Document templates'],
+      summary: 'Set an organization default document template',
+      security: [
+        {
+          internalKey: [],
+        },
+        {
+          appApiKey: [],
+        },
+        {
+          tenantOAuth: ['billing.invoices.write'],
+        },
+      ],
+      parameters: [
+        {
+          in: 'path',
+          name: 'templateId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+        {
+          in: 'path',
+          name: 'organizationId',
+          schema: {
+            type: 'string',
+            minLength: 1,
+          },
+          required: true,
+        },
+      ],
+      responses: {
+        '200': {
+          description: 'Successful Response',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'object',
+                    properties: {
+                      object: {
+                        type: 'string',
+                        const: 'document-template',
+                      },
+                      id: {
+                        type: 'string',
+                      },
+                      documentType: {
+                        type: 'string',
+                        enum: [
+                          'invoice',
+                          'quote',
+                          'sales-receipt',
+                          'credit-note',
+                          'payment-receipt',
+                        ],
+                      },
+                      name: {
+                        type: 'string',
+                      },
+                      layout: {
+                        type: 'string',
+                        enum: [
+                          'standard',
+                          'european',
+                          'spreadsheet',
+                          'elegant',
+                          'retail',
+                        ],
+                      },
+                      isDefault: {
+                        type: 'boolean',
+                      },
+                      settings: {
+                        type: 'object',
+                        properties: {
+                          general: {
+                            type: 'object',
+                            properties: {
+                              paperSize: {
+                                type: 'string',
+                                enum: ['a4', 'letter', 'receipt-80mm'],
+                              },
+                              orientation: {
+                                type: 'string',
+                                enum: ['portrait', 'landscape'],
+                              },
+                              margins: {
+                                type: 'object',
+                                properties: {
+                                  top: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  bottom: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  left: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  right: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                },
+                                required: ['top', 'bottom', 'left', 'right'],
+                                additionalProperties: false,
+                              },
+                              fontFamily: {
+                                type: 'string',
+                                enum: [
+                                  'inter',
+                                  'roboto',
+                                  'open-sans',
+                                  'lato',
+                                  'noto-sans',
+                                  'merriweather',
+                                  'source-serif',
+                                  'ubuntu-mono',
+                                ],
+                              },
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              labelColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              backgroundImagePosition: {
+                                type: 'string',
+                                enum: [
+                                  'center',
+                                  'top-left',
+                                  'top-right',
+                                  'bottom-left',
+                                  'bottom-right',
+                                  'tile',
+                                ],
+                              },
+                              accentColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              includePaymentStub: {
+                                type: 'boolean',
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          header: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              firstPageOnly: {
+                                type: 'boolean',
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          footer: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showPageNumber: {
+                                type: 'boolean',
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          organization: {
+                            type: 'object',
+                            properties: {
+                              showLogo: {
+                                type: 'boolean',
+                              },
+                              logoHeight: {
+                                type: 'integer',
+                                minimum: 24,
+                                maximum: 240,
+                              },
+                              showName: {
+                                type: 'boolean',
+                              },
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showAddress: {
+                                type: 'boolean',
+                              },
+                              addressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          customer: {
+                            type: 'object',
+                            properties: {
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showBillTo: {
+                                type: 'boolean',
+                              },
+                              billToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              billingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showShipTo: {
+                                type: 'boolean',
+                              },
+                              shipToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              shippingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          documentDetails: {
+                            type: 'object',
+                            properties: {
+                              showTitle: {
+                                type: 'boolean',
+                              },
+                              title: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              titleStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              fields: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'number',
+                                        'date',
+                                        'due-date',
+                                        'expiry-date',
+                                        'terms',
+                                        'reference',
+                                        'salesperson',
+                                        'subject',
+                                        'payment-mode',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                  },
+                                  required: ['key', 'show', 'label'],
+                                  additionalProperties: false,
+                                },
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          table: {
+                            type: 'object',
+                            properties: {
+                              columns: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'line-number',
+                                        'item',
+                                        'quantity',
+                                        'unit',
+                                        'rate',
+                                        'discount',
+                                        'tax',
+                                        'amount',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                    widthPercent: {
+                                      anyOf: [
+                                        {
+                                          type: 'integer',
+                                          minimum: 4,
+                                          maximum: 80,
+                                        },
+                                        {
+                                          type: 'null',
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  required: [
+                                    'key',
+                                    'show',
+                                    'label',
+                                    'widthPercent',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                              },
+                              showItemDescription: {
+                                type: 'boolean',
+                              },
+                              showBorders: {
+                                type: 'boolean',
+                              },
+                              header: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              row: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              description: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          totals: {
+                            type: 'object',
+                            properties: {
+                              show: {
+                                type: 'boolean',
+                              },
+                              showPaymentDetails: {
+                                type: 'boolean',
+                              },
+                              showAmountInWords: {
+                                type: 'boolean',
+                              },
+                              showCurrencySymbol: {
+                                type: 'boolean',
+                              },
+                              showQuantityTotal: {
+                                type: 'boolean',
+                              },
+                              showTaxSummary: {
+                                type: 'boolean',
+                              },
+                              subtotalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              balanceDueLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              balanceDueStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                          otherDetails: {
+                            type: 'object',
+                            properties: {
+                              notes: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              terms: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              showPaymentOptions: {
+                                type: 'boolean',
+                              },
+                              showBankDetails: {
+                                type: 'boolean',
+                              },
+                              showQrCode: {
+                                type: 'boolean',
+                              },
+                              signature: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  imageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: ['show', 'label', 'imageFileId'],
+                                additionalProperties: false,
+                              },
+                            },
+                            additionalProperties: false,
+                          },
+                        },
+                        additionalProperties: false,
+                      },
+                      resolvedSettings: {
+                        type: 'object',
+                        properties: {
+                          general: {
+                            type: 'object',
+                            properties: {
+                              paperSize: {
+                                type: 'string',
+                                enum: ['a4', 'letter', 'receipt-80mm'],
+                              },
+                              orientation: {
+                                type: 'string',
+                                enum: ['portrait', 'landscape'],
+                              },
+                              margins: {
+                                type: 'object',
+                                properties: {
+                                  top: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  bottom: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  left: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                  right: {
+                                    type: 'number',
+                                    minimum: 0,
+                                    maximum: 2,
+                                  },
+                                },
+                                required: ['top', 'bottom', 'left', 'right'],
+                                additionalProperties: false,
+                              },
+                              fontFamily: {
+                                type: 'string',
+                                enum: [
+                                  'inter',
+                                  'roboto',
+                                  'open-sans',
+                                  'lato',
+                                  'noto-sans',
+                                  'merriweather',
+                                  'source-serif',
+                                  'ubuntu-mono',
+                                ],
+                              },
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              labelColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              backgroundImagePosition: {
+                                type: 'string',
+                                enum: [
+                                  'center',
+                                  'top-left',
+                                  'top-right',
+                                  'bottom-left',
+                                  'bottom-right',
+                                  'tile',
+                                ],
+                              },
+                              accentColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              includePaymentStub: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'paperSize',
+                              'orientation',
+                              'margins',
+                              'fontFamily',
+                              'fontSize',
+                              'fontColor',
+                              'labelColor',
+                              'backgroundColor',
+                              'backgroundImageFileId',
+                              'backgroundImagePosition',
+                              'accentColor',
+                              'includePaymentStub',
+                            ],
+                            additionalProperties: false,
+                          },
+                          header: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              firstPageOnly: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'fontSize',
+                              'fontColor',
+                              'backgroundColor',
+                              'show',
+                              'backgroundImageFileId',
+                              'content',
+                              'firstPageOnly',
+                            ],
+                            additionalProperties: false,
+                          },
+                          footer: {
+                            type: 'object',
+                            properties: {
+                              fontSize: {
+                                type: 'integer',
+                                minimum: 6,
+                                maximum: 36,
+                              },
+                              fontColor: {
+                                type: 'string',
+                                pattern: '^#[0-9a-f]{6}$',
+                              },
+                              backgroundColor: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              show: {
+                                type: 'boolean',
+                              },
+                              backgroundImageFileId: {
+                                anyOf: [
+                                  {
+                                    type: 'string',
+                                    pattern: '^file_[A-Za-z0-9]+$',
+                                  },
+                                  {
+                                    type: 'null',
+                                  },
+                                ],
+                              },
+                              content: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showPageNumber: {
+                                type: 'boolean',
+                              },
+                            },
+                            required: [
+                              'fontSize',
+                              'fontColor',
+                              'backgroundColor',
+                              'show',
+                              'backgroundImageFileId',
+                              'content',
+                              'showPageNumber',
+                            ],
+                            additionalProperties: false,
+                          },
+                          organization: {
+                            type: 'object',
+                            properties: {
+                              showLogo: {
+                                type: 'boolean',
+                              },
+                              logoHeight: {
+                                type: 'integer',
+                                minimum: 24,
+                                maximum: 240,
+                              },
+                              showName: {
+                                type: 'boolean',
+                              },
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showAddress: {
+                                type: 'boolean',
+                              },
+                              addressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            required: [
+                              'showLogo',
+                              'logoHeight',
+                              'showName',
+                              'name',
+                              'showAddress',
+                              'addressFormat',
+                            ],
+                            additionalProperties: false,
+                          },
+                          customer: {
+                            type: 'object',
+                            properties: {
+                              name: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              showBillTo: {
+                                type: 'boolean',
+                              },
+                              billToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              billingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                              showShipTo: {
+                                type: 'boolean',
+                              },
+                              shipToLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              shippingAddressFormat: {
+                                type: 'string',
+                                maxLength: 2000,
+                              },
+                            },
+                            required: [
+                              'name',
+                              'showBillTo',
+                              'billToLabel',
+                              'billingAddressFormat',
+                              'showShipTo',
+                              'shipToLabel',
+                              'shippingAddressFormat',
+                            ],
+                            additionalProperties: false,
+                          },
+                          documentDetails: {
+                            type: 'object',
+                            properties: {
+                              showTitle: {
+                                type: 'boolean',
+                              },
+                              title: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              titleStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                              fields: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'number',
+                                        'date',
+                                        'due-date',
+                                        'expiry-date',
+                                        'terms',
+                                        'reference',
+                                        'salesperson',
+                                        'subject',
+                                        'payment-mode',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                  },
+                                  required: ['key', 'show', 'label'],
+                                  additionalProperties: false,
+                                },
+                              },
+                            },
+                            required: [
+                              'showTitle',
+                              'title',
+                              'titleStyle',
+                              'fields',
+                            ],
+                            additionalProperties: false,
+                          },
+                          table: {
+                            type: 'object',
+                            properties: {
+                              columns: {
+                                maxItems: 20,
+                                type: 'array',
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    key: {
+                                      type: 'string',
+                                      enum: [
+                                        'line-number',
+                                        'item',
+                                        'quantity',
+                                        'unit',
+                                        'rate',
+                                        'discount',
+                                        'tax',
+                                        'amount',
+                                      ],
+                                    },
+                                    show: {
+                                      type: 'boolean',
+                                    },
+                                    label: {
+                                      type: 'string',
+                                      maxLength: 60,
+                                    },
+                                    widthPercent: {
+                                      anyOf: [
+                                        {
+                                          type: 'integer',
+                                          minimum: 4,
+                                          maximum: 80,
+                                        },
+                                        {
+                                          type: 'null',
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  required: [
+                                    'key',
+                                    'show',
+                                    'label',
+                                    'widthPercent',
+                                  ],
+                                  additionalProperties: false,
+                                },
+                              },
+                              showItemDescription: {
+                                type: 'boolean',
+                              },
+                              showBorders: {
+                                type: 'boolean',
+                              },
+                              header: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              row: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              description: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                },
+                                required: ['fontSize', 'fontColor'],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'columns',
+                              'showItemDescription',
+                              'showBorders',
+                              'header',
+                              'row',
+                              'description',
+                            ],
+                            additionalProperties: false,
+                          },
+                          totals: {
+                            type: 'object',
+                            properties: {
+                              show: {
+                                type: 'boolean',
+                              },
+                              showPaymentDetails: {
+                                type: 'boolean',
+                              },
+                              showAmountInWords: {
+                                type: 'boolean',
+                              },
+                              showCurrencySymbol: {
+                                type: 'boolean',
+                              },
+                              showQuantityTotal: {
+                                type: 'boolean',
+                              },
+                              showTaxSummary: {
+                                type: 'boolean',
+                              },
+                              subtotalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              balanceDueLabel: {
+                                type: 'string',
+                                maxLength: 60,
+                              },
+                              totalStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                              balanceDueStyle: {
+                                type: 'object',
+                                properties: {
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                  fontColor: {
+                                    type: 'string',
+                                    pattern: '^#[0-9a-f]{6}$',
+                                  },
+                                  backgroundColor: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^#[0-9a-f]{6}$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: [
+                                  'fontSize',
+                                  'fontColor',
+                                  'backgroundColor',
+                                ],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'show',
+                              'showPaymentDetails',
+                              'showAmountInWords',
+                              'showCurrencySymbol',
+                              'showQuantityTotal',
+                              'showTaxSummary',
+                              'subtotalLabel',
+                              'totalLabel',
+                              'balanceDueLabel',
+                              'totalStyle',
+                              'balanceDueStyle',
+                            ],
+                            additionalProperties: false,
+                          },
+                          otherDetails: {
+                            type: 'object',
+                            properties: {
+                              notes: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              terms: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  fontSize: {
+                                    type: 'integer',
+                                    minimum: 6,
+                                    maximum: 36,
+                                  },
+                                },
+                                required: ['show', 'label', 'fontSize'],
+                                additionalProperties: false,
+                              },
+                              showPaymentOptions: {
+                                type: 'boolean',
+                              },
+                              showBankDetails: {
+                                type: 'boolean',
+                              },
+                              showQrCode: {
+                                type: 'boolean',
+                              },
+                              signature: {
+                                type: 'object',
+                                properties: {
+                                  show: {
+                                    type: 'boolean',
+                                  },
+                                  label: {
+                                    type: 'string',
+                                    maxLength: 60,
+                                  },
+                                  imageFileId: {
+                                    anyOf: [
+                                      {
+                                        type: 'string',
+                                        pattern: '^file_[A-Za-z0-9]+$',
+                                      },
+                                      {
+                                        type: 'null',
+                                      },
+                                    ],
+                                  },
+                                },
+                                required: ['show', 'label', 'imageFileId'],
+                                additionalProperties: false,
+                              },
+                            },
+                            required: [
+                              'notes',
+                              'terms',
+                              'showPaymentOptions',
+                              'showBankDetails',
+                              'showQrCode',
+                              'signature',
+                            ],
+                            additionalProperties: false,
+                          },
+                        },
+                        required: [
+                          'general',
+                          'header',
+                          'footer',
+                          'organization',
+                          'customer',
+                          'documentDetails',
+                          'table',
+                          'totals',
+                          'otherDetails',
+                        ],
+                        additionalProperties: false,
+                      },
+                      createdAt: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                      updatedAt: {
+                        type: 'integer',
+                        minimum: -9007199254740991,
+                        maximum: 9007199254740991,
+                      },
+                    },
+                    required: [
+                      'object',
+                      'id',
+                      'documentType',
+                      'name',
+                      'layout',
+                      'isDefault',
+                      'settings',
+                      'resolvedSettings',
+                      'createdAt',
+                      'updatedAt',
+                    ],
+                    additionalProperties: false,
+                  },
+                  error: {
+                    type: 'null',
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+        '4XX': {
+          description: 'Client Error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  data: {
+                    type: 'null',
+                  },
+                  error: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                      },
+                      message: {
+                        type: 'string',
+                      },
+                      details: {},
+                    },
+                    required: ['code', 'message'],
+                    additionalProperties: false,
+                  },
+                },
+                required: ['data', 'error'],
+                additionalProperties: false,
+              },
+            },
+          },
+        },
+      },
+    },
+  'GET /integrations/organizations/{organizationId}/branding': {
+    tags: ['Document templates'],
+    summary: 'Retrieve organization branding',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.invoices.read'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'branding',
+                    },
+                    accentColor: {
+                      type: 'string',
+                      pattern: '^#[0-9a-f]{6}$',
+                    },
+                    appearance: {
+                      type: 'string',
+                      enum: ['system', 'light', 'dark'],
+                    },
+                    sidebarTone: {
+                      type: 'string',
+                      enum: ['light', 'dark'],
+                    },
+                    updatedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'accentColor',
+                    'appearance',
+                    'sidebarTone',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+    },
+  },
+  'PATCH /integrations/organizations/{organizationId}/branding': {
+    tags: ['Document templates'],
+    summary: 'Update organization branding',
+    security: [
+      {
+        internalKey: [],
+      },
+      {
+        appApiKey: [],
+      },
+      {
+        tenantOAuth: ['billing.invoices.write'],
+      },
+    ],
+    parameters: [
+      {
+        in: 'path',
+        name: 'organizationId',
+        schema: {
+          type: 'string',
+          minLength: 1,
+        },
+        required: true,
+      },
+    ],
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              accentColor: {
+                type: 'string',
+                pattern: '^#[0-9a-f]{6}$',
+              },
+              appearance: {
+                type: 'string',
+                enum: ['system', 'light', 'dark'],
+              },
+              sidebarTone: {
+                type: 'string',
+                enum: ['light', 'dark'],
+              },
+            },
+            additionalProperties: false,
+          },
+        },
+      },
+    },
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    object: {
+                      type: 'string',
+                      const: 'branding',
+                    },
+                    accentColor: {
+                      type: 'string',
+                      pattern: '^#[0-9a-f]{6}$',
+                    },
+                    appearance: {
+                      type: 'string',
+                      enum: ['system', 'light', 'dark'],
+                    },
+                    sidebarTone: {
+                      type: 'string',
+                      enum: ['light', 'dark'],
+                    },
+                    updatedAt: {
+                      anyOf: [
+                        {
+                          type: 'integer',
+                          minimum: -9007199254740991,
+                          maximum: 9007199254740991,
+                        },
+                        {
+                          type: 'null',
+                        },
+                      ],
+                    },
+                  },
+                  required: [
+                    'object',
+                    'accentColor',
+                    'appearance',
+                    'sidebarTone',
+                    'updatedAt',
+                  ],
+                  additionalProperties: false,
+                },
+                error: {
+                  type: 'null',
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      '4XX': {
+        description: 'Client Error',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'null',
+                },
+                error: {
+                  type: 'object',
+                  properties: {
+                    code: {
+                      type: 'string',
+                    },
+                    message: {
+                      type: 'string',
+                    },
+                    details: {},
+                  },
+                  required: ['code', 'message'],
+                  additionalProperties: false,
+                },
+              },
+              required: ['data', 'error'],
+              additionalProperties: false,
             },
           },
         },

@@ -54,6 +54,18 @@ export const BILLING_ERRORS = {
     message: 'The selected commercial resource uses a different currency.',
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
   },
+  'billing/document-template-layout-unsupported': {
+    message: 'The selected layout does not support this document type.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
+  'billing/document-template-limit-reached': {
+    message: 'This document type already has the maximum number of templates.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/document-template-not-found': {
+    message: 'Document template not found.',
+    httpStatus: HttpStatus.NOT_FOUND,
+  },
   'billing/idempotency-conflict': {
     message: 'The idempotency key was already used for another command.',
     httpStatus: HttpStatus.CONFLICT,

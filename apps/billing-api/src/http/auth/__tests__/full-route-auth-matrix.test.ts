@@ -70,8 +70,12 @@ describe('frozen v1 route authentication matrix', () => {
     // 371 -> 380: Sales Order list/create/retrieve/update, three lifecycle
     // commands, quote conversion, and invoice conversion are authenticated
     // tenant operations.
-    expect(operations).toHaveLength(380)
-    expect(protectedPublicOperations()).toHaveLength(379)
+    // 380 -> 403: document-template list/create/retrieve/update/delete,
+    // default selection, resolved rendering, and branding read/update were
+    // added to both tenant and organization-integration surfaces; the frozen
+    // manifest also includes five previously uncounted protected operations.
+    expect(operations).toHaveLength(403)
+    expect(protectedPublicOperations()).toHaveLength(402)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })
