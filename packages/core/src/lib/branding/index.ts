@@ -87,10 +87,10 @@ export function relativeLuminance(hex: string): number {
 
 /** WCAG contrast ratio between two `#rrggbb` colors, from 1 to 21. */
 export function contrastRatio(a: string, b: string): number {
-  const [light, dark] = [relativeLuminance(a), relativeLuminance(b)].sort(
-    (x, y) => y - x
-  )
-  return (light + 0.05) / (dark + 0.05)
+  const first = relativeLuminance(a)
+  const second = relativeLuminance(b)
+
+  return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05)
 }
 
 const FOREGROUND_LIGHT = '#ffffff'
