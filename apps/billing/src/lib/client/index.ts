@@ -13,10 +13,12 @@ import {
   bankStatementLines,
 } from './banking-engine'
 import { bankTransactions } from './bank-transactions'
+import { branding } from './branding'
 import { creditNotes } from './credit-notes'
 import { currencies } from './currencies'
 import { customers } from './customers'
 import { discounts } from './discounts'
+import { documentTemplates } from './document-templates'
 import { invoices } from './invoices'
 import { invoicePreferences } from './invoice-preferences'
 import { items } from './items'
@@ -55,10 +57,12 @@ export const client = {
   bankStatementImports,
   bankStatementLines,
   bankTransactions,
+  branding,
   creditNotes,
   currencies,
   customers,
   discounts,
+  documentTemplates,
   invoices,
   invoicePreferences,
   items,

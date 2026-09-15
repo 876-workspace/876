@@ -3,6 +3,7 @@ import type { SettingsHubGroup, SettingsHubItem } from '@876/ui/settings-hub'
 import { INVOICE_MODULE_CATALOG } from '@/lib/modules'
 
 export const ROLES_READ_PERMISSION = 'roles:read'
+export const SALES_READ_PERMISSION = 'sales:read'
 
 /** Any one of these grants access to the combined finance settings page. */
 export const FINANCE_READ_PERMISSIONS = [
@@ -36,6 +37,13 @@ export const SETTINGS_GROUPS: InvoiceSettingsHubGroup[] = [
         requires: { permission: ROLES_READ_PERMISSION },
       },
       { label: 'Preferences', icon: 'preferences', availability: 'planned' },
+      {
+        label: 'Branding',
+        icon: 'preferences',
+        availability: 'available',
+        href: '/settings/branding',
+        requires: { permission: SALES_READ_PERMISSION },
+      },
     ],
   },
   {
@@ -50,7 +58,13 @@ export const SETTINGS_GROUPS: InvoiceSettingsHubGroup[] = [
   {
     label: 'Sales',
     items: [
-      { label: 'Templates', icon: 'templates', availability: 'planned' },
+      {
+        label: 'Templates',
+        icon: 'templates',
+        availability: 'available',
+        href: '/settings/templates',
+        requires: { permission: SALES_READ_PERMISSION },
+      },
       { label: 'Numbering', icon: 'documents', availability: 'planned' },
     ],
   },

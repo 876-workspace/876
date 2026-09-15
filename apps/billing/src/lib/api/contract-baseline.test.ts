@@ -218,6 +218,23 @@ describe('Billing API v1 contract baseline', () => {
     '/sales-orders/{salesOrderId}/complete',
     '/quotes/{quoteId}/convert-to-sales-order',
     '/sales-orders/{salesOrderId}/convert-to-invoice',
+    // Document templates and branding are Express-only capabilities,
+    // exposed at tenant and integration tiers so every finance host
+    // renders the same templates and brand.
+    '/document-templates',
+    '/document-templates/resolved',
+    '/document-templates/{templateId}',
+    '/document-templates/{templateId}/set-default',
+    '/branding',
+    '/integrations/organizations/{organizationId}/document-templates',
+    '/integrations/organizations/{organizationId}/document-templates/resolved',
+    '/integrations/organizations/{organizationId}/document-templates/{templateId}',
+    '/integrations/organizations/{organizationId}/document-templates/{templateId}/set-default',
+    '/integrations/organizations/{organizationId}/branding',
+    // Organization-scoped currency administration, mirrored to the
+    // integration tier with the rest of the currency surface.
+    '/integrations/organizations/{organizationId}/currencies',
+    '/integrations/organizations/{organizationId}/currencies/{code}',
   ]
 
   it('does not document paths absent from the implementation inventory', () => {

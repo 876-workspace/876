@@ -1,0 +1,24 @@
+/// An organization's customized PDF/print template for one document type.
+/// Stores only overrides of the built-in layout defaults (`settings`).
+model DocumentTemplate {
+  id             String  @id
+  tenantId       String  @map("tenant_id")
+  documentType   String  @map("document_type")
+  name           String
+  layout         String
+  isDefault      Boolean @default(false) @map("is_default")
+  settings       Json    @default("{}")
+  schemaVersion  Int     @map("schema_version")
+  createdBy      String? @map("created_by")
+  updatedBy      String? @map("updated_by")
+  createdAt      Int     @map("created_at")
+  updatedAt      Int     @map("updated_at")
+  deletedAt      Int?    @map("deleted_at")
+  deletedBy      String? @map("deleted_by")
+  deletionReason String? @map("deletion_reason")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "billing_document_templates_tenant_id_fkey")
+
+  @@index([tenantId, documentType, deletedAt], map: "billing_document_templates_tenant_document_deleted_idx")
+  @@map("billing_document_templates")
+}

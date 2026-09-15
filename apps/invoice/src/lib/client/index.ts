@@ -15,6 +15,8 @@ import { reportPreferences } from './report-preferences'
 import { salesReceipts } from './sales-receipts'
 import { currencies } from './currencies'
 import { taxAuthorities, taxRates } from './taxes'
+import { documentTemplates } from './document-templates'
+import { branding } from './branding'
 
 export const client = {
   onboarding,
@@ -35,6 +37,8 @@ export const client = {
   currencies,
   taxAuthorities,
   taxRates,
+  documentTemplates,
+  branding,
 }
 
 export { customers } from './customers'
@@ -53,4 +57,6 @@ export { refunds } from './refunds'
 export { reportPreferences } from './report-preferences'
 export { salesReceipts } from './sales-receipts'
 export { currencies } from './currencies'
+export { documentTemplates } from './document-templates'
+export { branding } from './branding'
 export type { ClientResult } from '@/types/api'

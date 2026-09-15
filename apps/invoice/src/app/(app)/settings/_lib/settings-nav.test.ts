@@ -3,6 +3,7 @@ import { SETTINGS_HUB_ICON_KEYS } from '@876/ui/settings-hub'
 import {
   FINANCE_READ_PERMISSIONS,
   ROLES_READ_PERMISSION,
+  SALES_READ_PERMISSION,
   SETTINGS_GROUPS,
   isSettingsItemVisible,
 } from './settings-nav'
@@ -47,6 +48,56 @@ describe('invoice settings navigation', () => {
 
     expect(roles?.requires?.permission).toBe(ROLES_READ_PERMISSION)
     expect(ROLES_READ_PERMISSION).toBe('roles:read')
+  })
+
+  it('binds the Templates navigation requirement to the sales read permission', () => {
+    const templates = SETTINGS_GROUPS.flatMap((group) => group.items).find(
+      (item) => item.href === '/settings/templates'
+    )
+
+    expect(templates).toMatchObject({
+      label: 'Templates',
+      availability: 'available',
+      href: '/settings/templates',
+    })
+    expect(templates?.requires?.permission).toBe(SALES_READ_PERMISSION)
+    expect(SALES_READ_PERMISSION).toBe('sales:read')
+  })
+
+  it('shows Templates to a sales reader and hides it from everyone else', () => {
+    const templates = SETTINGS_GROUPS.flatMap((group) => group.items).find(
+      (item) => item.href === '/settings/templates'
+    )
+
+    expect(isSettingsItemVisible(templates!, ['sales:read'])).toBe(true)
+    expect(isSettingsItemVisible(templates!, ['taxes:read'])).toBe(false)
+    expect(isSettingsItemVisible(templates!, [])).toBe(false)
+  })
+
+  it('exposes Branding in the Workspace group with the sales read permission', () => {
+    const workspace = SETTINGS_GROUPS.find(
+      (group) => group.label === 'Workspace'
+    )
+    const branding = workspace?.items.find(
+      (item) => item.href === '/settings/branding'
+    )
+
+    expect(branding).toMatchObject({
+      label: 'Branding',
+      availability: 'available',
+      href: '/settings/branding',
+    })
+    expect(branding?.requires?.permission).toBe(SALES_READ_PERMISSION)
+  })
+
+  it('shows Branding to a sales reader and hides it from everyone else', () => {
+    const branding = SETTINGS_GROUPS.flatMap((group) => group.items).find(
+      (item) => item.href === '/settings/branding'
+    )
+
+    expect(isSettingsItemVisible(branding!, ['sales:read'])).toBe(true)
+    expect(isSettingsItemVisible(branding!, ['roles:read'])).toBe(false)
+    expect(isSettingsItemVisible(branding!, [])).toBe(false)
   })
 
   it('uses unique group labels', () => {

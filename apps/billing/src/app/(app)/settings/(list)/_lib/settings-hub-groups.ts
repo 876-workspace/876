@@ -20,6 +20,8 @@ const SETTINGS_SECTION_ICON_KEYS: Record<string, SettingsHubIconKey> = {
   '/settings/compliance/currencies': 'currencies',
   '/settings/payment-modes': 'payments',
   '/settings/billing': 'documents',
+  '/settings/templates': 'templates',
+  '/settings/branding': 'preferences',
   '/settings/subscriptions': 'templates',
   '/settings/discounts': 'items',
   '/settings/payment-providers': 'integrations',
@@ -38,6 +40,8 @@ const SETTINGS_GROUPS = [
     hrefs: [
       '/settings/payment-modes',
       '/settings/billing',
+      '/settings/templates',
+      '/settings/branding',
       '/settings/subscriptions',
       '/settings/discounts',
     ],

@@ -11,6 +11,8 @@ import {
   CreditCard,
   Globe2,
   KeyRound,
+  PaintBrush,
+  ReceiptText,
   RefreshCw,
   StickyNote,
   Users,
@@ -45,6 +47,24 @@ export const BILLING_SETTINGS_SECTIONS = [
     href: '/settings/billing',
     icon: ClipboardList,
     iconColor: 'text-orange-600 dark:text-orange-400',
+    permissions: ['sales:read'],
+  },
+  {
+    title: 'Templates',
+    description:
+      'Design the printed layout for invoices, quotes, receipts, and credit notes.',
+    href: '/settings/templates',
+    icon: ReceiptText,
+    iconColor: 'text-teal-600 dark:text-teal-400',
+    permissions: ['sales:read'],
+  },
+  {
+    title: 'Branding',
+    description:
+      'Set the accent color and appearance applied across documents and the workspace.',
+    href: '/settings/branding',
+    icon: PaintBrush,
+    iconColor: 'text-rose-600 dark:text-rose-400',
     permissions: ['sales:read'],
   },
   {
