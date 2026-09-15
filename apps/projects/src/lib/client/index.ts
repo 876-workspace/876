@@ -1,4 +1,5 @@
 import { appMemberships } from './app-memberships'
+import { phaseCustomFieldsClient } from './phase-custom-fields'
 import {
   commentsClient,
   customFieldsClient,
@@ -18,6 +19,7 @@ export const client = {
   projects: projectsClient,
   issues: issuesClient,
   phases: phasesClient,
+  phaseCustomFields: phaseCustomFieldsClient,
   labels: labelsClient,
   comments: commentsClient,
   workItemTypes: workItemTypesClient,
@@ -28,6 +30,7 @@ export const client = {
 
 export { appMemberships } from './app-memberships'
 export { onboarding } from './onboarding'
+export { phaseCustomFieldsClient } from './phase-custom-fields'
 export {
   projectsClient,
   issuesClient,
