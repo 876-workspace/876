@@ -1,14 +1,17 @@
 import { z } from 'zod'
 
 import {
+  createMilestoneBodySchema,
   customFieldOptionSchema,
   customFieldTypeSchema,
   customFieldValueInputSchema,
+  updateMilestoneBodySchema,
 } from './work-structure.schemas.js'
 
 const kebabKeySchema = z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)
 const nonEmptyUpdate = (data: Record<string, unknown>) =>
   Object.keys(data).length > 0
+const actorUserIdSchema = z.string().trim().min(1).nullable().optional()
 
 export const milestoneDetailParamsSchema = z.strictObject({
   organizationId: z.string().trim().min(1),
@@ -23,6 +26,13 @@ export const milestoneFieldParamsSchema = z.strictObject({
   organizationId: z.string().trim().min(1),
   fieldId: z.string().trim().min(1),
 })
+
+export const createMilestoneWithActorBodySchema = createMilestoneBodySchema.extend({
+  actorUserId: actorUserIdSchema,
+})
+export const updateMilestoneWithActorBodySchema = updateMilestoneBodySchema.and(
+  z.strictObject({ actorUserId: actorUserIdSchema })
+)
 
 export const milestoneCommentBodySchema = z.strictObject({
   body: z.string().trim().min(1).max(10_000),
@@ -119,9 +129,15 @@ export const setMilestoneCustomFieldsBodySchema = z.strictObject({
 export const cloneMilestoneBodySchema = z.strictObject({
   key: kebabKeySchema,
   name: z.string().trim().min(1).max(100),
-  actorUserId: z.string().trim().min(1).nullable().optional(),
+  actorUserId: actorUserIdSchema,
 })
 
+export type CreateMilestoneWithActorBody = z.infer<
+  typeof createMilestoneWithActorBodySchema
+>
+export type UpdateMilestoneWithActorBody = z.infer<
+  typeof updateMilestoneWithActorBodySchema
+>
 export type CreateMilestoneCustomFieldBody = z.infer<
   typeof createMilestoneCustomFieldBodySchema
 >
