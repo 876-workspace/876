@@ -218,7 +218,10 @@ export function serializeMilestone(row: MilestoneRow): SerializedMilestone {
     ownerUserId: row.ownerUserId,
     startDate: nullableFromDbUnixSeconds(row.startDate),
     targetDate: nullableFromDbUnixSeconds(row.targetDate),
-    completedAt: nullableFromDbUnixSeconds(row.completedAt),
+    completedAt:
+      row.status === 'completed'
+        ? nullableFromDbUnixSeconds(row.completedAt)
+        : null,
     position: row.position,
     createdAt: fromDbUnixSeconds(row.createdAt),
     updatedAt: fromDbUnixSeconds(row.updatedAt),
