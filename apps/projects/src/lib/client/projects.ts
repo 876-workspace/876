@@ -3,6 +3,7 @@
 import type {
   Comment,
   CreateCustomFieldInput,
+  CreateIssueInput,
   CreateMilestoneInput,
   CreateWorkItemTypeInput,
   CreateWorkflowStateInput,
@@ -33,19 +34,7 @@ export const projectsClient = {
 }
 
 export const issuesClient = {
-  create(params: {
-    title: string
-    projectId?: string
-    description?: string | null
-    status?: string
-    typeKey?: string
-    milestoneId?: string | null
-    priority?: 'none' | 'low' | 'medium' | 'high' | 'urgent'
-    customFields?: Array<{
-      fieldId: string
-      value: string | number | boolean | string[] | null
-    }>
-  }) {
+  create(params: CreateIssueInput) {
     return request<Issue>('/api/issues', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
