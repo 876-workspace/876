@@ -41,8 +41,8 @@ describe('settings navigation registry', () => {
     expect(available).toEqual([
       '/settings/work-item-types',
       '/settings/workflow-states',
-      '/settings/milestones',
       '/settings/custom-fields',
+      '/settings/phase-fields',
       '/settings/teams',
       '/settings/categories',
       '/settings/priorities',
