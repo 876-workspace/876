@@ -12,6 +12,7 @@ import type {
   Label,
   Milestone,
   MilestoneComment,
+  MilestoneCustomFieldValue,
   MilestoneDetail,
   Project,
   SetCustomFieldValueInput,
@@ -119,7 +120,7 @@ export const phasesClient = {
   },
   customFields: {
     set(phaseId: string, customFields: SetCustomFieldValueInput[]) {
-      return request<unknown[]>(
+      return request<MilestoneCustomFieldValue[]>(
         `/api/phases/${encodeURIComponent(phaseId)}/custom-fields`,
         {
           method: 'PUT',
