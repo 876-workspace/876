@@ -41,6 +41,7 @@
     "build": "turbo run build",
     "lint": "turbo lint",
     "check:structure": "node scripts/check-app-structure.mjs console billing couriers 876 enterprise",
+    "check:rsc-boundaries": "node scripts/check-rsc-boundaries.mjs",
     "check:transpile": "node scripts/check-shared-ui-transpile.mjs && node scripts/check-tailwind-sources.mjs",
     "check:tailwind-sources": "node scripts/check-tailwind-sources.mjs",
     "test:tailwind-sources": "node --test scripts/check-tailwind-sources.test.mjs",
