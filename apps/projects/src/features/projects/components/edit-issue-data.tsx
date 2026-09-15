@@ -4,24 +4,37 @@ import { notFound } from 'next/navigation'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
 import { projects } from '@/lib/services/projects'
-import { listProjectMilestones } from '@/lib/work-structure-data'
+import {
+  listProjectMilestones,
+  listProjectTaskLists,
+} from '@/lib/work-structure-data'
 
 import { EditIssueForm } from './issue-form'
 
 export async function EditIssueData({ issueRef }: { issueRef: string }) {
   const { orgId } = await requireProjectsContext()
   const decodedIssueRef = decodeURIComponent(issueRef)
-  const [issueResult, types, states, projectList, fields, labels, issueList, members] =
-    await Promise.all([
-      projects.issues.retrieve(orgId, decodedIssueRef),
-      projects.workItemTypes.list(orgId),
-      projects.workflowStates.list(orgId),
-      projects.projects.list(orgId, { limit: 100 }),
-      projects.customFields.list(orgId),
-      projects.labels.list(orgId),
-      projects.issues.list(orgId, { limit: 100, order: 'updated' }),
-      loadMemberLabels(orgId),
-    ])
+  const [
+    issueResult,
+    types,
+    states,
+    projectList,
+    fields,
+    labels,
+    issueList,
+    members,
+    cycles,
+  ] = await Promise.all([
+    projects.issues.retrieve(orgId, decodedIssueRef),
+    projects.workItemTypes.list(orgId),
+    projects.workflowStates.list(orgId),
+    projects.projects.list(orgId, { limit: 100 }),
+    projects.customFields.list(orgId),
+    projects.labels.list(orgId),
+    projects.issues.list(orgId, { limit: 100, order: 'updated' }),
+    loadMemberLabels(orgId),
+    projects.cycles.list(orgId),
+  ])
 
   if (issueResult.error?.code === 'projects/issue-not-found') notFound()
   if (issueResult.error || !issueResult.data)
@@ -40,6 +53,7 @@ export async function EditIssueData({ issueRef }: { issueRef: string }) {
 
   const projectItems = projectList.data?.data ?? []
   const milestoneResults = await listProjectMilestones(orgId, projectItems)
+  const taskListResults = await listProjectTaskLists(orgId, projectItems)
   const loadError = [
     types.error,
     states.error,
@@ -48,7 +62,9 @@ export async function EditIssueData({ issueRef }: { issueRef: string }) {
     labels.error,
     issueList.error,
     members.error,
+    cycles.error,
     ...milestoneResults.map((result) => result.error),
+    ...taskListResults.map((result) => result.error),
   ].find(Boolean)
 
   if (loadError)
@@ -60,10 +76,12 @@ export async function EditIssueData({ issueRef }: { issueRef: string }) {
       />
     )
 
-  const memberOptions = Object.entries(members.labels).map(([userId, label]) => ({
-    userId,
-    label,
-  }))
+  const memberOptions = Object.entries(members.labels).map(
+    ([userId, label]) => ({
+      userId,
+      label,
+    })
+  )
   if (
     issueResult.data.assigneeUserId &&
     !members.labels[issueResult.data.assigneeUserId]
@@ -80,6 +98,8 @@ export async function EditIssueData({ issueRef }: { issueRef: string }) {
       workflowStates={states.data?.data ?? []}
       projects={projectItems}
       milestones={milestoneResults.flatMap((result) => result.data?.data ?? [])}
+      taskLists={taskListResults.flatMap((result) => result.data?.data ?? [])}
+      cycles={cycles.data?.data ?? []}
       customFields={fields.data?.data ?? []}
       labels={labels.data?.data ?? []}
       issues={issueList.data?.data ?? []}
