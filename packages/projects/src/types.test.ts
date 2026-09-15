@@ -76,6 +76,12 @@ const validIssue: Issue = {
   parentIssueId: null,
   estimate: 5,
   dueDate: 1700000000,
+  plannedStartDate: null,
+  plannedFinishDate: null,
+  plannedDurationMinutes: null,
+  blocked: false,
+  relationCount: 0,
+  dependencyCount: 0,
   position: 100,
   labels: [
     {

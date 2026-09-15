@@ -10,6 +10,7 @@ const {
   cyclesRepo,
   typeAccess,
   issuesRepo,
+  issueLinksRepo,
   labelsRepo,
   commentsRepo,
 } = vi.hoisted(() => ({
@@ -94,6 +95,26 @@ const {
     getBatchEnrichment: vi.fn(),
     transaction: vi.fn(),
   },
+  issueLinksRepo: {
+    listRelations: vi.fn(),
+    findRelation: vi.fn(),
+    findRelationBetween: vi.fn(),
+    findUnorderedRelation: vi.fn(),
+    createRelation: vi.fn(),
+    deleteRelation: vi.fn(),
+    listPredecessorLinks: vi.fn(),
+    listSuccessorLinks: vi.fn(),
+    listSuccessorDependencies: vi.fn(),
+    findDependency: vi.fn(),
+    findDependencyBetween: vi.fn(),
+    createDependency: vi.fn(),
+    updateDependency: vi.fn(),
+    deleteDependency: vi.fn(),
+    listSuccessorIds: vi.fn(),
+    listRelationsForIssues: vi.fn(),
+    listDependenciesForIssues: vi.fn(),
+    listIssueStatuses: vi.fn(),
+  },
   labelsRepo: {
     list: vi.fn(),
     retrieve: vi.fn(),
@@ -131,6 +152,7 @@ vi.mock('../../work-structure/task-lists.repository.js', () => taskListsRepo)
 vi.mock('../../work-structure/cycles.repository.js', () => cyclesRepo)
 vi.mock('../../work-structure/work-item-type-access.js', () => typeAccess)
 vi.mock('../../issues/issues.repository.js', () => issuesRepo)
+vi.mock('../../issues/issue-links.repository.js', () => issueLinksRepo)
 vi.mock('../../labels/labels.repository.js', () => labelsRepo)
 vi.mock('../../comments/comments.repository.js', () => commentsRepo)
 

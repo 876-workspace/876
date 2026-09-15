@@ -32,6 +32,9 @@ export type IssueRow = {
   parentIssueId: string | null
   estimate: number | null
   dueDate: bigint | number | null
+  plannedStartDate?: bigint | number | null
+  plannedFinishDate?: bigint | number | null
+  plannedDurationMinutes?: number | null
   position: number
   startedAt: bigint | number | null
   completedAt: bigint | number | null
@@ -86,6 +89,12 @@ export type SerializedIssue = {
   parentIssueId: string | null
   estimate: number | null
   dueDate: number | null
+  plannedStartDate: number | null
+  plannedFinishDate: number | null
+  plannedDurationMinutes: number | null
+  blocked: boolean
+  relationCount: number
+  dependencyCount: number
   position: number
   labels: SerializedLabel[]
   commentCount: number
@@ -125,6 +134,9 @@ export function serializeIssue(
     state?: SerializedWorkflowState | null
     milestone?: SerializedMilestone | null
     customFields?: SerializedCustomFieldValue[]
+    blocked?: boolean
+    relationCount?: number
+    dependencyCount?: number
   }
 ): SerializedIssue {
   const projectKey = options?.projectKey ?? row.project?.key ?? ''
@@ -164,6 +176,12 @@ export function serializeIssue(
     parentIssueId: row.parentIssueId,
     estimate: row.estimate,
     dueDate: nullableFromDbUnixSeconds(row.dueDate),
+    plannedStartDate: nullableFromDbUnixSeconds(row.plannedStartDate),
+    plannedFinishDate: nullableFromDbUnixSeconds(row.plannedFinishDate),
+    plannedDurationMinutes: row.plannedDurationMinutes ?? null,
+    blocked: options?.blocked ?? false,
+    relationCount: options?.relationCount ?? 0,
+    dependencyCount: options?.dependencyCount ?? 0,
     position: row.position,
     labels,
     commentCount,

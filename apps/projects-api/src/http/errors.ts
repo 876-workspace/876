@@ -113,6 +113,30 @@ export const PROJECTS_ERRORS = {
     message: 'The requested work structure preset could not be found.',
     httpStatus: 404 as HttpStatusCode,
   },
+  'projects/issue-relation-not-found': {
+    message: 'The issue relation could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/issue-relation-exists': {
+    message: 'These issues are already linked with that relation type.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/issue-dependency-not-found': {
+    message: 'The issue dependency could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/issue-dependency-exists': {
+    message: 'This dependency already exists.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/issue-dependency-cycle': {
+    message: 'This dependency would create a scheduling cycle.',
+    httpStatus: 422 as HttpStatusCode,
+  },
+  'projects/issue-self-link': {
+    message: 'An issue cannot be linked to itself.',
+    httpStatus: 400 as HttpStatusCode,
+  },
   'projects/comment-not-found': {
     message: 'The comment could not be found.',
     httpStatus: 404 as HttpStatusCode,

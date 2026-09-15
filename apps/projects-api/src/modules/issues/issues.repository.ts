@@ -55,6 +55,9 @@ export type CreateIssueParams = {
   parentIssueId?: string | null
   estimate?: number | null
   dueDate?: bigint | null
+  plannedStartDate?: bigint | null
+  plannedFinishDate?: bigint | null
+  plannedDurationMinutes?: number | null
   position: number
   startedAt?: bigint | null
   completedAt?: bigint | null
@@ -91,6 +94,9 @@ export type UpdateIssueParams = {
   parentIssueId?: string | null
   estimate?: number | null
   dueDate?: bigint | null
+  plannedStartDate?: bigint | null
+  plannedFinishDate?: bigint | null
+  plannedDurationMinutes?: number | null
   position?: number
   startedAt?: bigint | null
   completedAt?: bigint | null

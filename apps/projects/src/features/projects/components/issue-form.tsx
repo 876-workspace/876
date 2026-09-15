@@ -151,6 +151,18 @@ function IssueForm({
       : String(issue.estimate)
   )
   const [dueDate, setDueDate] = useState(dateInputValue(issue?.dueDate ?? null))
+  const [plannedStart, setPlannedStart] = useState(
+    dateInputValue(issue?.plannedStartDate ?? null)
+  )
+  const [plannedFinish, setPlannedFinish] = useState(
+    dateInputValue(issue?.plannedFinishDate ?? null)
+  )
+  const [plannedDuration, setPlannedDuration] = useState(
+    issue?.plannedDurationMinutes === null ||
+      issue?.plannedDurationMinutes === undefined
+      ? ''
+      : String(issue.plannedDurationMinutes)
+  )
   const [labelIds, setLabelIds] = useState<string[]>(
     issue?.labels.map((label) => label.id) ?? []
   )
@@ -247,6 +259,10 @@ function IssueForm({
           parentIssueId: parentIssueId || null,
           estimate: parsedEstimate,
           dueDate: parsedDueDate,
+          plannedStartDate: dateTimestamp(plannedStart),
+          plannedFinishDate: dateTimestamp(plannedFinish),
+          plannedDurationMinutes:
+            plannedDuration === '' ? null : Number(plannedDuration),
           labelIds,
           customFields: customFieldValues,
           ...(taskListId !== (issue.taskListId ?? '')
@@ -270,6 +286,15 @@ function IssueForm({
           ...(parentIssueId ? { parentIssueId } : {}),
           ...(estimate !== '' ? { estimate: parsedEstimate } : {}),
           ...(dueDate ? { dueDate: parsedDueDate } : {}),
+          ...(plannedStart
+            ? { plannedStartDate: dateTimestamp(plannedStart) }
+            : {}),
+          ...(plannedFinish
+            ? { plannedFinishDate: dateTimestamp(plannedFinish) }
+            : {}),
+          ...(plannedDuration !== ''
+            ? { plannedDurationMinutes: Number(plannedDuration) }
+            : {}),
           ...(labelIds.length > 0 ? { labelIds } : {}),
           ...(customFieldValues.length > 0
             ? { customFields: customFieldValues }
@@ -480,6 +505,34 @@ function IssueForm({
           type="date"
           value={dueDate}
           onChange={(event) => setDueDate(event.target.value)}
+        />
+      </FormRow>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormRow label="Planned start" htmlFor="planned-start">
+          <Input
+            id="planned-start"
+            type="date"
+            value={plannedStart}
+            onChange={(event) => setPlannedStart(event.target.value)}
+          />
+        </FormRow>
+        <FormRow label="Planned finish" htmlFor="planned-finish">
+          <Input
+            id="planned-finish"
+            type="date"
+            value={plannedFinish}
+            onChange={(event) => setPlannedFinish(event.target.value)}
+          />
+        </FormRow>
+      </div>
+      <FormRow label="Planned duration (minutes)" htmlFor="planned-duration">
+        <Input
+          id="planned-duration"
+          type="number"
+          min={0}
+          step={1}
+          value={plannedDuration}
+          onChange={(event) => setPlannedDuration(event.target.value)}
         />
       </FormRow>
       {labels.length > 0 ? (

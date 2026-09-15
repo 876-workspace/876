@@ -19,6 +19,9 @@ model Issue {
   parentIssueId  String? @map("parent_issue_id")
   estimate       Int?
   dueDate        BigInt? @map("due_date")
+  plannedStartDate BigInt? @map("planned_start_date")
+  plannedFinishDate BigInt? @map("planned_finish_date")
+  plannedDurationMinutes Int? @map("planned_duration_minutes")
   position       Int     @default(0)
   startedAt      BigInt? @map("started_at")
   completedAt    BigInt? @map("completed_at")
@@ -40,6 +43,10 @@ model Issue {
   taskList TaskList? @relation(fields: [taskListId], references: [id], onDelete: SetNull)
   cycle Cycle? @relation(fields: [cycleId], references: [id], onDelete: SetNull)
   customFieldValues CustomFieldValue[]
+  sourceRelations IssueRelation[] @relation("IssueRelationSource")
+  targetRelations IssueRelation[] @relation("IssueRelationTarget")
+  predecessorLinks IssueDependency[] @relation("IssueDependencyPredecessor")
+  successorLinks IssueDependency[] @relation("IssueDependencySuccessor")
 
   @@unique([tenantId, identifier])
   @@unique([projectId, number])
@@ -85,4 +92,43 @@ model IssueEvent {
 
   @@index([issueId, createdAt])
   @@map("projects_issue_events")
+}
+
+model IssueRelation {
+  id            String @id
+  tenantId      String @map("tenant_id")
+  sourceIssueId String @map("source_issue_id")
+  targetIssueId String @map("target_issue_id")
+  type          String // relates-to|duplicates|blocks
+  createdBy     String? @map("created_by")
+  createdAt     BigInt @map("created_at")
+
+  tenant      Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sourceIssue Issue  @relation("IssueRelationSource", fields: [sourceIssueId], references: [id], onDelete: Cascade)
+  targetIssue Issue  @relation("IssueRelationTarget", fields: [targetIssueId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sourceIssueId, targetIssueId, type], map: "projects_issue_relations_unique")
+  @@index([sourceIssueId])
+  @@index([targetIssueId])
+  @@map("projects_issue_relations")
+}
+
+model IssueDependency {
+  id                String @id
+  tenantId          String @map("tenant_id")
+  predecessorIssueId String @map("predecessor_issue_id")
+  successorIssueId  String @map("successor_issue_id")
+  type              String @default("finish-to-start") // finish-to-start|start-to-start|finish-to-finish|start-to-finish
+  lagMinutes        Int    @default(0) @map("lag_minutes")
+  createdBy         String? @map("created_by")
+  createdAt         BigInt @map("created_at")
+
+  tenant      Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  predecessor Issue  @relation("IssueDependencyPredecessor", fields: [predecessorIssueId], references: [id], onDelete: Cascade)
+  successor   Issue  @relation("IssueDependencySuccessor", fields: [successorIssueId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, predecessorIssueId, successorIssueId], map: "projects_issue_dependencies_unique")
+  @@index([predecessorIssueId])
+  @@index([successorIssueId])
+  @@map("projects_issue_dependencies")
 }

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { IssueCommentsLoader } from '@/features/projects/components/issue-comments-loader'
+import { IssueLinksData } from '@/features/projects/components/issue-links-data'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { projects } from '@/lib/services/projects'
 
@@ -86,6 +87,20 @@ export async function IssueDetailData({
           projectHref={`/projects/${issueResult.data.projectId}`}
           editHref={`/issues/${issueResult.data.identifier}/edit`}
         />
+      </div>
+      <div className="mt-6 lg:mr-[33.333333%]">
+        <Suspense
+          fallback={
+            <div className="text-muted-foreground text-sm">
+              Loading relationships and dependencies…
+            </div>
+          }
+        >
+          <IssueLinksData
+            orgId={orgId}
+            issueRef={issueResult.data.identifier}
+          />
+        </Suspense>
       </div>
       <div className="mt-6 lg:mr-[33.333333%]">
         <Suspense

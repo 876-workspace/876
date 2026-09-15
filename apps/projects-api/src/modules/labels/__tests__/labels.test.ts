@@ -12,6 +12,7 @@ const {
   projectsRepo,
   commentsRepo,
   issuesRepo,
+  issueLinksRepo,
 } = vi.hoisted(() => ({
   tenantsRepo: {
     retrieveByOrganization: vi.fn(),
@@ -100,6 +101,26 @@ const {
     getBatchEnrichment: vi.fn(),
     transaction: vi.fn(),
   },
+  issueLinksRepo: {
+    listRelations: vi.fn(),
+    findRelation: vi.fn(),
+    findRelationBetween: vi.fn(),
+    findUnorderedRelation: vi.fn(),
+    createRelation: vi.fn(),
+    deleteRelation: vi.fn(),
+    listPredecessorLinks: vi.fn(),
+    listSuccessorLinks: vi.fn(),
+    listSuccessorDependencies: vi.fn(),
+    findDependency: vi.fn(),
+    findDependencyBetween: vi.fn(),
+    createDependency: vi.fn(),
+    updateDependency: vi.fn(),
+    deleteDependency: vi.fn(),
+    listSuccessorIds: vi.fn(),
+    listRelationsForIssues: vi.fn(),
+    listDependenciesForIssues: vi.fn(),
+    listIssueStatuses: vi.fn(),
+  },
 }))
 
 vi.mock('../../tenants/tenants.repository.js', () => tenantsRepo)
@@ -121,6 +142,7 @@ vi.mock('../../work-structure/cycles.repository.js', () => cyclesRepo)
 vi.mock('../../projects/projects.repository.js', () => projectsRepo)
 vi.mock('../../comments/comments.repository.js', () => commentsRepo)
 vi.mock('../../issues/issues.repository.js', () => issuesRepo)
+vi.mock('../../issues/issue-links.repository.js', () => issueLinksRepo)
 
 const service = await import('../labels.service.js')
 const { createLabelsRouter } = await import('../labels.routes.js')

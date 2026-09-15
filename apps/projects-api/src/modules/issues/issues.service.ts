@@ -9,6 +9,7 @@ import * as labels from '../labels/index.js'
 import * as projects from '../projects/index.js'
 import * as tenants from '../tenants/index.js'
 import * as workStructure from '../work-structure/index.js'
+import { summarizeLinks } from './issue-links.service.js'
 import * as repository from './issues.repository.js'
 import type {
   CreateIssueBody,
@@ -192,16 +193,21 @@ export async function list(
 
   const issueIds = pagedRows.map((row) => row.id)
   const enrichmentMap = await repository.getBatchEnrichment(issueIds)
+  const linkSummaries = await summarizeLinks(tenant.id, issueIds)
   const structures = await Promise.all(
     pagedRows.map((row) => workStructure.getIssueStructure(tenant.id, row))
   )
   const items = pagedRows.map((row, index) => {
     const details = enrichmentMap.get(row.id)
+    const links = linkSummaries.get(row.id)
     return serializeIssue(row, {
       projectKey: row.project?.key,
       labels: details?.labels,
       commentCount: details?.commentCount ?? 0,
       subIssueCount: details?.subIssueCount ?? 0,
+      blocked: links?.blocked ?? false,
+      relationCount: links?.relationCount ?? 0,
+      dependencyCount: links?.dependencyCount ?? 0,
       ...structures[index],
     })
   })
@@ -324,6 +330,9 @@ export async function create(
         parentIssueId: body.parentIssueId ?? null,
         estimate: body.estimate ?? null,
         dueDate: nullableToDbUnixSeconds(body.dueDate),
+        plannedStartDate: nullableToDbUnixSeconds(body.plannedStartDate),
+        plannedFinishDate: nullableToDbUnixSeconds(body.plannedFinishDate),
+        plannedDurationMinutes: body.plannedDurationMinutes ?? null,
         position: body.position ?? 0,
         startedAt,
         completedAt,
@@ -368,6 +377,9 @@ export async function create(
   const enrichment = await repository.getBatchEnrichment([createdRow.id])
   const details = enrichment.get(createdRow.id)
   const structure = await workStructure.getIssueStructure(tenant.id, createdRow)
+  const linkSummary = (await summarizeLinks(tenant.id, [createdRow.id])).get(
+    createdRow.id
+  )
 
   return {
     data: serializeIssue(createdRow, {
@@ -375,6 +387,9 @@ export async function create(
       labels: details?.labels,
       commentCount: details?.commentCount ?? 0,
       subIssueCount: details?.subIssueCount ?? 0,
+      blocked: linkSummary?.blocked ?? false,
+      relationCount: linkSummary?.relationCount ?? 0,
+      dependencyCount: linkSummary?.dependencyCount ?? 0,
       ...structure,
     }),
     error: null,
@@ -399,6 +414,7 @@ export async function retrieve(
   const enrichment = await repository.getBatchEnrichment([row.id])
   const details = enrichment.get(row.id)
   const structure = await workStructure.getIssueStructure(tenant.id, row)
+  const linkSummary = (await summarizeLinks(tenant.id, [row.id])).get(row.id)
 
   return {
     data: serializeIssue(row, {
@@ -406,6 +422,9 @@ export async function retrieve(
       labels: details?.labels,
       commentCount: details?.commentCount ?? 0,
       subIssueCount: details?.subIssueCount ?? 0,
+      blocked: linkSummary?.blocked ?? false,
+      relationCount: linkSummary?.relationCount ?? 0,
+      dependencyCount: linkSummary?.dependencyCount ?? 0,
       ...structure,
     }),
     error: null,
@@ -692,6 +711,16 @@ export async function update(
   if (body.estimate !== undefined) updateParams.estimate = body.estimate
   if (body.dueDate !== undefined)
     updateParams.dueDate = nullableToDbUnixSeconds(body.dueDate)
+  if (body.plannedStartDate !== undefined)
+    updateParams.plannedStartDate = nullableToDbUnixSeconds(
+      body.plannedStartDate
+    )
+  if (body.plannedFinishDate !== undefined)
+    updateParams.plannedFinishDate = nullableToDbUnixSeconds(
+      body.plannedFinishDate
+    )
+  if (body.plannedDurationMinutes !== undefined)
+    updateParams.plannedDurationMinutes = body.plannedDurationMinutes
   if (body.position !== undefined) updateParams.position = body.position
   if (startedAt !== undefined) updateParams.startedAt = startedAt
   if (completedAt !== undefined) updateParams.completedAt = completedAt
@@ -748,6 +777,9 @@ export async function update(
   const enrichment = await repository.getBatchEnrichment([updatedRow.id])
   const details = enrichment.get(updatedRow.id)
   const structure = await workStructure.getIssueStructure(tenant.id, updatedRow)
+  const linkSummary = (await summarizeLinks(tenant.id, [updatedRow.id])).get(
+    updatedRow.id
+  )
 
   return {
     data: serializeIssue(updatedRow, {
@@ -755,6 +787,9 @@ export async function update(
       labels: details?.labels,
       commentCount: details?.commentCount ?? 0,
       subIssueCount: details?.subIssueCount ?? 0,
+      blocked: linkSummary?.blocked ?? false,
+      relationCount: linkSummary?.relationCount ?? 0,
+      dependencyCount: linkSummary?.dependencyCount ?? 0,
       ...structure,
     }),
     error: null,

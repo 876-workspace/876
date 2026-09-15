@@ -12,6 +12,7 @@ const {
   taskListsRepo,
   cyclesRepo,
   repository,
+  issueLinksRepo,
   txMock,
 } = vi.hoisted(() => {
   const transactionClient = { transaction: 'projects-test-transaction' }
@@ -118,6 +119,26 @@ const {
       getBatchEnrichment: vi.fn(),
       transaction: vi.fn(),
     },
+    issueLinksRepo: {
+      listRelations: vi.fn(),
+      findRelation: vi.fn(),
+      findRelationBetween: vi.fn(),
+      findUnorderedRelation: vi.fn(),
+      createRelation: vi.fn(),
+      deleteRelation: vi.fn(),
+      listPredecessorLinks: vi.fn(),
+      listSuccessorLinks: vi.fn(),
+      listSuccessorDependencies: vi.fn(),
+      findDependency: vi.fn(),
+      findDependencyBetween: vi.fn(),
+      createDependency: vi.fn(),
+      updateDependency: vi.fn(),
+      deleteDependency: vi.fn(),
+      listSuccessorIds: vi.fn(),
+      listRelationsForIssues: vi.fn(),
+      listDependenciesForIssues: vi.fn(),
+      listIssueStatuses: vi.fn(),
+    },
     txMock: tx,
   }
 })
@@ -141,6 +162,7 @@ vi.mock(
 vi.mock('../../work-structure/task-lists.repository.js', () => taskListsRepo)
 vi.mock('../../work-structure/cycles.repository.js', () => cyclesRepo)
 vi.mock('../issues.repository.js', () => repository)
+vi.mock('../issue-links.repository.js', () => issueLinksRepo)
 
 const service = await import('../issues.service.js')
 const { createIssuesRouter } = await import('../issues.routes.js')
@@ -300,6 +322,19 @@ beforeEach(() => {
   vi.clearAllMocks()
   delete process.env.DELETION_MODE
   process.env.PROJECTS_INTERNAL_KEY = 'test-internal-key'
+  issueLinksRepo.listRelations.mockResolvedValue([])
+  issueLinksRepo.findRelation.mockResolvedValue(null)
+  issueLinksRepo.findRelationBetween.mockResolvedValue(null)
+  issueLinksRepo.findUnorderedRelation.mockResolvedValue(null)
+  issueLinksRepo.listPredecessorLinks.mockResolvedValue([])
+  issueLinksRepo.listSuccessorLinks.mockResolvedValue([])
+  issueLinksRepo.listSuccessorDependencies.mockResolvedValue([])
+  issueLinksRepo.findDependency.mockResolvedValue(null)
+  issueLinksRepo.findDependencyBetween.mockResolvedValue(null)
+  issueLinksRepo.listSuccessorIds.mockResolvedValue([])
+  issueLinksRepo.listRelationsForIssues.mockResolvedValue([])
+  issueLinksRepo.listDependenciesForIssues.mockResolvedValue([])
+  issueLinksRepo.listIssueStatuses.mockResolvedValue(new Map())
   tenantsRepo.retrieveByOrganization.mockResolvedValue(tenant)
   projectsRepo.retrieve.mockImplementation(
     async (_tenantId: string, id: string) => {
@@ -1144,6 +1179,12 @@ describe('issues module', () => {
             parentIssueId: null,
             estimate: null,
             dueDate: null,
+            plannedStartDate: null,
+            plannedFinishDate: null,
+            plannedDurationMinutes: null,
+            blocked: false,
+            relationCount: 0,
+            dependencyCount: 0,
             position: 0,
             labels: [],
             commentCount: 0,
