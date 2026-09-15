@@ -5,7 +5,7 @@ import {
   customFieldOptionSchema,
   customFieldTypeSchema,
   customFieldValueInputSchema,
-  updateMilestoneBodySchema,
+  milestoneStatusSchema,
 } from './work-structure.schemas.js'
 
 const kebabKeySchema = z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)
@@ -30,9 +30,21 @@ export const milestoneFieldParamsSchema = z.strictObject({
 export const createMilestoneWithActorBodySchema = createMilestoneBodySchema.extend({
   actorUserId: actorUserIdSchema,
 })
-export const updateMilestoneWithActorBodySchema = updateMilestoneBodySchema.and(
-  z.strictObject({ actorUserId: actorUserIdSchema })
-)
+export const updateMilestoneWithActorBodySchema = z
+  .strictObject({
+    name: z.string().trim().min(1).max(100).optional(),
+    description: z.string().trim().nullable().optional(),
+    status: milestoneStatusSchema.optional(),
+    ownerUserId: z.string().trim().min(1).nullable().optional(),
+    startDate: z.number().int().nullable().optional(),
+    targetDate: z.number().int().nullable().optional(),
+    position: z.number().int().optional(),
+    actorUserId: actorUserIdSchema,
+  })
+  .refine(
+    (data) => Object.keys(data).some((key) => key !== 'actorUserId'),
+    { message: 'At least one phase field must be provided.' }
+  )
 
 export const milestoneCommentBodySchema = z.strictObject({
   body: z.string().trim().min(1).max(10_000),
