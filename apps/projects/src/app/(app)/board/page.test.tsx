@@ -23,11 +23,11 @@ import BoardPage from './page'
 describe('BoardPage', () => {
   it('renders the standard toolbar with Add and disabled transfer actions', async () => {
     const user = userEvent.setup()
-    render(await BoardPage())
+    render(await BoardPage({ searchParams: Promise.resolve({}) }))
     await user.click(screen.getByRole('button', { name: 'More actions' }))
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'All Board Issues' })
+      screen.getByRole('heading', { level: 1, name: 'Board' })
     ).toBeInTheDocument()
     expect(
       await screen.findByRole('menuitem', { name: 'Refresh' })

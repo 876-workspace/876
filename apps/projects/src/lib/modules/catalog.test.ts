@@ -50,6 +50,7 @@ describe('Projects surface catalog', () => {
       'dashboard',
       'projects',
       'issues',
+      'comments',
       'labels',
       'members',
       'settings',
