@@ -52,10 +52,23 @@ describe('PATCH /api/issues/:issueRef', () => {
 
   it('rejects empty and unknown-field updates', async () => {
     const emptyResponse = await PATCH(request({}), context)
-    const unknownResponse = await PATCH(request({ title: 'Updated', nope: true }), context)
+    const unknownResponse = await PATCH(
+      request({ title: 'Updated', nope: true }),
+      context
+    )
 
     expect(emptyResponse.status).toBe(422)
     expect(unknownResponse.status).toBe(422)
+    expect(mocks.update).not.toHaveBeenCalled()
+  })
+
+  it('rejects a caller-supplied creator identity', async () => {
+    const response = await PATCH(
+      request({ title: 'Updated', creatorUserId: 'user_other' }),
+      context
+    )
+
+    expect(response.status).toBe(422)
     expect(mocks.update).not.toHaveBeenCalled()
   })
 
