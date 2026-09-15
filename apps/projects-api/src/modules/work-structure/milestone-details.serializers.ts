@@ -1,9 +1,26 @@
-import { fromDbUnixSeconds } from '../../platform/timestamps.js'
+import {
+  fromDbUnixSeconds,
+  nullableFromDbUnixSeconds,
+} from '../../platform/timestamps.js'
 import { readCustomFieldValue } from './custom-field-value.js'
-import type { CustomFieldRow } from './work-structure.serializers.js'
 
 type Timestamp = bigint | number
 type DecimalString = { toString(): string }
+
+export type MilestoneCustomFieldRow = {
+  id: string
+  tenantId: string
+  key: string
+  label: string
+  fieldType: string
+  options: unknown
+  required: boolean
+  description: string | null
+  position: number
+  archivedAt: Timestamp | null
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
 
 export type MilestoneCommentRow = {
   id: string
@@ -40,7 +57,25 @@ export type MilestoneCustomFieldValueRow = {
   updatedBy: string | null
   createdAt: Timestamp
   updatedAt: Timestamp
-  field: CustomFieldRow
+  field: MilestoneCustomFieldRow
+}
+
+export function serializeMilestoneCustomField(row: MilestoneCustomFieldRow) {
+  return {
+    object: 'projects.milestone-custom-field' as const,
+    id: row.id,
+    tenantId: row.tenantId,
+    key: row.key,
+    label: row.label,
+    fieldType: row.fieldType,
+    options: row.options,
+    required: row.required,
+    description: row.description,
+    position: row.position,
+    archivedAt: nullableFromDbUnixSeconds(row.archivedAt),
+    createdAt: fromDbUnixSeconds(row.createdAt),
+    updatedAt: fromDbUnixSeconds(row.updatedAt),
+  }
 }
 
 export function serializeMilestoneComment(row: MilestoneCommentRow) {
