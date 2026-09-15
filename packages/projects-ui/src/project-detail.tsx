@@ -13,6 +13,9 @@ export type ProjectDetailProps = {
   project: Project
   issues?: readonly Issue[]
   issuesHref: string
+  issueTotal?: number | null
+  issuesHasMore?: boolean
+  leadLabel?: string | null
 }
 
 function formatDate(timestamp: number | null): string {
@@ -24,11 +27,43 @@ function formatDate(timestamp: number | null): string {
   })
 }
 
+function isTerminal(issue: Issue): boolean {
+  const category = issue.state?.category
+  return (
+    category === 'completed' ||
+    category === 'canceled' ||
+    issue.status === 'done' ||
+    issue.status === 'canceled'
+  )
+}
+
+function isStarted(issue: Issue): boolean {
+  return (
+    issue.state?.category === 'started' ||
+    issue.status === 'in-progress' ||
+    issue.status === 'in-review'
+  )
+}
+
 export function ProjectDetail({
   project,
   issues = [],
   issuesHref,
+  issueTotal,
+  issuesHasMore = false,
+  leadLabel,
 }: ProjectDetailProps) {
+  const now = Math.floor(Date.now() / 1000)
+  const completeSet = !issuesHasMore
+  const total = issueTotal ?? issues.length
+  const open = issues.filter((issue) => !isTerminal(issue)).length
+  const completed = issues.filter((issue) => isTerminal(issue)).length
+  const inProgress = issues.filter((issue) => isStarted(issue)).length
+  const overdue = issues.filter(
+    (issue) =>
+      issue.dueDate !== null && issue.dueDate < now && !isTerminal(issue)
+  ).length
+
   return (
     <div className="space-y-8">
       <header className="876-card p-5 sm:p-6">
@@ -65,7 +100,7 @@ export function ProjectDetail({
       </header>
 
       <section className="876-card px-5 py-5 sm:px-6">
-        <DetailCardSection title="Project summary">
+        <DetailCardSection title="Overview">
           <DetailCardFacts className="sm:grid-cols-3">
             <DetailCardFact
               label={
@@ -74,8 +109,33 @@ export function ProjectDetail({
                   Project lead
                 </span>
               }
-              value={project.leadUserId ?? 'No lead assigned'}
-              mono={Boolean(project.leadUserId)}
+              value={leadLabel ?? project.leadUserId ?? 'No lead assigned'}
+              mono={Boolean(project.leadUserId && !leadLabel)}
+            />
+            <DetailCardFact
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <Users aria-hidden="true" className="size-3.5" />
+                  Members
+                </span>
+              }
+              value={`${project.memberCount} ${project.memberCount === 1 ? 'member' : 'members'}`}
+            />
+            <DetailCardFact
+              label="Customer"
+              value={project.customerId ?? 'No customer linked'}
+              mono={Boolean(project.customerId)}
+            />
+            <DetailCardFact
+              label={
+                <span className="inline-flex items-center gap-1.5">
+                  <Calendar aria-hidden="true" className="size-3.5" />
+                  Start date
+                </span>
+              }
+              value={
+                project.startDate ? formatDate(project.startDate) : 'No start date'
+              }
             />
             <DetailCardFact
               label={
@@ -91,19 +151,44 @@ export function ProjectDetail({
               }
             />
             <DetailCardFact
-              label={
-                <span className="inline-flex items-center gap-1.5">
-                  <Users aria-hidden="true" className="size-3.5" />
-                  Members
-                </span>
-              }
-              value={`${project.memberCount} ${project.memberCount === 1 ? 'member' : 'members'}`}
+              label="Last updated"
+              value={formatDate(project.updatedAt)}
             />
           </DetailCardFacts>
         </DetailCardSection>
       </section>
 
-      <DetailCardSection title="Issues" className="space-y-3">
+      <section className="876-card px-5 py-5 sm:px-6">
+        <DetailCardSection title="Work overview">
+          <DetailCardFacts className="grid-cols-2 gap-y-5 sm:grid-cols-5">
+            <DetailCardFact label="Work items" value={String(total)} />
+            <DetailCardFact
+              label="Open"
+              value={completeSet ? String(open) : '—'}
+            />
+            <DetailCardFact
+              label="In progress"
+              value={completeSet ? String(inProgress) : '—'}
+            />
+            <DetailCardFact
+              label="Completed"
+              value={completeSet ? String(completed) : '—'}
+            />
+            <DetailCardFact
+              label="Overdue"
+              value={completeSet ? String(overdue) : '—'}
+            />
+          </DetailCardFacts>
+          {issuesHasMore ? (
+            <p className="text-muted-foreground mt-4 text-xs">
+              Detailed work counts are hidden because this project has more work
+              items than the current workspace page loaded.
+            </p>
+          ) : null}
+        </DetailCardSection>
+      </section>
+
+      <DetailCardSection title="Work" className="space-y-3">
         <IssuesTable issues={issues} issuesHref={issuesHref} />
       </DetailCardSection>
     </div>
