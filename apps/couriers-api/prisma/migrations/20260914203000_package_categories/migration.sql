@@ -22,5 +22,5 @@ CREATE UNIQUE INDEX "package_categories_tenant_id_provisioning_key_key"
 CREATE INDEX "package_categories_tenant_id_is_active_sort_order_idx"
   ON "public"."package_categories"("tenant_id", "is_active", "sort_order");
 
-CREATE INDEX "packages_category_id_idx"
-  ON "public"."packages"("category_id");
+-- packages_category_id_idx already exists from
+-- 20260719040000_couriers_schema_index_hardening.
