@@ -1,8 +1,11 @@
 'use client'
 
 import type {
+  BrandingUpdateParams,
   CurrencyEnableParams,
   CurrencyUpdateParams,
+  DocumentTemplateCreateParams,
+  DocumentTemplateUpdateParams,
   PaymentMode,
   PaymentModeCreateParams,
   PaymentModeUpdateParams,
@@ -131,8 +134,57 @@ export const financeCurrencies = {
   },
 }
 
+/** Couriers document-template mutations for the shared template surfaces. */
+export const financeDocumentTemplates = {
+  create(orgSlug: string, params: DocumentTemplateCreateParams) {
+    return request<unknown>(`${base}/document-templates`, {
+      method: 'POST',
+      body: JSON.stringify({ orgSlug, ...params }),
+    })
+  },
+  update(orgSlug: string, id: string, params: DocumentTemplateUpdateParams) {
+    return request<unknown>(
+      `${base}/document-templates/${encodeURIComponent(id)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ orgSlug, ...params }),
+      }
+    )
+  },
+  remove(orgSlug: string, id: string) {
+    return request<unknown>(
+      `${base}/document-templates/${encodeURIComponent(id)}`,
+      {
+        method: 'DELETE',
+        body: JSON.stringify({ orgSlug }),
+      }
+    )
+  },
+  setDefault(orgSlug: string, id: string) {
+    return request<unknown>(
+      `${base}/document-templates/${encodeURIComponent(id)}/default`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ orgSlug }),
+      }
+    )
+  },
+}
+
+/** Couriers branding mutations for the shared branding form. */
+export const financeBranding = {
+  update(orgSlug: string, params: BrandingUpdateParams) {
+    return request<unknown>(`${base}/branding`, {
+      method: 'PATCH',
+      body: JSON.stringify({ orgSlug, ...params }),
+    })
+  },
+}
+
 export const finance = {
   taxes: financeTaxes,
   paymentModes: financePaymentModes,
   currencies: financeCurrencies,
+  documentTemplates: financeDocumentTemplates,
+  branding: financeBranding,
 }

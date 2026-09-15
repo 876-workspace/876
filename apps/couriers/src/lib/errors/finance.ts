@@ -2,10 +2,12 @@ import type { ErrorDef } from '@876/core'
 import { BILLING_ERRORS, HttpStatus } from '@876/core'
 
 /** The finance settings resource a failed call belongs to. */
-export type FinanceResource = 'tax' | 'currency' | 'payment-mode'
+export type FinanceResource =
+  'tax' | 'currency' | 'payment-mode' | 'document-template' | 'branding'
 
 /**
- * Couriers finance-settings errors (taxes, currencies, payment modes).
+ * Couriers finance-settings errors (taxes, currencies, payment modes,
+ * document templates, branding).
  *
  * These back the Couriers `/api/manage/finance/*` routes and the Finance
  * settings page. Billing-owned failure codes are reused from `@876/core`
@@ -49,6 +51,14 @@ export const FINANCE_ERRORS = {
     message: 'The currency details are invalid.',
     httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
   },
+  'finance/invalid-document-template': {
+    message: 'The document template details are invalid.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
+  'finance/invalid-branding': {
+    message: 'The branding details are invalid.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
   'finance/tax-unavailable': {
     message: 'Tax settings are unavailable right now. Please try again.',
     httpStatus: HttpStatus.BAD_GATEWAY,
@@ -62,6 +72,14 @@ export const FINANCE_ERRORS = {
     message: 'Currency settings are unavailable right now. Please try again.',
     httpStatus: HttpStatus.BAD_GATEWAY,
   },
+  'finance/document-template-unavailable': {
+    message: 'Document templates are unavailable right now. Please try again.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
+  },
+  'finance/branding-unavailable': {
+    message: 'Branding settings are unavailable right now. Please try again.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
+  },
 } as const satisfies Record<string, ErrorDef>
 
 export type FinanceErrorCode = keyof typeof FINANCE_ERRORS
@@ -71,6 +89,8 @@ export const FINANCE_UNAVAILABLE_CODE: Record<FinanceResource, string> = {
   tax: 'finance/tax-unavailable',
   currency: 'finance/currency-unavailable',
   'payment-mode': 'finance/payment-mode-unavailable',
+  'document-template': 'finance/document-template-unavailable',
+  branding: 'finance/branding-unavailable',
 }
 
 /**

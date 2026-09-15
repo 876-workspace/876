@@ -113,6 +113,11 @@ describe('settingsContext', () => {
       },
       {
         group: 'Product',
+        title: 'Templates',
+        href: '/island-logistics/settings/templates',
+      },
+      {
+        group: 'Product',
         title: 'Customization',
         href: '/island-logistics/settings/customization',
       },
@@ -157,6 +162,8 @@ describe('resolveSettingsActiveKey', () => {
     ['/island-logistics/settings/users/roles/role_admin', 'roles'],
     ['/island-logistics/settings/modules/invoices', 'module-invoices'],
     ['/island-logistics/settings/finance', 'finance'],
+    ['/island-logistics/settings/templates', 'templates'],
+    ['/island-logistics/settings/templates/new', 'templates'],
     ['/island-logistics/settings', null],
     ['/island-logistics/customers', null],
   ])('resolves %s to %s', (pathname, expected) => {
