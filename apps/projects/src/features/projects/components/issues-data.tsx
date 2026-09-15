@@ -1,3 +1,4 @@
+import type { ListIssuesQuery } from '@876/projects/contracts'
 import { createIssueGroups } from '@876/projects-ui/issue-grouping'
 import { IssuesTable } from '@876/projects-ui/issue-list'
 import { AppError } from '@876/ui/app-error'
@@ -16,7 +17,7 @@ export async function IssuesData({
   values,
   groupBy,
 }: {
-  query: Parameters<typeof projects.issues.list>[1]
+  query: ListIssuesQuery
   values: IssueSearchParams
   groupBy: IssueGroupBy
 }) {
