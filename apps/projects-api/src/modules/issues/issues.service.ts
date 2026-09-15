@@ -268,6 +268,15 @@ export async function create(
   if (body.taskListId && (!taskList || taskList.projectId !== targetProject.id))
     return { data: null, error: getError('projects/task-list-not-found') }
 
+  const cycle = body.cycleId
+    ? await workStructure.resolveCycleById(tenant.id, body.cycleId)
+    : null
+  if (
+    body.cycleId &&
+    (!cycle || (cycle.projectId && cycle.projectId !== targetProject.id))
+  )
+    return { data: null, error: getError('projects/cycle-not-found') }
+
   const customFieldValidation =
     await workStructure.validateIssueCustomFieldValues(
       tenant.id,
@@ -308,6 +317,7 @@ export async function create(
         workItemTypeId: workItemType.id,
         milestoneId: milestone?.id ?? null,
         taskListId: taskList?.id ?? null,
+        cycleId: cycle?.id ?? null,
         priority,
         assigneeUserId: body.assigneeUserId ?? null,
         creatorUserId: body.creatorUserId ?? null,
@@ -487,6 +497,18 @@ export async function update(
   )
     return { data: null, error: getError('projects/task-list-not-found') }
 
+  const targetCycle =
+    body.cycleId === undefined || body.cycleId === null
+      ? null
+      : await workStructure.resolveCycleById(tenant.id, body.cycleId)
+  if (
+    body.cycleId !== undefined &&
+    body.cycleId !== null &&
+    (!targetCycle ||
+      (targetCycle.projectId && targetCycle.projectId !== targetProjectId))
+  )
+    return { data: null, error: getError('projects/cycle-not-found') }
+
   if (body.customFields !== undefined || body.typeKey !== undefined) {
     const validation = await workStructure.validateIssueCustomFieldValues(
       tenant.id,
@@ -616,6 +638,17 @@ export async function update(
     })
   }
 
+  if (
+    body.cycleId !== undefined &&
+    (existing.cycleId ?? null) !== (targetCycle?.id ?? null)
+  ) {
+    eventsToWrite.push({
+      type: 'cycle-changed',
+      fromValue: existing.cycleId ?? null,
+      toValue: targetCycle?.id ?? null,
+    })
+  }
+
   if (resolvedLabelIds !== undefined) {
     const existingLabelIds = existing.labels
       ? existing.labels.map((issueLabel) => issueLabel.label.id)
@@ -648,6 +681,7 @@ export async function update(
     updateParams.milestoneId = targetMilestone?.id ?? null
   if (body.taskListId !== undefined)
     updateParams.taskListId = targetTaskList?.id ?? null
+  if (body.cycleId !== undefined) updateParams.cycleId = targetCycle?.id ?? null
   if (body.priority !== undefined) updateParams.priority = body.priority
   if (body.assigneeUserId !== undefined)
     updateParams.assigneeUserId = body.assigneeUserId

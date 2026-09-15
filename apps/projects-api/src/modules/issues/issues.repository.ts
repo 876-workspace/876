@@ -48,6 +48,7 @@ export type CreateIssueParams = {
   workItemTypeId?: string | null
   milestoneId?: string | null
   taskListId?: string | null
+  cycleId?: string | null
   priority: string
   assigneeUserId?: string | null
   creatorUserId?: string | null
@@ -83,6 +84,7 @@ export type UpdateIssueParams = {
   workItemTypeId?: string | null
   milestoneId?: string | null
   taskListId?: string | null
+  cycleId?: string | null
   priority?: string
   assigneeUserId?: string | null
   creatorUserId?: string | null

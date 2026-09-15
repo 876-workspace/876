@@ -554,6 +554,7 @@ export interface CreateIssueInput {
   typeKey?: string
   milestoneId?: string | null
   taskListId?: string | null
+  cycleId?: string | null
   priority?: IssuePriority
   assigneeUserId?: string | null
   creatorUserId?: string | null
@@ -573,6 +574,7 @@ export interface UpdateIssueInput {
   typeKey?: string
   milestoneId?: string | null
   taskListId?: string | null
+  cycleId?: string | null
   priority?: IssuePriority
   assigneeUserId?: string | null
   creatorUserId?: string | null

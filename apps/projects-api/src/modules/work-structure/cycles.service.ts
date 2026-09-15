@@ -42,10 +42,6 @@ async function withMetrics(row: CycleRow): Promise<SerializedCycle> {
   return serializeCycle(row, progress, throughput.completedInWindow)
 }
 
-export async function resolveCycleById(tenantId: string, id: string) {
-  return repository.retrieveCycle(tenantId, id)
-}
-
 export async function listCycles(
   organizationId: string,
   projectId?: string,
