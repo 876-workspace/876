@@ -3,7 +3,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { errorHandler } from '../../../http/error-handler.js'
 
-const { repository, tenants, projects, issues } = vi.hoisted(() => ({
+const {
+  repository,
+  tenants,
+  projects,
+  issues,
+  milestoneDetailsRepo,
+  milestoneListRepo,
+} = vi.hoisted(() => ({
   repository: {
     listWorkItemTypes: vi.fn(),
     retrieveWorkItemType: vi.fn(),
@@ -47,12 +54,37 @@ const { repository, tenants, projects, issues } = vi.hoisted(() => ({
   tenants: { resolveTenant: vi.fn(), setPresetKey: vi.fn() },
   projects: { resolveProject: vi.fn() },
   issues: { resolveIssue: vi.fn() },
+  // Phase-2 added milestone detail/list repositories that connect to the DB
+  // pool at module-eval time via `work-structure.routes.ts`. Mock them here
+  // so importing the router does not require `PROJECTS_DATABASE_URL`.
+  milestoneDetailsRepo: {
+    milestoneProgress: vi.fn(),
+    listMilestoneComments: vi.fn(),
+    retrieveMilestoneComment: vi.fn(),
+    createMilestoneComment: vi.fn(),
+    updateMilestoneComment: vi.fn(),
+    deleteMilestoneComment: vi.fn(),
+    listMilestoneEvents: vi.fn(),
+    createMilestoneEvent: vi.fn(),
+    listMilestoneCustomFields: vi.fn(),
+    retrieveMilestoneCustomField: vi.fn(),
+    retrieveMilestoneCustomFieldByKey: vi.fn(),
+    createMilestoneCustomField: vi.fn(),
+    updateMilestoneCustomField: vi.fn(),
+    archiveMilestoneCustomField: vi.fn(),
+    listMilestoneCustomFieldValues: vi.fn(),
+    upsertMilestoneCustomFieldValue: vi.fn(),
+    clearMilestoneCustomFieldValue: vi.fn(),
+  },
+  milestoneListRepo: { listOrganizationMilestones: vi.fn() },
 }))
 
 vi.mock('../work-structure.repository.js', () => repository)
 vi.mock('../../tenants/index.js', () => tenants)
 vi.mock('../../projects/index.js', () => projects)
 vi.mock('../../issues/index.js', () => issues)
+vi.mock('../milestone-details.repository.js', () => milestoneDetailsRepo)
+vi.mock('../milestone-list.repository.js', () => milestoneListRepo)
 
 const { createWorkStructureRouter, createCustomFieldValuesRouter } =
   await import('../work-structure.routes.js')

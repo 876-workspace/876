@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const {
   repository,
   workStructureRepo,
+  milestoneDetailsRepo,
+  milestoneListRepo,
   projectsRepo,
   labelsRepo,
   commentsRepo,
@@ -21,6 +23,29 @@ const {
   // must be mocked here too, or importing `tenants.service.js` throws
   // `PROJECTS_DATABASE_URL is not configured` before a single test runs.
   workStructureRepo: { seedPreset: vi.fn() },
+  // Phase-2 added milestone detail/list repositories that connect to the DB
+  // pool at module-eval time via `work-structure.routes.ts`. Mock them here
+  // too for the same reason.
+  milestoneDetailsRepo: {
+    milestoneProgress: vi.fn(),
+    listMilestoneComments: vi.fn(),
+    retrieveMilestoneComment: vi.fn(),
+    createMilestoneComment: vi.fn(),
+    updateMilestoneComment: vi.fn(),
+    deleteMilestoneComment: vi.fn(),
+    listMilestoneEvents: vi.fn(),
+    createMilestoneEvent: vi.fn(),
+    listMilestoneCustomFields: vi.fn(),
+    retrieveMilestoneCustomField: vi.fn(),
+    retrieveMilestoneCustomFieldByKey: vi.fn(),
+    createMilestoneCustomField: vi.fn(),
+    updateMilestoneCustomField: vi.fn(),
+    archiveMilestoneCustomField: vi.fn(),
+    listMilestoneCustomFieldValues: vi.fn(),
+    upsertMilestoneCustomFieldValue: vi.fn(),
+    clearMilestoneCustomFieldValue: vi.fn(),
+  },
+  milestoneListRepo: { listOrganizationMilestones: vi.fn() },
   projectsRepo: { retrieve: vi.fn(), retrieveByKey: vi.fn() },
   labelsRepo: { retrieve: vi.fn(), retrieveByName: vi.fn(), create: vi.fn() },
   commentsRepo: {
@@ -50,6 +75,14 @@ vi.mock('../tenants.repository.js', () => repository)
 vi.mock(
   '../../work-structure/work-structure.repository.js',
   () => workStructureRepo
+)
+vi.mock(
+  '../../work-structure/milestone-details.repository.js',
+  () => milestoneDetailsRepo
+)
+vi.mock(
+  '../../work-structure/milestone-list.repository.js',
+  () => milestoneListRepo
 )
 vi.mock('../../projects/projects.repository.js', () => projectsRepo)
 vi.mock('../../labels/labels.repository.js', () => labelsRepo)
