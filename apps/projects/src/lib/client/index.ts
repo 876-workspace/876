@@ -1,11 +1,12 @@
 import { appMemberships } from './app-memberships'
 import {
   commentsClient,
+  customFieldsClient,
   issuesClient,
   labelsClient,
   milestonesClient,
+  phasesClient,
   projectsClient,
-  customFieldsClient,
   workItemTypesClient,
   workflowStatesClient,
 } from './projects'
@@ -16,6 +17,7 @@ export const client = {
   onboarding,
   projects: projectsClient,
   issues: issuesClient,
+  phases: phasesClient,
   labels: labelsClient,
   comments: commentsClient,
   workItemTypes: workItemTypesClient,
@@ -29,6 +31,7 @@ export { onboarding } from './onboarding'
 export {
   projectsClient,
   issuesClient,
+  phasesClient,
   labelsClient,
   commentsClient,
   workItemTypesClient,
