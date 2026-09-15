@@ -2,6 +2,8 @@
 
 import type {
   CustomField,
+  Issue,
+  Label,
   Milestone,
   Project,
   WorkItemType,
@@ -19,12 +21,18 @@ import { useMemo, useState, type FormEvent } from 'react'
 
 import { issuesClient } from '@/lib/client'
 
+type MemberOption = { userId: string; label: string }
+
 type Props = {
   workItemTypes: WorkItemType[]
   workflowStates: WorkflowState[]
   projects: Project[]
   milestones: Milestone[]
   customFields: CustomField[]
+  labels?: Label[]
+  members?: MemberOption[]
+  issues?: Issue[]
+  issue?: Issue
 }
 
 type FieldValue = string | number | boolean | string[] | null
@@ -48,34 +56,102 @@ function initialFieldValue(field: CustomField): FieldValue {
   return ''
 }
 
+function issueFieldValues(issue?: Issue): Record<string, FieldValue> {
+  if (!issue) return {}
+  return Object.fromEntries(
+    issue.customFields.map((field) => [field.fieldId, field.value])
+  )
+}
+
 function dateTimestamp(value: string): number | null {
   if (!value) return null
   const timestamp = Date.parse(`${value}T00:00:00Z`)
   return Number.isNaN(timestamp) ? null : Math.floor(timestamp / 1000)
 }
 
-export function NewIssueForm({
+function dateInputValue(timestamp: number | null): string {
+  if (!timestamp) return ''
+  return new Date(timestamp * 1000).toISOString().slice(0, 10)
+}
+
+function selectedCustomFieldValues(
+  fields: CustomField[],
+  values: Record<string, FieldValue>,
+  includeEmpty: boolean
+) {
+  return fields.flatMap((field) => {
+    const value = values[field.id]
+    if (!includeEmpty) {
+      if (
+        value === undefined ||
+        value === '' ||
+        (Array.isArray(value) && value.length === 0)
+      )
+        return []
+    }
+
+    return [
+      {
+        fieldId: field.id,
+        value:
+          value === undefined || value === ''
+            ? null
+            : value,
+      },
+    ]
+  })
+}
+
+export function NewIssueForm(props: Props) {
+  return <IssueForm {...props} />
+}
+
+export function EditIssueForm(props: Props & { issue: Issue }) {
+  return <IssueForm {...props} issue={props.issue} />
+}
+
+function IssueForm({
   workItemTypes,
   workflowStates,
   projects,
   milestones,
   customFields,
+  labels = [],
+  members = [],
+  issues = [],
+  issue,
 }: Props) {
   const router = useRouter()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [projectId, setProjectId] = useState('')
+  const editing = Boolean(issue)
+  const [title, setTitle] = useState(issue?.title ?? '')
+  const [description, setDescription] = useState(issue?.description ?? '')
+  const [projectId, setProjectId] = useState(issue?.projectId ?? '')
   const [typeKey, setTypeKey] = useState(
-    workItemTypes.find((type) => type.isDefault)?.key ?? ''
+    issue?.typeKey ?? workItemTypes.find((type) => type.isDefault)?.key ?? ''
   )
   const [status, setStatus] = useState(
-    workflowStates.find((state) => state.isDefault)?.key ?? ''
+    issue?.status ?? workflowStates.find((state) => state.isDefault)?.key ?? ''
   )
-  const [milestoneId, setMilestoneId] = useState('')
+  const [milestoneId, setMilestoneId] = useState(issue?.milestone?.id ?? '')
   const [priority, setPriority] = useState<
     'none' | 'low' | 'medium' | 'high' | 'urgent'
-  >('none')
-  const [values, setValues] = useState<Record<string, FieldValue>>({})
+  >(issue?.priority ?? 'none')
+  const [assigneeUserId, setAssigneeUserId] = useState(
+    issue?.assigneeUserId ?? ''
+  )
+  const [parentIssueId, setParentIssueId] = useState(issue?.parentIssueId ?? '')
+  const [estimate, setEstimate] = useState(
+    issue?.estimate === null || issue?.estimate === undefined
+      ? ''
+      : String(issue.estimate)
+  )
+  const [dueDate, setDueDate] = useState(dateInputValue(issue?.dueDate ?? null))
+  const [labelIds, setLabelIds] = useState<string[]>(
+    issue?.labels.map((label) => label.id) ?? []
+  )
+  const [values, setValues] = useState<Record<string, FieldValue>>(() =>
+    issueFieldValues(issue)
+  )
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<AppErrorValue | null>(null)
 
@@ -96,6 +172,15 @@ export function NewIssueForm({
             field.typeIds.includes(selectedWorkItemType.id))
       ),
     [customFields, selectedWorkItemType]
+  )
+  const parentOptions = useMemo(
+    () =>
+      issues.filter(
+        (candidate) =>
+          candidate.id !== issue?.id &&
+          (!projectId || candidate.projectId === projectId)
+      ),
+    [issue?.id, issues, projectId]
   )
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -121,33 +206,49 @@ export function NewIssueForm({
 
     setPending(true)
     setError(null)
-    const customFieldValues = applicableFields.flatMap((field) => {
-      const value = values[field.id]
-      if (
-        value === undefined ||
-        value === '' ||
-        (Array.isArray(value) && value.length === 0)
-      )
-        return []
-      return [{ fieldId: field.id, value }]
-    })
-    const result = await issuesClient.create({
-      title: title.trim(),
-      projectId: projectId || undefined,
-      description: description.trim() || null,
-      typeKey: typeKey || undefined,
-      status: status || undefined,
-      ...(milestoneId ? { milestoneId } : {}),
-      ...(priority !== 'none' ? { priority } : {}),
-      ...(customFieldValues.length > 0
-        ? { customFields: customFieldValues }
-        : {}),
-    })
+    const customFieldValues = selectedCustomFieldValues(
+      applicableFields,
+      values,
+      editing
+    )
+    const parsedEstimate = estimate === '' ? null : Number(estimate)
+    const parsedDueDate = dateTimestamp(dueDate)
+
+    const result = issue
+      ? await issuesClient.update(issue.identifier, {
+          title: title.trim(),
+          projectId: projectId || issue.projectId,
+          description: description.trim() || null,
+          typeKey: typeKey || issue.typeKey,
+          status: status || issue.status,
+          milestoneId: milestoneId || null,
+          priority,
+          assigneeUserId: assigneeUserId || null,
+          parentIssueId: parentIssueId || null,
+          estimate: parsedEstimate,
+          dueDate: parsedDueDate,
+          labelIds,
+          customFields: customFieldValues,
+        })
+      : await issuesClient.create({
+          title: title.trim(),
+          projectId: projectId || undefined,
+          description: description.trim() || null,
+          typeKey: typeKey || undefined,
+          status: status || undefined,
+          ...(milestoneId ? { milestoneId } : {}),
+          ...(priority !== 'none' ? { priority } : {}),
+          ...(customFieldValues.length > 0
+            ? { customFields: customFieldValues }
+            : {}),
+        })
     setPending(false)
 
     if (result.error || !result.data) {
       setError({
-        code: result.error?.code ?? 'projects/create-failed',
+        code:
+          result.error?.code ??
+          (editing ? 'projects/update-failed' : 'projects/create-failed'),
         message: result.error?.message ?? 'Something went wrong.',
       })
       return
@@ -160,7 +261,11 @@ export function NewIssueForm({
   return (
     <form onSubmit={onSubmit} className="max-w-2xl space-y-4">
       {error ? (
-        <AppError title="Issue not created" error={error} variant="banner" />
+        <AppError
+          title={editing ? 'Issue not updated' : 'Issue not created'}
+          error={error}
+          variant="banner"
+        />
       ) : null}
       <FormRow label="Title" htmlFor="title" required>
         <Input
@@ -187,10 +292,11 @@ export function NewIssueForm({
           onChange={(event) => {
             setProjectId(event.target.value)
             setMilestoneId('')
+            setParentIssueId('')
           }}
           className="w-full"
         >
-          <option value="">Triage</option>
+          {!editing ? <option value="">Triage</option> : null}
           {projects.map((project) => (
             <option key={project.id} value={project.id}>
               {project.name}
@@ -260,6 +366,83 @@ export function NewIssueForm({
           ))}
         </NativeSelect>
       </FormRow>
+      <FormRow label="Assignee" htmlFor="assignee">
+        <NativeSelect
+          id="assignee"
+          value={assigneeUserId}
+          onChange={(event) => setAssigneeUserId(event.target.value)}
+          className="w-full"
+        >
+          <option value="">Unassigned</option>
+          {members.map((member) => (
+            <option key={member.userId} value={member.userId}>
+              {member.label}
+            </option>
+          ))}
+        </NativeSelect>
+      </FormRow>
+      <FormRow label="Parent" htmlFor="parent">
+        <NativeSelect
+          id="parent"
+          value={parentIssueId}
+          onChange={(event) => setParentIssueId(event.target.value)}
+          className="w-full"
+        >
+          <option value="">No parent</option>
+          {parentOptions.map((candidate) => (
+            <option key={candidate.id} value={candidate.id}>
+              {candidate.identifier} — {candidate.title}
+            </option>
+          ))}
+        </NativeSelect>
+      </FormRow>
+      <FormRow label="Estimate" htmlFor="estimate">
+        <Input
+          id="estimate"
+          type="number"
+          min={0}
+          max={100}
+          step={1}
+          value={estimate}
+          onChange={(event) => setEstimate(event.target.value)}
+          placeholder="Points"
+        />
+      </FormRow>
+      <FormRow label="Due date" htmlFor="due-date">
+        <Input
+          id="due-date"
+          type="date"
+          value={dueDate}
+          onChange={(event) => setDueDate(event.target.value)}
+        />
+      </FormRow>
+      {labels.length > 0 ? (
+        <FormRow label="Labels">
+          <div className="grid gap-2 sm:grid-cols-2">
+            {labels.map((label) => (
+              <label key={label.id} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={labelIds.includes(label.id)}
+                  onChange={(event) =>
+                    setLabelIds((current) =>
+                      event.target.checked
+                        ? [...current, label.id]
+                        : current.filter((id) => id !== label.id)
+                    )
+                  }
+                />
+                <span
+                  aria-hidden="true"
+                  className="size-2 rounded-full"
+                  style={{ backgroundColor: label.color }}
+                />
+                {label.name}
+              </label>
+            ))}
+          </div>
+        </FormRow>
+      ) : null}
       {applicableFields.map((field) => (
         <CustomFieldControl
           key={field.id}
@@ -279,7 +462,13 @@ export function NewIssueForm({
           variant="info"
           disabled={!title.trim() || pending}
         >
-          {pending ? 'Creating…' : 'Create issue'}
+          {pending
+            ? editing
+              ? 'Saving…'
+              : 'Creating…'
+            : editing
+              ? 'Save changes'
+              : 'Create issue'}
         </Button>
       </div>
     </form>
@@ -376,14 +565,18 @@ function CustomFieldControl({
         type={inputType}
         step={field.fieldType === 'decimal' ? 'any' : undefined}
         value={
-          typeof value === 'string' || typeof value === 'number'
-            ? String(value)
-            : ''
+          field.fieldType === 'date' && typeof value === 'number'
+            ? dateInputValue(value)
+            : typeof value === 'string' || typeof value === 'number'
+              ? String(value)
+              : ''
         }
         onChange={(event) => {
           const raw = event.target.value
           if (field.fieldType === 'date') onChange(dateTimestamp(raw))
           else if (field.fieldType === 'number')
+            onChange(raw === '' ? '' : Number(raw))
+          else if (field.fieldType === 'decimal')
             onChange(raw === '' ? '' : Number(raw))
           else onChange(raw)
         }}
