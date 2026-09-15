@@ -1,23 +1,20 @@
 import type { ReactNode } from 'react'
+import type { Branding } from '@876/core/branding'
+import { DEFAULT_BRANDING } from '@876/core/branding'
+import type {
+  DocumentDetailFieldKey,
+  DocumentTemplateLayoutKey,
+  DocumentTemplateSettings,
+} from '@876/core/document-templates'
 import {
-  DocumentView,
-  DocumentHeader,
-  DocumentHeaderTop,
-  DocumentTitle,
-  DocumentDetailsGrid,
-  DocumentRecipient,
-  DocumentMetaList,
-  DocumentMeta,
-  DocumentLines,
-  DocumentSummaryGrid,
-  DocumentNotes,
-  DocumentSummaryList,
-  DocumentSummaryRow,
-  DocumentTotalRow,
-  DocumentFooter,
-} from '@876/ui/document-view'
+  DEFAULT_DOCUMENT_TEMPLATE_LAYOUT,
+  DOCUMENT_DETAIL_FIELD_KEYS,
+  resolveDocumentTemplate,
+} from '@876/core/document-templates'
 import { cn } from '@876/ui/lib/utils'
 
+import { TemplatedDocument } from '../documents/templated-document'
+import type { TemplatedDocumentData } from '../documents/types'
 import {
   documentStatusVariant,
   type DocumentStatusVariant,
@@ -82,6 +79,31 @@ export interface InvoiceDocumentPanelProps {
   }
   meta: Array<{ label: string; value: string | null }>
   footer: ReactNode
+  template?: {
+    layout: DocumentTemplateLayoutKey
+    settings: DocumentTemplateSettings
+  }
+  branding?: Branding
+}
+
+/** Host meta labels that name a template detail field without using its exact label. */
+const META_SYNONYMS: Record<string, DocumentDetailFieldKey> = {
+  'invoice date': 'date',
+  'due date': 'due-date',
+  'expiry date': 'expiry-date',
+  terms: 'terms',
+  'payment terms': 'terms',
+  reference: 'reference',
+  salesperson: 'salesperson',
+  subject: 'subject',
+  'payment mode': 'payment-mode',
+}
+
+function normalizeMetaLabel(label: string): string {
+  return label
+    .trim()
+    .toLowerCase()
+    .replace(/[#\s]+$/, '')
 }
 
 export function InvoiceDocumentPanel({
@@ -90,244 +112,155 @@ export function InvoiceDocumentPanel({
   recipient,
   meta,
   footer,
+  template,
+  branding,
 }: InvoiceDocumentPanelProps) {
-  const address = recipient.address
-  // Driven by this invoice's own snapshotted lines, so a finalized document
-  // always renders the same columns however the org's tax or discount setup
-  // changes later.
-  const showDiscount = invoice.lines.some((line) =>
+  const resolved = template ?? {
+    layout: DEFAULT_DOCUMENT_TEMPLATE_LAYOUT,
+    settings: resolveDocumentTemplate(
+      DEFAULT_DOCUMENT_TEMPLATE_LAYOUT,
+      'invoice',
+      {}
+    ),
+  }
+  const settings: DocumentTemplateSettings = structuredClone(resolved.settings)
+
+  const details: TemplatedDocumentData['details'] = {
+    number: invoice.number,
+    subject: invoice.subject,
+  }
+  const claimed = new Set<DocumentDetailFieldKey>(['number', 'subject'])
+  // Keys the template does not already list, in canonical order, available
+  // as carriers for host meta rows that name no template field.
+  const carrierPool = DOCUMENT_DETAIL_FIELD_KEYS.filter(
+    (key) => !claimed.has(key)
+  )
+  for (const entry of meta) {
+    if (!entry.value) continue
+    const synonym = META_SYNONYMS[normalizeMetaLabel(entry.label)]
+    const useSynonym = synonym !== undefined && !claimed.has(synonym)
+    const key = useSynonym
+      ? synonym
+      : carrierPool.find((candidate) => !claimed.has(candidate))
+    if (!key) continue
+    claimed.add(key)
+    details[key] = entry.value
+    const existing = settings.documentDetails.fields.find(
+      (field) => field.key === key
+    )
+    if (existing) {
+      // A synonym match keeps the template's own label; a carrier borrows
+      // the host's label so the row still reads the way the host named it.
+      if (!useSynonym) existing.label = entry.label
+    } else {
+      settings.documentDetails.fields.push({
+        key,
+        show: true,
+        label: entry.label,
+      })
+    }
+  }
+
+  const showDiscountColumn = invoice.lines.some((line) =>
     Boolean(line.discountAmount)
   )
-  const showTax = invoice.lines.some((line) => Boolean(line.taxAmount))
-  return (
-    <DocumentView className="relative">
-      <DocumentStatusRibbon status={invoice.status} />
-      <DocumentHeader className="pt-16">
-        <DocumentHeaderTop>
-          <div>
-            {seller.logoUrl ? (
-              <img
-                src={seller.logoUrl}
-                alt=""
-                className="mb-4 h-12 w-auto max-w-48 object-contain object-left print:h-10"
-              />
-            ) : null}
-            <p className="text-xl font-semibold">{seller.name}</p>
-            <SellerDetails seller={seller} />
-          </div>
-          <DocumentTitle>
-            <p className="text-3xl font-semibold tracking-tight">INVOICE</p>
-            <p className="mt-2 font-medium tabular-nums">#{invoice.number}</p>
-            <div className="mt-5">
-              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase print:text-neutral-600">
-                Balance due
-              </p>
-              <p className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">
-                {invoice.amountDue}
-              </p>
-            </div>
-            {invoice.subject ? (
-              <p className="mt-3 max-w-sm text-sm font-medium text-pretty">
-                {invoice.subject}
-              </p>
-            ) : null}
-          </DocumentTitle>
-        </DocumentHeaderTop>
-      </DocumentHeader>
-
-      <DocumentDetailsGrid>
-        <DocumentRecipient>
-          <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase print:text-neutral-600">
-            Bill to
-          </h2>
-          <div className="mt-3 text-sm leading-6">
-            <p className="font-semibold">{recipient.name}</p>
-            {address?.attention ? <p>{address.attention}</p> : null}
-            {address?.line1 ? <p>{address.line1}</p> : null}
-            {address?.line2 ? <p>{address.line2}</p> : null}
-            {address ? (
-              <p>
-                {[
-                  address.city,
-                  address.state,
-                  address.postalCode,
-                  address.countryCode,
-                ]
-                  .filter(Boolean)
-                  .join(', ')}
-              </p>
-            ) : null}
-            {recipient.email ? <p>{recipient.email}</p> : null}
-            {recipient.phone ? <p>{recipient.phone}</p> : null}
-          </div>
-        </DocumentRecipient>
-
-        <DocumentMetaList>
-          {meta.map(({ label, value }) =>
-            value ? (
-              <DocumentMeta key={label} label={label} value={value} />
-            ) : null
-          )}
-        </DocumentMetaList>
-      </DocumentDetailsGrid>
-
-      <DocumentLines>
-        <table
-          className={cn(
-            'w-full text-sm',
-            // Only as wide as the columns this invoice actually uses. A fixed
-            // 680px floor forced a horizontal scrollbar in the detail column
-            // even when two of the six columns held nothing but em dashes.
-            showDiscount && showTax
-              ? 'min-w-[680px]'
-              : showDiscount || showTax
-                ? 'min-w-[580px]'
-                : 'min-w-[480px]'
-          )}
-        >
-          <thead>
-            <tr className="border-border bg-muted/40 text-muted-foreground border-y print:border-neutral-200 print:bg-neutral-50 print:text-neutral-700">
-              <th className="px-3 py-3 text-left font-medium">Description</th>
-              <th className="px-3 py-3 text-right font-medium">Qty</th>
-              <th className="px-3 py-3 text-right font-medium">Rate</th>
-              {showDiscount ? (
-                <th className="px-3 py-3 text-right font-medium">Discount</th>
-              ) : null}
-              {showTax ? (
-                <th className="px-3 py-3 text-right font-medium">Tax</th>
-              ) : null}
-              <th className="px-3 py-3 text-right font-medium">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoice.lines.map((line) => (
-              <tr
-                key={line.id}
-                className="border-border border-b align-top print:border-neutral-200"
-              >
-                <td className="px-3 py-4">
-                  <p className="font-medium">{line.description}</p>
-                  {line.servicePeriod ? (
-                    <p className="text-muted-foreground mt-1 text-xs print:text-neutral-600">
-                      {line.servicePeriod}
-                    </p>
-                  ) : null}
-                </td>
-                <td className="px-3 py-4 text-right tabular-nums">
-                  {line.quantity}
-                </td>
-                <td className="px-3 py-4 text-right tabular-nums">
-                  {line.unitAmount}
-                </td>
-                {showDiscount ? (
-                  <td className="px-3 py-4 text-right tabular-nums">
-                    {line.discountAmount ? `−${line.discountAmount}` : '—'}
-                  </td>
-                ) : null}
-                {showTax ? (
-                  <td className="px-3 py-4 text-right tabular-nums">
-                    {line.taxAmount ? line.taxAmount : '—'}
-                  </td>
-                ) : null}
-                <td className="px-3 py-4 text-right font-medium tabular-nums">
-                  {line.totalAmount}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </DocumentLines>
-
-      <DocumentSummaryGrid>
-        <DocumentNotes>
-          {invoice.notes ? (
-            <section>
-              <h2 className="font-semibold">Note</h2>
-              <p className="text-muted-foreground mt-2 text-pretty whitespace-pre-wrap print:text-neutral-700">
-                {invoice.notes}
-              </p>
-            </section>
-          ) : null}
-          {invoice.terms ? (
-            <section>
-              <h2 className="font-semibold">Terms and conditions</h2>
-              <p className="text-muted-foreground mt-2 text-pretty whitespace-pre-wrap print:text-neutral-700">
-                {invoice.terms}
-              </p>
-            </section>
-          ) : null}
-        </DocumentNotes>
-
-        <DocumentSummaryList>
-          <DocumentSummaryRow label="Subtotal" value={invoice.subtotalAmount} />
-          <DocumentSummaryRow label="Tax" value={invoice.taxAmount} />
-          {invoice.discountAmount ? (
-            <DocumentSummaryRow
-              label="Invoice discount"
-              value={`−${invoice.discountAmount}`}
-            />
-          ) : null}
-          {invoice.shippingAmount ? (
-            <DocumentSummaryRow
-              label="Shipping"
-              value={invoice.shippingAmount}
-            />
-          ) : null}
-          {invoice.adjustmentAmount ? (
-            <DocumentSummaryRow
-              label="Adjustment"
-              value={invoice.adjustmentAmount}
-            />
-          ) : null}
-          <DocumentSummaryRow
-            label="Total"
-            value={invoice.totalAmount}
-            strong
-          />
-          {invoice.amountCredited ? (
-            <DocumentSummaryRow
-              label="Credits applied"
-              value={`−${invoice.amountCredited}`}
-            />
-          ) : null}
-          {invoice.amountPaid ? (
-            <DocumentSummaryRow
-              label="Payments received"
-              value={`−${invoice.amountPaid}`}
-            />
-          ) : null}
-          <DocumentTotalRow label="Amount due" value={invoice.amountDue} />
-        </DocumentSummaryList>
-      </DocumentSummaryGrid>
-
-      <DocumentFooter>{footer}</DocumentFooter>
-    </DocumentView>
+  const showTaxColumn = invoice.lines.some((line) => Boolean(line.taxAmount))
+  // Today's behavior: discount/tax columns follow line data, not the template
+  // flag. Force them visible when any line carries a value so the amounts
+  // have a column, and hidden when no line does.
+  settings.table.columns = settings.table.columns.map((column) =>
+    column.key === 'discount'
+      ? { ...column, show: showDiscountColumn }
+      : column.key === 'tax'
+        ? { ...column, show: showTaxColumn }
+        : column
   )
-}
 
-function SellerDetails({ seller }: { seller: InvoiceDocumentSeller }) {
-  const address = seller.address
-  // The country falls back to the seller's own label, so an organization with
-  // no address on file still shows where it trades from.
-  const cityLine = [address?.city, address?.countryLabel ?? seller.countryLabel]
-    .filter(Boolean)
-    .join(', ')
-  if (
-    !address?.line1 &&
-    !address?.line2 &&
-    !cityLine &&
-    !seller.phone &&
-    !seller.email
-  )
-    return null
+  const address = recipient.address
+  const document: TemplatedDocumentData = {
+    seller: {
+      name: seller.name,
+      logoUrl: seller.logoUrl,
+      email: seller.email,
+      phone: seller.phone,
+      address: seller.address
+        ? {
+            line1: seller.address.line1,
+            line2: seller.address.line2,
+            city: seller.address.city,
+            state: null,
+            postalCode: null,
+            country: seller.address.countryLabel ?? seller.countryLabel,
+          }
+        : seller.countryLabel
+          ? {
+              line1: null,
+              line2: null,
+              city: null,
+              state: null,
+              postalCode: null,
+              country: seller.countryLabel,
+            }
+          : null,
+    },
+    recipient: {
+      name: recipient.name,
+      email: recipient.email,
+      phone: recipient.phone,
+      billingAddress: address
+        ? {
+            line1: address.line1,
+            line2: address.line2,
+            city: address.city,
+            state: address.state,
+            postalCode: address.postalCode,
+            country: address.countryCode,
+          }
+        : null,
+    },
+    details,
+    lines: invoice.lines.map((line) => ({
+      id: line.id,
+      name: line.description,
+      description: line.servicePeriod,
+      quantity: String(line.quantity),
+      unit: null,
+      rate: line.unitAmount,
+      discount: line.discountAmount,
+      tax: line.taxAmount,
+      amount: line.totalAmount,
+    })),
+    totals: {
+      subtotal: invoice.subtotalAmount,
+      discount: invoice.discountAmount,
+      shipping: invoice.shippingAmount,
+      adjustment: invoice.adjustmentAmount,
+      tax: invoice.taxAmount,
+      total: invoice.totalAmount,
+      amountPaid: invoice.amountPaid,
+      amountCredited: invoice.amountCredited,
+      balanceDue: invoice.amountDue,
+      amountInWords: null,
+    },
+    taxSummary: [],
+    notes: invoice.notes,
+    terms: invoice.terms,
+    paymentOptions: [],
+    bankDetails: [],
+    qrCodeUrl: null,
+  }
 
   return (
-    <div className="text-muted-foreground mt-1 text-sm leading-6 print:text-neutral-600">
-      {address?.line1 ? <p>{address.line1}</p> : null}
-      {address?.line2 ? <p>{address.line2}</p> : null}
-      {cityLine ? <p>{cityLine}</p> : null}
-      {seller.phone ? <p>{seller.phone}</p> : null}
-      {seller.email ? <p>{seller.email}</p> : null}
+    <div className="relative">
+      <TemplatedDocument
+        documentType="invoice"
+        layout={resolved.layout}
+        settings={settings}
+        branding={branding ?? DEFAULT_BRANDING}
+        document={document}
+        status={<DocumentStatusRibbon status={invoice.status} />}
+        footerSlot={footer}
+      />
     </div>
   )
 }

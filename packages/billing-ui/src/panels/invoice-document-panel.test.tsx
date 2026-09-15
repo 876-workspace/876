@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import { describe, expect, it } from 'vitest'
 
@@ -132,7 +132,7 @@ describe('InvoiceDocumentPanel', () => {
       screen.queryByRole('columnheader', { name: 'Tax' })
     ).not.toBeInTheDocument()
     expect(
-      screen.getByRole('columnheader', { name: 'Description' })
+      screen.getByRole('columnheader', { name: 'Item & Description' })
     ).toBeInTheDocument()
   })
 
@@ -194,7 +194,7 @@ describe('InvoiceDocumentPanel', () => {
         })}
       />
     )
-    expect(screen.getByText('Invoice discount')).toBeInTheDocument()
+    expect(screen.getByText('Discount')).toBeInTheDocument()
     expect(screen.getByText('Shipping')).toBeInTheDocument()
     expect(screen.getByText('Adjustment')).toBeInTheDocument()
   })
@@ -210,12 +210,12 @@ describe('InvoiceDocumentPanel', () => {
   it('renders a document table with no lines', () => {
     render(<InvoiceDocumentPanel {...props({ lines: [] })} />)
     expect(
-      screen.getByRole('columnheader', { name: 'Description' })
+      screen.getByRole('columnheader', { name: 'Item & Description' })
     ).toBeInTheDocument()
   })
   it('omits optional summary rows when their amounts are absent', () => {
     render(<InvoiceDocumentPanel {...props()} />)
-    expect(screen.queryByText('Invoice discount')).not.toBeInTheDocument()
+    expect(screen.queryByText('Discount')).not.toBeInTheDocument()
     expect(screen.queryByText('Shipping')).not.toBeInTheDocument()
   })
   it('keeps monetary display values typed as formatted strings', () => {
@@ -263,10 +263,16 @@ describe('InvoiceDocumentPanel', () => {
 
   it('renders the balance due under the invoice number', () => {
     // ARRANGE
-    render(<InvoiceDocumentPanel {...props({ amountDue: '$11.00' })} />)
+    const { container } = render(
+      <InvoiceDocumentPanel {...props({ amountDue: '$11.00' })} />
+    )
 
-    // ACT
-    const callout = screen.getByText('Balance due').parentElement
+    // ACT — the standard layout shows the balance under the document title
+    // (in the header) and again in the totals; scope to the header callout.
+    const header = container.querySelector('header')
+    const callout = within(header as HTMLElement).getByText(
+      'Balance Due'
+    ).parentElement
 
     // ASSERT
     expect(callout).toHaveTextContent('$11.00')
@@ -345,7 +351,8 @@ describe('InvoiceDocumentPanel', () => {
     // ASSERT
     expect(line1).toBeVisible()
     expect(screen.getByText('Suite 4')).toBeVisible()
-    expect(screen.getByText('Kingston, Jamaica')).toBeVisible()
+    expect(screen.getByText('Kingston')).toBeVisible()
+    expect(screen.getByText('Jamaica')).toBeVisible()
     expect(screen.getByText('+1 876 555 0100')).toBeVisible()
     expect(screen.getByText('billing@876.test')).toBeVisible()
 

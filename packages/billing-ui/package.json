@@ -310,6 +310,34 @@
     "./panels/document-share-controls": {
       "types": "./src/panels/document-share-controls.tsx",
       "default": "./src/panels/document-share-controls.tsx"
+    },
+    "./documents/templated-document": {
+      "types": "./src/documents/templated-document.tsx",
+      "default": "./src/documents/templated-document.tsx"
+    },
+    "./documents/document-template-editor": {
+      "types": "./src/documents/document-template-editor.tsx",
+      "default": "./src/documents/document-template-editor.tsx"
+    },
+    "./documents/document-template-gallery": {
+      "types": "./src/documents/document-template-gallery.tsx",
+      "default": "./src/documents/document-template-gallery.tsx"
+    },
+    "./documents/branding-settings-form": {
+      "types": "./src/documents/branding-settings-form.tsx",
+      "default": "./src/documents/branding-settings-form.tsx"
+    },
+    "./documents/sample-document": {
+      "types": "./src/documents/sample-document.ts",
+      "default": "./src/documents/sample-document.ts"
+    },
+    "./documents/template-diff": {
+      "types": "./src/documents/template-diff.ts",
+      "default": "./src/documents/template-diff.ts"
+    },
+    "./documents/types": {
+      "types": "./src/documents/types.ts",
+      "default": "./src/documents/types.ts"
     }
   },
   "scripts": {
