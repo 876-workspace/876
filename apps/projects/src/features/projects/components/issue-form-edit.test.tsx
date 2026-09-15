@@ -213,6 +213,26 @@ beforeEach(() => {
   mocks.updateIssue.mockResolvedValue({ data: makeIssue(), error: null })
 })
 
+function timestamp(date: string) {
+  return Math.floor(Date.parse(`${date}T00:00:00Z`) / 1000)
+}
+
+function renderEditForm(issue: Issue) {
+  return render(
+    <EditIssueForm
+      issue={issue}
+      workItemTypes={[workItemType]}
+      workflowStates={[workflowState]}
+      projects={[project]}
+      milestones={[milestone]}
+      customFields={[environmentField]}
+      labels={[label]}
+      issues={[parentIssue, makeIssue()]}
+      members={[{ userId: 'user_ana', label: 'Ana Brown' }]}
+    />
+  )
+}
+
 describe('EditIssueForm', () => {
   it('initializes the complete editable issue state', () => {
     render(
@@ -279,11 +299,54 @@ describe('EditIssueForm', () => {
         parentIssueId: parentIssue.id,
         estimate: 5,
         dueDate: 1704153600,
+        plannedStartDate: null,
+        plannedFinishDate: null,
+        plannedDurationMinutes: null,
         labelIds: [label.id],
         customFields: [{ fieldId: environmentField.id, value: 'production' }],
       })
     )
     expect(mocks.push).toHaveBeenCalledWith('/issues/CONSOLE-2')
     expect(mocks.refresh).toHaveBeenCalled()
+  })
+
+  it('seeds the planned schedule inputs from the issue', () => {
+    renderEditForm(
+      makeIssue({
+        plannedStartDate: timestamp('2026-09-06'),
+        plannedFinishDate: timestamp('2026-09-10'),
+        plannedDurationMinutes: 240,
+      })
+    )
+
+    expect(screen.getByLabelText('Planned start')).toHaveValue('2026-09-06')
+    expect(screen.getByLabelText('Planned finish')).toHaveValue('2026-09-10')
+    expect(screen.getByLabelText('Planned duration (minutes)')).toHaveValue(240)
+  })
+
+  it('submits the planned schedule with the update', async () => {
+    renderEditForm(makeIssue())
+
+    fireEvent.change(screen.getByLabelText('Planned start'), {
+      target: { value: '2026-09-20' },
+    })
+    fireEvent.change(screen.getByLabelText('Planned finish'), {
+      target: { value: '2026-09-23' },
+    })
+    fireEvent.change(screen.getByLabelText('Planned duration (minutes)'), {
+      target: { value: '480' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    await waitFor(() =>
+      expect(mocks.updateIssue).toHaveBeenCalledWith(
+        'CONSOLE-2',
+        expect.objectContaining({
+          plannedStartDate: timestamp('2026-09-20'),
+          plannedFinishDate: timestamp('2026-09-23'),
+          plannedDurationMinutes: 480,
+        })
+      )
+    )
   })
 })
