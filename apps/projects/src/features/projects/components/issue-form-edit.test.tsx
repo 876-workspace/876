@@ -228,7 +228,7 @@ describe('EditIssueForm', () => {
     expect(screen.getByLabelText('Project')).toHaveValue(project.id)
     expect(screen.getByLabelText('Type')).toHaveValue(workItemType.key)
     expect(screen.getByLabelText('Status')).toHaveValue(workflowState.key)
-    expect(screen.getByLabelText('Milestone')).toHaveValue(milestone.id)
+    expect(screen.getByLabelText('Phase')).toHaveValue(milestone.id)
     expect(screen.getByLabelText('Priority')).toHaveValue('high')
     expect(screen.getByLabelText('Assignee')).toHaveValue('user_ana')
     expect(screen.getByLabelText('Parent')).toHaveValue(parentIssue.id)
@@ -272,9 +272,7 @@ describe('EditIssueForm', () => {
         estimate: 5,
         dueDate: 1704153600,
         labelIds: [label.id],
-        customFields: [
-          { fieldId: environmentField.id, value: 'production' },
-        ],
+        customFields: [{ fieldId: environmentField.id, value: 'production' }],
       })
     )
     expect(mocks.push).toHaveBeenCalledWith('/issues/CONSOLE-2')

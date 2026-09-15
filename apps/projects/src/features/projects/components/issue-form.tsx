@@ -336,7 +336,7 @@ function IssueForm({
           ))}
         </NativeSelect>
       </FormRow>
-      <FormRow label="Milestone" htmlFor="milestone">
+      <FormRow label="Phase" htmlFor="milestone">
         <NativeSelect
           id="milestone"
           value={milestoneId}
@@ -344,7 +344,7 @@ function IssueForm({
           className="w-full"
           disabled={!projectId}
         >
-          <option value="">No milestone</option>
+          <option value="">No phase</option>
           {availableMilestones.map((milestone) => (
             <option key={milestone.id} value={milestone.id}>
               {milestone.name}

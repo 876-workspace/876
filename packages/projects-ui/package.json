@@ -23,6 +23,14 @@
       "types": "./src/project-detail.tsx",
       "default": "./src/project-detail.tsx"
     },
+    "./phase-list": {
+      "types": "./src/phase-list.tsx",
+      "default": "./src/phase-list.tsx"
+    },
+    "./phase-detail": {
+      "types": "./src/phase-detail.tsx",
+      "default": "./src/phase-detail.tsx"
+    },
     "./issue-list": {
       "types": "./src/issue-list.tsx",
       "default": "./src/issue-list.tsx"

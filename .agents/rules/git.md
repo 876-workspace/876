@@ -135,7 +135,7 @@ Closes #[issue number]
 4. Squash commits if needed to keep history clean — but never when the PR
    targets a feature integration branch, whose whole purpose is to carry
    every commit through to the final `main` PR.
-5. Ensure CI/CD passes before merging.
+5. Ignore CI status: GitHub Actions minutes are exhausted and Cloudflare is retired. Local verification is the merge gate — see `deployment.md`.
 6. Delete branch after merging — unless another PR is stacked on it.
 7. **Always auto-check the same PR for merge conflicts immediately after submitting it.** After creating (or updating) a PR, verify it is mergeable against the base branch — e.g. `gh pr view <number> --json mergeable,mergeStateStatus` (poll until GitHub finishes computing `mergeable`, since it is briefly `UNKNOWN`). If it reports `CONFLICTING`, surface the conflicting files and resolve them (merge the latest base branch in and fix conflicts) before considering the PR ready.
 

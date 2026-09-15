@@ -79,6 +79,7 @@ describe('Projects navigation access binding', () => {
     ).toEqual([
       '/',
       '/projects',
+      '/phases',
       '/issues',
       '/board',
       '/labels',
@@ -103,13 +104,14 @@ describe('Projects navigation access binding', () => {
     ).not.toContain('/projects')
   })
 
-  it('removes Projects when its permission exists but the module is not entitled', () => {
+  it('removes Projects and Phases when projects is not entitled', () => {
     const hrefs = resolveNavigation(
       navConfig,
       context(['projects.view', 'issues.view'], [], ['issues'])
     ).flatMap((group) => group.entries.map(({ href }) => href))
 
     expect(hrefs).not.toContain('/projects')
+    expect(hrefs).not.toContain('/phases')
     expect(hrefs).toContain('/issues')
   })
 
@@ -120,6 +122,7 @@ describe('Projects navigation access binding', () => {
     ).flatMap((group) => group.entries.map(({ href }) => href))
 
     expect(hrefs).toContain('/projects')
+    expect(hrefs).toContain('/phases')
     expect(hrefs).not.toContain('/issues')
     expect(hrefs).not.toContain('/board')
     expect(hrefs).not.toContain('/labels')

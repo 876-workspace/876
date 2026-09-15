@@ -11,6 +11,7 @@ export const ENTITY_PREFIXES = {
   workItemType: 'wit_',
   workflowState: 'wfs_',
   milestone: 'ms_',
+  milestoneEvent: 'msev_',
   cycle: 'cyc_',
   customField: 'cf_',
   customFieldValue: 'cfv_',

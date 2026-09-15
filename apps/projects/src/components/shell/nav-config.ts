@@ -22,6 +22,14 @@ export const navConfig = defineNavigation([
         requires: { module: 'projects', permission: 'projects.view' },
       },
       {
+        key: 'phases',
+        title: 'Phases',
+        href: '/phases',
+        icon: 'phases',
+        colorClassName: 'text-cyan-500 dark:text-cyan-400',
+        requires: { module: 'projects', permission: 'projects.view' },
+      },
+      {
         key: 'issues',
         title: 'Issues',
         href: '/issues',

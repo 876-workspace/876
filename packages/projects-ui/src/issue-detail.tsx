@@ -138,8 +138,8 @@ export function IssueDetail({
                   value={issue.state?.name ?? issue.status}
                 />
                 <DetailCardFact
-                  label="Milestone"
-                  value={issue.milestone?.name ?? 'No milestone'}
+                  label="Phase"
+                  value={issue.milestone?.name ?? 'No phase'}
                 />
                 <DetailCardFact
                   label="Parent"

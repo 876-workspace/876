@@ -65,6 +65,7 @@ function milestoneRow(overrides: Partial<MilestoneRow> = {}): MilestoneRow {
     name: 'Version 1',
     description: null,
     status: 'open',
+    ownerUserId: null,
     startDate: BigInt(SECOND),
     targetDate: BigInt(SECOND + 100000),
     completedAt: null,
@@ -177,9 +178,18 @@ describe('serializeMilestone', () => {
     const serialized = serializeMilestone(milestoneRow())
 
     expect(serialized.object).toBe('projects.milestone')
+    expect(serialized.ownerUserId).toBeNull()
     expect(serialized.startDate).toBe(SECOND)
     expect(serialized.targetDate).toBe(SECOND + 100000)
     expect(serialized.completedAt).toBeNull()
+  })
+
+  it('carries the opaque Phase owner', () => {
+    const serialized = serializeMilestone(
+      milestoneRow({ ownerUserId: 'usr_phase_owner' })
+    )
+
+    expect(serialized.ownerUserId).toBe('usr_phase_owner')
   })
 
   it('renders an undated milestone with null dates', () => {
@@ -198,6 +208,19 @@ describe('serializeMilestone', () => {
 
     expect(serialized.status).toBe('completed')
     expect(serialized.completedAt).toBe(SECOND + 200)
+  })
+
+  it('does not expose a stale completion timestamp after cancel or reopen', () => {
+    expect(
+      serializeMilestone(
+        milestoneRow({ status: 'canceled', completedAt: BigInt(SECOND + 200) })
+      ).completedAt
+    ).toBeNull()
+    expect(
+      serializeMilestone(
+        milestoneRow({ status: 'open', completedAt: BigInt(SECOND + 200) })
+      ).completedAt
+    ).toBeNull()
   })
 })
 

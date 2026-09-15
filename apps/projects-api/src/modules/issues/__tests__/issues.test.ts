@@ -7,6 +7,8 @@ const {
   labelsRepo,
   commentsRepo,
   workStructureRepo,
+  milestoneDetailsRepo,
+  milestoneListRepo,
   repository,
   txMock,
 } = vi.hoisted(() => {
@@ -55,6 +57,29 @@ const {
       upsertCustomFieldValue: vi.fn(),
       clearCustomFieldValue: vi.fn(),
     },
+    // Phase-2 added milestone detail/list repositories that connect to the DB
+    // pool at module-eval time via `work-structure/index.js`. Mock them here
+    // so importing `issues.service.js` does not require `PROJECTS_DATABASE_URL`.
+    milestoneDetailsRepo: {
+      milestoneProgress: vi.fn(),
+      listMilestoneComments: vi.fn(),
+      retrieveMilestoneComment: vi.fn(),
+      createMilestoneComment: vi.fn(),
+      updateMilestoneComment: vi.fn(),
+      deleteMilestoneComment: vi.fn(),
+      listMilestoneEvents: vi.fn(),
+      createMilestoneEvent: vi.fn(),
+      listMilestoneCustomFields: vi.fn(),
+      retrieveMilestoneCustomField: vi.fn(),
+      retrieveMilestoneCustomFieldByKey: vi.fn(),
+      createMilestoneCustomField: vi.fn(),
+      updateMilestoneCustomField: vi.fn(),
+      archiveMilestoneCustomField: vi.fn(),
+      listMilestoneCustomFieldValues: vi.fn(),
+      upsertMilestoneCustomFieldValue: vi.fn(),
+      clearMilestoneCustomFieldValue: vi.fn(),
+    },
+    milestoneListRepo: { listOrganizationMilestones: vi.fn() },
     repository: {
       list: vi.fn(),
       count: vi.fn(),
@@ -78,6 +103,14 @@ vi.mock('../../comments/comments.repository.js', () => commentsRepo)
 vi.mock(
   '../../work-structure/work-structure.repository.js',
   () => workStructureRepo
+)
+vi.mock(
+  '../../work-structure/milestone-details.repository.js',
+  () => milestoneDetailsRepo
+)
+vi.mock(
+  '../../work-structure/milestone-list.repository.js',
+  () => milestoneListRepo
 )
 vi.mock('../issues.repository.js', () => repository)
 
@@ -393,7 +426,10 @@ describe('issues module', () => {
     })
 
     expect(result.error).toBeNull()
-    expect(projectsRepo.retrieveByKey).toHaveBeenCalledWith(tenant.id, 'CONSOLE')
+    expect(projectsRepo.retrieveByKey).toHaveBeenCalledWith(
+      tenant.id,
+      'CONSOLE'
+    )
     expect(txMock.createIssue).toHaveBeenCalledWith(
       expect.objectContaining({
         projectId: mockProjectRow.id,

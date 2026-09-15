@@ -34,7 +34,7 @@ const GROUP_OPTIONS: Array<{ value: IssueGroupBy; label: string }> = [
   { value: 'priority', label: 'Priority' },
   { value: 'assignee', label: 'Assignee' },
   { value: 'type', label: 'Work item type' },
-  { value: 'milestone', label: 'Milestone' },
+  { value: 'milestone', label: 'Phase' },
 ]
 
 export function IssueFilterBar({

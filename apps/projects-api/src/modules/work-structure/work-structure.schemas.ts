@@ -93,6 +93,7 @@ export const createMilestoneBodySchema = z.strictObject({
   name: z.string().trim().min(1).max(100),
   description: z.string().trim().nullable().optional(),
   status: milestoneStatusSchema.optional(),
+  ownerUserId: z.string().trim().min(1).nullable().optional(),
   startDate: z.number().int().nullable().optional(),
   targetDate: z.number().int().nullable().optional(),
   position: z.number().int().optional(),
