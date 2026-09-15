@@ -17,16 +17,16 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
         href: '/settings/workflow-states',
       },
       {
-        label: 'Milestones',
-        icon: 'priorities',
-        availability: 'available',
-        href: '/settings/milestones',
-      },
-      {
         label: 'Custom fields',
         icon: 'preferences',
         availability: 'available',
         href: '/settings/custom-fields',
+      },
+      {
+        label: 'Phase fields',
+        icon: 'priorities',
+        availability: 'available',
+        href: '/settings/phase-fields',
       },
       {
         label: 'Teams',
