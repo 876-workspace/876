@@ -12,6 +12,7 @@ export const milestoneDetailSchema = milestoneSchema.extend({
   ownerUserId: z.string().nullable(),
 })
 export type MilestoneDetail = z.infer<typeof milestoneDetailSchema>
+export const milestoneDetailListSchema = createListSchema(milestoneDetailSchema)
 
 export const milestoneSummarySchema = z.object({
   object: z.literal('projects.milestone-summary'),
