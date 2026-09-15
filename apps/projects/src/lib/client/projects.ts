@@ -12,6 +12,7 @@ import type {
   Milestone,
   Project,
   UpdateCustomFieldInput,
+  UpdateIssueInput,
   UpdateMilestoneInput,
   UpdateWorkItemTypeInput,
   UpdateWorkflowStateInput,
@@ -47,6 +48,13 @@ export const issuesClient = {
   }) {
     return request<Issue>('/api/issues', {
       method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(params),
+    })
+  },
+  update(issueRef: string, params: UpdateIssueInput) {
+    return request<Issue>(`/api/issues/${encodeURIComponent(issueRef)}`, {
+      method: 'PATCH',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(params),
     })
