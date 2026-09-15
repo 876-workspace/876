@@ -5,7 +5,9 @@ import { createCustomFieldsResource } from './resources/custom-fields'
 import { createCustomFieldValuesResource } from './resources/custom-field-values'
 import { createIssuesResource } from './resources/issues'
 import { createLabelsResource } from './resources/labels'
+import { createCyclesResource } from './resources/cycles'
 import { createMilestonesResource } from './resources/milestones'
+import { createTaskListsResource } from './resources/task-lists'
 import { createPresetsResource } from './resources/presets'
 import { createProjectsResource } from './resources/projects'
 import { createTenantsResource } from './resources/tenants'
@@ -25,6 +27,8 @@ export function create876ProjectsClient(options: ClientOptions = {}) {
     workItemTypes: createWorkItemTypesResource(runtime),
     workflowStates: createWorkflowStatesResource(runtime),
     milestones: createMilestonesResource(runtime),
+    taskLists: createTaskListsResource(runtime),
+    cycles: createCyclesResource(runtime),
     customFields: createCustomFieldsResource(runtime),
     customFieldValues: createCustomFieldValuesResource(runtime),
     presets: createPresetsResource(runtime),
