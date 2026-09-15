@@ -39,6 +39,10 @@
       "types": "./src/issue-board.tsx",
       "default": "./src/issue-board.tsx"
     },
+    "./issue-grouping": {
+      "types": "./src/issue-grouping.ts",
+      "default": "./src/issue-grouping.ts"
+    },
     "./labels-list": {
       "types": "./src/labels-list.tsx",
       "default": "./src/labels-list.tsx"

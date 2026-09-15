@@ -17,57 +17,63 @@ export function formatIssueStatus(status: string): string {
       return 'Canceled'
     default:
       return status
+        .replaceAll('-', ' ')
+        .replace(/\b\w/g, (letter) => letter.toUpperCase())
   }
 }
 
 export function IssueStatusBadge({
   status,
+  label,
   className,
 }: {
   status: string
+  label?: string
   className?: string
 }) {
+  const content = label ?? formatIssueStatus(status)
+
   switch (status) {
     case 'backlog':
       return (
         <Badge variant="secondary" className={className}>
-          Backlog
+          {content}
         </Badge>
       )
     case 'todo':
       return (
         <Badge variant="outline" className={className}>
-          Todo
+          {content}
         </Badge>
       )
     case 'in-progress':
       return (
         <Badge variant="warning" className={className}>
-          In Progress
+          {content}
         </Badge>
       )
     case 'in-review':
       return (
         <Badge variant="info" className={className}>
-          In Review
+          {content}
         </Badge>
       )
     case 'done':
       return (
         <Badge variant="success" className={className}>
-          Done
+          {content}
         </Badge>
       )
     case 'canceled':
       return (
         <Badge variant="secondary" className={className}>
-          Canceled
+          {content}
         </Badge>
       )
     default:
       return (
         <Badge variant="secondary" className={className}>
-          {status}
+          {content}
         </Badge>
       )
   }

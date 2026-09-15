@@ -3,6 +3,7 @@
 import type {
   Comment,
   CreateCustomFieldInput,
+  CreateIssueInput,
   CreateMilestoneInput,
   CreateWorkItemTypeInput,
   CreateWorkflowStateInput,
@@ -12,6 +13,7 @@ import type {
   Milestone,
   Project,
   UpdateCustomFieldInput,
+  UpdateIssueInput,
   UpdateMilestoneInput,
   UpdateWorkItemTypeInput,
   UpdateWorkflowStateInput,
@@ -20,6 +22,9 @@ import type {
 } from '@876/projects/contracts'
 
 import { request } from './request'
+
+type CreateIssueParams = Omit<CreateIssueInput, 'creatorUserId'>
+type UpdateIssueParams = Omit<UpdateIssueInput, 'creatorUserId' | 'actorUserId'>
 
 export const projectsClient = {
   create(params: { name: string; key?: string; description?: string | null }) {
@@ -32,21 +37,16 @@ export const projectsClient = {
 }
 
 export const issuesClient = {
-  create(params: {
-    title: string
-    projectId?: string
-    description?: string | null
-    status?: string
-    typeKey?: string
-    milestoneId?: string | null
-    priority?: 'none' | 'low' | 'medium' | 'high' | 'urgent'
-    customFields?: Array<{
-      fieldId: string
-      value: string | number | boolean | string[] | null
-    }>
-  }) {
+  create(params: CreateIssueParams) {
     return request<Issue>('/api/issues', {
       method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(params),
+    })
+  },
+  update(issueRef: string, params: UpdateIssueParams) {
+    return request<Issue>(`/api/issues/${encodeURIComponent(issueRef)}`, {
+      method: 'PATCH',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(params),
     })

@@ -228,14 +228,14 @@ describe('IssueDetail', () => {
     render(<IssueDetail issue={makeIssue()} events={[statusEvent]} />)
 
     expect(screen.getByText('Activity')).toBeInTheDocument()
-    expect(screen.getByText('user_ben')).toBeInTheDocument()
-    expect(screen.getByText('status_changed')).toBeInTheDocument()
+    expect(screen.getAllByText('user_ben').length).toBeGreaterThan(0)
+    expect(screen.getByText('Status Changed')).toBeInTheDocument()
   })
 
   it('activity, with a status change, shows the destination value', () => {
     render(<IssueDetail issue={makeIssue()} events={[statusEvent]} />)
 
-    expect(screen.getByText(/in-progress/)).toBeInTheDocument()
+    expect(screen.getAllByText(/in-progress/).length).toBeGreaterThan(1)
   })
 
   it('activity, with a system event, falls back to System', () => {
@@ -244,7 +244,7 @@ describe('IssueDetail', () => {
     )
 
     expect(screen.getByText('System')).toBeInTheDocument()
-    expect(screen.getByText('comment_created')).toBeInTheDocument()
+    expect(screen.getByText('Comment Created')).toBeInTheDocument()
   })
 
   it('activity, without events, shows an explicit empty state', () => {

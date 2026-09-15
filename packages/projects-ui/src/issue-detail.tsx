@@ -1,13 +1,18 @@
 import Link from 'next/link'
-import type { Issue, IssueEvent } from '@876/projects/contracts'
+import type {
+  CustomField,
+  Issue,
+  IssueEvent,
+} from '@876/projects/contracts'
 import { Badge } from '@876/ui/badge'
+import { buttonVariants } from '@876/ui/button'
 import {
   DetailCardFact,
   DetailCardFacts,
   DetailCardSection,
 } from '@876/ui/detail-card'
 import { Markdown } from '@876/ui/markdown'
-import { Clock, Folder, TagIcon } from '@876/ui/icons'
+import { Clock, Folder, Pencil, TagIcon } from '@876/ui/icons'
 
 import { IssuePriorityBadge } from './priority-badges'
 import { IssueStatusBadge } from './status-badges'
@@ -15,7 +20,13 @@ import { IssueStatusBadge } from './status-badges'
 export type IssueDetailProps = {
   issue: Issue
   events?: readonly IssueEvent[]
+  parentIssue?: Issue | null
+  subIssues?: readonly Issue[]
+  customFields?: readonly CustomField[]
+  userLabels?: Readonly<Record<string, string>>
+  issuesHref?: string
   projectHref?: string
+  editHref?: string
 }
 
 function formatDate(timestamp: number | null): string {
@@ -29,11 +40,41 @@ function formatDate(timestamp: number | null): string {
   })
 }
 
+function formatEventType(type: string): string {
+  return type
+    .replaceAll('_', ' ')
+    .replaceAll('-', ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+function formatCustomFieldValue(value: Issue['customFields'][number]['value']) {
+  if (value === null || value === '') return 'Not set'
+  if (Array.isArray(value)) return value.length > 0 ? value.join(', ') : 'Not set'
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+  return String(value)
+}
+
+function userLabel(
+  userId: string | null,
+  labels: Readonly<Record<string, string>>
+): string {
+  if (!userId) return 'Not assigned'
+  return labels[userId] ?? userId
+}
+
 export function IssueDetail({
   issue,
   events = [],
+  parentIssue = null,
+  subIssues = [],
+  customFields = [],
+  userLabels = {},
+  issuesHref,
   projectHref,
+  editHref,
 }: IssueDetailProps) {
+  const fieldLabels = new Map(customFields.map((field) => [field.id, field.label]))
+
   return (
     <div className="space-y-8">
       <header className="876-card p-5 sm:p-6">
@@ -55,6 +96,15 @@ export function IssueDetail({
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <IssueStatusBadge status={issue.status} />
             <IssuePriorityBadge priority={issue.priority} />
+            {editHref ? (
+              <Link
+                href={editHref}
+                className={buttonVariants({ variant: 'outline', size: 'sm' })}
+              >
+                <Pencil aria-hidden="true" className="size-4" />
+                Edit
+              </Link>
+            ) : null}
           </div>
         </div>
       </header>
@@ -77,6 +127,105 @@ export function IssueDetail({
           </section>
 
           <section className="876-card p-5 sm:p-6">
+            <DetailCardSection title="Work structure">
+              <DetailCardFacts className="grid-cols-1 gap-y-5 sm:grid-cols-2">
+                <DetailCardFact
+                  label="Type"
+                  value={issue.type?.name ?? issue.typeKey}
+                />
+                <DetailCardFact
+                  label="Workflow state"
+                  value={issue.state?.name ?? issue.status}
+                />
+                <DetailCardFact
+                  label="Milestone"
+                  value={issue.milestone?.name ?? 'No milestone'}
+                />
+                <DetailCardFact
+                  label="Parent"
+                  value={
+                    parentIssue && issuesHref ? (
+                      <Link
+                        href={`${issuesHref}/${parentIssue.identifier}`}
+                        className="text-sky-600 hover:underline dark:text-sky-400"
+                      >
+                        <span className="font-mono text-xs">
+                          {parentIssue.identifier}
+                        </span>{' '}
+                        — {parentIssue.title}
+                      </Link>
+                    ) : parentIssue ? (
+                      `${parentIssue.identifier} — ${parentIssue.title}`
+                    ) : issue.parentIssueId ? (
+                      issue.parentIssueId
+                    ) : (
+                      'No parent'
+                    )
+                  }
+                  mono={Boolean(issue.parentIssueId && !parentIssue)}
+                />
+              </DetailCardFacts>
+            </DetailCardSection>
+          </section>
+
+          {subIssues.length > 0 || issue.subIssueCount > 0 ? (
+            <section className="876-card p-5 sm:p-6">
+              <DetailCardSection title={`Sub-items (${issue.subIssueCount})`}>
+                {subIssues.length > 0 ? (
+                  <div className="divide-border divide-y">
+                    {subIssues.map((subIssue) => (
+                      <div
+                        key={subIssue.id}
+                        className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
+                      >
+                        <div className="min-w-0">
+                          {issuesHref ? (
+                            <Link
+                              href={`${issuesHref}/${subIssue.identifier}`}
+                              className="text-sm font-medium text-sky-600 hover:underline dark:text-sky-400"
+                            >
+                              {subIssue.title}
+                            </Link>
+                          ) : (
+                            <span className="text-sm font-medium">
+                              {subIssue.title}
+                            </span>
+                          )}
+                          <p className="text-muted-foreground mt-0.5 font-mono text-xs">
+                            {subIssue.identifier}
+                          </p>
+                        </div>
+                        <IssueStatusBadge status={subIssue.status} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    {issue.subIssueCount} linked sub-item
+                    {issue.subIssueCount === 1 ? '' : 's'}.
+                  </p>
+                )}
+              </DetailCardSection>
+            </section>
+          ) : null}
+
+          {issue.customFields.length > 0 ? (
+            <section className="876-card p-5 sm:p-6">
+              <DetailCardSection title="Custom fields">
+                <DetailCardFacts className="grid-cols-1 gap-y-5 sm:grid-cols-2">
+                  {issue.customFields.map((field) => (
+                    <DetailCardFact
+                      key={field.id}
+                      label={fieldLabels.get(field.fieldId) ?? field.fieldKey}
+                      value={formatCustomFieldValue(field.value)}
+                    />
+                  ))}
+                </DetailCardFacts>
+              </DetailCardSection>
+            </section>
+          ) : null}
+
+          <section className="876-card p-5 sm:p-6">
             <DetailCardSection title="Activity">
               {events.length > 0 ? (
                 <ol
@@ -90,15 +239,18 @@ export function IssueDetail({
                     >
                       <span className="bg-primary border-background absolute top-1.5 -left-1.5 size-3 rounded-full border-2" />
                       <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-                        <span className="text-foreground font-mono text-xs font-medium">
-                          {event.actorUserId ?? 'System'}
+                        <span className="text-foreground text-xs font-medium">
+                          {event.actorUserId
+                            ? userLabels[event.actorUserId] ?? event.actorUserId
+                            : 'System'}
                         </span>
                         <span className="text-muted-foreground">
-                          {event.type}
+                          {formatEventType(event.type)}
                         </span>
-                        {event.toValue ? (
+                        {event.fromValue || event.toValue ? (
                           <span className="text-muted-foreground">
-                            &rarr; {event.toValue}
+                            {event.fromValue ? event.fromValue : '—'} &rarr;{' '}
+                            {event.toValue ? event.toValue : '—'}
                           </span>
                         ) : null}
                       </div>
@@ -140,8 +292,21 @@ export function IssueDetail({
                 />
                 <DetailCardFact
                   label="Assignee"
-                  value={issue.assigneeUserId ?? 'Not assigned'}
-                  mono={Boolean(issue.assigneeUserId)}
+                  value={userLabel(issue.assigneeUserId, userLabels)}
+                  mono={Boolean(
+                    issue.assigneeUserId && !userLabels[issue.assigneeUserId]
+                  )}
+                />
+                <DetailCardFact
+                  label="Creator"
+                  value={
+                    issue.creatorUserId
+                      ? userLabels[issue.creatorUserId] ?? issue.creatorUserId
+                      : 'Unknown creator'
+                  }
+                  mono={Boolean(
+                    issue.creatorUserId && !userLabels[issue.creatorUserId]
+                  )}
                 />
                 <DetailCardFact
                   label="Due date"
@@ -156,6 +321,26 @@ export function IssueDetail({
                   }
                 />
                 <DetailCardFact
+                  label="Started"
+                  value={formatDate(issue.startedAt)}
+                />
+                {issue.completedAt ? (
+                  <DetailCardFact
+                    label="Completed"
+                    value={formatDate(issue.completedAt)}
+                  />
+                ) : null}
+                {issue.canceledAt ? (
+                  <DetailCardFact
+                    label="Canceled"
+                    value={formatDate(issue.canceledAt)}
+                  />
+                ) : null}
+                <DetailCardFact
+                  label="Updated"
+                  value={formatDate(issue.updatedAt)}
+                />
+                <DetailCardFact
                   label="Created"
                   value={formatDate(issue.createdAt)}
                 />
@@ -163,7 +348,6 @@ export function IssueDetail({
             </DetailCardSection>
           </aside>
 
-          {/* Labels section */}
           {issue.labels && issue.labels.length > 0 ? (
             <div className="876-card p-4">
               <div className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs">

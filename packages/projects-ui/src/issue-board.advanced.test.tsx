@@ -250,8 +250,8 @@ describe('IssueBoard advanced', () => {
   it('card, with an assignee, shows the assignee id', () => {
     render(<IssueBoard issues={issues} issuesHref={ISSUES_HREF} />)
 
-    expect(screen.getByText('user_ana')).toBeInTheDocument()
-    expect(screen.getByText('user_ben')).toBeInTheDocument()
+    expect(screen.getAllByText('user_ana').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('user_ben').length).toBeGreaterThan(0)
   })
 
   it('card, without an assignee, shows no assignee text in its column', () => {

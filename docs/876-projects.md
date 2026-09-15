@@ -15,6 +15,38 @@ service is shaped the way it is.
 
 Platform app slug: **`876-projects`**.
 
+## Product surface
+
+876 Projects uses one configurable work-item model rather than separate hard
+coded Task, Bug, Story, and Issue domains. A tenant defines work-item types and
+workflow states; individual work items keep the durable `Issue` API/database
+name for compatibility.
+
+Current app surfaces include:
+
+- dashboard/home;
+- projects and project workspaces;
+- issue/work-item list and board;
+- issue/work-item detail and editing;
+- labels;
+- comments with Markdown create/edit/delete UI;
+- activity history;
+- work-item types and workflow-state settings;
+- milestones;
+- typed custom fields;
+- project/user access settings.
+
+The work-item detail surface resolves configured type/state/milestone data,
+parent and child work items, typed custom-field values, organization-member
+names, labels, comments, and activity. The list and board expose shareable URL
+filters for search, project, workflow state, priority, assignee, label, and
+ordering, with presentation grouping by workflow state, project, priority,
+assignee, work-item type, or milestone.
+
+`Milestone` remains the durable API/database vocabulary. A future product-copy
+migration may present this concept as **Phase** without requiring a destructive
+schema rename.
+
 ## Running it
 
 ```bash
@@ -38,14 +70,14 @@ the Projects operator workspace.
 
 `apps/projects`:
 
-| Variable                      | Required    | Purpose                                                      |
-| ----------------------------- | ----------- | ------------------------------------------------------------ |
-| `SESSION_COOKIE_SECRET`       | yes, secret | **must equal `apps/api`'s value byte for byte**              |
-| `PROJECTS_API_876_KEY`        | yes, secret | this app's platform key, presented as `X-876-API-Key`        |
-| `PROJECTS_INTERNAL_KEY`       | yes, secret | server-to-server calls to the data service                   |
-| `API_INTERNAL_KEY`            | yes, secret | privileged platform reads, server-only                       |
-| `API_URL`, `PROJECTS_API_URL` | yes         | service origins                                              |
-| `NEXT_PUBLIC_APP_URL`         | yes         | the consumer app origin, for the "go to my 876 account" link |
+| Variable                      | Required    | Purpose                                                       |
+| ----------------------------- | ----------- | ------------------------------------------------------------- |
+| `SESSION_COOKIE_SECRET`       | yes, secret | **must equal `apps/api`'s value byte for byte**               |
+| `PROJECTS_API_876_KEY`        | yes, secret | this app's platform key, presented as `X-876-API-Key`         |
+| `PROJECTS_INTERNAL_KEY`       | yes, secret | server-to-server calls to the data service                    |
+| `API_INTERNAL_KEY`            | yes, secret | privileged platform reads, server-only                        |
+| `API_URL`, `PROJECTS_API_URL` | yes         | service origins                                               |
+| `NEXT_PUBLIC_APP_URL`         | yes         | consumer app origin, for the "go to my 876 account" link     |
 
 A wrong `SESSION_COOKIE_SECRET` does not error. Every visitor is treated as
 signed out and bounced to `/login` forever, silently. `pnpm check:session-secret`
@@ -63,8 +95,8 @@ pnpm --filter @876/projects-api db:generate  # regenerate the client, no databas
 
 ## API surface
 
-Every route requires `x-internal-key`. Guards attach per route, so an unknown
-path returns 404 rather than 401.
+Every service route requires `x-internal-key`. Guards attach per route, so an
+unknown path returns 404 rather than 401.
 
 | Method                 | Path                                                                     |
 | ---------------------- | ------------------------------------------------------------------------ |
@@ -79,13 +111,56 @@ path returns 404 rather than 401.
 | `GET`                  | `/v1/organizations/:organizationId/issues/:issueRef/events`              |
 | `GET` `POST`           | `/v1/organizations/:organizationId/issues/:issueRef/comments`            |
 | `PATCH` `DELETE`       | `/v1/organizations/:organizationId/issues/:issueRef/comments/:commentId` |
+| `GET` `PUT`            | `/v1/organizations/:organizationId/issues/:issueRef/custom-field-values` |
+| `DELETE`               | `/v1/organizations/:organizationId/issues/:issueRef/custom-field-values/:id` |
 | `GET` `POST`           | `/v1/organizations/:organizationId/labels`                               |
 | `GET` `PATCH` `DELETE` | `/v1/organizations/:organizationId/labels/:labelId`                      |
+| `GET` `POST`           | `/v1/organizations/:organizationId/work-item-types`                      |
+| `GET` `PATCH` `DELETE` | `/v1/organizations/:organizationId/work-item-types/:id`                  |
+| `GET` `POST`           | `/v1/organizations/:organizationId/workflow-states`                      |
+| `GET` `PATCH` `DELETE` | `/v1/organizations/:organizationId/workflow-states/:id`                  |
+| `GET` `POST`           | `/v1/organizations/:organizationId/milestones`                           |
+| `GET` `PATCH` `DELETE` | `/v1/organizations/:organizationId/milestones/:id`                       |
+| `GET` `POST`           | `/v1/organizations/:organizationId/custom-fields`                        |
+| `GET` `PATCH` `DELETE` | `/v1/organizations/:organizationId/custom-fields/:id`                    |
+| `GET`                  | `/v1/organizations/:organizationId/presets`                              |
+| `POST`                 | `/v1/organizations/:organizationId/presets/apply`                        |
 
 `:issueRef` accepts either an `iss_` id or an identifier such as `CONSOLE-12`.
 
 `POST /v1/tenants/ensure` is idempotent and creates the Triage project with the
 tenant.
+
+Browser components do **not** call these service URLs. `apps/projects` is a
+full-stack Next.js app: browser mutations go to same-origin `/api/*` handlers,
+which authorize the signed-in user and then call the server-only `@876/projects`
+client. In particular, issue creation always sets `creatorUserId` from the
+signed-in session, and issue updates set `actorUserId` from that same server
+context; browser input cannot override either identity.
+
+## Work structure
+
+The configurable work structure is tenant-owned and seeded from code-owned
+presets. Presets fill missing structure; they are not a second runtime source of
+truth and should not overwrite tenant edits.
+
+The current durable hierarchy is:
+
+```text
+Project
+└── Work item (`Issue` in the API)
+    ├── configurable work-item type
+    ├── configurable workflow state
+    ├── optional milestone
+    ├── optional parent / child work items
+    ├── labels
+    ├── typed custom-field values
+    ├── comments
+    └── activity events
+```
+
+The predefined presets are `software-development`, `business-operations`, and
+`general`.
 
 ## Permissions
 
@@ -93,7 +168,7 @@ Declared once in `packages/core/src/access/catalogs.ts` as
 `projectsPermissionCatalog` and seeded into the identity core by
 `pnpm --filter @876/api seed --only=bootstrap,appAccess`.
 
-| Module      | Actions                             |
+| Surface     | Actions                             |
 | ----------- | ----------------------------------- |
 | `dashboard` | view                                |
 | `projects`  | view, create, edit, delete, archive |
@@ -114,12 +189,12 @@ app and no Console role grants.
 registered in `.mcp.json` as `876-projects`. It needs its own
 `apps/projects-mcp/.env`:
 
-| Variable                   | Purpose                                           |
-| -------------------------- | ------------------------------------------------- |
-| `PROJECTS_API_URL`         | the data service, e.g. `http://localhost:4030`    |
+| Variable                   | Purpose                                            |
+| -------------------------- | -------------------------------------------------- |
+| `PROJECTS_API_URL`         | the data service, e.g. `http://localhost:4030`     |
 | `PROJECTS_INTERNAL_KEY`    | the same operator credential the service requires |
-| `PROJECTS_ORGANIZATION_ID` | the organization every tool call acts for         |
-| `PROJECTS_DEFAULT_USER_ID` | optional; the author used when a tool omits one   |
+| `PROJECTS_ORGANIZATION_ID` | the organization every tool call acts for          |
+| `PROJECTS_DEFAULT_USER_ID` | optional; the author used when a tool omits one    |
 
 All three required values are validated at startup and the process **exits 1**
 if any is missing, so a server that silently fails to appear in a client is
@@ -132,18 +207,24 @@ helpers, because MCP SDK 1.30 pins zod 3 while this repository is on zod 4. The
 server runs under the `react-server` condition so `@876/projects/operator` can
 import `server-only`.
 
-For instructions on how an AI agent should read and update issues through this server, see the [MCP Agent Guide](projects/mcp-agent-guide.md).
+For instructions on how an AI agent should read and update issues through this
+server, see the [MCP Agent Guide](projects/mcp-agent-guide.md).
 
 ## Not built yet
 
-From `apps/projects/src/lib/modules/catalog.ts`, the modules still marked
-`available: false`:
+From `apps/projects/src/lib/modules/catalog.ts`, **Reports** is the remaining
+surface marked `available: false`.
 
-- **comments** — the API and the client support them and an issue renders them,
-  but there is no comment composer in the app;
-- **reports** — no surface at all.
+The database already contains a `Cycle` foundation, but the complete cycle API
+and product UI are not part of the current Projects surface yet. The following
+larger project-management capabilities are also intentionally outside the
+current Phase 1 implementation: dependencies/relations, Gantt/critical path,
+project templates, attachments via 876 Storage, shared 876 Work calendar and
+reminder integration, time/timesheet workflows, project budgets and billing
+integration, workload/resource planning, advanced reports, layout rules,
+workflow automation/Blueprint, and custom modules.
 
-Also absent by decision: feature flags (none in v1, so nothing is seeded into
-PostHog), stored module state and preference overrides, and any published
+Also absent by decision: generic feature flags (none in v1, so nothing is seeded
+into PostHog), stored module preference overrides, and any published
 provisioning profile. `apps/projects/src/lib/provisioning/manifest.ts` defines
 and validates the profile contract; no profile data ships.
