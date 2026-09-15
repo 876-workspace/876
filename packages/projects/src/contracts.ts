@@ -106,3 +106,4 @@ export type {
   SetCustomFieldValueInput,
   ApplyPresetInput,
 } from './types'
+export * from './milestone-details'
