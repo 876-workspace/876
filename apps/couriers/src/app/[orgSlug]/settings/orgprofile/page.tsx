@@ -20,11 +20,9 @@ function str(value: string | null | undefined): string {
 type Props = { params: Promise<{ orgSlug: string }> }
 
 export default async function ProfileSettingsPage({ params }: Props) {
-  const { orgSlug } = await params
-
   return (
     <Page>
-      <ProfileSettingsShell orgSlug={orgSlug} />
+      <ProfileSettingsShell />
       <Suspense fallback={<ProfileSkeleton />}>
         <ProfileSettingsData params={params} />
       </Suspense>

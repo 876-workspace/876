@@ -1,22 +1,10 @@
-import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
+import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 export const metadata = { title: 'Customer ID types — Settings' }
 
-export default async function CustomerIdTypesSettingsPage({
-  params,
-}: {
-  params: Promise<{ orgSlug: string }>
-}) {
-  const { orgSlug } = await params
-
+export default async function CustomerIdTypesSettingsPage() {
   return (
     <Page>
-      <PageBreadcrumb
-        href={`/${orgSlug}/settings`}
-        label="Settings"
-        className="mb-4"
-      />
-
       <PageHeader className="mb-8">
         <PageTitle>Customer ID types</PageTitle>
       </PageHeader>
