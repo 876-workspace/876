@@ -24,6 +24,7 @@ export const customFieldTypeSchema = z.enum([
   'user',
   'url',
 ])
+export const customFieldScopeSchema = z.enum(['work-item', 'phase'])
 export const milestoneStatusSchema = z.enum(['open', 'completed', 'canceled'])
 export const organizationParamsSchema = z.strictObject({
   organizationId: z.string().trim().min(1),
@@ -93,6 +94,7 @@ export const createMilestoneBodySchema = z.strictObject({
   name: z.string().trim().min(1).max(100),
   description: z.string().trim().nullable().optional(),
   status: milestoneStatusSchema.optional(),
+  ownerUserId: z.string().trim().min(1).nullable().optional(),
   startDate: z.number().int().nullable().optional(),
   targetDate: z.number().int().nullable().optional(),
   position: z.number().int().optional(),
@@ -108,6 +110,7 @@ export const customFieldOptionSchema = z.strictObject({
 
 const customFieldMutableFields = {
   label: z.string().trim().min(1).max(100),
+  scope: customFieldScopeSchema,
   fieldType: customFieldTypeSchema,
   options: z.array(customFieldOptionSchema),
   required: z.boolean(),
@@ -135,6 +138,7 @@ export const createCustomFieldBodySchema = z
   .strictObject({
     key: kebabKeySchema,
     label: customFieldMutableFields.label,
+    scope: customFieldMutableFields.scope.optional(),
     fieldType: customFieldMutableFields.fieldType,
     options: customFieldMutableFields.options.optional(),
     required: customFieldMutableFields.required.optional(),
@@ -157,6 +161,13 @@ export const createCustomFieldBodySchema = z
         code: 'custom',
         path: ['options'],
         message: 'Options are only valid for select fields.',
+      })
+    }
+    if (data.scope === 'phase' && data.typeIds && data.typeIds.length > 0) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['typeIds'],
+        message: 'Phase fields cannot be assigned to work item types.',
       })
     }
     validateOptionKeys(data.options, ctx)
