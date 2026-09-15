@@ -23,6 +23,9 @@ import type {
 
 import { request } from './request'
 
+type CreateIssueParams = Omit<CreateIssueInput, 'creatorUserId'>
+type UpdateIssueParams = Omit<UpdateIssueInput, 'creatorUserId' | 'actorUserId'>
+
 export const projectsClient = {
   create(params: { name: string; key?: string; description?: string | null }) {
     return request<Project>('/api/projects', {
@@ -34,14 +37,14 @@ export const projectsClient = {
 }
 
 export const issuesClient = {
-  create(params: CreateIssueInput) {
+  create(params: CreateIssueParams) {
     return request<Issue>('/api/issues', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(params),
     })
   },
-  update(issueRef: string, params: UpdateIssueInput) {
+  update(issueRef: string, params: UpdateIssueParams) {
     return request<Issue>(`/api/issues/${encodeURIComponent(issueRef)}`, {
       method: 'PATCH',
       headers: { 'content-type': 'application/json' },
