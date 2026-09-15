@@ -10,9 +10,9 @@ import { projects } from '@/lib/services/projects'
 export const runtime = 'nodejs'
 
 const createIssueSchema = z.strictObject({
-  title: z.string().trim().min(1).max(200),
+  title: z.string().trim().min(1).max(300),
   projectId: z.string().trim().min(1).optional(),
-  description: z.string().trim().max(10000).nullable().optional(),
+  description: z.string().trim().nullable().optional(),
   status: z
     .string()
     .trim()
@@ -21,13 +21,19 @@ const createIssueSchema = z.strictObject({
   typeKey: z.string().trim().min(1).max(100).optional(),
   milestoneId: z.string().trim().min(1).nullable().optional(),
   priority: z.enum(['none', 'low', 'medium', 'high', 'urgent']).optional(),
+  assigneeUserId: z.string().trim().min(1).nullable().optional(),
+  creatorUserId: z.string().trim().min(1).nullable().optional(),
+  parentIssueId: z.string().trim().min(1).nullable().optional(),
+  estimate: z.number().int().min(0).max(100).nullable().optional(),
+  dueDate: z.number().int().nullable().optional(),
+  labelIds: z.array(z.string().trim().min(1)).optional(),
   customFields: z
     .array(
       z.strictObject({
         fieldId: z.string().trim().min(1),
         value: z.union([
           z.string(),
-          z.number().int(),
+          z.number(),
           z.boolean(),
           z.array(z.string().trim().min(1)),
           z.null(),
@@ -35,6 +41,7 @@ const createIssueSchema = z.strictObject({
       })
     )
     .optional(),
+  position: z.number().int().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -47,9 +54,12 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null)
   const parsed = createIssueSchema.safeParse(body)
   if (!parsed.success)
-    return apiJson({ error: 'Enter an issue title.' }, { status: 422 })
+    return apiJson({ error: 'Enter valid issue details.' }, { status: 422 })
 
-  const result = await projects.issues.create(auth.orgId, parsed.data)
+  const result = await projects.issues.create(auth.orgId, {
+    ...parsed.data,
+    creatorUserId: parsed.data.creatorUserId ?? auth.userId,
+  })
   if (result.error)
     return apiJson({ error: result.error.message }, { status: 400 })
 
