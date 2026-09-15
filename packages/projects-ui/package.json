@@ -50,6 +50,10 @@
     "./skeleton-columns": {
       "types": "./src/skeleton-columns.ts",
       "default": "./src/skeleton-columns.ts"
+    },
+    "./mobile-list": {
+      "types": "./src/mobile-list.tsx",
+      "default": "./src/mobile-list.tsx"
     }
   },
   "scripts": {

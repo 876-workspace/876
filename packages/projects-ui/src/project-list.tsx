@@ -21,7 +21,6 @@ import {
   ListPaneItem,
 } from '@876/ui/list-pane'
 import { useDetailSegments } from '@876/ui/list-detail-shell'
-import { ResponsiveList, type ListRowMapping } from '@876/ui/responsive-list'
 import {
   Table,
   TableBody,
@@ -31,8 +30,18 @@ import {
   TableRow,
 } from '@876/ui/table'
 
+import {
+  avatarTone,
+  MobileList,
+  MobileListCell,
+  MobileListEmpty,
+} from './mobile-list'
 import { isProjectStatus } from './status-options'
-import { ProjectHealthBadge, ProjectStatusBadge } from './status-badges'
+import {
+  formatProjectStatus,
+  ProjectHealthBadge,
+  ProjectStatusBadge,
+} from './status-badges'
 
 export type ProjectsTableProps = {
   projects: readonly Project[]
@@ -57,17 +66,27 @@ function formatDate(timestamp: number | null): string {
   })
 }
 
-function createProjectRow(projectsHref: string): ListRowMapping<Project> {
-  return {
-    key: (project) => project.id,
-    href: (project) => `${projectsHref}/${project.id}`,
-    title: (project) => project.name,
-    subtitle: (project) => (
-      <span className="font-mono">{`${project.key} · ${project.memberCount} members`}</span>
-    ),
-    meta: (project) => <ProjectHealthBadge health={project.health} />,
-    trailing: (project) => <ProjectStatusBadge status={project.status} />,
-  }
+function ProjectCell({
+  project,
+  projectsHref,
+}: {
+  project: Project
+  projectsHref: string
+}) {
+  return (
+    <MobileListCell
+      href={`${projectsHref}/${project.id}`}
+      label={`View project ${project.name}`}
+      avatar={project.key.slice(0, 2)}
+      avatarClassName={avatarTone(project.key)}
+      title={project.name}
+      subtitle={
+        project.description ??
+        `${project.key} · ${formatProjectStatus(project.status)}`
+      }
+      meta={project.targetDate ? formatDate(project.targetDate) : undefined}
+    />
+  )
 }
 
 function RowLink({ href, label }: { href: string; label: string }) {
@@ -135,83 +154,87 @@ export function ProjectsTable({
   emptyState,
 }: ProjectsTableProps) {
   return (
-    <ResponsiveList
-      rows={projects}
-      mapping={createProjectRow(projectsHref)}
-      empty={
-        <li className="text-muted-foreground px-4 py-10 text-center text-sm">
-          No projects yet
-        </li>
-      }
-      table={
-        <div className="876-card overflow-hidden">
-          <Table>
-            <TableHeader className="876-header-row">
+    <>
+      <MobileList>
+        {projects.length === 0 ? (
+          <MobileListEmpty>No projects yet</MobileListEmpty>
+        ) : (
+          projects.map((project) => (
+            <ProjectCell
+              key={project.id}
+              project={project}
+              projectsHref={projectsHref}
+            />
+          ))
+        )}
+      </MobileList>
+      <div className="876-card hidden w-full overflow-hidden sm:block">
+        <Table>
+          <TableHeader className="876-header-row">
+            <TableRow>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Project
+              </TableHead>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Key
+              </TableHead>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Lead
+              </TableHead>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Status
+              </TableHead>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Health
+              </TableHead>
+              <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
+                Target Date
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {projects.length === 0 ? (
               <TableRow>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Project
-                </TableHead>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Key
-                </TableHead>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Lead
-                </TableHead>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Status
-                </TableHead>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Health
-                </TableHead>
-                <TableHead className="px-5 py-3.5 text-[0.8125rem] font-semibold">
-                  Target Date
-                </TableHead>
+                <TableCell colSpan={6} className="p-0">
+                  {emptyState ?? (
+                    <Empty className="py-14">
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                          <Folder className="size-6" />
+                        </EmptyMedia>
+                        <EmptyTitle>No projects yet</EmptyTitle>
+                      </EmptyHeader>
+                      {newProjectHref ? (
+                        <EmptyContent>
+                          <Link
+                            href={newProjectHref}
+                            className={buttonVariants({
+                              variant: 'info',
+                              size: 'sm',
+                            })}
+                          >
+                            <Plus className="size-4" strokeWidth={2.25} />
+                            Add
+                          </Link>
+                        </EmptyContent>
+                      ) : null}
+                    </Empty>
+                  )}
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {projects.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="p-0">
-                    {emptyState ?? (
-                      <Empty className="py-14">
-                        <EmptyHeader>
-                          <EmptyMedia variant="icon">
-                            <Folder className="size-6" />
-                          </EmptyMedia>
-                          <EmptyTitle>No projects yet</EmptyTitle>
-                        </EmptyHeader>
-                        {newProjectHref ? (
-                          <EmptyContent>
-                            <Link
-                              href={newProjectHref}
-                              className={buttonVariants({
-                                variant: 'info',
-                                size: 'sm',
-                              })}
-                            >
-                              <Plus className="size-4" strokeWidth={2.25} />
-                              Add
-                            </Link>
-                          </EmptyContent>
-                        ) : null}
-                      </Empty>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                projects.map((project) => (
-                  <ProjectTableRow
-                    key={project.id}
-                    project={project}
-                    projectsHref={projectsHref}
-                  />
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      }
-    />
+            ) : (
+              projects.map((project) => (
+                <ProjectTableRow
+                  key={project.id}
+                  project={project}
+                  projectsHref={projectsHref}
+                />
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   )
 }
 

@@ -7,7 +7,7 @@ export const navConfig = defineNavigation([
     entries: [
       {
         key: 'dashboard',
-        title: 'Dashboard',
+        title: 'Home',
         href: '/',
         icon: 'dashboard',
         colorClassName: 'text-blue-500 dark:text-blue-400',

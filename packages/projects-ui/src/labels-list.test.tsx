@@ -36,6 +36,12 @@ const docsLabel = makeLabel({
 
 const labels = [bugLabel, enhancementLabel, docsLabel]
 
+function mobileList(container: HTMLElement): HTMLElement {
+  const list = container.querySelector('ul')
+  if (!list) throw new Error('Expected a mobile list')
+  return list as HTMLElement
+}
+
 function swatchesWithBackground(container: HTMLElement): HTMLElement[] {
   return Array.from(
     container.querySelectorAll('span[aria-hidden="true"]')
@@ -62,7 +68,9 @@ describe('LabelsTable', () => {
   it('list, with labels, renders one mobile row per label', () => {
     const { container } = render(<LabelsTable labels={labels} />)
 
-    expect(container.querySelectorAll('[data-slot="list-row"]')).toHaveLength(3)
+    expect(mobileList(container).querySelectorAll(':scope > li')).toHaveLength(
+      3
+    )
   })
 
   it('list, with labels, shows each name in both the table and the mobile rows', () => {
@@ -84,9 +92,9 @@ describe('LabelsTable', () => {
   it('row, with a color, shows the hex value', () => {
     render(<LabelsTable labels={labels} />)
 
-    expect(screen.getByText('#e5484d')).toBeInTheDocument()
-    expect(screen.getByText('#3e9b4f')).toBeInTheDocument()
-    expect(screen.getByText('#3e63dd')).toBeInTheDocument()
+    expect(screen.getAllByText('#e5484d')).toHaveLength(1)
+    expect(screen.getAllByText('#3e9b4f')).toHaveLength(1)
+    expect(screen.getAllByText('#3e63dd')).toHaveLength(2)
   })
 
   it('row, with a description, shows the description in the table and the mobile row', () => {
@@ -147,24 +155,38 @@ describe('LabelsTable', () => {
     expect(badgesWithBorder(container)).toHaveLength(2)
   })
 
-  it('mobile row, with a leading swatch, marks the row as having leading content', () => {
+  it('mobile row, on render, leads with the label color dot', () => {
     const { container } = render(<LabelsTable labels={labels} />)
 
-    const rows = container.querySelectorAll('[data-slot="list-row"]')
+    const rows = mobileList(container).querySelectorAll(':scope > li')
 
+    expect(rows).toHaveLength(3)
     for (const row of rows) {
-      expect(row).toHaveAttribute('data-has-leading', 'true')
+      const dot = (row as HTMLElement).querySelector(
+        'span[aria-hidden="true"]'
+      ) as HTMLElement | null
+      expect(dot).not.toBeNull()
+      expect(dot?.style.backgroundColor).not.toBe('')
     }
   })
 
-  it('rows, on render, expose no accessible links since the mapping defines no href', () => {
+  it('mobile cell, on render, shows the name and description without a link', () => {
+    const { container } = render(<LabelsTable labels={[bugLabel]} />)
+
+    const list = mobileList(container)
+
+    expect(within(list).getByText('bug')).toBeInTheDocument()
+    expect(within(list).queryByText('#e5484d')).toBeNull()
+    expect(
+      within(list).getByText('Crashes and broken behavior')
+    ).toBeInTheDocument()
+    expect(within(list).queryByRole('link')).toBeNull()
+  })
+
+  it('rows, on render, expose no accessible links since labels have no detail route', () => {
     const { container } = render(<LabelsTable labels={labels} />)
 
-    const rows = container.querySelectorAll('[data-slot="list-row"]')
-
-    for (const row of rows) {
-      expect(within(row as HTMLElement).queryByRole('link')).toBeNull()
-    }
+    expect(within(mobileList(container)).queryByRole('link')).toBeNull()
   })
 
   it('table, on render, exposes no accessible links', () => {
@@ -194,7 +216,9 @@ describe('LabelsTable', () => {
   it('empty list, on render, shows no mobile data rows', () => {
     const { container } = render(<LabelsTable labels={[]} />)
 
-    expect(container.querySelectorAll('[data-slot="list-row"]')).toHaveLength(0)
+    expect(mobileList(container).querySelectorAll(':scope > li')).toHaveLength(
+      1
+    )
   })
 
   it('list, with three labels, renders three table body rows', () => {
@@ -226,7 +250,9 @@ describe('LabelsTable', () => {
       <LabelsTable labels={[bugLabel, enhancementLabel]} />
     )
 
-    expect(container.querySelectorAll('[data-slot="list-row"]')).toHaveLength(2)
+    expect(mobileList(container).querySelectorAll(':scope > li')).toHaveLength(
+      2
+    )
     expect(screen.getAllByText('bug')).toHaveLength(2)
     expect(screen.getAllByText('enhancement')).toHaveLength(2)
   })

@@ -27,7 +27,7 @@ export function ResponsiveList<T>({
   return (
     <>
       <div className="hidden sm:block">{table}</div>
-      <ListRowGroup className="sm:hidden">
+      <ListRowGroup className="w-full sm:hidden">
         {rows.length === 0
           ? empty
           : rows.map((row) => (

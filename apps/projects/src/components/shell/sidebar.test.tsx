@@ -2,14 +2,14 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { NavGroupDefinition } from '@876/core/access'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/projects',
 }))
 
 import { Sidebar } from './sidebar'
-import { SIDEBAR_EXPANDED_STORAGE_KEY } from './sidebar-preferences'
+import { SidebarProvider, SidebarTrigger } from '@876/ui/sidebar'
 
 const navigation: NavGroupDefinition[] = [
   {
@@ -28,78 +28,71 @@ const navigation: NavGroupDefinition[] = [
   },
 ]
 
-beforeEach(() => {
-  localStorage.clear()
-})
+function renderSidebar(defaultOpen = true) {
+  return render(
+    <SidebarProvider defaultOpen={defaultOpen}>
+      <Sidebar navigation={navigation} />
+      <SidebarTrigger />
+    </SidebarProvider>
+  )
+}
 
 afterEach(cleanup)
 
 describe('Projects Sidebar', () => {
-  it('defaults to the shared compact icon rail', () => {
-    render(<Sidebar navigation={navigation} />)
+  it('renders the docked sidebar expanded with labels by default', () => {
+    renderSidebar()
 
-    const rail = screen.getByRole('navigation', { name: 'Projects navigation' })
+    const nav = screen.getByRole('navigation', { name: 'Projects navigation' })
 
-    expect(rail).toHaveAttribute('data-slot', 'floating-nav-rail')
-    expect(rail).toHaveAttribute('data-state', 'collapsed')
-    expect(rail).toHaveClass('w-[3.75rem]')
-    expect(
-      screen.getByRole('button', { name: 'Expand sidebar' })
-    ).toHaveAttribute('aria-expanded', 'false')
+    expect(within(nav).getByText('Issues')).toBeInTheDocument()
+    expect(within(nav).getAllByRole('link')).toHaveLength(4)
   })
 
-  it('does not render navigation labels while the rail is collapsed', () => {
-    render(<Sidebar navigation={navigation} />)
+  it('links every entry to its configured href', () => {
+    renderSidebar()
 
-    expect(screen.queryByText('Projects')).not.toBeInTheDocument()
-    expect(screen.queryByText('Issues')).not.toBeInTheDocument()
+    const nav = screen.getByRole('navigation', { name: 'Projects navigation' })
+
+    expect(within(nav).getByRole('link', { name: 'Board' })).toHaveAttribute(
+      'href',
+      '/board'
+    )
   })
 
-  it('expands the rail when the control is pressed', async () => {
+  it('marks the current path as the current page', () => {
+    renderSidebar()
+
+    expect(screen.getByRole('link', { name: 'Projects' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    )
+  })
+
+  it('hides labels when the sidebar starts collapsed to icons', () => {
+    renderSidebar(false)
+
+    const nav = screen.getByRole('navigation', { name: 'Projects navigation' })
+
+    expect(within(nav).queryByText('Issues')).toBeNull()
+    expect(within(nav).getAllByRole('link')).toHaveLength(4)
+  })
+
+  it('collapses to icons when the trigger is pressed', async () => {
     const user = userEvent.setup()
-    render(<Sidebar navigation={navigation} />)
+    renderSidebar()
 
-    await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
+    await user.click(screen.getByRole('button', { name: /toggle sidebar/i }))
 
-    expect(
-      screen.getByRole('button', { name: 'Collapse sidebar' })
-    ).toHaveAttribute('aria-expanded', 'true')
+    const nav = screen.getByRole('navigation', { name: 'Projects navigation' })
+    expect(within(nav).queryByText('Issues')).toBeNull()
   })
 
-  it('renders navigation labels only after expansion', async () => {
-    const user = userEvent.setup()
-    render(<Sidebar navigation={navigation} />)
+  it('resolves a distinct rendered glyph for every Projects entry', () => {
+    renderSidebar()
 
-    await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
-
-    expect(screen.getByText('Projects')).toBeInTheDocument()
-    expect(screen.getByText('Issues')).toBeInTheDocument()
-  })
-
-  it('persists the expanded preference when the rail opens', async () => {
-    const user = userEvent.setup()
-    render(<Sidebar navigation={navigation} />)
-
-    await user.click(screen.getByRole('button', { name: 'Expand sidebar' }))
-
-    expect(localStorage.getItem(SIDEBAR_EXPANDED_STORAGE_KEY)).toBe('true')
-  })
-
-  it('restores an expanded rail from the persisted preference', () => {
-    localStorage.setItem(SIDEBAR_EXPANDED_STORAGE_KEY, 'true')
-    render(<Sidebar navigation={navigation} />)
-
-    expect(screen.getByText('Board')).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Collapse sidebar' })
-    ).toBeInTheDocument()
-  })
-
-  it('resolves a distinct rendered glyph for every Projects rail entry', () => {
-    render(<Sidebar navigation={navigation} />)
-
-    const rail = screen.getByRole('navigation', { name: 'Projects navigation' })
-    const glyphs = within(rail)
+    const nav = screen.getByRole('navigation', { name: 'Projects navigation' })
+    const glyphs = within(nav)
       .getAllByRole('link')
       .map((link) =>
         Array.from(link.querySelectorAll('path'))

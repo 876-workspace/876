@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { NavGroupDefinition } from '@876/core/access'
 import { cn } from '@876/core/utils'
 import type { AppSwitcherApp } from '@876/ui/app-switcher'
@@ -16,7 +16,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@876/ui/sheet'
-import { MenuIcon } from '@876/ui/icons'
+import { EllipsisHorizontalIcon } from '@876/ui/icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -40,7 +40,9 @@ export function MobileNav({
   navigation,
   orgs,
   uiFeatures,
+  account,
 }: {
+  account?: ReactNode
   apps: AppSwitcherApp[]
   currentOrg: OrgSwitcherOrg
   navigation: NavGroupDefinition[]
@@ -54,14 +56,15 @@ export function MobileNav({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         aria-label="Open navigation"
-        className="focus-visible:ring-sidebar-ring text-foreground hover:bg-muted/70 active:bg-muted flex size-11 shrink-0 items-center justify-center rounded-xl transition-colors focus-visible:ring-2 focus-visible:outline-hidden dark:hover:bg-white/8"
+        className="text-muted-foreground active:text-foreground flex h-13 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[0.625rem] font-medium focus-visible:outline-hidden"
       >
-        <MenuIcon aria-hidden="true" className="size-5" />
+        <EllipsisHorizontalIcon aria-hidden="true" className="size-6" />
+        More
       </SheetTrigger>
 
       <SheetContent
-        side="left"
-        className="876-surface border-876-surface-border bg-876-surface w-[min(22rem,calc(100vw-1rem))] max-w-none gap-0 overflow-hidden p-0 shadow-[0_18px_60px_rgba(0,0,0,0.18)] dark:shadow-[0_18px_60px_rgba(0,0,0,0.35)]"
+        side="bottom"
+        className="876-surface border-876-surface-border bg-876-surface max-h-[85svh] gap-0 overflow-hidden rounded-t-2xl p-0 pb-[env(safe-area-inset-bottom)] shadow-[0_-18px_60px_rgba(0,0,0,0.18)] dark:shadow-[0_-18px_60px_rgba(0,0,0,0.35)]"
       >
         <SheetHeader className="border-876-surface-border border-b px-4 py-4 pr-14">
           <div className="flex items-center gap-3">
@@ -71,6 +74,9 @@ export function MobileNav({
             <SheetTitle className="text-foreground text-base leading-6">
               Projects
             </SheetTitle>
+            {account ? (
+              <div className="ml-auto flex items-center gap-1">{account}</div>
+            ) : null}
           </div>
           <SheetDescription className="sr-only">
             Projects navigation

@@ -34,3 +34,39 @@
   );
   --876-nav-active-fg: oklch(0.82 0.12 255);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Phone (below `sm`): native iOS feel. Grouped-background canvas, flat
+   inset cards, a translucent hairline tab bar, and no web tap flashes.
+   ───────────────────────────────────────────────────────────────────────── */
+.tab-bar {
+  background-color: color-mix(in oklab, var(--876-chrome) 72%, transparent);
+  border-color: color-mix(in oklab, var(--876-surface-border) 55%, transparent);
+  box-shadow:
+    0 8px 32px oklch(0 0 0 / 10%),
+    inset 0 1px 0 oklch(1 0 0 / 35%);
+}
+.dark .tab-bar {
+  box-shadow:
+    0 8px 32px oklch(0 0 0 / 45%),
+    inset 0 1px 0 oklch(1 0 0 / 8%);
+}
+
+@media (max-width: 39.99rem) {
+  :root {
+    --876-canvas: oklch(0.965 0.003 286);
+  }
+  .dark {
+    --876-canvas: oklch(0.13 0 0);
+  }
+  body {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+  }
+  [class~='876-card'] {
+    border-color: transparent;
+    border-radius: 0.75rem;
+    box-shadow: none;
+  }
+}
