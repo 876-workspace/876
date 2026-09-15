@@ -4,13 +4,22 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
   requireAccess: vi.fn(),
   update: vi.fn(),
+  retrieve: vi.fn(),
+  assignIssues: vi.fn(),
+  unassignIssue: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/api-permission', () => ({
   requireApiAccess: mocks.requireAccess,
 }))
 vi.mock('@/lib/services/projects', () => ({
-  projects: { issues: { update: mocks.update } },
+  projects: {
+    issues: { update: mocks.update, retrieve: mocks.retrieve },
+    cycles: {
+      assignIssues: mocks.assignIssues,
+      unassignIssue: mocks.unassignIssue,
+    },
+  },
 }))
 
 const { PATCH } = await import('./route')
@@ -34,6 +43,23 @@ beforeEach(() => {
   })
   mocks.update.mockResolvedValue({
     data: { object: 'projects.issue', id: 'issue_1', identifier: 'CONSOLE-12' },
+    error: null,
+  })
+  mocks.retrieve.mockResolvedValue({
+    data: {
+      object: 'projects.issue',
+      id: 'issue_1',
+      identifier: 'CONSOLE-12',
+      cycleId: 'cyc_1',
+    },
+    error: null,
+  })
+  mocks.assignIssues.mockResolvedValue({
+    data: { object: 'cycle', id: 'cyc_1' },
+    error: null,
+  })
+  mocks.unassignIssue.mockResolvedValue({
+    data: { object: 'cycle', id: 'cyc_9' },
     error: null,
   })
 })
@@ -115,5 +141,38 @@ describe('PATCH /api/issues/:issueRef', () => {
     const response = await PATCH(request({ title: 'Updated issue' }), context)
 
     expect(response.status).toBe(404)
+  })
+
+  it('passes a task list move straight to the owning update', async () => {
+    await PATCH(request({ taskListId: 'tl_1' }), context)
+
+    expect(mocks.update).toHaveBeenCalledWith('org_1', 'CONSOLE-12', {
+      taskListId: 'tl_1',
+      actorUserId: 'user_1',
+    })
+  })
+
+  it('passes a cycle move straight to the owning update', async () => {
+    await PATCH(request({ cycleId: 'cyc_1' }), context)
+
+    expect(mocks.update).toHaveBeenCalledWith('org_1', 'CONSOLE-12', {
+      cycleId: 'cyc_1',
+      actorUserId: 'user_1',
+    })
+    expect(mocks.assignIssues).not.toHaveBeenCalled()
+    expect(mocks.unassignIssue).not.toHaveBeenCalled()
+    expect(mocks.retrieve).not.toHaveBeenCalled()
+  })
+
+  it('passes a cleared cycle straight to the owning update', async () => {
+    await PATCH(request({ cycleId: null }), context)
+
+    expect(mocks.update).toHaveBeenCalledWith('org_1', 'CONSOLE-12', {
+      cycleId: null,
+      actorUserId: 'user_1',
+    })
+    expect(mocks.assignIssues).not.toHaveBeenCalled()
+    expect(mocks.unassignIssue).not.toHaveBeenCalled()
+    expect(mocks.retrieve).not.toHaveBeenCalled()
   })
 })

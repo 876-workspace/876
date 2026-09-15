@@ -34,6 +34,8 @@ const updateIssueSchema = z
     status: workflowStateKeySchema.optional(),
     typeKey: z.string().trim().min(1).max(100).optional(),
     milestoneId: z.string().trim().min(1).nullable().optional(),
+    taskListId: z.string().trim().min(1).nullable().optional(),
+    cycleId: z.string().trim().min(1).nullable().optional(),
     priority: issuePrioritySchema.optional(),
     assigneeUserId: z.string().trim().min(1).nullable().optional(),
     parentIssueId: z.string().trim().min(1).nullable().optional(),
