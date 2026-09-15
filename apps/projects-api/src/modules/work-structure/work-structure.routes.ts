@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import { requireInternalKey } from '../../http/internal-auth.js'
 import * as milestoneDetails from './milestone-details.controller.js'
+import { listOrganizationMilestonesController } from './milestone-list.controller.js'
 import * as controller from './work-structure.controller.js'
 
 export function createWorkStructureRouter(): Router {
@@ -58,6 +59,11 @@ export function createWorkStructureRouter(): Router {
   )
 
   router.get('/milestones', requireInternalKey, controller.listMilestones)
+  router.get(
+    '/milestones/all',
+    requireInternalKey,
+    listOrganizationMilestonesController
+  )
   router.post('/milestones', requireInternalKey, milestoneDetails.createMilestone)
   router.get(
     '/milestones/:id',
