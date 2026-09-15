@@ -2,6 +2,7 @@ import {
   fromDbUnixSeconds,
   nullableFromDbUnixSeconds,
 } from '../../platform/timestamps.js'
+import { readCustomFieldValue } from './custom-field-value.js'
 
 type Timestamp = bigint | number
 type DecimalString = { toString(): string }
@@ -43,6 +44,7 @@ export type MilestoneRow = {
   name: string
   description: string | null
   status: string
+  ownerUserId: string | null
   startDate: Timestamp | null
   targetDate: Timestamp | null
   completedAt: Timestamp | null
@@ -124,6 +126,7 @@ export type SerializedMilestone = {
   name: string
   description: string | null
   status: string
+  ownerUserId: string | null
   startDate: number | null
   targetDate: number | null
   completedAt: number | null
@@ -212,6 +215,7 @@ export function serializeMilestone(row: MilestoneRow): SerializedMilestone {
     name: row.name,
     description: row.description,
     status: row.status,
+    ownerUserId: row.ownerUserId,
     startDate: nullableFromDbUnixSeconds(row.startDate),
     targetDate: nullableFromDbUnixSeconds(row.targetDate),
     completedAt: nullableFromDbUnixSeconds(row.completedAt),
@@ -242,27 +246,6 @@ export function serializeCustomField(
   }
 }
 
-function customFieldValue(
-  row: CustomFieldValueRow
-): SerializedCustomFieldValue['value'] {
-  switch (row.field.fieldType) {
-    case 'number':
-      return row.integerValue
-    case 'decimal':
-      return row.decimalValue?.toString() ?? null
-    case 'boolean':
-      return row.booleanValue
-    case 'date':
-      return nullableFromDbUnixSeconds(row.dateValue)
-    case 'select':
-      return row.selectKey
-    case 'multi-select':
-      return row.selectKeys
-    default:
-      return row.stringValue
-  }
-}
-
 export function serializeCustomFieldValue(
   row: CustomFieldValueRow
 ): SerializedCustomFieldValue {
@@ -274,7 +257,7 @@ export function serializeCustomFieldValue(
     fieldId: row.fieldId,
     fieldKey: row.field.key,
     fieldType: row.field.fieldType,
-    value: customFieldValue(row),
+    value: readCustomFieldValue(row),
     updatedBy: row.updatedBy,
     createdAt: fromDbUnixSeconds(row.createdAt),
     updatedAt: fromDbUnixSeconds(row.updatedAt),
