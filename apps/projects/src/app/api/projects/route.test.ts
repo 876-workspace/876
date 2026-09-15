@@ -153,7 +153,7 @@ describe('POST /api/issues', () => {
     })
   })
 
-  it('creates the issue scoped to the authorized organization', async () => {
+  it('creates the issue scoped to the authorized organization and signed-in creator', async () => {
     const response = await createIssueRoute(
       request('/api/issues', { title: 'Fix login' })
     )
@@ -161,10 +161,11 @@ describe('POST /api/issues', () => {
     expect(response.status).toBe(201)
     expect(mocks.createIssue).toHaveBeenCalledWith('org_1', {
       title: 'Fix login',
+      creatorUserId: 'usr_1',
     })
   })
 
-  it('forwards configured work-structure fields without accepting extras', async () => {
+  it('forwards configured work-structure fields and binds the creator', async () => {
     const response = await createIssueRoute(
       request('/api/issues', {
         title: 'Fix login',
@@ -182,7 +183,20 @@ describe('POST /api/issues', () => {
       status: 'todo',
       milestoneId: 'milestone_1',
       customFields: [{ fieldId: 'field_1', value: 'customer' }],
+      creatorUserId: 'usr_1',
     })
+  })
+
+  it('rejects a caller-supplied creator identity', async () => {
+    const response = await createIssueRoute(
+      request('/api/issues', {
+        title: 'Fix login',
+        creatorUserId: 'usr_other',
+      })
+    )
+
+    expect(response.status).toBe(422)
+    expect(mocks.createIssue).not.toHaveBeenCalled()
   })
 
   it('rejects a missing title with 422', async () => {
