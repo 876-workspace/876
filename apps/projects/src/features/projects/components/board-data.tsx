@@ -1,3 +1,4 @@
+import type { ListIssuesQuery } from '@876/projects/contracts'
 import {
   IssueBoard,
   type IssueBoardGroupBy,
@@ -15,7 +16,7 @@ export async function BoardData({
   values,
   groupBy,
 }: {
-  query: Parameters<typeof projects.issues.list>[1]
+  query: ListIssuesQuery
   values: IssueSearchParams
   groupBy: IssueBoardGroupBy
 }) {
