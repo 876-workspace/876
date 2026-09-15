@@ -22,7 +22,6 @@ const createIssueSchema = z.strictObject({
   milestoneId: z.string().trim().min(1).nullable().optional(),
   priority: z.enum(['none', 'low', 'medium', 'high', 'urgent']).optional(),
   assigneeUserId: z.string().trim().min(1).nullable().optional(),
-  creatorUserId: z.string().trim().min(1).nullable().optional(),
   parentIssueId: z.string().trim().min(1).nullable().optional(),
   estimate: z.number().int().min(0).max(100).nullable().optional(),
   dueDate: z.number().int().nullable().optional(),
@@ -58,7 +57,7 @@ export async function POST(request: NextRequest) {
 
   const result = await projects.issues.create(auth.orgId, {
     ...parsed.data,
-    creatorUserId: parsed.data.creatorUserId ?? auth.userId,
+    creatorUserId: auth.userId,
   })
   if (result.error)
     return apiJson({ error: result.error.message }, { status: 400 })
