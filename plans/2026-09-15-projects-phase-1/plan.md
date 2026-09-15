@@ -3,122 +3,181 @@
 - **Run ID:** `2026-09-15-projects-phase-1`
 - **Branch:** `feature/projects-phase-1-foundation`
 - **Base:** `main` @ `a6125f2b065ae8ed45286711828b70edba332f23`
-- **Status:** `IN_PROGRESS`
+- **Status:** `COMPLETED`
+- **Runtime verification:** `PENDING ORCHESTRATOR`
 
 ## Overview
 
-Implement the first phase of the Projects feature-expansion rollout by finishing and surfacing capabilities that already exist in the Projects contracts/API before introducing new project-management domain models.
+Implement the first phase of the Projects feature-expansion rollout by finishing
+and surfacing capabilities that already exist in the Projects contracts/API
+before introducing new project-management domain models.
 
 ## Objectives
 
-1. Complete the work-item detail surface so existing type, workflow-state, phase/milestone, hierarchy, custom-field, identity, estimate, dates, labels, comments, and activity data are visible.
-2. Complete work-item editing using the existing Projects update contract and same-origin mutation boundary.
-3. Upgrade project detail from a summary plus issues table into a useful project workspace built from current data.
-4. Improve existing list and board filtering/grouping using capabilities the current API already supports; do not fake service-owned filtering in the UI when the service contract already exposes it.
-5. Correct stale Projects documentation/catalog state discovered during implementation.
+1. Complete the work-item detail surface so existing type, workflow-state,
+   milestone, hierarchy, custom-field, identity, estimate, dates, labels,
+   comments, and activity data are visible.
+2. Complete work-item editing using the existing Projects update contract and
+   same-origin mutation boundary.
+3. Upgrade project detail from a summary plus issues table into a useful project
+   workspace built from current data.
+4. Improve existing list and board filtering/grouping using capabilities the
+   current API already supports; do not fake service-owned filtering in the UI
+   when the service contract already exposes it.
+5. Correct stale Projects documentation/catalog state discovered during
+   implementation.
 6. Add focused regression coverage following nearby Projects test patterns.
 
 ## Architectural scope
 
-Expected touch points:
+Touched:
 
 - `apps/projects`
 - `packages/projects-ui`
-- `packages/projects`
-- `apps/projects-api` only if an asserted Phase 1 capability is missing from the current canonical contract after repository verification
 - `docs/876-projects.md`
+- Phase 1 plan/tracker/report artifacts
 
-## Invariants
+`packages/projects` remains the canonical typed service contract; the browser
+client in `apps/projects` is intentionally narrower where creator/actor identity
+is server-owned. No new Projects API domain model was required.
 
-- Keep `Issue` as the durable backend/API name in this phase; user-facing copy may say work item where the current UI already does.
-- Keep `Milestone` as the durable backend/API name in this phase; the Phase product-language change belongs to the next rollout phase.
-- Do not create a second Projects SDK/client or duplicate product UI inside the host app.
-- `@876/projects-ui` owns reusable Projects presentation; `apps/projects` owns routing, authorization, data loading, and same-origin transport.
+## Invariants preserved
+
+- `Issue` remains the durable backend/API name in this phase.
+- `Milestone` remains the durable backend/API name in this phase.
+- No second Projects SDK/client or duplicate product UI was introduced.
+- `@876/projects-ui` owns reusable Projects presentation; `apps/projects` owns
+  routing, authorization, data loading, and same-origin transport.
 - Expected API/application errors remain values and render in context.
-- Initial live data remains server loaded behind appropriately small Suspense boundaries; do not replace it with client-effect fetching.
-- No new permissions are introduced unless both catalog registration and grants/enforcement are verified.
+- Initial live data remains server loaded; client-effect fetching was not added.
+- No new permissions were introduced.
 
 ## Key decisions
 
-- Reuse the current work-item schemas/update operation rather than adding a parallel edit DTO.
-- Reuse current project/work-item relationship data where present; do not add dependency/WBS models in Phase 1.
-- Filters that affect pagination/query semantics must be threaded to the canonical Projects list operation rather than filtering only a returned page.
-- Grouping that is purely a presentation of one already-loaded bounded result may remain UI-owned where it does not alter server pagination semantics.
+- Reused the current work-item schemas/update operation rather than adding a
+  parallel service DTO.
+- Reused current project/work-item relationship data; no dependency/WBS model
+  was added in Phase 1.
+- Filters that affect query semantics are threaded to the canonical Projects
+  list operation.
+- Grouping remains presentation-owned over the bounded server result.
+- Organization member labels are resolved once through the existing Workspace
+  boundary rather than with per-user/N+1 requests.
+- Browser callers cannot choose `creatorUserId` or `actorUserId`; those are
+  supplied from the signed-in server context.
 
 ## Dispatched briefs
 
-None. This run is implemented directly through the GitHub connector.
+None. This run was implemented directly through the GitHub connector.
 
 ## Execution reports
 
 | Report | Status |
 | --- | --- |
-| `reports/gpt-web/2026-09-15-projects-phase-1.md` | Pending |
+| `reports/gpt-web/2026-09-15-projects-phase-1.md` | Complete |
+| `tracker.md` | Complete |
 
 ## Task checklist
 
 ### A. Verify current contracts and UI
 
-- [ ] Audit work-item types, update params, list params, project types, milestone/custom-field types, and existing tests.
-- [ ] Audit Projects route adapters and mutation client.
-- [ ] Audit current issue detail, issue form/edit behavior, project detail, list, and board components.
-- [ ] Record any plan premise that is already implemented or contradicted by current `main`.
+- [x] Audit work-item types, update params, list params, project types,
+  milestone/custom-field types, and existing tests.
+- [x] Audit Projects route adapters and mutation client.
+- [x] Audit current issue detail, issue form/edit behavior, project detail,
+  list, and board components.
+- [x] Record premises contradicted by current code: Comments already had full
+  composer/edit/delete UI despite stale docs/catalog state; Board dropped custom
+  workflow-state keys despite the service supporting them.
 
 ### B. Work-item detail and editing
 
-- [ ] Surface work-item type and resolved workflow state.
-- [ ] Surface milestone/phase association using current contract terminology where required.
-- [ ] Surface parent/sub-item hierarchy.
-- [ ] Surface custom-field values using canonical field metadata.
-- [ ] Surface assignee/creator identity where the existing data path supports it without N+1 fetches.
-- [ ] Preserve comments and activity behavior.
-- [ ] Add or complete dedicated work-item edit route/surface using the canonical update operation.
-- [ ] Preserve mutation errors in-form without replacing the page.
+- [x] Surface work-item type and resolved workflow state.
+- [x] Surface milestone association using current durable terminology.
+- [x] Surface parent/sub-item hierarchy with resolved parent record identity.
+- [x] Surface custom-field values using canonical field metadata.
+- [x] Surface assignee/creator/activity identity without N+1 reads.
+- [x] Preserve comments and activity behavior.
+- [x] Add dedicated work-item edit route/surface using the canonical update
+  operation.
+- [x] Preserve mutation errors in-form without replacing the page.
+- [x] Bind creator/actor identity to the authenticated server context.
 
 ### C. Project workspace
 
-- [ ] Upgrade project detail with current project metadata and useful work summaries.
-- [ ] Reuse existing project issues/work-item data rather than introducing a separate dashboard query unless current contracts require one.
-- [ ] Keep stable workspace chrome renderable independently of live data where the existing route shape permits it.
+- [x] Upgrade project detail with current project metadata and useful work
+  summaries.
+- [x] Reuse existing project issue/work-item data rather than introducing a new
+  analytics endpoint.
+- [x] Use service `total_count`/`has_more` so partial pages are not presented as
+  complete project analytics.
 
 ### D. List and board controls
 
-- [ ] Verify current server-supported filters.
-- [ ] Add missing UI controls for supported filters without client-only pagination bugs.
-- [ ] Add useful grouping options where grouping can be derived safely from the current result.
-- [ ] Keep query/search params shareable in the URL where the existing list/board architecture uses URL state.
+- [x] Verify current server-supported filters.
+- [x] Add UI controls for the Phase 1 server filters without client-only
+  pagination bugs.
+- [x] Add grouping by workflow state, project, priority, assignee, work-item
+  type, and milestone.
+- [x] Keep query/search params shareable in the URL.
+- [x] Preserve tenant-defined workflow states on the Board instead of silently
+  dropping them.
 
 ### E. Tests and documentation
 
-- [ ] Add/update focused tests matching local Vitest configuration and nearby Projects style.
-- [ ] Update stale Projects documentation/catalog claims found during the audit.
-- [ ] Review changed files for duplicate helpers, compatibility residue, swallowed errors, unsafe casts, and scope creep.
-- [ ] Write the GPT web completion report with counted `it()` cases and unverified items.
-- [ ] Mark this plan `COMPLETED` with commit/base evidence.
+- [x] Add/update focused tests matching local Vitest patterns.
+- [x] Update stale Projects documentation and Comments catalog state.
+- [x] Review changed files for duplicate helpers, compatibility residue,
+  swallowed errors, unsafe browser-owned identity fields, and scope creep.
+- [x] Write the GPT web completion report with counted `it()` cases and
+  unverified items.
+- [x] Add `tracker.md` and mark implementation complete.
 
 ## Verification commands for the orchestrator
 
-Run the applicable package scripts from the repository root after the connector implementation lands:
+The GitHub connector cannot execute these. Reconcile current `main`, then run
+from the repository root:
 
 ```bash
 pnpm --filter @876/projects typecheck
 pnpm --filter @876/projects test
-pnpm --filter @876/projects-app typecheck
-pnpm --filter @876/projects-app test
+pnpm --filter @876/projects lint
+
 pnpm --filter @876/projects-ui typecheck
 pnpm --filter @876/projects-ui test
+
+pnpm --filter @876/projects-app typecheck
+pnpm --filter @876/projects-app test
+pnpm --filter @876/projects-app lint
+
 pnpm --filter @876/projects-api typecheck
 pnpm --filter @876/projects-api test
-pnpm lint
-node scripts/check-app-structure.mjs
+pnpm --filter @876/projects-api lint
+
+pnpm format:check
+pnpm check:error-contract
+pnpm check:rsc-boundaries
 ```
 
-If package names/scripts differ from these assumptions, use the exact scripts from the audited `package.json` files and record the corrected commands in the final report.
+## Mainline reconciliation note
+
+The branch was cut correctly from `main` at the base above. During the run,
+`main` advanced to observed commit
+`eb0ab384a753ead77c8f8d64a74b951efad6944d` with Projects/Commerce PWA work.
+The base-to-main comparison found no overlap with this Phase 1 feature set;
+Projects changes on newer main were shell/config/package/public PWA files.
+Rebase or merge current `main` before runtime verification and PR finalization.
 
 ## Handoff state
 
-The branch has been cut from the specified `main` commit and required repository/GPT-web rules are being read. No application code has been modified yet. Next step is a source-and-test audit of the current Projects contracts, host adapters, and shared UI before writing Phase 1 code.
+Implementation, focused regression coverage, operating docs, tracker, and GPT
+web completion report are complete on the feature branch. Runtime verification
+and reconciliation with the now-newer `main` remain intentionally assigned to
+the local/orchestrator environment because this connector cannot execute pnpm or
+perform a trustworthy working-tree rebase.
 
 ## PR preparation summary
 
-Pending implementation and orchestrator verification.
+Ready for mainline reconciliation and local verification. Do not merge solely on
+this report: run the commands above and address any integration failures without
+reverting the newer Projects PWA work from main.
