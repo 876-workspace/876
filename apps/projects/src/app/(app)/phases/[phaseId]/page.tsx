@@ -3,7 +3,10 @@ import { Suspense } from 'react'
 
 import { PageBreadcrumb } from '@/components/page-breadcrumb'
 import { canAccess } from '@/lib/auth/access-context'
-import { requireAppAccess } from '@/lib/auth/require-projects-context'
+import {
+  requireAppAccess,
+  requireProjectsContext,
+} from '@/lib/auth/require-projects-context'
 import { PhaseDetailData } from './_components/phase-detail-data'
 
 type Props = { params: Promise<{ phaseId: string }> }
@@ -18,6 +21,7 @@ export default async function PhaseDetailPage({ params }: Props) {
     module: 'projects',
     permission: 'projects.view',
   })
+  const { orgId } = await requireProjectsContext()
   const { phaseId } = await params
 
   return (
@@ -25,7 +29,7 @@ export default async function PhaseDetailPage({ params }: Props) {
       <PageBreadcrumb href="/phases" label="Phases" className="mb-4" />
       <Suspense fallback={<div className="876-card h-[32rem] animate-pulse" />}>
         <PhaseDetailData
-          orgId=""
+          orgId={orgId}
           phaseId={phaseId}
           currentUserId={access.subject.userId}
           canEdit={canAccess(access, 'projects.edit')}
