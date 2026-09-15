@@ -1,7 +1,7 @@
 import { createElement } from 'react'
 import type { IconComponent } from '@876/ui/icons'
 import {
-  BarChart3,
+  Home,
   Building2,
   DocumentTextIcon,
   ExclamationCircleIcon,
@@ -17,7 +17,7 @@ import {
  * than putting icon components in the server-owned navigation registry.
  */
 export const NAV_ICONS: Record<string, IconComponent> = {
-  dashboard: BarChart3,
+  dashboard: Home,
   projects: Folder,
   issues: ExclamationCircleIcon,
   board: RectangleStackIcon,
