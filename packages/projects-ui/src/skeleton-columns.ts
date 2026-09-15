@@ -16,6 +16,14 @@ export const PROJECTS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
   { label: 'Target Date', width: '130px' },
 ]
 
+export const PHASES_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
+  { label: 'Phase' },
+  { label: 'Project' },
+  { label: 'Status', cell: 'badge', width: '110px' },
+  { label: 'Owner', width: '150px' },
+  { label: 'Target', width: '130px' },
+]
+
 export const ISSUES_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
   { label: 'Identifier', width: '120px' },
   { label: 'Title' },
