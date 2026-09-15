@@ -78,13 +78,61 @@ export async function createMilestoneEvent(
   return prisma.milestoneEvent.create({ data })
 }
 
+export async function listMilestoneCustomFields(tenantId: string) {
+  return prisma.milestoneCustomField.findMany({
+    where: { tenantId, archivedAt: null },
+    orderBy: [{ position: 'asc' }, { key: 'asc' }],
+  })
+}
+
+export async function retrieveMilestoneCustomField(
+  tenantId: string,
+  id: string
+) {
+  return prisma.milestoneCustomField.findFirst({
+    where: { tenantId, id, archivedAt: null },
+  })
+}
+
+export async function retrieveMilestoneCustomFieldByKey(
+  tenantId: string,
+  key: string
+) {
+  return prisma.milestoneCustomField.findFirst({
+    where: { tenantId, key, archivedAt: null },
+  })
+}
+
+export async function createMilestoneCustomField(
+  data: Parameters<typeof prisma.milestoneCustomField.create>[0]['data']
+) {
+  return prisma.milestoneCustomField.create({ data })
+}
+
+export async function updateMilestoneCustomField(
+  id: string,
+  data: Parameters<typeof prisma.milestoneCustomField.update>[0]['data']
+) {
+  return prisma.milestoneCustomField.update({ where: { id }, data })
+}
+
+export async function archiveMilestoneCustomField(
+  id: string,
+  archivedAt: bigint
+) {
+  return prisma.milestoneCustomField.update({
+    where: { id },
+    data: { archivedAt, updatedAt: archivedAt },
+  })
+}
+
 export async function listMilestoneCustomFieldValues(
   tenantId: string,
   milestoneId: string
 ) {
   return prisma.milestoneCustomFieldValue.findMany({
     where: { tenantId, milestoneId },
-    include: { field: { include: { types: true } } },
+    include: { field: true },
     orderBy: { field: { position: 'asc' } },
   })
 }
@@ -124,7 +172,7 @@ export async function upsertMilestoneCustomFieldValue(data: {
       updatedBy: data.updatedBy,
       updatedAt: data.updatedAt,
     },
-    include: { field: { include: { types: true } } },
+    include: { field: true },
   })
 }
 
