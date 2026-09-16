@@ -16,6 +16,8 @@ const {
   repository,
   issueLinksRepo,
   txMock,
+  ganttRepo,
+  baselinesRepo,
 } = vi.hoisted(() => {
   const transactionClient = { transaction: 'projects-issue-links-transaction' }
   const tx = {
@@ -139,6 +141,22 @@ const {
       listIssueStatuses: vi.fn(),
     },
     txMock: tx,
+    ganttRepo: {
+      listGanttMilestones: vi.fn(),
+      listGanttTaskLists: vi.fn(),
+      listGanttIssues: vi.fn(),
+      listGanttDependencies: vi.fn(),
+    },
+    baselinesRepo: {
+      listBaselines: vi.fn(),
+      retrieveBaseline: vi.fn(),
+      countBaselineItems: vi.fn(),
+      countBaselineItemsMany: vi.fn(),
+      listBaselineItems: vi.fn(),
+      createBaseline: vi.fn(),
+      createBaselineItems: vi.fn(),
+      deleteBaseline: vi.fn(),
+    },
   }
 })
 
@@ -163,6 +181,8 @@ vi.mock('../../work-structure/cycles.repository.js', () => cyclesRepo)
 vi.mock('../issues.repository.js', () => repository)
 vi.mock('../issue-links.repository.js', () => issueLinksRepo)
 
+vi.mock('../../projects/gantt.repository.js', () => ganttRepo)
+vi.mock('../../projects/baselines.repository.js', () => baselinesRepo)
 const service = await import('../issue-links.service.js')
 const issuesService = await import('../issues.service.js')
 const { createIssuesRouter } = await import('../issues.routes.js')

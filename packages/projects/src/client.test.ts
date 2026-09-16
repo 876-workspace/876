@@ -28,10 +28,12 @@ describe('client / runtime', () => {
       internalKey: 'key_1',
     })
     expect(Object.keys(client).sort()).toEqual([
+      'baselines',
       'comments',
       'customFieldValues',
       'customFields',
       'cycles',
+      'gantt',
       'issueDependencies',
       'issueRelations',
       'issues',
@@ -129,10 +131,12 @@ describe('client / runtime', () => {
     })
 
     expect(Object.keys(operatorClient).sort()).toEqual([
+      'baselines',
       'comments',
       'customFieldValues',
       'customFields',
       'cycles',
+      'gantt',
       'issueDependencies',
       'issueRelations',
       'issues',
@@ -146,10 +150,12 @@ describe('client / runtime', () => {
       'workflowStates',
     ])
     expect(Object.keys(serviceClient).sort()).toEqual([
+      'baselines',
       'comments',
       'customFieldValues',
       'customFields',
       'cycles',
+      'gantt',
       'issueDependencies',
       'issueRelations',
       'issues',

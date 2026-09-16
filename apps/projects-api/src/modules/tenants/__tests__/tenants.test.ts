@@ -13,6 +13,8 @@ const {
   commentsRepo,
   issuesRepo,
   issueLinksRepo,
+  ganttRepo,
+  baselinesRepo,
 } = vi.hoisted(() => ({
   repository: {
     retrieveByOrganization: vi.fn(),
@@ -116,6 +118,22 @@ const {
     listDependenciesForIssues: vi.fn(),
     listIssueStatuses: vi.fn(),
   },
+  ganttRepo: {
+    listGanttMilestones: vi.fn(),
+    listGanttTaskLists: vi.fn(),
+    listGanttIssues: vi.fn(),
+    listGanttDependencies: vi.fn(),
+  },
+  baselinesRepo: {
+    listBaselines: vi.fn(),
+    retrieveBaseline: vi.fn(),
+    countBaselineItems: vi.fn(),
+    countBaselineItemsMany: vi.fn(),
+    listBaselineItems: vi.fn(),
+    createBaseline: vi.fn(),
+    createBaselineItems: vi.fn(),
+    deleteBaseline: vi.fn(),
+  },
 }))
 
 vi.mock('../tenants.repository.js', () => repository)
@@ -139,6 +157,8 @@ vi.mock('../../comments/comments.repository.js', () => commentsRepo)
 vi.mock('../../issues/issues.repository.js', () => issuesRepo)
 vi.mock('../../issues/issue-links.repository.js', () => issueLinksRepo)
 
+vi.mock('../../projects/gantt.repository.js', () => ganttRepo)
+vi.mock('../../projects/baselines.repository.js', () => baselinesRepo)
 const service = await import('../tenants.service.js')
 const { serializeTenant } = await import('../tenants.serializers.js')
 const { createTenantsRouter } = await import('../tenants.routes.js')

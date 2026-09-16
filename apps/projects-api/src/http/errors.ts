@@ -129,6 +129,10 @@ export const PROJECTS_ERRORS = {
     message: 'This dependency already exists.',
     httpStatus: 409 as HttpStatusCode,
   },
+  'projects/baseline-not-found': {
+    message: 'The baseline could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
   'projects/issue-dependency-cycle': {
     message: 'This dependency would create a scheduling cycle.',
     httpStatus: 422 as HttpStatusCode,

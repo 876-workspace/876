@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import { PageBreadcrumb } from '@/components/page-breadcrumb'
 import { ProjectDetailData } from './_components/project-detail-data'
 import { ProjectDetailSkeleton } from './_components/project-detail-skeleton'
+import { ProjectTabs } from './_components/project-tabs'
 import {
   requireAppAccess,
   requireProjectsContext,
@@ -19,24 +20,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProjectDetailPage({ params }: Props) {
   await requireAppAccess({ module: 'projects', permission: 'projects.view' })
   const { orgId } = await requireProjectsContext()
+  const { projectId } = await params
 
   return (
     <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">
       <PageBreadcrumb href="/projects" label="Projects" className="mb-4" />
+      <ProjectTabs projectId={projectId} />
       <Suspense fallback={<ProjectDetailSkeleton />}>
-        <ProjectDetailDataFromParams orgId={orgId} params={params} />
+        <ProjectDetailData orgId={orgId} projectId={projectId} />
       </Suspense>
     </div>
   )
-}
-
-async function ProjectDetailDataFromParams({
-  orgId,
-  params,
-}: {
-  orgId: string
-  params: Props['params']
-}) {
-  const { projectId } = await params
-  return <ProjectDetailData orgId={orgId} projectId={projectId} />
 }

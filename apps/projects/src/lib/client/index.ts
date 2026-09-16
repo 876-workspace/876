@@ -1,4 +1,5 @@
 import { appMemberships } from './app-memberships'
+import { baselinesClient } from './baselines'
 import { cyclesClient } from './cycles'
 import { phaseCustomFieldsClient } from './phase-custom-fields'
 import {
@@ -30,9 +31,11 @@ export const client = {
   workflowStates: workflowStatesClient,
   milestones: milestonesClient,
   customFields: customFieldsClient,
+  baselines: baselinesClient,
 }
 
 export { appMemberships } from './app-memberships'
+export { baselinesClient } from './baselines'
 export { cyclesClient } from './cycles'
 export { onboarding } from './onboarding'
 export { taskListsClient } from './task-lists'

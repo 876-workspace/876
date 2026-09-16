@@ -47,6 +47,7 @@ model Issue {
   targetRelations IssueRelation[] @relation("IssueRelationTarget")
   predecessorLinks IssueDependency[] @relation("IssueDependencyPredecessor")
   successorLinks IssueDependency[] @relation("IssueDependencySuccessor")
+  baselineItems ProjectBaselineItem[]
 
   @@unique([tenantId, identifier])
   @@unique([projectId, number])

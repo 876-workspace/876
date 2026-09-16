@@ -24,6 +24,8 @@ model Tenant {
   customFieldValues CustomFieldValue[]
   milestoneCustomFields MilestoneCustomField[]
   milestoneCustomFieldValues MilestoneCustomFieldValue[]
+  baselines ProjectBaseline[]
+  baselineItems ProjectBaselineItem[]
 
   @@map("projects_tenants")
 }

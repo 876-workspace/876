@@ -71,6 +71,12 @@ export const projects = {
   get taskLists() {
     return getServiceClient().taskLists
   },
+  get gantt() {
+    return getServiceClient().gantt
+  },
+  get baselines() {
+    return getServiceClient().baselines
+  },
   get customFields() {
     return getServiceClient().customFields
   },
