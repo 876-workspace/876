@@ -36,7 +36,7 @@ GitHub Actions jobs fail in 2–4 s (billing block) and Cloudflare Workers Build
 | 6 | Calendar, reminders, recurrence, My Work | feature/projects-phase-6-calendar | #604 | merged |
 | 7 | Files & attachments (876 Storage) | feature/projects-phase-7-files | #605 | merged |
 | 8 | Time tracking & timesheets | feature/projects-phase-8-time | #606 | merged |
-| 9 | Budgets & billing (Billing plane) | feature/projects-phase-8-time | #606 | **API + client only — no UI yet** |
+| 9 | Budgets & billing (Billing plane) | feature/projects-phase-8-time + feature/projects-phase-8-9-app | #606 + next | merged (UI in phase-8-9-app) |
 | 10 | Reports & resource planning | — | — | pending |
 | 11 | Templates & cloning | — | — | pending |
 | 12 | Custom fields & layouts | — | — | pending |
