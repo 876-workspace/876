@@ -58,10 +58,10 @@ export async function request<T>(
     {
       ...init,
       headers: {
+        ...(runtime.actorId ? { 'x-actor-id': runtime.actorId } : {}),
         ...init.headers,
         'x-internal-key': internalKey,
         ...(runtime.requestId ? { 'x-request-id': runtime.requestId } : {}),
-        ...(runtime.actorId ? { 'x-actor-id': runtime.actorId } : {}),
       },
     }
   )
