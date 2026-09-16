@@ -7,6 +7,7 @@ import {
   nowUnixSeconds,
 } from '@/platform/timestamps'
 
+import { notifyPackageStatusChanged } from './packages.notifications'
 import * as repo from './packages.repository'
 import type {
   CreatePackageBody,
@@ -81,9 +82,21 @@ export async function updatePackage(
   const referenceError = await validatePackageReferences(tenantId, input)
   if (referenceError) return referenceError
 
-  return serialize(
+  const previousStatus = current.status
+  const updated = serialize(
     await repo.updateTenantPackage({ id, input, now: nowUnixSeconds() })
   )
+
+  // Shipment notifications are a side effect of the update, never part of it:
+  // the send cannot fail the write because notifyPackageStatusChanged never
+  // throws and its failures are returned as values.
+  await notifyPackageStatusChanged({
+    tenantId,
+    previousStatus,
+    pkg: updated,
+  })
+
+  return updated
 }
 
 async function validatePackageReferences(
