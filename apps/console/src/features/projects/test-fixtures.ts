@@ -1,10 +1,16 @@
 import type {
+  ActivityItem,
   Budget,
+  ClientGrant,
+  Discussion,
+  DiscussionPost,
   FinancialSummary,
   ProjectBilling,
   Rate,
   AutomationRule,
   AutomationRun,
+  WikiPage,
+  WikiRevision,
   WorkflowBlueprint,
   WorkflowTransition,
 } from '@876/projects'
@@ -843,6 +849,119 @@ export function makeAutomationRun(
     startedAt: 1700000000,
     finishedAt: 1700000060,
     durationMs: 60000,
+    ...overrides,
+  }
+}
+
+export function makeActivityItem(
+  overrides: Partial<ActivityItem> = {},
+): ActivityItem {
+  return {
+    object: 'projects.activity-item',
+    id: 'act_1',
+    kind: 'work-item.created',
+    subjectType: 'work-item',
+    subjectId: 'issue_1',
+    actorUserId: 'user_eng',
+    type: 'status-changed',
+    fromValue: 'todo',
+    toValue: 'in-progress',
+    createdAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeDiscussion(
+  overrides: Partial<Discussion> = {},
+): Discussion {
+  return {
+    object: 'projects.discussion',
+    id: 'disc_1',
+    tenantId: 'tenant_1',
+    projectId: 'proj_test',
+    title: 'Kickoff planning',
+    body: 'Kickoff notes',
+    pinned: false,
+    locked: false,
+    clientVisible: false,
+    authorUserId: 'user_lead',
+    postCount: 2,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeDiscussionPost(
+  overrides: Partial<DiscussionPost> = {},
+): DiscussionPost {
+  return {
+    object: 'projects.discussion-post',
+    id: 'post_1',
+    tenantId: 'tenant_1',
+    discussionId: 'disc_1',
+    authorUserId: 'user_eng',
+    body: 'Hello world',
+    editCount: 0,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeWikiPage(
+  overrides: Partial<WikiPage> = {},
+): WikiPage {
+  return {
+    object: 'projects.wiki-page',
+    id: 'wp_1',
+    tenantId: 'tenant_1',
+    projectId: 'proj_test',
+    slug: 'home',
+    title: 'Home',
+    body: 'Welcome body',
+    parentPageId: null,
+    revisionCount: 3,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeWikiRevision(
+  overrides: Partial<WikiRevision> = {},
+): WikiRevision {
+  return {
+    object: 'projects.wiki-revision',
+    id: 'rev_1',
+    pageId: 'wp_1',
+    title: 'Home',
+    body: 'Welcome body',
+    authorUserId: 'user_eng',
+    createdAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeClientGrant(
+  overrides: Partial<ClientGrant> = {},
+): ClientGrant {
+  return {
+    object: 'projects.client-grant',
+    id: 'grant_1',
+    tenantId: 'tenant_1',
+    projectId: 'proj_test',
+    userId: 'user_client',
+    allowComments: true,
+    allowDiscussions: true,
+    allowFiles: false,
+    allowTime: false,
+    allowInvoices: false,
+    allowWiki: true,
+    invitedBy: 'user_lead',
+    revokedAt: null,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
     ...overrides,
   }
 }

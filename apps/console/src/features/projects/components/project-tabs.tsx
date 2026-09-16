@@ -20,6 +20,10 @@ export function ProjectTabs({
     <RouteTabs
       tabs={[
         { label: 'Overview', href: record, exact: true },
+        { label: 'Activity', href: `${record}/activity` },
+        { label: 'Discussions', href: `${record}/discussions` },
+        { label: 'Wiki', href: `${record}/wiki` },
+        { label: 'Clients', href: `${record}/clients` },
         { label: 'Gantt', href: `${record}/gantt` },
         { label: 'Time', href: `${record}/time` },
         { label: 'Finance', href: `${record}/finance` },
