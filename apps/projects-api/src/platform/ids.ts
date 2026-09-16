@@ -18,6 +18,8 @@ export const ENTITY_PREFIXES = {
   customFieldValue: 'cfv_',
   issueRelation: 'isr_',
   issueDependency: 'isd_',
+  projectBaseline: 'prjbl_',
+  projectBaselineItem: 'prjbli_',
 } as const
 
 export type EntityType = keyof typeof ENTITY_PREFIXES

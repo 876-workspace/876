@@ -13,6 +13,8 @@ const {
   issueLinksRepo,
   labelsRepo,
   commentsRepo,
+  ganttRepo,
+  baselinesRepo,
 } = vi.hoisted(() => ({
   tenantsRepo: {
     retrieveByOrganization: vi.fn(),
@@ -132,6 +134,22 @@ const {
     softDelete: vi.fn(),
     hardDelete: vi.fn(),
   },
+  ganttRepo: {
+    listGanttMilestones: vi.fn(),
+    listGanttTaskLists: vi.fn(),
+    listGanttIssues: vi.fn(),
+    listGanttDependencies: vi.fn(),
+  },
+  baselinesRepo: {
+    listBaselines: vi.fn(),
+    retrieveBaseline: vi.fn(),
+    countBaselineItems: vi.fn(),
+    countBaselineItemsMany: vi.fn(),
+    listBaselineItems: vi.fn(),
+    createBaseline: vi.fn(),
+    createBaselineItems: vi.fn(),
+    deleteBaseline: vi.fn(),
+  },
 }))
 
 vi.mock('../../tenants/tenants.repository.js', () => tenantsRepo)
@@ -156,6 +174,8 @@ vi.mock('../../issues/issue-links.repository.js', () => issueLinksRepo)
 vi.mock('../../labels/labels.repository.js', () => labelsRepo)
 vi.mock('../../comments/comments.repository.js', () => commentsRepo)
 
+vi.mock('../gantt.repository.js', () => ganttRepo)
+vi.mock('../baselines.repository.js', () => baselinesRepo)
 const service = await import('../projects.service.js')
 const schemas = await import('../projects.schemas.js')
 
