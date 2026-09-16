@@ -1,0 +1,36 @@
+model ProjectBaseline {
+  id         String  @id
+  tenantId   String  @map("tenant_id")
+  projectId  String  @map("project_id")
+  name       String
+  capturedBy String? @map("captured_by")
+  capturedAt BigInt  @map("captured_at")
+  note       String?
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  items   ProjectBaselineItem[]
+
+  @@index([tenantId, projectId], map: "projects_baselines_tenant_project_idx")
+  @@map("projects_project_baselines")
+}
+
+model ProjectBaselineItem {
+  id                     String  @id
+  tenantId               String  @map("tenant_id")
+  baselineId             String  @map("baseline_id")
+  issueId                String  @map("issue_id")
+  plannedStartDate       BigInt? @map("planned_start_date")
+  plannedFinishDate      BigInt? @map("planned_finish_date")
+  plannedDurationMinutes Int?    @map("planned_duration_minutes")
+  status                 String
+
+  tenant   Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  baseline ProjectBaseline  @relation(fields: [baselineId], references: [id], onDelete: Cascade)
+  issue    Issue            @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@unique([baselineId, issueId], map: "projects_baseline_items_unique")
+  @@index([baselineId], map: "projects_baseline_items_baseline_idx")
+  @@index([issueId], map: "projects_baseline_items_issue_idx")
+  @@map("projects_project_baseline_items")
+}

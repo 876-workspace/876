@@ -25,6 +25,7 @@ model Project {
   milestones Milestone[]
   taskLists TaskList[]
   cycles Cycle[]
+  baselines ProjectBaseline[]
 
   @@unique([tenantId, key])
   @@unique([tenantId, slug])
