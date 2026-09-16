@@ -20,6 +20,7 @@
     "generate": "node scripts/prisma-generate.mjs"
   },
   "dependencies": {
+    "@876/communications": "workspace:*",
     "@876/core": "workspace:*",
     "@prisma/adapter-pg": "7.9.1",
     "@prisma/client": "7.9.1",
