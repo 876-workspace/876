@@ -1,4 +1,4 @@
-# Implementation Plan: 876 Projects Phase 5 — Gantt, Critical Path, Baselines
+you # Implementation Plan: 876 Projects Phase 5 — Gantt, Critical Path, Baselines
 
 - **Run ID:** `2026-09-15-projects-phase-5`
 - **Branch:** `feature/projects-phase-5-gantt`

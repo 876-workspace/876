@@ -44,6 +44,14 @@ GitHub Actions jobs fail in 2–4 s (billing block) and Cloudflare Workers Build
 | 15 | Custom modules | — | — | pending |
 | 16 | Public API, webhooks, imports, MCP, observability | — | — | pending |
 
+## Final quality review (before deploy)
+
+User, 2026-09-16: _"in the end do a final code quality review as cheap models write shit code."_ After the last phase merges and before any deploy, run a full review of everything the rollout added:
+
+- `/code-review` over `main` vs the rollout's first commit, plus a manual pass for the cheap-model failure modes already caught in this run: duplicated helpers (a second `resolveCycleById`), invented values (a hard-coded 50% complete), business logic leaking into route handlers (the `cycleId` double call), fabricated or never-executed tests, fixtures papering over contract changes, and copy-pasted components that should have been one.
+- Re-run every projects check and the structure/RSC gates on the merged `main`.
+- Fix findings on a `fix/projects-rollout-review` branch with its own PR; do not fold them silently into a phase.
+
 ## Deploy (after all phases)
 
 Touched apps expected: `projects`, `projects-api`, plus any consumer of `@876/projects` / `@876/projects-ui` (console). Vercel deploys are manual-only; run `prisma migrate status` for projects-api first.
