@@ -326,7 +326,7 @@ Tests cover:
 Added:
 
 ```text
-plans/2026-08-31-provisioning-phase-2-and-profiles/briefs/muse/2026-08-31-application-provisioning-profile-mutations.md
+plans/aug/31-provisioning-phase-2-and-profiles/briefs/muse/2026-08-31-application-provisioning-profile-mutations.md
 ```
 
 It extends the Phase 2 routing campaign with mutation targets for:

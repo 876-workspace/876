@@ -356,7 +356,7 @@ The implementation carries focused coverage for:
 - Console permission/transport boundary;
 - Console default-promotion ordering.
 
-See `plans/2026-08-31-provisioning-phase-2-and-profiles/briefs/muse/2026-08-31-application-provisioning-profile-mutations.md` for the adversarial mutation campaign.
+See `plans/aug/31-provisioning-phase-2-and-profiles/briefs/muse/2026-08-31-application-provisioning-profile-mutations.md` for the adversarial mutation campaign.
 
 ## Non-goals
 

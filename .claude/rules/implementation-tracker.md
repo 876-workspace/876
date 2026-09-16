@@ -1,13 +1,13 @@
 # Implementation Tracker & Orchestration Plans
 
-For any feature, non-trivial task, or multi-file implementation run, maintain a committed implementation plan and tracker at `plans/<date>-<feature-slug>/plan.md`.
+For any feature, non-trivial task, or multi-file implementation run, maintain a committed implementation plan and tracker at `plans/<month>/<date>-<feature-slug>/plan.md`.
 
 ## Directory Structure
 
 Every implementation run is self-contained under `plans/`:
 
 ```text
-plans/<date>-<feature-slug>/
+plans/<month>/<date>-<feature-slug>/
 ├── plan.md                 # Primary implementation plan, architecture decisions, task checklist, handoff state
 ├── briefs/                 # Dispatched briefs (subdirectories per tool: codex/, agy/, muse/, gpt-web/, sub-agent/)
 │   └── <tool>/<date>-<task-name>.md
@@ -32,11 +32,11 @@ A standard `plan.md` must include:
 
 ## Process
 
-1. **Start of Run:** Create `plans/<date>-<feature-slug>/plan.md` before making code edits or delegating work.
-2. **Delegating Work:** Write each brief file to `plans/<date>-<feature-slug>/briefs/<tool>/<brief-name>.md` and link it in `plan.md` before invoking the tool/CLI.
-3. **Receiving Results:** Save the delegate's report under `plans/<date>-<feature-slug>/reports/<tool>/<report-name>.md`, update `plan.md` checklist items `[x]`, and record verification results.
+1. **Start of Run:** Create `plans/<month>/<date>-<feature-slug>/plan.md` before making code edits or delegating work.
+2. **Delegating Work:** Write each brief file to `plans/<month>/<date>-<feature-slug>/briefs/<tool>/<brief-name>.md` and link it in `plan.md` before invoking the tool/CLI.
+3. **Receiving Results:** Save the delegate's report under `plans/<month>/<date>-<feature-slug>/reports/<tool>/<report-name>.md`, update `plan.md` checklist items `[x]`, and record verification results.
 4. **Resuming or Stopping a Session:** Ensure `plan.md` status, handoff notes, and checklist accurately reflect the live state.
-5. **Completion:** Mark the status as `COMPLETED ✅`, note the commit SHA(s) or PR number, and commit `plans/<date>-<feature-slug>/` alongside the implementation code.
+5. **Completion:** Mark the status as `COMPLETED ✅`, note the commit SHA(s) or PR number, and commit `plans/<month>/<date>-<feature-slug>/` alongside the implementation code.
 
 ## Storage & Git Tracking
 

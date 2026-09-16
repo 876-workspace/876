@@ -16,8 +16,8 @@ supported 876 design mechanism, but it is now owned by
 shared shadcn `Sidebar variant="floating"` remains a different, full-height
 floating/inset treatment.
 
-See `plans/2026-09-03-console-workspace-and-sidebar/plan.md` for the contextual
-navigation design and `plans/2026-09-10-console-standard-sidebar/plan.md` for
+See `plans/sep/03-console-workspace-and-sidebar/plan.md` for the contextual
+navigation design and `plans/sep/10-console-standard-sidebar/plan.md` for
 the presentation split.
 
 ## Ownership
