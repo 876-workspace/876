@@ -1581,6 +1581,9 @@ importers:
       '@876/projects-ui':
         specifier: workspace:*
         version: link:../../packages/projects-ui
+      '@876/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
       '@876/ui':
         specifier: workspace:*
         version: link:../../packages/ui

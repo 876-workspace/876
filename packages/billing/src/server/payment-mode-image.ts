@@ -96,7 +96,11 @@ export async function orchestrateBillingPaymentModeImageUpload(
     owner_id: target.organizationId,
     actor_user_id: target.userId,
   }
-  const linked = await options.storage.resourceLinks.create(params)
+  const linked = await options.storage.resourceLinks.create(params, {
+    sourceAppId: params.app_id,
+    actorUserId: params.actor_user_id,
+    actorOrgId: target.organizationId,
+  })
   if (linked.error || !linked.data)
     return fail('Failed to link the image to the payment mode.', 400)
   if (!(await options.attach({ fileId: file.id, imageUrl: file.url })))

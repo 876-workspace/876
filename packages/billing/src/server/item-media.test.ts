@@ -218,7 +218,12 @@ describe('orchestrateBillingItemMediaUpload', () => {
         resource_type: 'item-variant',
         resource_id: 'ivar_1',
         relation: 'image',
-      })
+      }),
+      {
+        sourceAppId: '876-billing',
+        actorUserId: 'usr_1',
+        actorOrgId: 'org_1',
+      }
     )
   })
 })

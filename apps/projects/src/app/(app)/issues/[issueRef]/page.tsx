@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 import { PageBreadcrumb } from '@/components/page-breadcrumb'
 import { IssueDetailData } from './_components/issue-detail-data'
 import { IssueDetailSkeleton } from './_components/issue-detail-skeleton'
+import { canAccess } from '@/lib/auth/access-context'
 import {
   requireAppAccess,
   requireProjectsContext,
@@ -17,7 +18,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function IssueDetailPage({ params }: Props) {
-  await requireAppAccess({ module: 'issues', permission: 'issues.view' })
+  const access = await requireAppAccess({
+    module: 'issues',
+    permission: 'issues.view',
+  })
   const { orgId, userId } = await requireProjectsContext()
 
   return (
@@ -27,6 +31,7 @@ export default async function IssueDetailPage({ params }: Props) {
         <IssueDetailDataFromParams
           orgId={orgId}
           userId={userId}
+          canEdit={canAccess(access, 'issues.edit')}
           params={params}
         />
       </Suspense>
@@ -37,12 +42,21 @@ export default async function IssueDetailPage({ params }: Props) {
 async function IssueDetailDataFromParams({
   orgId,
   userId,
+  canEdit,
   params,
 }: {
   orgId: string
   userId: string
+  canEdit: boolean
   params: Props['params']
 }) {
   const { issueRef } = await params
-  return <IssueDetailData orgId={orgId} userId={userId} issueRef={issueRef} />
+  return (
+    <IssueDetailData
+      orgId={orgId}
+      userId={userId}
+      canEdit={canEdit}
+      issueRef={issueRef}
+    />
+  )
 }

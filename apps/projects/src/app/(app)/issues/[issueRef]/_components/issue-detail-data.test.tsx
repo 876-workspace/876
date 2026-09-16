@@ -35,6 +35,9 @@ vi.mock('@/features/projects/components/issue-links-data', () => ({
 vi.mock('@/features/projects/components/issue-comments-loader', () => ({
   IssueCommentsLoader: () => <div>Comment thread</div>,
 }))
+vi.mock('@/features/projects/components/attachments-data', () => ({
+  AttachmentsData: () => <div>Attachments panel</div>,
+}))
 vi.mock('next/navigation', () => ({
   notFound: () => {
     throw new Error('notFound')
@@ -93,6 +96,7 @@ async function renderDetail(issue: Issue) {
     await IssueDetailData({
       orgId: 'org_1',
       userId: 'usr_1',
+      canEdit: true,
       issueRef: 'CONSOLE-2',
     })
   )

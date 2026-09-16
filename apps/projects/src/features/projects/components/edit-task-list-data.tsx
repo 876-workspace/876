@@ -1,6 +1,8 @@
 import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
+import { AttachmentsData } from '@/features/projects/components/attachments-data'
 import { TaskListForm } from '@/features/projects/components/task-list-form'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { projects } from '@/lib/services/projects'
@@ -8,10 +10,14 @@ import { listProjectMilestones } from '@/lib/work-structure-data'
 
 export async function EditTaskListData({
   orgId,
+  userId,
   taskListId,
+  canEdit,
 }: {
   orgId: string
+  userId: string
   taskListId: string
+  canEdit: boolean
 }) {
   const [taskListResult, projectList, members] = await Promise.all([
     projects.taskLists.retrieve(orgId, taskListId),
@@ -63,6 +69,21 @@ export async function EditTaskListData({
           label,
         }))}
       />
+      <Suspense
+        fallback={
+          <div className="text-muted-foreground text-sm">
+            Loading attachments…
+          </div>
+        }
+      >
+        <AttachmentsData
+          orgId={orgId}
+          userId={userId}
+          resourceType="task-list"
+          resourceId={taskListResult.data.id}
+          canEdit={canEdit}
+        />
+      </Suspense>
     </div>
   )
 }

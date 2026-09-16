@@ -1,3 +1,4 @@
+import { callerHeaders } from '../caller-headers'
 import { storageRequest } from '../request'
 import type { StorageRuntime } from '../runtime'
 import {
@@ -10,23 +11,6 @@ import {
   type FileReadUrlCreateParams,
   type ReadUrl,
 } from '../types/files'
-
-/**
- * Serializes the caller assertion into the headers Storage authorizes against.
- *
- * The internal key proves only that some 876 service is calling; it never
- * proves that service may touch a given file. Naming the principal is what lets
- * Storage check it against the file's `owner_type`/`owner_id`/`audience`.
- */
-function callerHeaders(caller: FileCallerAssertion): Record<string, string> {
-  return {
-    'x-876-source-app-id': caller.sourceAppId,
-    ...(caller.actorUserId
-      ? { 'x-876-actor-user-id': caller.actorUserId }
-      : {}),
-    ...(caller.actorOrgId ? { 'x-876-actor-org-id': caller.actorOrgId } : {}),
-  }
-}
 
 /**
  * `$876.storage.files.*` — file metadata and delivery operations.

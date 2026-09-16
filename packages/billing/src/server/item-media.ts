@@ -84,17 +84,25 @@ async function ensureImageLink(
     owner_id: target.organizationId,
     actor_user_id: target.userId,
   }
-  const created = await storage.resourceLinks.create(params)
+  const caller = {
+    sourceAppId: params.app_id,
+    actorUserId: params.actor_user_id,
+    actorOrgId: target.organizationId,
+  }
+  const created = await storage.resourceLinks.create(params, caller)
   if (!created.error && created.data) return created.data
 
   // Completion is retryable. If a prior attempt created the exact Storage link
   // but failed while attaching Billing metadata, recover that link and continue.
-  const listed = await storage.resourceLinks.list({
-    app_id: params.app_id,
-    resource_type: params.resource_type,
-    resource_id: params.resource_id,
-    relation: params.relation,
-  })
+  const listed = await storage.resourceLinks.list(
+    {
+      app_id: params.app_id,
+      resource_type: params.resource_type,
+      resource_id: params.resource_id,
+      relation: params.relation,
+    },
+    caller
+  )
   if (!listed.error && listed.data) {
     const existing = listed.data.data.find((link) => link.file_id === fileId)
     if (existing) return existing

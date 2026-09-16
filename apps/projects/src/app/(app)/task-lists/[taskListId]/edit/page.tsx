@@ -4,6 +4,7 @@ import { Suspense } from 'react'
 
 import { PageBreadcrumb } from '@/components/page-breadcrumb'
 import { EditTaskListData } from '@/features/projects/components/edit-task-list-data'
+import { canAccess } from '@/lib/auth/access-context'
 import {
   requireAppAccess,
   requireProjectsContext,
@@ -14,8 +15,11 @@ type Props = { params: Promise<{ taskListId: string }> }
 export const metadata: Metadata = { title: 'Edit task list' }
 
 export default async function EditTaskListPage({ params }: Props) {
-  await requireAppAccess({ module: 'projects', permission: 'projects.edit' })
-  const { orgId } = await requireProjectsContext()
+  const access = await requireAppAccess({
+    module: 'projects',
+    permission: 'projects.edit',
+  })
+  const { orgId, userId } = await requireProjectsContext()
   const { taskListId } = await params
 
   return (
@@ -25,7 +29,12 @@ export default async function EditTaskListPage({ params }: Props) {
       <Suspense
         fallback={<div className="876-card h-96 max-w-3xl animate-pulse" />}
       >
-        <EditTaskListData orgId={orgId} taskListId={taskListId} />
+        <EditTaskListData
+          orgId={orgId}
+          userId={userId}
+          taskListId={taskListId}
+          canEdit={canAccess(access, 'projects.edit')}
+        />
       </Suspense>
     </div>
   )
