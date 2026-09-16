@@ -16,7 +16,3 @@ export async function resolveCallerRoleKeys(
   if (outcome.status !== 'ok') return []
   return callerRoleKeys(outcome.context.permissions)
 }
-
-export function serviceErrorStatus(code: string): 400 | 404 {
-  return code.includes('not-found') ? 404 : 400
-}

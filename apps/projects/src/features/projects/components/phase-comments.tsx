@@ -7,18 +7,9 @@ import { Markdown } from '@876/ui/markdown'
 import { MarkdownEditor } from '@876/ui/markdown-editor'
 import { useState } from 'react'
 
+import { formatDateTime } from '@876/projects-ui/format-date'
 import { ClientVisibleToggle } from '@/features/collaboration/components/client-visible-toggle'
 import { phasesClient } from '@/lib/client'
-
-function formatDate(timestamp: number) {
-  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 export function PhaseComments({
   phaseId,
@@ -144,7 +135,7 @@ export function PhaseComments({
                       : 'Unknown'}
                   </span>
                   <span className="text-muted-foreground">
-                    {formatDate(comment.createdAt)}
+                    {formatDateTime(comment.createdAt)}
                   </span>
                 </div>
                 {editing ? (

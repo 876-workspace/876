@@ -1,13 +1,10 @@
 import { AppError } from '@876/ui/app-error'
 import Link from 'next/link'
 
+import { formatDate } from '@876/projects-ui/format-date'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
 import { projects } from '@/lib/services/projects'
 import type { CycleStatus } from '@/features/projects/cycle-filters'
-
-function formatDate(timestamp: number) {
-  return new Date(timestamp * 1000).toISOString().slice(0, 10)
-}
 
 const STATUS_LABEL: Record<CycleStatus, string> = {
   active: 'Active',

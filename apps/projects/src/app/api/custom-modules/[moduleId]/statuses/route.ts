@@ -4,7 +4,8 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { resolveCallerRoleKeys, serviceErrorStatus } from '@/lib/custom-modules/api-access'
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
+import { resolveCallerRoleKeys } from '@/lib/custom-modules/api-access'
 import {
   createCustomModuleStatusInputSchema,
   replaceCustomModuleStatusesInputSchema,
@@ -31,7 +32,7 @@ export async function GET(_request: NextRequest, { params }: Props) {
   if (result.error || !result.data)
     return apiJson(
       { error: result.error?.message ?? 'Module statuses could not be loaded.' },
-      { status: serviceErrorStatus(result.error?.code ?? '') }
+      { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
   return apiJson({ data: result.data })
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest, { params }: Props) {
   if (result.error || !result.data)
     return apiJson(
       { error: result.error?.message ?? 'The status could not be created.' },
-      { status: serviceErrorStatus(result.error?.code ?? '') }
+      { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
   return apiJson({ data: result.data }, { status: 201 })
@@ -90,7 +91,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
   if (existing.error || !existing.data)
     return apiJson(
       { error: existing.error?.message ?? 'Module statuses could not be loaded.' },
-      { status: serviceErrorStatus(existing.error?.code ?? '') }
+      { status: projectsErrorStatus(existing.error?.code ?? '') }
     )
 
   const byKey = new Map(existing.data.data.map((status) => [status.key, status]))
@@ -107,7 +108,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
       if (created.error || !created.data)
         return apiJson(
           { error: created.error?.message ?? 'The statuses could not be saved.' },
-          { status: serviceErrorStatus(created.error?.code ?? '') }
+          { status: projectsErrorStatus(created.error?.code ?? '') }
         )
       byKey.set(desired.key, created.data)
       continue
@@ -120,7 +121,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
       if (updated.error || !updated.data)
         return apiJson(
           { error: updated.error?.message ?? 'The statuses could not be saved.' },
-          { status: serviceErrorStatus(updated.error?.code ?? '') }
+          { status: projectsErrorStatus(updated.error?.code ?? '') }
         )
       byKey.set(desired.key, updated.data)
     }
@@ -133,7 +134,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
     if (removed.error)
       return apiJson(
         { error: removed.error?.message ?? 'The statuses could not be saved.' },
-        { status: serviceErrorStatus(removed.error?.code ?? '') }
+        { status: projectsErrorStatus(removed.error?.code ?? '') }
       )
   }
 
@@ -145,7 +146,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
   if (reordered.error || !reordered.data)
     return apiJson(
       { error: reordered.error?.message ?? 'The statuses could not be ordered.' },
-      { status: serviceErrorStatus(reordered.error?.code ?? '') }
+      { status: projectsErrorStatus(reordered.error?.code ?? '') }
     )
 
   return apiJson({ data: reordered.data.data })

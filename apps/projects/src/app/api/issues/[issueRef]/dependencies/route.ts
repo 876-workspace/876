@@ -4,6 +4,7 @@ import { apiJson } from '@876/core/api'
 import { issueDependencyTypeSchema } from '@876/projects/contracts'
 import { z } from 'zod'
 
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 
@@ -17,13 +18,6 @@ const createDependencySchema = z.strictObject({
   type: issueDependencyTypeSchema.optional(),
   lagMinutes: z.number().int().optional(),
 })
-
-function dependencyErrorStatus(code: string): 400 | 404 | 409 | 422 {
-  if (code === 'projects/issue-not-found') return 404
-  if (code === 'projects/issue-dependency-exists') return 409
-  if (code === 'projects/issue-dependency-cycle') return 422
-  return 400
-}
 
 export async function POST(request: Request, { params }: Context) {
   const auth: ApiContext = await requireApiAccess({
@@ -53,7 +47,7 @@ export async function POST(request: Request, { params }: Context) {
           result.error?.message ??
           'The work item dependency could not be created.',
       },
-      { status: dependencyErrorStatus(result.error?.code ?? '') }
+      { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
   return apiJson({ data: result.data }, { status: 201 })

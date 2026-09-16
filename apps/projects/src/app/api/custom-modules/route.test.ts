@@ -13,7 +13,6 @@ vi.mock('@/lib/auth/api-permission', () => ({
 }))
 vi.mock('@/lib/custom-modules/api-access', () => ({
   resolveCallerRoleKeys: mocks.resolveKeys,
-  serviceErrorStatus: (code: string) => (code.includes('not-found') ? 404 : 400),
 }))
 vi.mock('@/lib/custom-modules/service-with-roles', () => ({
   serviceWithRoleKeys: (roleKeys: string[]) => ({

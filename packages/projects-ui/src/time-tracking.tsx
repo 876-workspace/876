@@ -34,16 +34,3 @@ export function formatDuration(minutes: number): string {
 
   return remainder === 0 ? `${hours}h` : `${hours}h ${remainder}m`
 }
-
-/**
- * Dates are read in UTC and in a fixed locale so the server render and the
- * browser's hydration of it always produce the same string.
- */
-export function formatDate(seconds: number): string {
-  return new Date(seconds * 1000).toLocaleDateString('en-US', {
-    timeZone: 'UTC',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}

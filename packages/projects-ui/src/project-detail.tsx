@@ -6,6 +6,7 @@ import {
 } from '@876/ui/detail-card'
 import { Calendar, Folder, User, Users } from '@876/ui/icons'
 
+import { formatDate } from './format-date'
 import { IssuesTable } from './issue-list'
 import { ProjectHealthBadge, ProjectStatusBadge } from './status-badges'
 
@@ -16,15 +17,6 @@ export type ProjectDetailProps = {
   issueTotal?: number | null
   issuesHasMore?: boolean
   leadLabel?: string | null
-}
-
-function formatDate(timestamp: number | null): string {
-  if (!timestamp) return '—'
-  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
 }
 
 function isTerminal(issue: Issue): boolean {

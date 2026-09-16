@@ -2,16 +2,13 @@ import 'server-only'
 
 import { apiJson } from '@876/core/api'
 
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'
 
 type Context = { params: Promise<{ issueRef: string }> }
-
-function suggestionErrorStatus(code: string): 400 | 404 {
-  return code === 'projects/issue-not-found' ? 404 : 400
-}
 
 /**
  * Advisory scheduling: it reports the earliest permissible planned start and
@@ -38,7 +35,7 @@ export async function POST(_request: Request, { params }: Context) {
           result.error?.message ??
           'A schedule suggestion could not be calculated.',
       },
-      { status: suggestionErrorStatus(result.error?.code ?? '') }
+      { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
   return apiJson({ data: result.data })

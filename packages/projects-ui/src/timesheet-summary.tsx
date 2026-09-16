@@ -9,10 +9,10 @@ import {
 
 import {
   ApprovalStatusBadge,
-  formatDate,
   formatDuration,
   type TimesheetApprovalStatus,
 } from './time-tracking'
+import { formatDate } from './format-date'
 
 export type TimesheetSummaryEntry = {
   id: string

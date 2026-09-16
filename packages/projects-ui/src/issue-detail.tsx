@@ -13,6 +13,8 @@ import { Clock, Folder, Pencil, TagIcon } from '@876/ui/icons'
 import { IssuePriorityBadge } from './priority-badges'
 import { IssueStatusBadge } from './status-badges'
 
+import { formatDateTime } from './format-date'
+
 export type IssueDetailProps = {
   issue: Issue
   events?: readonly IssueEvent[]
@@ -23,17 +25,6 @@ export type IssueDetailProps = {
   issuesHref?: string
   projectHref?: string
   editHref?: string
-}
-
-function formatDate(timestamp: number | null): string {
-  if (!timestamp) return 'No date set'
-  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 function formatEventType(type: string): string {
@@ -258,7 +249,7 @@ export function IssueDetail({
                         ) : null}
                       </div>
                       <time className="text-muted-foreground text-xs sm:text-right">
-                        {formatDate(event.createdAt)}
+                        {formatDateTime(event.createdAt)}
                       </time>
                     </li>
                   ))}
@@ -313,7 +304,7 @@ export function IssueDetail({
                 />
                 <DetailCardFact
                   label="Due date"
-                  value={formatDate(issue.dueDate)}
+                  value={formatDateTime(issue.dueDate)}
                 />
                 <DetailCardFact
                   label="Estimate"
@@ -325,27 +316,27 @@ export function IssueDetail({
                 />
                 <DetailCardFact
                   label="Started"
-                  value={formatDate(issue.startedAt)}
+                  value={formatDateTime(issue.startedAt)}
                 />
                 {issue.completedAt ? (
                   <DetailCardFact
                     label="Completed"
-                    value={formatDate(issue.completedAt)}
+                    value={formatDateTime(issue.completedAt)}
                   />
                 ) : null}
                 {issue.canceledAt ? (
                   <DetailCardFact
                     label="Canceled"
-                    value={formatDate(issue.canceledAt)}
+                    value={formatDateTime(issue.canceledAt)}
                   />
                 ) : null}
                 <DetailCardFact
                   label="Updated"
-                  value={formatDate(issue.updatedAt)}
+                  value={formatDateTime(issue.updatedAt)}
                 />
                 <DetailCardFact
                   label="Created"
-                  value={formatDate(issue.createdAt)}
+                  value={formatDateTime(issue.createdAt)}
                 />
               </DetailCardFacts>
             </DetailCardSection>

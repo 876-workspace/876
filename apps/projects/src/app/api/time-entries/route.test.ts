@@ -71,7 +71,7 @@ describe('POST /api/time-entries', () => {
     expect(mocks.create).not.toHaveBeenCalled()
   })
 
-  it('reports a range the service refuses as a bad request', async () => {
+  it('reports a range the service refuses as unprocessable', async () => {
     mocks.create.mockResolvedValue({
       data: null,
       error: {
@@ -84,7 +84,7 @@ describe('POST /api/time-entries', () => {
       request({ ...ENTRY, startedAt: 1788403600, endedAt: 1788400000 })
     )
 
-    expect(response.status).toBe(400)
+    expect(response.status).toBe(422)
     expect((await response.json()).error).toMatchObject({
       message: 'endedAt must be at or after startedAt.',
     })

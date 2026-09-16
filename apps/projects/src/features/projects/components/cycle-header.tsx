@@ -5,11 +5,8 @@ import { Button } from '@876/ui/button'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
+import { formatDate } from '@876/projects-ui/format-date'
 import { cyclesClient } from '@/lib/client/cycles'
-
-function formatDate(timestamp: number) {
-  return new Date(timestamp * 1000).toISOString().slice(0, 10)
-}
 
 export function CycleHeader({
   cycle,

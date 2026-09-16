@@ -3,7 +3,7 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { timeErrorStatus } from '@/app/api/_lib/time-error-status'
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 
@@ -43,7 +43,7 @@ export async function PATCH(request: Request, { params }: Context) {
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: timeErrorStatus(result.error.code) }
+      { status: projectsErrorStatus(result.error.code) }
     )
 
   return apiJson({ data: result.data })
@@ -65,7 +65,7 @@ export async function DELETE(_request: Request, { params }: Context) {
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: timeErrorStatus(result.error.code) }
+      { status: projectsErrorStatus(result.error.code) }
     )
 
   return apiJson({ data: result.data })

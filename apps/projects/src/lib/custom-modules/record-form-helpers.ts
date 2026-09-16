@@ -204,47 +204,6 @@ export function widgetDataFor(
   }
 }
 
-function csvCell(value: string | number): string {
-  const text = String(value)
-  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
-}
-
-function toCsv(headers: string[], rows: (string | number)[][]): string {
-  const lines = [headers.map(csvCell).join(',')]
-  for (const row of rows) lines.push(row.map(csvCell).join(','))
-  return `${lines.join('\n')}\n`
-}
-
-export function statusReportCsv(report: {
-  moduleKey: string
-  total: number
-  byStatus: { key: string; label: string; count: number }[]
-}): string {
-  return toCsv(
-    ['status_key', 'label', 'count'],
-    report.byStatus.map((row) => [row.key, row.label, row.count])
-  )
-}
-
-export function fieldReportCsv(report: {
-  fieldKey: string
-  byValue: { key: string; label: string; count: number }[]
-}): string {
-  return toCsv(
-    ['value_key', 'label', 'count'],
-    report.byValue.map((row) => [row.key, row.label, row.count])
-  )
-}
-
-export function createdReportCsv(report: {
-  perDay: { day: string; count: number }[]
-}): string {
-  return toCsv(
-    ['day', 'count'],
-    report.perDay.map((row) => [row.day, row.count])
-  )
-}
-
 /** CSV download href for a module report served by the thin API routes. */
 export function moduleReportCsvHref(moduleId: string, kind: 'by-status' | 'by-field' | 'created'): string {
   return `/api/custom-modules/${encodeURIComponent(moduleId)}/reports/${kind}?format=csv`

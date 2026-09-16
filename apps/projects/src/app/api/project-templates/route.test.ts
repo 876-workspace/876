@@ -81,11 +81,11 @@ describe('GET /api/project-templates', () => {
 
     const response = await GET()
 
-    expect(response.status).toBe(400)
+    expect(response.status).toBe(404)
     expect(await response.json()).toMatchObject({
       data: null,
       error: {
-        code: 'error/bad-request',
+        code: 'error/not-found',
         message: 'That organization does not exist.',
       },
     })

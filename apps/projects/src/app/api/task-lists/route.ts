@@ -3,6 +3,7 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 
@@ -18,14 +19,6 @@ const createTaskListSchema = z.strictObject({
   targetDate: z.number().int().nullable().optional(),
   position: z.number().int().optional(),
 })
-
-function createErrorStatus(code: string): 400 | 404 {
-  return code === 'projects/task-list-not-found' ||
-    code === 'projects/project-not-found' ||
-    code === 'projects/milestone-not-found'
-    ? 404
-    : 400
-}
 
 export async function POST(request: Request) {
   const auth: ApiContext = await requireApiAccess({
@@ -47,7 +40,7 @@ export async function POST(request: Request) {
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: createErrorStatus(result.error.code) }
+      { status: projectsErrorStatus(result.error.code) }
     )
 
   return apiJson({ data: result.data }, { status: 201 })

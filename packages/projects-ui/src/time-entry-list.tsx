@@ -14,10 +14,10 @@ import Link from 'next/link'
 
 import {
   ApprovalStatusBadge,
-  formatDate,
   formatDuration,
   type TimesheetApprovalStatus,
 } from './time-tracking'
+import { formatDate } from './format-date'
 
 export type TimeEntryListRow = {
   id: string
