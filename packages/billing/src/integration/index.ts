@@ -6,3 +6,4 @@ export {
 } from './client'
 export type * from './types'
 export type * from './types/sales-receipt'
+export type * from '../types/document-email'
