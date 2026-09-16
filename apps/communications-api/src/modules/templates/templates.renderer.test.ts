@@ -111,3 +111,64 @@ describe('renderEmailTemplate', () => {
     ).toBeNull()
   })
 })
+
+describe('renderEmailTemplate inherited-property safety', () => {
+  // Regression: a bare `variables[key]` resolved the prototype chain, so these
+  // keys stringified a function body or "[object Object]" into a customer's
+  // email instead of failing as a missing variable.
+  it.each([
+    'toString',
+    'constructor',
+    '__proto__',
+    'valueOf',
+    'hasOwnProperty',
+  ])('fails instead of rendering the inherited property %s', (key) => {
+    expect(
+      renderEmailTemplate({
+        subject: 'Invoice',
+        html: `<p>{{${key}}}</p>`,
+        text: null,
+        variables: { customerName: 'Alejandra Reyes' },
+      })
+    ).toBeNull()
+  })
+
+  it('renders an own property that shadows an inherited name', () => {
+    const result = renderEmailTemplate({
+      subject: 'Invoice',
+      html: '<p>{{toString}}</p>',
+      text: null,
+      variables: { toString: 'INV-1042' },
+    })
+
+    expect(result).toEqual({
+      subject: 'Invoice',
+      html: '<p>INV-1042</p>',
+      text: null,
+    })
+  })
+
+  it('fails when an own property is explicitly null', () => {
+    expect(
+      renderEmailTemplate({
+        subject: 'Invoice',
+        html: '<p>{{customerName}}</p>',
+        text: null,
+        variables: { customerName: null as unknown as string },
+      })
+    ).toBeNull()
+  })
+
+  it('does not mutate the supplied variable map', () => {
+    const variables = { customerName: 'Alejandra Reyes' }
+
+    renderEmailTemplate({
+      subject: 'Invoice',
+      html: '<p>{{customerName}}</p>',
+      text: null,
+      variables,
+    })
+
+    expect(variables).toEqual({ customerName: 'Alejandra Reyes' })
+  })
+})

@@ -18,8 +18,17 @@ function render(
 ): string | null {
   let missing = false
   const rendered = source.replace(PLACEHOLDER, (_match, key: string) => {
+    // Own properties only. A bare `variables[key]` resolves the prototype chain,
+    // and the placeholder pattern matches `toString`, `constructor` and
+    // `__proto__` — those would stringify a function body or "[object Object]"
+    // into a customer-facing email instead of failing as a missing variable.
+    if (!Object.hasOwn(variables, key)) {
+      missing = true
+      return ''
+    }
+
     const value = variables[key]
-    if (value === undefined) {
+    if (value === undefined || value === null) {
       missing = true
       return ''
     }
