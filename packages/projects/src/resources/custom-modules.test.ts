@@ -264,6 +264,29 @@ describe('custom modules resource', () => {
     )
   })
 
+  it('fetches a module report as CSV text through fetch', async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response('status,label,count\r\n', { status: 200 })
+    )
+    const csvResource = createCustomModulesResource(
+      buildRuntime({ internalKey: 'key', fetch: fetchMock })
+    )
+    const result = await csvResource.statusReport('org 1', 'cmod_1', {
+      format: 'csv',
+    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(
+        '/custom-modules/cmod_1/reports/by-status?format=csv'
+      ),
+      expect.objectContaining({ method: 'GET' })
+    )
+    expect(result).toEqual({
+      data: 'status,label,count\r\n',
+      error: null,
+    })
+    expect(requestMock).not.toHaveBeenCalled()
+  })
+
   it('manages dashboard widgets', async () => {
     await resource.listWidgets('org 1', { moduleId: 'cmod_1' })
     await resource.createWidget('org 1', { kind: 'record-count', moduleId: 'cmod_1' })
