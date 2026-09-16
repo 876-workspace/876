@@ -29,6 +29,7 @@ import {
 } from '@/modules/customers'
 import { createDiscountsRouter } from '@/modules/discounts'
 import { createDocumentTemplatesRouter } from '@/modules/document-templates'
+import { createDocumentEmailRouter } from '@/modules/documents/document-email.routes'
 import { createInternalDocumentsRouter } from '@/modules/documents/documents.internal-routes'
 import { createDocumentsRouter } from '@/modules/documents/documents.routes'
 import { createQuoteLifecycleRouter } from '@/modules/documents/quote-lifecycle.routes'
@@ -90,6 +91,7 @@ export function buildRoutes(): Router {
   root.use('/api/v1', createDiscountsRouter(resolveGuards))
   root.use('/api/v1', createDocumentTemplatesRouter(resolveGuards))
   root.use('/api/v1', createDocumentsRouter(resolveGuards))
+  root.use('/api/v1', createDocumentEmailRouter(resolveGuards))
   root.use('/api/v1', createQuoteLifecycleRouter(resolveGuards))
   root.use('/api/v1', createSalesReceiptsRouter(resolveGuards))
   root.use('/api/v1', createSalesOrdersRouter(resolveGuards))
