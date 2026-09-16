@@ -19,9 +19,6 @@ export default async function ProjectFieldsPage() {
     <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">
       <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <h1 className="876-page-title mb-2">Project fields</h1>
-      <p className="text-muted-foreground mb-6 text-sm">
-        Define typed custom fields that apply to Projects without changing work-item fields.
-      </p>
       {fields.error ? (
         <div className="mb-4">
           <AppError title="Project fields could not be loaded" error={fields.error} variant="banner" />

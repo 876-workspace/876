@@ -58,9 +58,3 @@ export function parseDateInput(value: string): number | null {
   if (!Number.isFinite(millis)) return null
   return Math.floor(millis / 1000)
 }
-
-/** Formats unix seconds as a `type="date"` input value. */
-export function formatDateInput(timestamp: number | null | undefined): string {
-  if (timestamp === null || timestamp === undefined) return ''
-  return new Date(timestamp * 1000).toISOString().slice(0, 10)
-}

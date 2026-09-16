@@ -285,7 +285,7 @@ describe('IssueDetail', () => {
   it('facts, without a due date, use the clean empty state', () => {
     render(<IssueDetail issue={makeIssue({ dueDate: null })} />)
 
-    expect(screen.getByText('No date set')).toBeInTheDocument()
+    expect(screen.getByText('—')).toBeInTheDocument()
   })
 
   it('facts, without an estimate, use the clean empty state', () => {

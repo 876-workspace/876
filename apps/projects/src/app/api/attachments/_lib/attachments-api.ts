@@ -5,6 +5,7 @@ import type { ResourceLink } from '@876/storage'
 import { z } from 'zod'
 
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import {
   ATTACHMENT_RELATION,
   attachmentCaller,
@@ -56,42 +57,6 @@ export async function requireAttachmentAccess(
   )
 }
 
-/**
- * Maps a Storage error code onto an HTTP status.
- *
- * Storage answers in its own vocabulary, and its codes are the honest
- * description of what went wrong, so they are carried through rather than
- * flattened into one status. `storage/route-not-found` means this app's own
- * route key is wrong, which is a server fault and not the caller's.
- */
-function attachmentErrorStatus(code: string): number {
-  if (
-    code === 'storage/upload-not-found' ||
-    code === 'storage/file-not-found' ||
-    code === 'storage/resource-link-not-found'
-  )
-    return 404
-  if (
-    code === 'storage/upload-incomplete' ||
-    code === 'storage/upload-expired' ||
-    code === 'storage/upload-verification-failed' ||
-    code === 'storage/file-not-ready'
-  )
-    return 409
-  if (code === 'storage/file-too-large') return 413
-  if (code === 'storage/mime-not-allowed') return 415
-  if (code === 'storage/forbidden') return 403
-  if (
-    code === 'storage/not-configured' ||
-    code === 'storage/unauthorized' ||
-    code === 'storage/provider-error'
-  )
-    return 502
-  if (code === 'storage/route-not-found') return 500
-
-  return 400
-}
-
 export function attachmentErrorResponse(
   error: { code: string; message: string } | null,
   fallbackMessage: string
@@ -99,7 +64,7 @@ export function attachmentErrorResponse(
   return apiJson(
     { error: error?.message ?? fallbackMessage },
     {
-      status: attachmentErrorStatus(error?.code ?? ''),
+      status: projectsErrorStatus(error?.code ?? ''),
       ...(error ? { code: error.code } : {}),
     }
   )

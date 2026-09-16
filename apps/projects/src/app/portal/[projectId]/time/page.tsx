@@ -15,10 +15,7 @@ export default async function PortalTimePage({ params }: Props) {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Time</h1>
-      <p className="text-muted-foreground text-sm">
-        Hours shared with you, grouped by phase.
-      </p>
+      <h1 className="876-page-title">Time</h1>
       <Suspense fallback={<div className="876-card h-64 animate-pulse" aria-hidden />}>
         <PortalTimeData access={access} projectId={decoded} />
       </Suspense>

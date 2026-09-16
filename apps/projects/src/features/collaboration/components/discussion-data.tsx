@@ -106,7 +106,7 @@ export async function DiscussionThreadData({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold">{discussion.title}</h1>
+        <h1 className="876-page-title">{discussion.title}</h1>
         {discussionResult.data.body ? (
           <p className="text-muted-foreground mt-2 text-sm whitespace-pre-wrap">
             {discussionResult.data.body}

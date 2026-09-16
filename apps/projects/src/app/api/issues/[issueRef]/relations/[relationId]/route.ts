@@ -2,19 +2,13 @@ import 'server-only'
 
 import { apiJson } from '@876/core/api'
 
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'
 
 type Context = { params: Promise<{ issueRef: string; relationId: string }> }
-
-function relationErrorStatus(code: string): 400 | 404 {
-  return code === 'projects/issue-not-found' ||
-    code === 'projects/issue-relation-not-found'
-    ? 404
-    : 400
-}
 
 export async function DELETE(_request: Request, { params }: Context) {
   const auth: ApiContext = await requireApiAccess({
@@ -36,7 +30,7 @@ export async function DELETE(_request: Request, { params }: Context) {
           result.error?.message ??
           'The work item relationship could not be removed.',
       },
-      { status: relationErrorStatus(result.error?.code ?? '') }
+      { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
   return apiJson({ data: result.data })

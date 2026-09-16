@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  formatDateInput,
   formatMinutesAsHours,
   parseDateInput,
   parseHoursToMinutes,
@@ -74,15 +73,5 @@ describe('parseDateInput', () => {
     expect(parseDateInput('')).toBeNull()
     expect(parseDateInput('01/09/2026')).toBeNull()
     expect(parseDateInput('2026-13-40')).toBeNull()
-  })
-})
-
-describe('formatDateInput', () => {
-  it('renders unix seconds as a date input value', () => {
-    expect(formatDateInput(1788220800)).toBe('2026-09-01')
-  })
-
-  it('renders nothing for a missing timestamp', () => {
-    expect(formatDateInput(null)).toBe('')
   })
 })

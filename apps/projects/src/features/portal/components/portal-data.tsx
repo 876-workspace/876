@@ -160,7 +160,7 @@ export async function PortalPhaseDetailData({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold">{milestone.data.name}</h1>
+        <h1 className="876-page-title">{milestone.data.name}</h1>
         {milestone.data.description ? (
           <p className="text-muted-foreground mt-2 text-sm">
             {milestone.data.description}
@@ -245,7 +245,7 @@ export async function PortalWorkDetailData({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold">{issue.data.title}</h1>
+        <h1 className="876-page-title">{issue.data.title}</h1>
         <p className="text-muted-foreground mt-1 text-xs">
           {issue.data.identifier} · {issue.data.status} · {issue.data.priority}
         </p>
@@ -377,7 +377,7 @@ export async function PortalDiscussionDetailData({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold">{discussion.title}</h1>
+        <h1 className="876-page-title">{discussion.title}</h1>
         <p className="mt-2 text-sm whitespace-pre-wrap">{discussion.body}</p>
       </div>
       <section aria-label="Discussion replies" className="space-y-2">

@@ -15,7 +15,7 @@ export default async function PortalWorkPage({ params }: Props) {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Work</h1>
+      <h1 className="876-page-title">Work</h1>
       <Suspense fallback={<div className="876-card h-64 animate-pulse" aria-hidden />}>
         <PortalWorkData access={access} projectId={decoded} />
       </Suspense>

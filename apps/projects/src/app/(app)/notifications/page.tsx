@@ -26,9 +26,6 @@ export default async function NotificationsPage() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 pt-5 pb-8 sm:px-6 lg:px-8">
       <h1 className="876-page-title mb-2">Notifications</h1>
-      <p className="text-muted-foreground mb-6 text-sm">
-        Automation rules and mentions land here.
-      </p>
       {result.error ? (
         <AppError
           title="Notifications could not be loaded"

@@ -8,19 +8,7 @@
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-const STATUS_BY_CODE: Readonly<Record<string, number>> = {
-  'projects/tenant-not-found': 404,
-  'projects/project-not-found': 404,
-  'projects/capacity-not-found': 404,
-  'projects/capacity-overlap': 409,
-  'projects/invalid-period': 422,
-  'projects/invalid-request': 422,
-  'projects/not-configured': 503,
-}
-
-function reportErrorStatus(code: string): number {
-  return STATUS_BY_CODE[code] ?? 400
-}
+import { projectsErrorStatus } from './error-status'
 
 /** A service failure, answering with the message the service produced. */
 export function serviceFailure(
@@ -29,7 +17,7 @@ export function serviceFailure(
 ): Response {
   return apiJson(
     { error: error?.message ?? fallbackMessage },
-    { status: error === null ? 400 : reportErrorStatus(error.code) }
+    { status: error === null ? 400 : projectsErrorStatus(error.code) }
   )
 }
 

@@ -204,7 +204,7 @@ describe('/api/comments/[commentId]', () => {
     })
   })
 
-  it('maps a non-not-found update error to a generic 400 rather than trusting the internal httpStatus', async () => {
+  it('maps an issue-not-found update error to 404 rather than trusting the internal httpStatus', async () => {
     mocks.update.mockResolvedValue({
       data: null,
       error: {
@@ -219,7 +219,7 @@ describe('/api/comments/[commentId]', () => {
       context
     )
 
-    expect(response.status).toBe(400)
+    expect(response.status).toBe(404)
     expect((await response.json()).data).toBeNull()
   })
 
@@ -310,7 +310,7 @@ describe('/api/comments/[commentId]', () => {
     expect(mocks.delete).toHaveBeenCalledWith('org_1', 'CONSOLE-12', 'cmt_42')
   })
 
-  it('maps a non-not-found delete error to a generic 400 rather than trusting the internal httpStatus', async () => {
+  it('maps an issue-not-found delete error to 404 rather than trusting the internal httpStatus', async () => {
     mocks.delete.mockResolvedValue({
       data: null,
       error: {
@@ -322,7 +322,7 @@ describe('/api/comments/[commentId]', () => {
 
     const response = await DELETE(request('DELETE'), context)
 
-    expect(response.status).toBe(400)
+    expect(response.status).toBe(404)
     expect((await response.json()).data).toBeNull()
   })
 

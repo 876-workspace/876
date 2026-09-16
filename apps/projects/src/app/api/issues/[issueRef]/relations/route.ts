@@ -4,6 +4,7 @@ import { apiJson } from '@876/core/api'
 import { issueRelationTypeSchema } from '@876/projects/contracts'
 import { z } from 'zod'
 
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 
@@ -15,12 +16,6 @@ const createRelationSchema = z.strictObject({
   targetIssueId: z.string().trim().min(1),
   type: issueRelationTypeSchema,
 })
-
-function relationErrorStatus(code: string): 400 | 404 | 409 {
-  if (code === 'projects/issue-not-found') return 404
-  if (code === 'projects/issue-relation-exists') return 409
-  return 400
-}
 
 export async function POST(request: Request, { params }: Context) {
   const auth: ApiContext = await requireApiAccess({
@@ -50,7 +45,7 @@ export async function POST(request: Request, { params }: Context) {
           result.error?.message ??
           'The work item relationship could not be created.',
       },
-      { status: relationErrorStatus(result.error?.code ?? '') }
+      { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
   return apiJson({ data: result.data }, { status: 201 })

@@ -80,7 +80,7 @@ describe('POST /api/timesheets', () => {
     expect(mocks.create).not.toHaveBeenCalled()
   })
 
-  it('reports a period the service refuses as a bad request', async () => {
+  it('reports a period the service refuses as unprocessable', async () => {
     mocks.create.mockResolvedValue({
       data: null,
       error: {
@@ -93,7 +93,7 @@ describe('POST /api/timesheets', () => {
       request({ periodStart: PERIOD.periodEnd, periodEnd: PERIOD.periodStart })
     )
 
-    expect(response.status).toBe(400)
+    expect(response.status).toBe(422)
   })
 
   it('answers the authorization failure without touching the service', async () => {

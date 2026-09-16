@@ -15,6 +15,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
+import { formatDate } from '@876/projects-ui/format-date'
 import { baselinesClient } from '@/lib/client'
 
 type Props = {
@@ -23,27 +24,6 @@ type Props = {
   selectedBaselineId: string | null
   comparison: BaselineComparison | null
   canEdit: boolean
-}
-
-const MONTH_LABELS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-] as const
-
-function formatDate(timestamp: number | null): string {
-  if (timestamp === null) return '—'
-  const date = new Date(timestamp * 1000)
-  return `${MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`
 }
 
 /** Variance in whole days against the captured baseline; negative is earlier. */

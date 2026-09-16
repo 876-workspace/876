@@ -12,21 +12,7 @@
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-const STATUS_BY_CODE: Readonly<Record<string, number>> = {
-  'projects/template-not-found': 404,
-  'projects/project-not-found': 404,
-  'projects/template-key-taken': 409,
-  'projects/project-key-taken': 409,
-  'projects/invalid-template-key': 422,
-  'projects/invalid-project-key': 422,
-  'projects/invalid-template-definition': 422,
-  'projects/template-missing-references': 422,
-  'projects/template-dependency-cycle': 422,
-}
-
-export function templateErrorStatus(code: string): number {
-  return STATUS_BY_CODE[code] ?? 400
-}
+import { projectsErrorStatus } from './error-status'
 
 /** A template service failure, answering with the message the service produced. */
 export function templateFailure(
@@ -35,7 +21,7 @@ export function templateFailure(
 ): Response {
   return apiJson(
     { error: error?.message ?? fallbackMessage },
-    { status: error === null ? 400 : templateErrorStatus(error.code) }
+    { status: error === null ? 400 : projectsErrorStatus(error.code) }
   )
 }
 

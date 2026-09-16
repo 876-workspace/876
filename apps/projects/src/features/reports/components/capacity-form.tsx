@@ -10,8 +10,8 @@ import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
 import { reportsClient } from '@/lib/client/reports'
+import { formatDateInput } from '@/lib/date-input'
 import {
-  formatDateInput,
   formatMinutesAsHours,
   parseDateInput,
   parseHoursToMinutes,

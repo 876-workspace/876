@@ -4,7 +4,8 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { resolveCallerRoleKeys, serviceErrorStatus } from '@/lib/custom-modules/api-access'
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
+import { resolveCallerRoleKeys } from '@/lib/custom-modules/api-access'
 import { updateCustomModuleFieldInputSchema } from '@/lib/custom-modules/custom-module-inputs'
 import { serviceWithRoleKeys } from '@/lib/custom-modules/service-with-roles'
 
@@ -35,7 +36,7 @@ export async function PATCH(request: NextRequest, { params }: Props) {
   if (result.error || !result.data)
     return apiJson(
       { error: result.error?.message ?? 'The field could not be updated.' },
-      { status: serviceErrorStatus(result.error?.code ?? '') }
+      { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
   return apiJson({ data: result.data })
@@ -58,7 +59,7 @@ export async function DELETE(_request: NextRequest, { params }: Props) {
   if (result.error || !result.data)
     return apiJson(
       { error: result.error?.message ?? 'The field could not be deleted.' },
-      { status: serviceErrorStatus(result.error?.code ?? '') }
+      { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
   return apiJson({ data: result.data })

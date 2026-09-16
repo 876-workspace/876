@@ -14,6 +14,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 
+import { formatDate } from '@876/projects-ui/format-date'
 import { taskListsClient } from '@/lib/client'
 
 type Props = {
@@ -52,18 +53,9 @@ function groupGroups(breakdown: WorkBreakdown): BreakdownGroup[] {
   ]
 }
 
-function formatDate(timestamp: number | null) {
-  if (!timestamp) return null
-  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-
 function dateRange(taskList: TaskList) {
-  const start = formatDate(taskList.startDate)
-  const target = formatDate(taskList.targetDate)
+  const start = taskList.startDate ? formatDate(taskList.startDate) : null
+  const target = taskList.targetDate ? formatDate(taskList.targetDate) : null
   if (start && target) return `${start} → ${target}`
   return start ?? target
 }

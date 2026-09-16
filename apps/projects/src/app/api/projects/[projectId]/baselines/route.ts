@@ -3,6 +3,7 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 
@@ -14,10 +15,6 @@ const createBaselineSchema = z.strictObject({
   name: z.string().trim().min(1).max(100),
   note: z.string().trim().max(500).nullable().optional(),
 })
-
-function createErrorStatus(code: string): 400 | 404 {
-  return code === 'projects/project-not-found' ? 404 : 400
-}
 
 export async function POST(request: Request, { params }: Context) {
   const auth: ApiContext = await requireApiAccess({
@@ -40,7 +37,7 @@ export async function POST(request: Request, { params }: Context) {
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: createErrorStatus(result.error.code) }
+      { status: projectsErrorStatus(result.error.code) }
     )
 
   return apiJson({ data: result.data }, { status: 201 })

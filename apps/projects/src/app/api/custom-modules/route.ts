@@ -4,7 +4,8 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { resolveCallerRoleKeys, serviceErrorStatus } from '@/lib/custom-modules/api-access'
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
+import { resolveCallerRoleKeys } from '@/lib/custom-modules/api-access'
 import { createCustomModuleInputSchema } from '@/lib/custom-modules/custom-module-inputs'
 import { serviceWithRoleKeys } from '@/lib/custom-modules/service-with-roles'
 
@@ -22,7 +23,7 @@ export async function GET() {
   if (result.error || !result.data)
     return apiJson(
       { error: result.error?.message ?? 'Custom modules could not be loaded.' },
-      { status: serviceErrorStatus(result.error?.code ?? '') }
+      { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
   return apiJson({ data: result.data })
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
   if (result.error || !result.data)
     return apiJson(
       { error: result.error?.message ?? 'The custom module could not be created.' },
-      { status: serviceErrorStatus(result.error?.code ?? '') }
+      { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
   return apiJson({ data: result.data }, { status: 201 })

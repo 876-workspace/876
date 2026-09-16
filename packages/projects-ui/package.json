@@ -322,6 +322,10 @@
     "./platform/metrics-summary-panel": {
       "types": "./src/platform/metrics-summary-panel.tsx",
       "default": "./src/platform/metrics-summary-panel.tsx"
+    },
+    "./format-date": {
+      "types": "./src/format-date.ts",
+      "default": "./src/format-date.ts"
     }
   },
   "scripts": {

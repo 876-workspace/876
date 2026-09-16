@@ -38,6 +38,7 @@ import {
   IssueStatusBadge,
   issueStatusTone,
 } from './status-badges'
+import { formatDate } from './format-date'
 import { MobileList, MobileListCell, MobileListEmpty } from './mobile-list'
 
 export type IssuesTableProps = {
@@ -52,15 +53,6 @@ export type IssuesListProps = {
   issuesHref: string
   newIssueHref?: string | null
   emptyState?: ReactNode
-}
-
-function formatDate(timestamp: number | null): string {
-  if (!timestamp) return '—'
-  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
 }
 
 function IssueCell({

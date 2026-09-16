@@ -40,10 +40,6 @@ export async function TaskListsData({
         ) : null}
         <div className="876-card p-5">
           <h2 className="text-[0.9375rem] font-semibold">Select a project</h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Task lists belong to one project. Choose a project to see its
-            lists.
-          </p>
           <ul className="mt-4 space-y-1">
             {(projectsResult.data?.data ?? []).map((project) => (
               <li key={project.id}>

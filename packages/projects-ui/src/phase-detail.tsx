@@ -16,6 +16,8 @@ import {
 import { Calendar, Folder, Pencil, User } from '@876/ui/icons'
 import Link from 'next/link'
 
+import { formatDate } from './format-date'
+
 export type PhaseDetailProps = {
   phase: MilestoneDetail
   project: Project | null
@@ -26,16 +28,6 @@ export type PhaseDetailProps = {
   ownerLabels?: Readonly<Record<string, string>>
   editHref?: string
   cloneHref?: string
-}
-
-function formatDate(timestamp: number | null) {
-  return timestamp
-    ? new Date(timestamp * 1000).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-    : '—'
 }
 
 function statusBadge(status: string) {

@@ -27,11 +27,15 @@ import {
   type ListCustomRecordsQuery,
   type ListDashboardWidgetsQuery,
   type RequestOptions,
+  type Result,
   type UpdateCustomModuleFieldInput,
   type UpdateCustomModuleInput,
   type UpdateCustomModuleStatusInput,
   type UpdateCustomRecordInput,
   type UpdateDashboardWidgetInput,
+  type CustomModuleCreatedReport,
+  type CustomModuleFieldReport,
+  type CustomModuleStatusReport,
 } from '../types'
 
 function modulesRoot(organizationId: string) {
@@ -40,6 +44,55 @@ function modulesRoot(organizationId: string) {
 
 function widgetsRoot(organizationId: string) {
   return `/v1/organizations/${encodeURIComponent(organizationId)}/dashboard-widgets`
+}
+
+async function requestText(
+  runtime: Runtime,
+  path: string,
+  signal?: AbortSignal
+): Promise<Result<string>> {
+  if (!runtime.internalKey)
+    return {
+      data: null,
+      error: {
+        code: 'projects/not-configured',
+        message: 'The Projects client is not configured.',
+      },
+    }
+  const response = await runtime.fetch(`${runtime.baseUrl}${path}`, {
+    method: 'GET',
+    headers: {
+      'x-internal-key': runtime.internalKey,
+      ...(runtime.requestId ? { 'x-request-id': runtime.requestId } : {}),
+    },
+    signal,
+  })
+  if (!response.ok) {
+    try {
+      const payload = (await response.json()) as {
+        error?: { code?: string; message?: string } | null
+      }
+      if (payload?.error?.code)
+        return {
+          data: null,
+          error: {
+            code: payload.error.code,
+            message:
+              payload.error.message ?? 'The Projects service returned an error.',
+          },
+        }
+    } catch {
+      // Fall through to the generic invalid-response error below.
+    }
+    return {
+      data: null,
+      error: {
+        code: 'projects/invalid-response',
+        message: 'The Projects service returned an invalid response.',
+      },
+    }
+  }
+  return { data: await response.text(), error: null }
 }
 
 function toRecordsQuery(query: ListCustomRecordsQuery): string {
@@ -61,6 +114,7 @@ function toReportQuery(query: GetCustomModuleReportQuery): string {
   if (query.from !== undefined) search.set('from', String(query.from))
   if (query.to !== undefined) search.set('to', String(query.to))
   if (query.fieldKey) search.set('fieldKey', query.fieldKey)
+  if (query.format !== undefined) search.set('format', query.format)
   const qs = search.toString()
   return qs ? `?${qs}` : ''
 }
@@ -74,6 +128,90 @@ function toWidgetsQuery(query: ListDashboardWidgetsQuery): string {
 }
 
 export function createCustomModulesResource(runtime: Runtime) {
+  async function statusReport(
+    organizationId: string,
+    moduleId: string,
+    query: GetCustomModuleReportQuery & RequestOptions & { format: 'csv' }
+  ): Promise<Result<string>>
+  async function statusReport(
+    organizationId: string,
+    moduleId: string,
+    query?: GetCustomModuleReportQuery & RequestOptions
+  ): Promise<Result<CustomModuleStatusReport>>
+  async function statusReport(
+    organizationId: string,
+    moduleId: string,
+    query: GetCustomModuleReportQuery & RequestOptions = {}
+  ): Promise<Result<CustomModuleStatusReport | string>> {
+    const { signal, ...params } = query
+    const path = `${modulesRoot(organizationId)}/${encodeURIComponent(moduleId)}/reports/by-status${toReportQuery(params)}`
+    if (params.format === 'csv') return requestText(runtime, path, signal)
+    return request(
+      runtime,
+      {
+        method: 'GET',
+        path,
+        signal,
+      },
+      customModuleStatusReportSchema
+    )
+  }
+  async function fieldReport(
+    organizationId: string,
+    moduleId: string,
+    query: GetCustomModuleReportQuery & RequestOptions & { format: 'csv' }
+  ): Promise<Result<string>>
+  async function fieldReport(
+    organizationId: string,
+    moduleId: string,
+    query?: GetCustomModuleReportQuery & RequestOptions
+  ): Promise<Result<CustomModuleFieldReport>>
+  async function fieldReport(
+    organizationId: string,
+    moduleId: string,
+    query: GetCustomModuleReportQuery & RequestOptions = {}
+  ): Promise<Result<CustomModuleFieldReport | string>> {
+    const { signal, ...params } = query
+    const path = `${modulesRoot(organizationId)}/${encodeURIComponent(moduleId)}/reports/by-field${toReportQuery(params)}`
+    if (params.format === 'csv') return requestText(runtime, path, signal)
+    return request(
+      runtime,
+      {
+        method: 'GET',
+        path,
+        signal,
+      },
+      customModuleFieldReportSchema
+    )
+  }
+  async function createdReport(
+    organizationId: string,
+    moduleId: string,
+    query: GetCustomModuleReportQuery & RequestOptions & { format: 'csv' }
+  ): Promise<Result<string>>
+  async function createdReport(
+    organizationId: string,
+    moduleId: string,
+    query?: GetCustomModuleReportQuery & RequestOptions
+  ): Promise<Result<CustomModuleCreatedReport>>
+  async function createdReport(
+    organizationId: string,
+    moduleId: string,
+    query: GetCustomModuleReportQuery & RequestOptions = {}
+  ): Promise<Result<CustomModuleCreatedReport | string>> {
+    const { signal, ...params } = query
+    const path = `${modulesRoot(organizationId)}/${encodeURIComponent(moduleId)}/reports/created${toReportQuery(params)}`
+    if (params.format === 'csv') return requestText(runtime, path, signal)
+    return request(
+      runtime,
+      {
+        method: 'GET',
+        path,
+        signal,
+      },
+      customModuleCreatedReportSchema
+    )
+  }
   return {
     listModules(organizationId: string, options: RequestOptions = {}) {
       return request(runtime, { method: 'GET', path: modulesRoot(organizationId), signal: options.signal }, customModuleListSchema)
@@ -295,42 +433,9 @@ export function createCustomModulesResource(runtime: Runtime) {
         deletedSchema
       )
     },
-    statusReport(organizationId: string, moduleId: string, query: GetCustomModuleReportQuery & RequestOptions = {}) {
-      const { signal, ...params } = query
-      return request(
-        runtime,
-        {
-          method: 'GET',
-          path: `${modulesRoot(organizationId)}/${encodeURIComponent(moduleId)}/reports/by-status${toReportQuery(params)}`,
-          signal,
-        },
-        customModuleStatusReportSchema
-      )
-    },
-    fieldReport(organizationId: string, moduleId: string, query: GetCustomModuleReportQuery & RequestOptions = {}) {
-      const { signal, ...params } = query
-      return request(
-        runtime,
-        {
-          method: 'GET',
-          path: `${modulesRoot(organizationId)}/${encodeURIComponent(moduleId)}/reports/by-field${toReportQuery(params)}`,
-          signal,
-        },
-        customModuleFieldReportSchema
-      )
-    },
-    createdReport(organizationId: string, moduleId: string, query: GetCustomModuleReportQuery & RequestOptions = {}) {
-      const { signal, ...params } = query
-      return request(
-        runtime,
-        {
-          method: 'GET',
-          path: `${modulesRoot(organizationId)}/${encodeURIComponent(moduleId)}/reports/created${toReportQuery(params)}`,
-          signal,
-        },
-        customModuleCreatedReportSchema
-      )
-    },
+    statusReport,
+    fieldReport,
+    createdReport,
     listWidgets(organizationId: string, query: ListDashboardWidgetsQuery & RequestOptions = {}) {
       const { signal, ...params } = query
       return request(runtime, { method: 'GET', path: `${widgetsRoot(organizationId)}${toWidgetsQuery(params)}`, signal }, dashboardWidgetListSchema)

@@ -2,6 +2,8 @@ import type { MilestoneDetail, Project } from '@876/projects/contracts'
 import { Badge } from '@876/ui/badge'
 import Link from 'next/link'
 
+import { formatDate } from './format-date'
+
 export type PhaseListProps = {
   phases: readonly MilestoneDetail[]
   projects: readonly Project[]
@@ -13,16 +15,6 @@ function statusBadge(status: string) {
   if (status === 'completed') return <Badge variant="success">Completed</Badge>
   if (status === 'canceled') return <Badge variant="secondary">Canceled</Badge>
   return <Badge variant="info">Open</Badge>
-}
-
-function formatDate(timestamp: number | null) {
-  return timestamp
-    ? new Date(timestamp * 1000).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-    : '—'
 }
 
 export function PhaseList({

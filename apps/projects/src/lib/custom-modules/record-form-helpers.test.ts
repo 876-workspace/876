@@ -2,12 +2,9 @@ import type { CustomModuleField } from '@876/projects/contracts'
 import { describe, expect, it } from 'vitest'
 
 import {
-  createdReportCsv,
   fallbackRecordLayout,
-  fieldReportCsv,
   moduleReportCsvHref,
   recordInitialValues,
-  statusReportCsv,
   toLayoutFieldDescriptors,
   toRecordFieldInputs,
   toUiModule,
@@ -274,32 +271,7 @@ describe('widgets', () => {
   })
 })
 
-describe('report csv', () => {
-  it('serializes status reports with headers', () => {
-    expect(
-      statusReportCsv({
-        moduleKey: 'risks',
-        total: 2,
-        byStatus: [{ key: 'triage', label: 'Triage', count: 2 }],
-      })
-    ).toBe('status_key,label,count\ntriage,Triage,2\n')
-  })
-
-  it('quotes csv cells containing commas', () => {
-    expect(
-      fieldReportCsv({
-        fieldKey: 'severity',
-        byValue: [{ key: 'high', label: 'High, urgent', count: 1 }],
-      })
-    ).toBe('value_key,label,count\nhigh,"High, urgent",1\n')
-  })
-
-  it('serializes created-per-day reports', () => {
-    expect(createdReportCsv({ perDay: [{ day: '2026-09-01', count: 3 }] })).toBe(
-      'day,count\n2026-09-01,3\n'
-    )
-  })
-
+describe('report csv hrefs', () => {
   it('builds csv download hrefs for module reports', () => {
     expect(moduleReportCsvHref('cmod_1', 'by-status')).toBe(
       '/api/custom-modules/cmod_1/reports/by-status?format=csv'

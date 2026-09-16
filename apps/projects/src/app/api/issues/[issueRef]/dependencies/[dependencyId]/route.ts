@@ -4,6 +4,7 @@ import { apiJson } from '@876/core/api'
 import { issueDependencyTypeSchema } from '@876/projects/contracts'
 import { z } from 'zod'
 
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 
@@ -19,16 +20,6 @@ const updateDependencySchema = z
   .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one dependency field is required.',
   })
-
-function dependencyErrorStatus(code: string): 400 | 404 | 422 {
-  if (
-    code === 'projects/issue-not-found' ||
-    code === 'projects/issue-dependency-not-found'
-  )
-    return 404
-  if (code === 'projects/issue-dependency-cycle') return 422
-  return 400
-}
 
 export async function PATCH(request: Request, { params }: Context) {
   const auth: ApiContext = await requireApiAccess({
@@ -59,7 +50,7 @@ export async function PATCH(request: Request, { params }: Context) {
           result.error?.message ??
           'The work item dependency could not be updated.',
       },
-      { status: dependencyErrorStatus(result.error?.code ?? '') }
+      { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
   return apiJson({ data: result.data })
@@ -85,7 +76,7 @@ export async function DELETE(_request: Request, { params }: Context) {
           result.error?.message ??
           'The work item dependency could not be removed.',
       },
-      { status: dependencyErrorStatus(result.error?.code ?? '') }
+      { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
   return apiJson({ data: result.data })

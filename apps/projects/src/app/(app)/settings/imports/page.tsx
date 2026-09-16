@@ -26,8 +26,7 @@ export default async function ImportsPage() {
       <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <h1 className="876-page-title mb-2">Imports</h1>
       <p className="text-muted-foreground mb-6 text-sm">
-        Upload a CSV or board export, preview the parsed rows, then commit the job.
-        Files are read in the browser and must be 5 MB or smaller.
+        Files must be 5 MB or smaller.
       </p>
       <div className="flex max-w-3xl flex-col gap-8">
         <section aria-label="New import" className="flex flex-col gap-3">

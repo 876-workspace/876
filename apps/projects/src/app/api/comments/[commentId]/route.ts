@@ -8,6 +8,7 @@ import {
   requireApiPermission,
   type ApiContext,
 } from '@/lib/auth/api-permission'
+import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'
@@ -23,10 +24,6 @@ const deleteCommentSchema = z.strictObject({
 
 type Context = { params: Promise<{ commentId: string }> }
 
-function commentErrorStatus(code: string): 400 | 404 {
-  return code === 'projects/comment-not-found' ? 404 : 400
-}
-
 async function requireOwnedComment(
   auth: Extract<ApiContext, { response: null }>,
   issueRef: string,
@@ -40,7 +37,7 @@ async function requireOwnedComment(
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: commentErrorStatus(result.error.code) }
+      { status: projectsErrorStatus(result.error.code) }
     )
   if (result.data.authorUserId !== auth.userId)
     return apiJson(
@@ -76,7 +73,7 @@ export async function PATCH(request: NextRequest, { params }: Context) {
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: commentErrorStatus(result.error.code) }
+      { status: projectsErrorStatus(result.error.code) }
     )
 
   return apiJson({ data: result.data })
@@ -111,7 +108,7 @@ export async function DELETE(request: NextRequest, { params }: Context) {
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: commentErrorStatus(result.error.code) }
+      { status: projectsErrorStatus(result.error.code) }
     )
 
   return apiJson({ data: result.data })

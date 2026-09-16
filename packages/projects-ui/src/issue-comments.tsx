@@ -24,6 +24,8 @@ import { Markdown } from '@876/ui/markdown'
 import { MarkdownEditor } from '@876/ui/markdown-editor'
 import { useEffect, useState } from 'react'
 
+import { formatDateTime } from './format-date'
+
 type CommentResult = {
   data: Comment | null
   error: { code: string; message: string } | null
@@ -40,16 +42,6 @@ export type IssueCommentsProps = {
   onCreateComment: (body: string) => Promise<CommentResult>
   onUpdateComment?: (commentId: string, body: string) => Promise<CommentResult>
   onDeleteComment?: (commentId: string) => Promise<DeleteResult>
-}
-
-function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 export function IssueComments({
@@ -234,7 +226,7 @@ function CommentItem({
       <div className="text-muted-foreground flex items-center justify-between gap-2 text-xs">
         <span className="font-mono">{comment.authorUserId ?? 'Unknown'}</span>
         <div className="flex items-center gap-2">
-          <span>{formatDate(comment.createdAt)}</span>
+          <span>{formatDateTime(comment.createdAt)}</span>
           {(canEdit || canDelete) && !editing ? (
             <DropdownMenu>
               <DropdownMenuTrigger

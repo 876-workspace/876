@@ -15,7 +15,7 @@ export default async function PortalInvoicesPage({ params }: Props) {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Invoices</h1>
+      <h1 className="876-page-title">Invoices</h1>
       <Suspense fallback={<div className="876-card h-64 animate-pulse" aria-hidden />}>
         <PortalInvoicesData access={access} projectId={decoded} />
       </Suspense>
