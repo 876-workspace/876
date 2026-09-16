@@ -1,12 +1,13 @@
 /** @vitest-environment jsdom */
 import '@testing-library/jest-dom/vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   uploadFile: vi.fn(),
   removeLink: vi.fn(),
+  link: vi.fn(),
   refresh: vi.fn(),
 }))
 
@@ -14,6 +15,7 @@ vi.mock('@/lib/client/attachments', () => ({
   attachmentsClient: {
     uploadFile: mocks.uploadFile,
     removeLink: mocks.removeLink,
+    link: mocks.link,
   },
 }))
 vi.mock('next/navigation', () => ({
@@ -22,6 +24,7 @@ vi.mock('next/navigation', () => ({
 
 import {
   AttachmentsPanel,
+  type AttachmentCandidate,
   type AttachmentRow,
 } from '@/features/projects/components/attachments-panel'
 
@@ -46,6 +49,11 @@ const rows: AttachmentRow[] = [
   },
 ]
 
+const existingFiles: AttachmentCandidate[] = [
+  { fileId: 'file_7', name: 'kickoff-notes.pdf', sizeBytes: 4096 },
+  { fileId: 'file_8', name: 'mood-board.png', sizeBytes: null },
+]
+
 function renderPanel(
   overrides: Partial<Parameters<typeof AttachmentsPanel>[0]> = {}
 ) {
@@ -54,6 +62,7 @@ function renderPanel(
       resourceType="issue"
       resourceId="iss_1"
       rows={rows}
+      existingFiles={existingFiles}
       canEdit
       {...overrides}
     />
@@ -72,6 +81,10 @@ beforeEach(() => {
   })
   mocks.removeLink.mockResolvedValue({
     data: { object: 'resource_link', id: 'rlink_1', deleted: true },
+    error: null,
+  })
+  mocks.link.mockResolvedValue({
+    data: { linkId: 'rlink_7', fileId: 'file_7' },
     error: null,
   })
 })
@@ -210,5 +223,80 @@ describe('AttachmentsPanel', () => {
     ).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Remove plan.pdf')).not.toBeInTheDocument()
     expect(screen.getByLabelText('Download plan.pdf')).toBeInTheDocument()
+  })
+
+  it('lists the files the project already holds behind the existing-file action', async () => {
+    renderPanel()
+
+    expect(
+      screen.queryByLabelText('Files already in this project')
+    ).not.toBeInTheDocument()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Attach existing file' })
+    )
+
+    const list = screen.getByLabelText('Files already in this project')
+    expect(within(list).getByText('kickoff-notes.pdf')).toBeInTheDocument()
+    expect(within(list).getByText('4 KB')).toBeInTheDocument()
+    expect(within(list).getByText('mood-board.png')).toBeInTheDocument()
+  })
+
+  it('links the chosen existing file once, with its file id', async () => {
+    renderPanel()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Attach existing file' })
+    )
+    await userEvent.click(screen.getByLabelText('Attach kickoff-notes.pdf'))
+
+    expect(mocks.link).toHaveBeenCalledTimes(1)
+    expect(mocks.link).toHaveBeenCalledWith({
+      fileId: 'file_7',
+      resourceType: 'issue',
+      resourceId: 'iss_1',
+    })
+    expect(mocks.refresh).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps the picker open and reports the failure when linking fails', async () => {
+    mocks.link.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'storage/file-not-found',
+        message: 'That file could not be found.',
+      },
+    })
+
+    renderPanel()
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Attach existing file' })
+    )
+    await userEvent.click(screen.getByLabelText('Attach kickoff-notes.pdf'))
+
+    expect(
+      screen.getByText('That file could not be found.')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Files already in this project')
+    ).toBeInTheDocument()
+    expect(mocks.refresh).not.toHaveBeenCalled()
+  })
+
+  it('offers no existing-file action when the project holds no other file', () => {
+    renderPanel({ existingFiles: [] })
+
+    expect(
+      screen.queryByRole('button', { name: 'Attach existing file' })
+    ).not.toBeInTheDocument()
+  })
+
+  it('offers no existing-file action to a reader without edit rights', () => {
+    renderPanel({ canEdit: false })
+
+    expect(
+      screen.queryByRole('button', { name: 'Attach existing file' })
+    ).not.toBeInTheDocument()
   })
 })

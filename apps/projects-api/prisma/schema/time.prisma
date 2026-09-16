@@ -1,0 +1,83 @@
+model TimeEntry {
+  id               String   @id
+  tenantId         String   @map("tenant_id")
+  projectId        String   @map("project_id")
+  issueId          String?  @map("issue_id")
+  milestoneId      String?  @map("milestone_id")
+  taskListId       String?  @map("task_list_id")
+  userId           String   @map("user_id")
+  startedAt        BigInt   @map("started_at")
+  endedAt          BigInt?  @map("ended_at")
+  durationMinutes  Int?     @map("duration_minutes")
+  billable         Boolean  @default(false)
+  note             String?
+  approvalStatus   String   @default("draft") @map("approval_status") // draft|submitted|approved|rejected
+  timesheetId      String?  @map("timesheet_id")
+  createdBy        String?  @map("created_by")
+  billedInvoiceId  String?  @map("billed_invoice_id") // opaque Billing invoice id; Billing owns the invoice
+  billedAt         BigInt?  @map("billed_at")
+  deletedAt        BigInt?  @map("deleted_at")
+  deletedBy        String?  @map("deleted_by")
+  deletionReason   String?  @map("deletion_reason")
+  createdAt        BigInt   @map("created_at")
+  updatedAt        BigInt   @map("updated_at")
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issue     Issue?     @relation(fields: [issueId], references: [id], onDelete: SetNull)
+  milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  taskList  TaskList?  @relation(fields: [taskListId], references: [id], onDelete: SetNull)
+  timesheet Timesheet? @relation(fields: [timesheetId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, userId, startedAt], map: "projects_time_entries_tenant_user_start_idx")
+  @@index([tenantId, projectId], map: "projects_time_entries_tenant_project_idx")
+  @@index([tenantId, issueId], map: "projects_time_entries_tenant_issue_idx")
+  @@index([tenantId, timesheetId], map: "projects_time_entries_tenant_sheet_idx")
+  @@map("projects_time_entries")
+  // NOTE: at most one running entry per user is enforced in the database by a
+  // partial unique index declared in migration 20260920000000_time_tracking:
+  // CREATE UNIQUE INDEX ... ON projects_time_entries (tenant_id, user_id)
+  // WHERE ended_at IS NULL AND deleted_at IS NULL.
+  // Prisma cannot express partial indexes, so the schema carries no
+  // attribute for it; the service stops the previous timer before starting
+  // a new one and the database remains the final backstop.
+}
+
+model Timesheet {
+  id          String   @id
+  tenantId    String   @map("tenant_id")
+  userId      String   @map("user_id")
+  periodStart BigInt   @map("period_start")
+  periodEnd   BigInt   @map("period_end")
+  status      String   @default("draft") // draft|submitted|approved|rejected
+  submittedAt BigInt?  @map("submitted_at")
+  decidedAt   BigInt?  @map("decided_at")
+  decidedBy   String?  @map("decided_by")
+  note        String?
+  createdAt   BigInt   @map("created_at")
+  updatedAt   BigInt   @map("updated_at")
+
+  tenant  Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  entries TimeEntry[]
+  events  TimesheetEvent[]
+
+  @@index([tenantId, userId], map: "projects_timesheets_tenant_user_idx")
+  @@map("projects_timesheets")
+}
+
+model TimesheetEvent {
+  id          String @id
+  tenantId    String @map("tenant_id")
+  timesheetId String @map("timesheet_id")
+  actorUserId String @map("actor_user_id")
+  fromStatus  String @map("from_status")
+  toStatus    String @map("to_status")
+  note        String?
+  createdAt   BigInt @map("created_at")
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  timesheet Timesheet @relation(fields: [timesheetId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, timesheetId], map: "projects_timesheet_events_tenant_sheet_idx")
+  @@map("projects_timesheet_events")
+}

@@ -189,6 +189,76 @@ export const PROJECTS_ERRORS = {
     message: 'You can only view or change your own reminders.',
     httpStatus: 403 as HttpStatusCode,
   },
+  'projects/time-entry-not-found': {
+    message: 'The time entry could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/timer-not-found': {
+    message: 'There is no running timer for this user.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/time-entry-forbidden': {
+    message: 'You can only change your own time entries.',
+    httpStatus: 403 as HttpStatusCode,
+  },
+  'projects/time-entry-locked': {
+    message: 'This time entry is locked by its timesheet.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/timesheet-not-found': {
+    message: 'The timesheet could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/timesheet-forbidden': {
+    message: 'Only the timesheet owner can perform this action.',
+    httpStatus: 403 as HttpStatusCode,
+  },
+  'projects/timesheet-self-approval': {
+    message: 'The submitter cannot approve their own timesheet.',
+    httpStatus: 403 as HttpStatusCode,
+  },
+  'projects/timesheet-note-required': {
+    message: 'A note is required to reject a timesheet.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/timesheet-transition-invalid': {
+    message: 'This timesheet cannot move from its current status.',
+    httpStatus: 422 as HttpStatusCode,
+  },
+  'projects/billing-config-not-found': {
+    message: 'The billing configuration for this project could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/budget-not-found': {
+    message: 'The budget could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/rate-not-found': {
+    message: 'The rate could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/invoice-customer-missing': {
+    message:
+      'Configure a billing customer for this project before drafting an invoice.',
+    httpStatus: 422 as HttpStatusCode,
+  },
+  'projects/nothing-to-invoice': {
+    message:
+      'There are no approved, unbilled, billable time entries in this period.',
+    httpStatus: 422 as HttpStatusCode,
+  },
+  'projects/invoice-has-unpriced-entries': {
+    message: 'Some entries have no matching rate and cannot be priced.',
+    httpStatus: 422 as HttpStatusCode,
+  },
+  'projects/entries-already-billed': {
+    message: 'These entries were already billed under different invoices.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/billing-unavailable': {
+    message: 'The billing service could not create the invoice draft.',
+    httpStatus: 502 as HttpStatusCode,
+  },
   'projects/not-found': {
     message: 'Not found.',
     httpStatus: 404 as HttpStatusCode,

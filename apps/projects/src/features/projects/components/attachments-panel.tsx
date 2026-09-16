@@ -20,8 +20,19 @@ export type AttachmentRow = {
   downloadUrl: string | null
 }
 
+/**
+ * A file the organization already holds, offered so a record can link it
+ * instead of uploading the same bytes again.
+ */
+export type AttachmentCandidate = {
+  fileId: string
+  name: string
+  sizeBytes: number | null
+}
+
 type Props = AttachmentResourceRef & {
   rows: readonly AttachmentRow[]
+  existingFiles: readonly AttachmentCandidate[]
   canEdit: boolean
 }
 
@@ -53,6 +64,7 @@ export function AttachmentsPanel({
   resourceType,
   resourceId,
   rows,
+  existingFiles,
   canEdit,
 }: Props) {
   const router = useRouter()
@@ -60,6 +72,8 @@ export function AttachmentsPanel({
   const [uploading, setUploading] = useState(false)
   const [fraction, setFraction] = useState(0)
   const [pendingLinkId, setPendingLinkId] = useState<string | null>(null)
+  const [pendingFileId, setPendingFileId] = useState<string | null>(null)
+  const [choosingExisting, setChoosingExisting] = useState(false)
   const [error, setError] = useState<AppErrorValue | null>(null)
 
   async function uploadFile(event: ChangeEvent<HTMLInputElement>) {
@@ -106,6 +120,31 @@ export function AttachmentsPanel({
     router.refresh()
   }
 
+  /**
+   * Links a file the organization already holds. Storage refuses a file the
+   * organization may not read, so a failure here is reported and the picker
+   * stays open rather than claiming the record has the file.
+   */
+  async function linkExistingFile(fileId: string) {
+    if (pendingFileId) return
+    setPendingFileId(fileId)
+    setError(null)
+    const result = await attachmentsClient.link({
+      fileId,
+      resourceType,
+      resourceId,
+    })
+    setPendingFileId(null)
+
+    if (result.error) {
+      setError(result.error)
+      return
+    }
+
+    setChoosingExisting(false)
+    router.refresh()
+  }
+
   return (
     <section className="876-card space-y-4 p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -119,21 +158,64 @@ export function AttachmentsPanel({
               aria-label="Choose a file to attach"
               onChange={uploadFile}
             />
-            <Button
-              type="button"
-              variant="info"
-              size="sm"
-              onClick={() => fileInput.current?.click()}
-              disabled={uploading}
-            >
-              Add file
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              {existingFiles.length > 0 ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  aria-expanded={choosingExisting}
+                  onClick={() => setChoosingExisting((open) => !open)}
+                >
+                  Attach existing file
+                </Button>
+              ) : null}
+              <Button
+                type="button"
+                variant="info"
+                size="sm"
+                onClick={() => fileInput.current?.click()}
+                disabled={uploading}
+              >
+                Add file
+              </Button>
+            </div>
           </>
         ) : null}
       </div>
 
       {error ? (
         <AppError title="Attachment not saved" error={error} variant="banner" />
+      ) : null}
+
+      {choosingExisting ? (
+        <ul aria-label="Files already in this project" className="space-y-2">
+          {existingFiles.map((file) => (
+            <li
+              key={file.fileId}
+              className="flex flex-wrap items-center justify-between gap-3 text-sm"
+            >
+              <span className="min-w-0">
+                <span className="block truncate font-medium">{file.name}</span>
+                {file.sizeBytes === null ? null : (
+                  <span className="text-muted-foreground block text-xs">
+                    {formatBytes(file.sizeBytes)}
+                  </span>
+                )}
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-label={`Attach ${file.name}`}
+                disabled={pendingFileId === file.fileId}
+                onClick={() => linkExistingFile(file.fileId)}
+              >
+                Attach
+              </Button>
+            </li>
+          ))}
+        </ul>
       ) : null}
 
       {uploading ? (

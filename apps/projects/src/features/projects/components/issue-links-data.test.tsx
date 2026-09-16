@@ -6,7 +6,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   retrieve: vi.fn(),
-  listIssues: vi.fn(),
   listRelations: vi.fn(),
   listDependencies: vi.fn(),
   panel: vi.fn(),
@@ -14,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/services/projects', () => ({
   projects: {
-    issues: { retrieve: mocks.retrieve, list: mocks.listIssues },
+    issues: { retrieve: mocks.retrieve },
     issueRelations: { list: mocks.listRelations },
     issueDependencies: { list: mocks.listDependencies },
   },
@@ -139,10 +138,6 @@ beforeEach(() => {
           },
         }
   })
-  mocks.listIssues.mockResolvedValue({
-    data: { data: [releaseIssue, migrationIssue, selfIssue] },
-    error: null,
-  })
   mocks.listRelations.mockResolvedValue({
     data: { data: [relation] },
     error: null,
@@ -217,17 +212,16 @@ describe('IssueLinksData', () => {
     ])
   })
 
-  it('leaves the work item itself out of the picker candidates', async () => {
+  it('scopes the pickers to the project the work item belongs to', async () => {
     render(await IssueLinksData({ orgId: 'org_1', issueRef: 'CONSOLE-2' }))
 
-    expect(panelProps().candidates).toEqual([
-      { id: 'iss_1', identifier: 'CONSOLE-1', title: 'Ship the release' },
-      {
-        id: 'iss_3',
-        identifier: 'CONSOLE-3',
-        title: 'Write the migration',
-      },
-    ])
+    expect(panelProps().projectId).toBe('prj_1')
+  })
+
+  it('no longer preloads a window of the tenant for the pickers', async () => {
+    render(await IssueLinksData({ orgId: 'org_1', issueRef: 'CONSOLE-2' }))
+
+    expect(panelProps()).not.toHaveProperty('candidates')
   })
 
   it('hands the planned schedule of the work item to the panel', async () => {

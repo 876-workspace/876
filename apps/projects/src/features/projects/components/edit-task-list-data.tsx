@@ -79,6 +79,7 @@ export async function EditTaskListData({
         <AttachmentsData
           orgId={orgId}
           userId={userId}
+          projectId={taskListResult.data.projectId}
           resourceType="task-list"
           resourceId={taskListResult.data.id}
           canEdit={canEdit}

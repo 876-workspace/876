@@ -66,10 +66,12 @@ model Milestone {
   issues Issue[]
   projectEvents ProjectEvent[]
   reminders Reminder[]
+  timeEntries TimeEntry[]
   comments MilestoneComment[]
   events MilestoneEvent[]
   customFieldValues MilestoneCustomFieldValue[]
   taskLists TaskList[]
+  budgets Budget[]
 
   @@unique([projectId, key])
   @@index([tenantId, status])
@@ -156,6 +158,7 @@ model TaskList {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
   issues Issue[]
+  timeEntries TimeEntry[]
 
   @@index([tenantId, projectId])
   @@index([projectId, position])

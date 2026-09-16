@@ -113,6 +113,7 @@ export async function PhaseDetailData({
         <AttachmentsData
           orgId={orgId}
           userId={currentUserId}
+          projectId={phase.projectId}
           resourceType="milestone"
           resourceId={phase.id}
           canEdit={canEdit}

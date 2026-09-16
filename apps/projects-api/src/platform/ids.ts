@@ -23,6 +23,12 @@ export const ENTITY_PREFIXES = {
   projectEvent: 'prjev_',
   eventAttendee: 'prjeva_',
   reminder: 'prjrem_',
+  timeEntry: 'tme_',
+  timesheet: 'tsh_',
+  timesheetEvent: 'tshe_',
+  projectBilling: 'prjbil_',
+  budget: 'bdg_',
+  rate: 'rte_',
 } as const
 
 export type EntityType = keyof typeof ENTITY_PREFIXES

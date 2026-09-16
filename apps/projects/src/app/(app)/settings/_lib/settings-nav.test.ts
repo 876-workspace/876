@@ -1,5 +1,32 @@
+import { existsSync, readdirSync } from 'node:fs'
+import path from 'node:path'
+
 import { SETTINGS_HUB_ICON_KEYS } from '@876/ui/settings-hub'
 import { SETTINGS_GROUPS } from './settings-nav'
+
+/** `src/app/(app)/settings/` — where an advertised href has to land. */
+const SETTINGS_DIRECTORY = path.join(process.cwd(), 'src/app/(app)/settings')
+
+/**
+ * A segment has a page when it has one directly, or inside a route group —
+ * `/settings/users` is served by `users/(list)/page.tsx`.
+ */
+function hasPage(directory: string): boolean {
+  if (!existsSync(directory)) return false
+
+  return readdirSync(directory, { withFileTypes: true }).some(
+    (entry) =>
+      entry.isDirectory() &&
+      /^\(.+\)$/.test(entry.name) &&
+      existsSync(path.join(directory, entry.name, 'page.tsx'))
+  )
+}
+
+function advertisedHrefs(): string[] {
+  return SETTINGS_GROUPS.flatMap((group) =>
+    group.items.flatMap((item) => (item.href ? [item.href] : []))
+  )
+}
 
 describe('settings navigation registry', () => {
   // The rule this guards is in `.claude/rules/module-settings.md`: a `planned`
@@ -43,11 +70,35 @@ describe('settings navigation registry', () => {
       '/settings/workflow-states',
       '/settings/custom-fields',
       '/settings/phase-fields',
-      '/settings/teams',
-      '/settings/categories',
-      '/settings/priorities',
       '/settings/users',
     ])
+  })
+
+  it('advertises a page for every href it offers', () => {
+    const hrefs = advertisedHrefs()
+
+    expect(hrefs.length).toBeGreaterThan(0)
+    for (const href of hrefs) {
+      const directory = path.join(
+        SETTINGS_DIRECTORY,
+        href.replace(/^\/settings\//, '')
+      )
+      expect(
+        existsSync(path.join(directory, 'page.tsx')) || hasPage(directory),
+        `${href} is advertised but has no page`
+      ).toBe(true)
+    }
+  })
+
+  it('no longer advertises teams, categories or priorities as built', () => {
+    const items = SETTINGS_GROUPS.flatMap((group) => group.items)
+
+    for (const label of ['Teams', 'Categories', 'Priorities']) {
+      const item = items.find((candidate) => candidate.label === label)
+      expect(item, `${label} is missing from the registry`).toBeDefined()
+      expect(item?.availability).toBe('planned')
+      expect(item?.href).toBeUndefined()
+    }
   })
 
   it('uses only string icon keys supported by the shared settings hub', () => {

@@ -147,6 +147,7 @@ export async function IssueDetailData({
           <AttachmentsData
             orgId={orgId}
             userId={userId}
+            projectId={issueResult.data.projectId}
             resourceType="issue"
             resourceId={issueResult.data.id}
             canEdit={canEdit}
