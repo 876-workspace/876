@@ -36,7 +36,7 @@
     "@types/node": "26.2.0",
     "@types/pg": "8.23.1",
     "@types/supertest": "7.2.1",
-    "dependency-cruiser": "17.3.7",
+    "dependency-cruiser": "18.2.0",
     "dotenv": "17.4.2",
     "eslint": "9.39.4",
     "pino-pretty": "13.1.3",
