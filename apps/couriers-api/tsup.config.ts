@@ -19,6 +19,7 @@ export default defineConfig({
     '@876/billing',
     '@876/couriers',
     '@876/server',
+    '@876/communications',
   ],
   esbuildOptions(options) {
     // `@876/core/platform` carries a side-effect `import 'server-only'`, whose
