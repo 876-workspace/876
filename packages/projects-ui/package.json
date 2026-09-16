@@ -86,6 +86,26 @@
     "./timesheet-actions": {
       "types": "./src/timesheet-actions.tsx",
       "default": "./src/timesheet-actions.tsx"
+    },
+    "./finance/format-money": {
+      "types": "./src/finance/format-money.ts",
+      "default": "./src/finance/format-money.ts"
+    },
+    "./finance/financial-summary-panel": {
+      "types": "./src/finance/financial-summary-panel.tsx",
+      "default": "./src/finance/financial-summary-panel.tsx"
+    },
+    "./finance/budget-list": {
+      "types": "./src/finance/budget-list.tsx",
+      "default": "./src/finance/budget-list.tsx"
+    },
+    "./finance/rate-list": {
+      "types": "./src/finance/rate-list.tsx",
+      "default": "./src/finance/rate-list.tsx"
+    },
+    "./finance/billing-config-summary": {
+      "types": "./src/finance/billing-config-summary.tsx",
+      "default": "./src/finance/billing-config-summary.tsx"
     }
   },
   "scripts": {
