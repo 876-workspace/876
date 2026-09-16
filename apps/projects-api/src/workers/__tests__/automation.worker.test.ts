@@ -9,6 +9,7 @@ const {
   calendar,
   webhook,
   secureField,
+  platformWebhooks,
 } = vi.hoisted(() => ({
   repository: {
     claimEvents: vi.fn(),
@@ -30,6 +31,16 @@ const {
   calendar: { createReminder: vi.fn(), createEvent: vi.fn() },
   webhook: { postWebhook: vi.fn() },
   secureField: { unsealWebhookSecret: vi.fn() },
+  platformWebhooks: {
+    enqueueWebhookDeliveries: vi.fn(),
+    drainWebhookDeliveries: vi.fn(async () => ({
+      claimed: 0,
+      delivered: 0,
+      scheduled: 0,
+      failed: 0,
+      disabled: 0,
+    })),
+  },
 }))
 
 vi.mock('../../modules/automation/automation.repository.js', () => repository)
@@ -39,6 +50,7 @@ vi.mock('../../modules/issues/index.js', () => issues)
 vi.mock('../../modules/labels/index.js', () => labels)
 vi.mock('../../modules/calendar/index.js', () => calendar)
 vi.mock('../../modules/automation/webhook.js', () => webhook)
+vi.mock('../../modules/webhooks/index.js', () => platformWebhooks)
 vi.mock('../../platform/secure-field.js', () => secureField)
 
 const worker = await import('../automation.js')
@@ -583,5 +595,31 @@ describe('drainAutomation', () => {
       succeeded: 2,
       swept: { tenants: 1, dueApproaching: 2, budgetThreshold: 0 },
     })
+  })
+
+  it('fans claimed outbox events out to webhook endpoints in the same drain', async () => {
+    repository.claimEvents.mockResolvedValue([eventRow(), eventRow({ id: 'aev_2' })])
+    platformWebhooks.drainWebhookDeliveries.mockResolvedValueOnce({
+      claimed: 2,
+      delivered: 2,
+      scheduled: 0,
+      failed: 0,
+      disabled: 0,
+    })
+
+    const result = await worker.drainAutomation(25, 1000)
+
+    expect(platformWebhooks.enqueueWebhookDeliveries).toHaveBeenCalledWith({
+      id: 'aev_1',
+      tenantId,
+      type: 'work-item.state-changed',
+    })
+    expect(platformWebhooks.enqueueWebhookDeliveries).toHaveBeenCalledWith({
+      id: 'aev_2',
+      tenantId,
+      type: 'work-item.state-changed',
+    })
+    expect(platformWebhooks.drainWebhookDeliveries).toHaveBeenCalled()
+    expect(result.webhooks).toMatchObject({ claimed: 2, delivered: 2 })
   })
 })

@@ -262,6 +262,46 @@ export const PROJECTS_ERRORS = {
     message: 'This request is missing valid credentials.',
     httpStatus: 401 as HttpStatusCode,
   },
+  'projects/forbidden': {
+    message: 'This credential does not have permission for that operation.',
+    httpStatus: 403 as HttpStatusCode,
+  },
+  'projects/rate-limited': {
+    message: 'Too many requests. Please slow down and try again.',
+    httpStatus: 429 as HttpStatusCode,
+  },
+  'projects/integration-client-not-found': {
+    message: 'The integration client could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/webhook-endpoint-not-found': {
+    message: 'The webhook endpoint could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/webhook-delivery-not-found': {
+    message: 'The webhook delivery could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/webhook-url-blocked': {
+    message: 'That webhook URL is not allowed.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/import-job-not-found': {
+    message: 'The import job could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/import-job-not-ready': {
+    message: 'The import job is not ready for that operation.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/import-too-large': {
+    message: 'The import payload exceeds the 5 MB limit.',
+    httpStatus: 413 as HttpStatusCode,
+  },
+  'projects/import-parse-failed': {
+    message: 'The import payload could not be parsed.',
+    httpStatus: 422 as HttpStatusCode,
+  },
   'projects/internal-error': {
     message: 'Something went wrong. Please try again.',
     httpStatus: 500 as HttpStatusCode,

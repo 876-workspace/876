@@ -18,6 +18,14 @@ import {
 } from '../modules/custom-fields/index.js'
 import { createTemplatesRouter } from '../modules/templates/templates.routes.js'
 import { createAutomationInternalRouter } from '../modules/automation/automation.internal-routes.js'
+import { createExportsRouter } from '../modules/exports/index.js'
+import { createImportsRouter } from '../modules/imports/index.js'
+import {
+  createIntegrationInternalRouter,
+  createIntegrationRouter,
+} from '../modules/integration/index.js'
+import { createMetricsInternalRouter } from '../modules/metrics/index.js'
+import { createWebhooksInternalRouter } from '../modules/webhooks/index.js'
 import { createWorkflowsRouter } from '../modules/workflows/workflows.routes.js'
 import { createActivityRouter } from '../modules/collaboration/activity.routes.js'
 import { createFollowersRouter } from '../modules/collaboration/followers.routes.js'
@@ -79,6 +87,18 @@ export function buildRoutes() {
     createPortalRouter()
   )
   router.use('/internal', createAutomationInternalRouter())
+  router.use('/internal', createIntegrationInternalRouter())
+  router.use('/internal', createWebhooksInternalRouter())
+  router.use('/internal', createMetricsInternalRouter())
+  router.use('/v1/integration', createIntegrationRouter())
+  router.use(
+    '/v1/organizations/:organizationId/import-jobs',
+    createImportsRouter()
+  )
+  router.use(
+    '/v1/organizations/:organizationId/exports',
+    createExportsRouter()
+  )
 
   return router
 }

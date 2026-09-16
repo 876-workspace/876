@@ -30,6 +30,10 @@
     "./portal": {
       "types": "./src/portal.ts",
       "default": "./src/portal.ts"
+    },
+    "./integration": {
+      "types": "./src/integration.ts",
+      "default": "./src/integration.ts"
     }
   },
   "scripts": {

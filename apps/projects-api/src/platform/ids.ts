@@ -56,6 +56,11 @@ export const ENTITY_PREFIXES = {
   customModuleRecordValue: 'cmodrv_',
   customModuleLink: 'cmodl_',
   dashboardWidget: 'dshw_',
+  integrationClient: 'intc_',
+  webhookEndpoint: 'whep_',
+  webhookDelivery: 'whdl_',
+  importJob: 'impj_',
+  importJobRow: 'impr_',
 } as const
 
 export type EntityType = keyof typeof ENTITY_PREFIXES
