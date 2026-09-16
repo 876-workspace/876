@@ -74,6 +74,7 @@ export async function ProjectDetailData({
         <AttachmentsData
           orgId={orgId}
           userId={userId}
+          projectId={projectResult.data.id}
           resourceType="project"
           resourceId={projectResult.data.id}
           canEdit={canEdit}

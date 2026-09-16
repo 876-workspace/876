@@ -52,6 +52,14 @@ const secondLink = {
   created_by: 'usr_9',
 }
 
+const projectLink = {
+  ...link,
+  id: 'rlink_7',
+  file_id: 'file_7',
+  resource_type: 'project',
+  resource_id: 'prj_1',
+}
+
 function file(overrides: Record<string, unknown> = {}) {
   return {
     object: 'file' as const,
@@ -82,6 +90,7 @@ function props(overrides: Record<string, unknown> = {}) {
   return {
     orgId: 'org_1',
     userId: 'usr_viewer',
+    projectId: 'prj_1',
     resourceType: 'issue' as const,
     resourceId: 'iss_1',
     canEdit: true,
@@ -89,25 +98,40 @@ function props(overrides: Record<string, unknown> = {}) {
   }
 }
 
+/** Answers by record, the way Storage does: one resource per read. */
+function linksByResource() {
+  return async (params: { resource_id: string }) =>
+    params.resource_id === 'prj_1'
+      ? { data: { object: 'list', data: [projectLink] }, error: null }
+      : { data: { object: 'list', data: [link, secondLink] }, error: null }
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
-  mocks.linksList.mockResolvedValue({
-    data: { object: 'list', data: [link, secondLink] },
-    error: null,
+  mocks.linksList.mockImplementation(linksByResource())
+  mocks.fileRetrieve.mockImplementation(async (fileId: string) => {
+    if (fileId === 'file_1') return { data: file(), error: null }
+    if (fileId === 'file_7')
+      return {
+        data: file({
+          id: 'file_7',
+          original_name: 'project-brief.pdf',
+          content_type: 'application/pdf',
+          size_bytes: 8192,
+        }),
+        error: null,
+      }
+
+    return {
+      data: file({
+        id: 'file_2',
+        original_name: 'board.png',
+        content_type: 'image/png',
+        size_bytes: 512,
+      }),
+      error: null,
+    }
   })
-  mocks.fileRetrieve.mockImplementation(async (fileId: string) =>
-    fileId === 'file_1'
-      ? { data: file(), error: null }
-      : {
-          data: file({
-            id: 'file_2',
-            original_name: 'board.png',
-            content_type: 'image/png',
-            size_bytes: 512,
-          }),
-          error: null,
-        }
-  )
   mocks.createReadUrl.mockResolvedValue({
     data: {
       object: 'read_url',
@@ -250,5 +274,91 @@ describe('AttachmentsData', () => {
       screen.getByText('Attachments could not be loaded')
     ).toBeInTheDocument()
     expect(mocks.panel).not.toHaveBeenCalled()
+  })
+
+  it('reads the project’s files so the record can re-attach one', async () => {
+    render(await AttachmentsData(props()))
+
+    expect(mocks.linksList).toHaveBeenCalledWith(
+      {
+        app_id: '876-projects',
+        resource_type: 'project',
+        resource_id: 'prj_1',
+        relation: 'attachment',
+      },
+      {
+        sourceAppId: '876-projects',
+        actorUserId: 'usr_viewer',
+        actorOrgId: 'org_1',
+      }
+    )
+    expect(panelProps().existingFiles).toEqual([
+      { fileId: 'file_7', name: 'project-brief.pdf', sizeBytes: 8192 },
+    ])
+  })
+
+  it('leaves the files the record already holds out of the re-attach list', async () => {
+    mocks.linksList.mockImplementation(
+      async (params: { resource_id: string }) =>
+        params.resource_id === 'prj_1'
+          ? {
+              data: {
+                object: 'list',
+                data: [
+                  projectLink,
+                  { ...projectLink, id: 'rlink_1', file_id: 'file_1' },
+                ],
+              },
+              error: null,
+            }
+          : { data: { object: 'list', data: [link, secondLink] }, error: null }
+    )
+
+    render(await AttachmentsData(props()))
+
+    expect(panelProps().existingFiles).toEqual([
+      { fileId: 'file_7', name: 'project-brief.pdf', sizeBytes: 8192 },
+    ])
+  })
+
+  it('reads nothing extra for a project record, whose files are its own rows', async () => {
+    render(
+      await AttachmentsData(
+        props({ resourceType: 'project', resourceId: 'prj_1' })
+      )
+    )
+
+    expect(mocks.linksList).toHaveBeenCalledTimes(1)
+    expect(panelProps().existingFiles).toEqual([])
+  })
+
+  it('reads nothing extra for a reader who cannot attach', async () => {
+    render(await AttachmentsData(props({ canEdit: false })))
+
+    expect(mocks.linksList).toHaveBeenCalledTimes(1)
+    expect(panelProps().existingFiles).toEqual([])
+  })
+
+  it('keeps the panel and reports a project file read that failed', async () => {
+    mocks.linksList.mockImplementation(
+      async (params: { resource_id: string }) =>
+        params.resource_id === 'prj_1'
+          ? {
+              data: null,
+              error: {
+                code: 'storage/provider-error',
+                message: 'The Storage service could not complete the request.',
+              },
+            }
+          : { data: { object: 'list', data: [link, secondLink] }, error: null }
+    )
+
+    render(await AttachmentsData(props()))
+
+    expect(
+      screen.getByText('Existing files could not be loaded')
+    ).toBeInTheDocument()
+    expect(screen.getByText('Attachments panel')).toBeInTheDocument()
+    expect(panelProps().existingFiles).toEqual([])
   })
 })
