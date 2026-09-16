@@ -23,14 +23,15 @@ export const emailDeliveryStatusSchema = z.enum([
 ])
 export type EmailDeliveryStatus = z.infer<typeof emailDeliveryStatusSchema>
 
-export type EmailDomainRecord = {
-  name: string
-  type: string
-  value: string
-  status?: string
-  ttl?: string
-  priority?: number
-}
+export const emailDomainRecordSchema = z.object({
+  name: z.string(),
+  type: z.string(),
+  value: z.string(),
+  status: z.string().optional(),
+  ttl: z.string().optional(),
+  priority: z.number().optional(),
+})
+export type EmailDomainRecord = z.infer<typeof emailDomainRecordSchema>
 
 export type EmailDomainObject = {
   object: 'email_domain'
