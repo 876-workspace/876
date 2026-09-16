@@ -1,3 +1,13 @@
+import type {
+  DocumentEmailComposition,
+  DocumentEmailPrepareParams,
+  DocumentEmailSendParams,
+  DocumentEmailDelivery,
+} from '../../types/document-email'
+import {
+  DocumentEmailCompositionSchema,
+  DocumentEmailDeliverySchema,
+} from '../../types/document-email.schema'
 import { BillingInvoiceListSchema, BillingInvoiceSchema } from '../schemas'
 import { IntegrationRequest } from '../request'
 import type { IntegrationRuntime } from '../runtime'
@@ -102,6 +112,40 @@ export function createIntegrationInvoicesResource(runtime: IntegrationRuntime) {
           body: {},
         },
         BillingInvoiceSchema
+      )
+    },
+
+    prepareEmail(
+      organizationId: string,
+      invoiceId: string,
+      params: DocumentEmailPrepareParams = {}
+    ) {
+      return IntegrationRequest<DocumentEmailComposition>(
+        runtime,
+        {
+          method: 'GET',
+          path: `${resourcePath(organizationId, invoiceId)}/email`,
+          query: params,
+        },
+        DocumentEmailCompositionSchema
+      )
+    },
+
+    sendEmail(
+      organizationId: string,
+      invoiceId: string,
+      params: DocumentEmailSendParams,
+      options: IntegrationCreateOptions
+    ) {
+      return IntegrationRequest<DocumentEmailDelivery>(
+        runtime,
+        {
+          method: 'POST',
+          path: `${resourcePath(organizationId, invoiceId)}/send-email`,
+          body: params,
+          headers: { 'Idempotency-Key': options.idempotencyKey },
+        },
+        DocumentEmailDeliverySchema
       )
     },
 
