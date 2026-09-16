@@ -189,6 +189,42 @@ export const PROJECTS_ERRORS = {
     message: 'You can only view or change your own reminders.',
     httpStatus: 403 as HttpStatusCode,
   },
+  'projects/time-entry-not-found': {
+    message: 'The time entry could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/timer-not-found': {
+    message: 'There is no running timer for this user.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/time-entry-forbidden': {
+    message: 'You can only change your own time entries.',
+    httpStatus: 403 as HttpStatusCode,
+  },
+  'projects/time-entry-locked': {
+    message: 'This time entry is locked by its timesheet.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/timesheet-not-found': {
+    message: 'The timesheet could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/timesheet-forbidden': {
+    message: 'Only the timesheet owner can perform this action.',
+    httpStatus: 403 as HttpStatusCode,
+  },
+  'projects/timesheet-self-approval': {
+    message: 'The submitter cannot approve their own timesheet.',
+    httpStatus: 403 as HttpStatusCode,
+  },
+  'projects/timesheet-note-required': {
+    message: 'A note is required to reject a timesheet.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/timesheet-transition-invalid': {
+    message: 'This timesheet cannot move from its current status.',
+    httpStatus: 422 as HttpStatusCode,
+  },
   'projects/not-found': {
     message: 'Not found.',
     httpStatus: 404 as HttpStatusCode,
