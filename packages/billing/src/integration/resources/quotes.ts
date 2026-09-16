@@ -1,3 +1,13 @@
+import type {
+  DocumentEmailComposition,
+  DocumentEmailPrepareParams,
+  DocumentEmailSendParams,
+  DocumentEmailDelivery,
+} from '../../types/document-email'
+import {
+  DocumentEmailCompositionSchema,
+  DocumentEmailDeliverySchema,
+} from '../../types/document-email.schema'
 import {
   BillingInvoiceSchema,
   BillingQuoteListSchema,
@@ -107,6 +117,40 @@ export function createIntegrationQuotesResource(runtime: IntegrationRuntime) {
       options: IntegrationCreateOptions
     ) {
       return transition(organizationId, quoteId, 'send', options)
+    },
+
+    prepareEmail(
+      organizationId: string,
+      quoteId: string,
+      params: DocumentEmailPrepareParams = {}
+    ) {
+      return IntegrationRequest<DocumentEmailComposition>(
+        runtime,
+        {
+          method: 'GET',
+          path: `${resourcePath(organizationId, quoteId)}/email`,
+          query: params,
+        },
+        DocumentEmailCompositionSchema
+      )
+    },
+
+    sendEmail(
+      organizationId: string,
+      quoteId: string,
+      params: DocumentEmailSendParams,
+      options: IntegrationCreateOptions
+    ) {
+      return IntegrationRequest<DocumentEmailDelivery>(
+        runtime,
+        {
+          method: 'POST',
+          path: `${resourcePath(organizationId, quoteId)}/send-email`,
+          body: params,
+          headers: { 'Idempotency-Key': options.idempotencyKey },
+        },
+        DocumentEmailDeliverySchema
+      )
     },
 
     accept(
