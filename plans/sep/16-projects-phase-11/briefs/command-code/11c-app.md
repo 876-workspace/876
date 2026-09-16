@@ -28,3 +28,7 @@ pnpm check:rsc-boundaries
 
 ## Report
 `plans/sep/16-projects-phase-11/reports/command-code/11c-app.md`.
+
+
+## Resume note (orchestrator)
+A previous run of this brief crashed mid-way. Already written: `app/api/_lib/template-api.ts`, `app/api/project-templates/**`, `app/api/projects/[projectId]/{clone,save-as-template}/**`, `features/templates/**`, `lib/client/templates.ts`, `lib/date-input.ts`, edits to `lib/client/index.ts` and `lib/services/projects.ts`. Read those first, fix/finish them, then write every page, nav entry and missing test. Report to `plans/sep/16-projects-phase-11/reports/codex/11c-app.md`.
