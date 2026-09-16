@@ -20,6 +20,9 @@ export const ENTITY_PREFIXES = {
   issueDependency: 'isd_',
   projectBaseline: 'prjbl_',
   projectBaselineItem: 'prjbli_',
+  projectEvent: 'prjev_',
+  eventAttendee: 'prjeva_',
+  reminder: 'prjrem_',
 } as const
 
 export type EntityType = keyof typeof ENTITY_PREFIXES
