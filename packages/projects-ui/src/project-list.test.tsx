@@ -41,6 +41,7 @@ const mockProjects: Project[] = [
     createdAt: 1700000000,
     updatedAt: 1700000000,
     memberCount: 3,
+    customFields: [],
   },
   {
     object: 'projects.project',
@@ -63,6 +64,7 @@ const mockProjects: Project[] = [
     createdAt: 1700000000,
     updatedAt: 1700000000,
     memberCount: 1,
+    customFields: [],
   },
 ]
 

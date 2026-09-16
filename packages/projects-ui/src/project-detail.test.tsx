@@ -32,6 +32,7 @@ function makeProject(overrides?: Partial<Project>): Project {
     createdAt: 1700000000,
     updatedAt: 1700000000,
     memberCount: 3,
+    customFields: [],
     ...overrides,
   }
 }

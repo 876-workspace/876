@@ -158,6 +158,26 @@
     "./templates/instantiate-options": {
       "types": "./src/templates/instantiate-options.tsx",
       "default": "./src/templates/instantiate-options.tsx"
+    },
+    "./layouts/types": {
+      "types": "./src/layouts/types.ts",
+      "default": "./src/layouts/types.ts"
+    },
+    "./layouts/evaluate-rules": {
+      "types": "./src/layouts/evaluate-rules.ts",
+      "default": "./src/layouts/evaluate-rules.ts"
+    },
+    "./layouts/layout-renderer": {
+      "types": "./src/layouts/layout-renderer.tsx",
+      "default": "./src/layouts/layout-renderer.tsx"
+    },
+    "./layouts/layout-editor": {
+      "types": "./src/layouts/layout-editor.tsx",
+      "default": "./src/layouts/layout-editor.tsx"
+    },
+    "./layouts/layout-summary": {
+      "types": "./src/layouts/layout-summary.tsx",
+      "default": "./src/layouts/layout-summary.tsx"
     }
   },
   "scripts": {
