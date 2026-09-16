@@ -79,6 +79,10 @@ describe('settings navigation registry', () => {
       '/settings/automation',
       '/settings/users',
       '/settings/capacity',
+      '/settings/integrations',
+      '/settings/webhooks',
+      '/settings/imports',
+      '/settings/health',
     ])
   })
 

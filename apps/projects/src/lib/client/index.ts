@@ -31,6 +31,12 @@ import { clientGrantsClient, discussionsClient, followsClient, visibilityClient,
 import { onboarding } from './onboarding'
 import { remindersClient } from './reminders'
 import { workflowsClient } from './workflows'
+import {
+  importJobsClient,
+  integrationClientsClient,
+  metricsClient,
+  webhookEndpointsClient,
+} from './integration'
 import { taskListsClient } from './task-lists'
 import { templatesClient } from './templates'
 
@@ -70,6 +76,10 @@ export const client = {
   clientGrants: clientGrantsClient,
   visibility: visibilityClient,
   templates: templatesClient,
+  integrationClients: integrationClientsClient,
+  webhookEndpoints: webhookEndpointsClient,
+  importJobs: importJobsClient,
+  metrics: metricsClient,
 }
 
 export { appMemberships } from './app-memberships'
@@ -102,6 +112,12 @@ export {
 export { layoutsClient } from './layouts'
 export { notificationsClient } from './notifications'
 export { workflowsClient } from './workflows'
+export {
+  importJobsClient,
+  integrationClientsClient,
+  metricsClient,
+  webhookEndpointsClient,
+} from './integration'
 export {
   projectsClient,
   issuesClient,

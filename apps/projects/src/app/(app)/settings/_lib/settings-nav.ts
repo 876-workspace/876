@@ -124,4 +124,33 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
       },
     ],
   },
+  {
+    label: 'Platform',
+    items: [
+      {
+        label: 'Integrations',
+        icon: 'integrations',
+        availability: 'available',
+        href: '/settings/integrations',
+      },
+      {
+        label: 'Webhooks',
+        icon: 'automation',
+        availability: 'available',
+        href: '/settings/webhooks',
+      },
+      {
+        label: 'Imports',
+        icon: 'documents',
+        availability: 'available',
+        href: '/settings/imports',
+      },
+      {
+        label: 'Health',
+        icon: 'access',
+        availability: 'available',
+        href: '/settings/health',
+      },
+    ],
+  },
 ]
