@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
 import { ProjectDetailData } from '@/features/projects/components/project-detail-data'
+import { ProjectTabs } from '@/features/projects/components/project-tabs'
 import { projects } from '@/lib/services/projects'
 
 import { requirePlatformProjectsOrgId } from '../../_lib/base'
@@ -26,6 +27,7 @@ export default async function PlatformProjectDetailPage({ params }: Props) {
 
   return (
     <Page>
+      <ProjectTabs base={projectsBase(null)} projectId={projectId} />
       <Suspense fallback={<ProjectDetailFallback />}>
         <ProjectDetailSection projectId={projectId} />
       </Suspense>

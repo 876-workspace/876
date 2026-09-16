@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  currentMonthPeriod,
-  parsePeriodQuery,
-  resolvePeriod,
-} from './period'
+import { currentMonthPeriod, parsePeriodQuery, resolvePeriod } from './period'
 
 describe('currentMonthPeriod', () => {
   it('returns the UTC calendar month bounds', () => {

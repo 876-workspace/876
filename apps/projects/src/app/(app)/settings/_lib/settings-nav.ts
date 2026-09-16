@@ -75,6 +75,12 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
         href: '/settings/users',
       },
       {
+        label: 'Capacity',
+        icon: 'members',
+        availability: 'available',
+        href: '/settings/capacity',
+      },
+      {
         label: 'Preferences',
         icon: 'preferences',
         availability: 'planned',

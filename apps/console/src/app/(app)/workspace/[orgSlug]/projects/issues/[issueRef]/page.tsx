@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { IssueDetailData } from '@/features/projects/components/issue-detail-data'
+import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { projects } from '@/lib/services/projects'
 
 import { resolveOrg } from '@/features/orgs/org-data'
@@ -33,12 +34,34 @@ export default async function OrganizationIssueDetailPage({ params }: Props) {
 
   return (
     <Suspense fallback={<IssueDetailFallback />}>
-      <IssueDetailData
+      <IssueDetailSection
         organizationId={org.id}
-        base={projectsBase(orgSlug)}
+        orgSlug={orgSlug}
         issueRef={issueRef}
       />
     </Suspense>
+  )
+}
+
+async function IssueDetailSection({
+  organizationId,
+  orgSlug,
+  issueRef,
+}: {
+  organizationId: string
+  orgSlug: string
+  issueRef: string
+}) {
+  const session = await getAuthSession()
+  const actorUserId = isSignedSession(session) ? session.user.id : null
+
+  return (
+    <IssueDetailData
+      organizationId={organizationId}
+      base={projectsBase(orgSlug)}
+      issueRef={issueRef}
+      actorUserId={actorUserId}
+    />
   )
 }
 

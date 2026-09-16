@@ -1628,3 +1628,177 @@ export interface CreateInvoiceDraftInput {
   from: number
   to: number
 }
+
+export type ReportFormat = 'json' | 'csv'
+
+export const reportPeriodSchema = z.object({
+  from: z.number(),
+  to: z.number(),
+})
+export type ReportPeriod = z.infer<typeof reportPeriodSchema>
+
+export const countRowSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  count: z.number(),
+})
+export type CountRow = z.infer<typeof countRowSchema>
+
+export const workReportSchema = z.object({
+  object: z.literal('projects.work-report'),
+  period: reportPeriodSchema,
+  byState: z.array(countRowSchema),
+  byType: z.array(countRowSchema),
+  byAssignee: z.array(countRowSchema),
+  overdue: z.number(),
+  total: z.number(),
+})
+export type WorkReport = z.infer<typeof workReportSchema>
+
+export const PROJECT_HEALTH_STATES = [
+  'on-track',
+  'at-risk',
+  'off-track',
+  'unknown',
+] as const
+export const projectHealthStateSchema = z.enum(PROJECT_HEALTH_STATES)
+export type ProjectHealthState = z.infer<typeof projectHealthStateSchema>
+
+export const projectHealthRowSchema = z.object({
+  projectId: z.string(),
+  name: z.string(),
+  health: projectHealthStateSchema,
+  progressPercent: z.number().nullable(),
+  overdue: z.number(),
+  openItems: z.number(),
+  budgetConsumedPercent: z.number().nullable(),
+})
+export type ProjectHealthRow = z.infer<typeof projectHealthRowSchema>
+
+export const healthReportSchema = z.object({
+  object: z.literal('projects.health-report'),
+  data: z.array(projectHealthRowSchema),
+})
+export type HealthReport = z.infer<typeof healthReportSchema>
+
+export const TIME_REPORT_GROUPS = ['project', 'user', 'issue'] as const
+export const timeReportGroupSchema = z.enum(TIME_REPORT_GROUPS)
+export type TimeReportGroup = z.infer<typeof timeReportGroupSchema>
+
+export const timeReportRowSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  billableMinutes: z.number(),
+  nonBillableMinutes: z.number(),
+})
+export type TimeReportRow = z.infer<typeof timeReportRowSchema>
+
+export const timeReportSchema = z.object({
+  object: z.literal('projects.time-report'),
+  groupBy: timeReportGroupSchema,
+  period: reportPeriodSchema,
+  data: z.array(timeReportRowSchema),
+})
+export type TimeReport = z.infer<typeof timeReportSchema>
+
+export const budgetVarianceRowSchema = z.object({
+  projectId: z.string(),
+  name: z.string(),
+  currency: z.string().nullable(),
+  budgetMinor: z.string().nullable(),
+  actualCostMinor: z.string().nullable(),
+  varianceMinor: z.string().nullable(),
+  budgetMinutes: z.number().nullable(),
+  actualMinutes: z.number(),
+})
+export type BudgetVarianceRow = z.infer<typeof budgetVarianceRowSchema>
+
+export const budgetVarianceReportSchema = z.object({
+  object: z.literal('projects.budget-variance-report'),
+  period: reportPeriodSchema,
+  data: z.array(budgetVarianceRowSchema),
+})
+export type BudgetVarianceReport = z.infer<typeof budgetVarianceReportSchema>
+
+export const workloadRowSchema = z.object({
+  userId: z.string(),
+  label: z.string(),
+  assignedOpenItems: z.number(),
+  plannedMinutes: z.number(),
+  loggedMinutes: z.number(),
+  capacityMinutes: z.number().nullable(),
+  utilisationPercent: z.number().nullable(),
+})
+export type WorkloadRow = z.infer<typeof workloadRowSchema>
+
+export const workloadReportSchema = z.object({
+  object: z.literal('projects.workload-report'),
+  period: reportPeriodSchema,
+  data: z.array(workloadRowSchema),
+})
+export type WorkloadReport = z.infer<typeof workloadReportSchema>
+
+export const memberCapacitySchema = z.object({
+  object: z.literal('projects.member-capacity'),
+  id: z.string(),
+  tenantId: z.string(),
+  userId: z.string(),
+  minutesPerWeek: z.number(),
+  effectiveFrom: z.number(),
+  effectiveTo: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type MemberCapacity = z.infer<typeof memberCapacitySchema>
+
+export const memberCapacityListSchema = createListSchema(memberCapacitySchema)
+export type MemberCapacityList = z.infer<typeof memberCapacityListSchema>
+
+export interface GetWorkReportQuery {
+  projectId?: string
+  from: number
+  to: number
+  format?: ReportFormat
+}
+
+export interface GetHealthReportQuery {
+  format?: ReportFormat
+}
+
+export interface GetTimeReportQuery {
+  groupBy: TimeReportGroup
+  from: number
+  to: number
+  projectId?: string
+  format?: ReportFormat
+}
+
+export interface GetBudgetVarianceReportQuery {
+  from: number
+  to: number
+  format?: ReportFormat
+}
+
+export interface GetWorkloadReportQuery {
+  from: number
+  to: number
+  projectId?: string
+  format?: ReportFormat
+}
+
+export interface ListCapacitiesQuery {
+  userId?: string
+}
+
+export interface CreateCapacityInput {
+  userId: string
+  minutesPerWeek: number
+  effectiveFrom: number
+  effectiveTo?: number | null
+}
+
+export interface UpdateCapacityInput {
+  minutesPerWeek?: number
+  effectiveFrom?: number
+  effectiveTo?: number | null
+}

@@ -106,6 +106,38 @@
     "./finance/billing-config-summary": {
       "types": "./src/finance/billing-config-summary.tsx",
       "default": "./src/finance/billing-config-summary.tsx"
+    },
+    "./reports/types": {
+      "types": "./src/reports/types.ts",
+      "default": "./src/reports/types.ts"
+    },
+    "./reports/work-report-panel": {
+      "types": "./src/reports/work-report-panel.tsx",
+      "default": "./src/reports/work-report-panel.tsx"
+    },
+    "./reports/project-health-table": {
+      "types": "./src/reports/project-health-table.tsx",
+      "default": "./src/reports/project-health-table.tsx"
+    },
+    "./reports/time-report-table": {
+      "types": "./src/reports/time-report-table.tsx",
+      "default": "./src/reports/time-report-table.tsx"
+    },
+    "./reports/budget-variance-table": {
+      "types": "./src/reports/budget-variance-table.tsx",
+      "default": "./src/reports/budget-variance-table.tsx"
+    },
+    "./reports/workload-table": {
+      "types": "./src/reports/workload-table.tsx",
+      "default": "./src/reports/workload-table.tsx"
+    },
+    "./reports/report-period-nav": {
+      "types": "./src/reports/report-period-nav.tsx",
+      "default": "./src/reports/report-period-nav.tsx"
+    },
+    "./reports/csv-export-link": {
+      "types": "./src/reports/csv-export-link.tsx",
+      "default": "./src/reports/csv-export-link.tsx"
     }
   },
   "scripts": {

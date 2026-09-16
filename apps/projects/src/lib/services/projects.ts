@@ -113,4 +113,10 @@ export const projects = {
   get presets() {
     return getServiceClient().presets
   },
+  get reports() {
+    return getServiceClient().reports
+  },
+  get capacity() {
+    return getServiceClient().capacity
+  },
 }

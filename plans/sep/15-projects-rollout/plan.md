@@ -45,6 +45,10 @@ GitHub Actions jobs fail in 2–4 s (billing block) and Cloudflare Workers Build
 | 15 | Custom modules | — | — | pending |
 | 16 | Public API, webhooks, imports, MCP, observability | — | — | pending |
 
+## Console parity
+
+User, 2026-09-16: new Projects modules were not viewable in Console. See `plans/sep/16-projects-console-parity/plan.md`. From Phase 10 on, every phase includes a Console lane and is not complete until Console can view it.
+
 ## UI review is the orchestrator's own job
 
 User, 2026-09-16: _"ensure you review the UI as you are in charge of that."_ No delegate in this run has opened a browser — every UI claim so far rests on jsdom tests. Before the deploy, Claude must look at the real thing:

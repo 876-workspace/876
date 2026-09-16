@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
 import { IssueDetailData } from '@/features/projects/components/issue-detail-data'
+import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { projects } from '@/lib/services/projects'
 
 import { requirePlatformProjectsOrgId } from '../../_lib/base'
@@ -35,12 +36,15 @@ export default async function PlatformIssueDetailPage({ params }: Props) {
 
 async function IssueDetailSection({ issueRef }: { issueRef: string }) {
   const organizationId = await requirePlatformProjectsOrgId()
+  const session = await getAuthSession()
+  const actorUserId = isSignedSession(session) ? session.user.id : null
 
   return (
     <IssueDetailData
       organizationId={organizationId}
       base={projectsBase(null)}
       issueRef={issueRef}
+      actorUserId={actorUserId}
     />
   )
 }

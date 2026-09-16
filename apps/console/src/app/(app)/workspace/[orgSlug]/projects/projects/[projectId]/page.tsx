@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { ProjectDetailData } from '@/features/projects/components/project-detail-data'
+import { ProjectTabs } from '@/features/projects/components/project-tabs'
 import { projects } from '@/lib/services/projects'
 
 import { resolveOrg } from '@/features/orgs/org-data'
@@ -32,13 +33,16 @@ export default async function OrganizationProjectDetailPage({ params }: Props) {
   if (!org) notFound()
 
   return (
-    <Suspense fallback={<ProjectDetailFallback />}>
-      <ProjectDetailData
-        organizationId={org.id}
-        base={projectsBase(orgSlug)}
-        projectId={projectId}
-      />
-    </Suspense>
+    <>
+      <ProjectTabs base={projectsBase(orgSlug)} projectId={projectId} />
+      <Suspense fallback={<ProjectDetailFallback />}>
+        <ProjectDetailData
+          organizationId={org.id}
+          base={projectsBase(orgSlug)}
+          projectId={projectId}
+        />
+      </Suspense>
+    </>
   )
 }
 

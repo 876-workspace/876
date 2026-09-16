@@ -1,0 +1,18 @@
+model MemberCapacity {
+  id             String  @id
+  tenantId       String  @map("tenant_id")
+  userId         String  @map("user_id") // opaque member id; membership lives outside Projects
+  minutesPerWeek Int     @map("minutes_per_week")
+  effectiveFrom  BigInt  @map("effective_from") // unix seconds, inclusive
+  effectiveTo    BigInt? @map("effective_to") // unix seconds, exclusive; null is open-ended
+  deletedAt      BigInt? @map("deleted_at")
+  deletedBy      String? @map("deleted_by")
+  deletionReason String? @map("deletion_reason")
+  createdAt      BigInt  @map("created_at")
+  updatedAt      BigInt  @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, userId, effectiveFrom], map: "projects_member_capacity_tenant_user_from_idx")
+  @@map("projects_member_capacity")
+}

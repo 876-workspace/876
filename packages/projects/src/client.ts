@@ -9,8 +9,10 @@ import { createIssueRelationsResource } from './resources/issue-relations'
 import { createLabelsResource } from './resources/labels'
 import { createBaselinesResource } from './resources/baselines'
 import { createBudgetsResource } from './resources/budgets'
+import { createCapacityResource } from './resources/capacity'
 import { createProjectBillingResource } from './resources/project-billing'
 import { createRatesResource } from './resources/rates'
+import { createReportsResource } from './resources/reports'
 import { createCalendarResource } from './resources/calendar'
 import { createEventsResource } from './resources/events'
 import { createMyWorkResource } from './resources/my-work'
@@ -51,7 +53,9 @@ export function create876ProjectsClient(options: ClientOptions = {}) {
     baselines: createBaselinesResource(runtime),
     projectBilling: createProjectBillingResource(runtime),
     budgets: createBudgetsResource(runtime),
+    capacity: createCapacityResource(runtime),
     rates: createRatesResource(runtime),
+    reports: createReportsResource(runtime),
     events: createEventsResource(runtime),
     reminders: createRemindersResource(runtime),
     timeEntries: createTimeEntriesResource(runtime),
