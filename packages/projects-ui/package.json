@@ -278,6 +278,50 @@
     "./custom-modules/dashboard-widget": {
       "types": "./src/custom-modules/dashboard-widget.tsx",
       "default": "./src/custom-modules/dashboard-widget.tsx"
+    },
+    "./platform/types": {
+      "types": "./src/platform/types.ts",
+      "default": "./src/platform/types.ts"
+    },
+    "./platform/integration-client-list": {
+      "types": "./src/platform/integration-client-list.tsx",
+      "default": "./src/platform/integration-client-list.tsx"
+    },
+    "./platform/integration-scope-picker": {
+      "types": "./src/platform/integration-scope-picker.tsx",
+      "default": "./src/platform/integration-scope-picker.tsx"
+    },
+    "./platform/one-time-secret": {
+      "types": "./src/platform/one-time-secret.tsx",
+      "default": "./src/platform/one-time-secret.tsx"
+    },
+    "./platform/webhook-endpoint-list": {
+      "types": "./src/platform/webhook-endpoint-list.tsx",
+      "default": "./src/platform/webhook-endpoint-list.tsx"
+    },
+    "./platform/webhook-event-picker": {
+      "types": "./src/platform/webhook-event-picker.tsx",
+      "default": "./src/platform/webhook-event-picker.tsx"
+    },
+    "./platform/webhook-delivery-table": {
+      "types": "./src/platform/webhook-delivery-table.tsx",
+      "default": "./src/platform/webhook-delivery-table.tsx"
+    },
+    "./platform/import-job-list": {
+      "types": "./src/platform/import-job-list.tsx",
+      "default": "./src/platform/import-job-list.tsx"
+    },
+    "./platform/import-preview-table": {
+      "types": "./src/platform/import-preview-table.tsx",
+      "default": "./src/platform/import-preview-table.tsx"
+    },
+    "./platform/unmapped-fields-table": {
+      "types": "./src/platform/unmapped-fields-table.tsx",
+      "default": "./src/platform/unmapped-fields-table.tsx"
+    },
+    "./platform/metrics-summary-panel": {
+      "types": "./src/platform/metrics-summary-panel.tsx",
+      "default": "./src/platform/metrics-summary-panel.tsx"
     }
   },
   "scripts": {

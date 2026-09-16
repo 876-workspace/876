@@ -109,6 +109,66 @@ export const PROJECTS_ERRORS = {
     message: 'Complete all required custom fields.',
     httpStatus: 400 as HttpStatusCode,
   },
+  'projects/custom-module-not-found': {
+    message: 'The custom module could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/custom-module-key-taken': {
+    message: 'Another custom module already uses that key.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/custom-module-key-immutable': {
+    message: 'The custom module key cannot be changed after creation.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/custom-module-field-not-found': {
+    message: 'The custom module field could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/custom-module-field-key-taken': {
+    message: 'Another field in this module already uses that key.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/custom-module-status-not-found': {
+    message: 'The custom module status could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/custom-module-status-key-taken': {
+    message: 'Another status in this module already uses that key.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/custom-module-status-in-use': {
+    message: 'This status is used by records and cannot be deleted.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/default-custom-module-status-required': {
+    message: 'Each custom module requires exactly one default open status.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/custom-module-record-not-found': {
+    message: 'The custom module record could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/custom-module-link-not-found': {
+    message: 'The custom module link could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/custom-module-link-exists': {
+    message: 'This link already exists.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/custom-module-link-invalid': {
+    message: 'The link target is invalid.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/custom-module-forbidden': {
+    message: 'Your role cannot access this custom module.',
+    httpStatus: 403 as HttpStatusCode,
+  },
+  'projects/dashboard-widget-not-found': {
+    message: 'The dashboard widget could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
   'projects/layout-not-found': {
     message: 'The layout could not be found.',
     httpStatus: 404 as HttpStatusCode,

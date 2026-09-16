@@ -2,6 +2,10 @@ import type {
   ActivityItem,
   Budget,
   ClientGrant,
+  CustomModule,
+  CustomModuleField,
+  CustomModuleStatus,
+  CustomRecord,
   Discussion,
   DiscussionPost,
   FinancialSummary,
@@ -960,6 +964,83 @@ export function makeClientGrant(
     allowWiki: true,
     invitedBy: 'user_lead',
     revokedAt: null,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeCustomModule(
+  overrides: Partial<CustomModule> = {}
+): CustomModule {
+  return {
+    object: 'projects.custom-module',
+    id: 'cmod_1',
+    scope: 'org',
+    projectId: null,
+    key: 'risk-log',
+    singularName: 'Risk',
+    pluralName: 'Risks',
+    icon: null,
+    version: 1,
+    restrictedToRoleKeys: [],
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeCustomModuleField(
+  overrides: Partial<CustomModuleField> = {}
+): CustomModuleField {
+  return {
+    object: 'projects.custom-module-field',
+    id: 'cmodf_1',
+    moduleId: 'cmod_1',
+    key: 'severity',
+    label: 'Severity',
+    fieldType: 'text',
+    options: null,
+    required: false,
+    position: 0,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeCustomModuleStatus(
+  overrides: Partial<CustomModuleStatus> = {}
+): CustomModuleStatus {
+  return {
+    object: 'projects.custom-module-status',
+    id: 'cmods_1',
+    moduleId: 'cmod_1',
+    key: 'open',
+    label: 'Open',
+    category: 'open',
+    position: 0,
+    isDefault: true,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeCustomRecord(
+  overrides: Partial<CustomRecord> = {}
+): CustomRecord {
+  return {
+    object: 'projects.custom-record',
+    id: 'cmodr_1',
+    moduleId: 'cmod_1',
+    moduleKey: 'risk-log',
+    projectId: null,
+    title: 'Vendor delay',
+    statusKey: 'open',
+    fields: { severity: 'high' },
+    createdBy: null,
+    updatedBy: null,
     createdAt: 1700000000,
     updatedAt: 1700000000,
     ...overrides,

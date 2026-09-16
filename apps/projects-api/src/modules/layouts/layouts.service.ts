@@ -22,6 +22,8 @@ import {
   type SerializedLayoutTombstone,
 } from './layouts.serializers.js'
 import {
+  customModuleKeyFromEntity,
+  isCustomModuleEntity,
   layoutDefinitionSchema,
   type CreateLayoutBody,
   type LayoutDefinition,
@@ -70,6 +72,29 @@ async function customFieldCatalog(
   organizationId: string,
   entity: LayoutEntity
 ): Promise<ServiceResult<FieldCatalogEntry[]>> {
+  if (isCustomModuleEntity(entity)) {
+    const moduleKey = customModuleKeyFromEntity(entity)
+    if (!moduleKey) return { data: [], error: null }
+    const modules = await import('../custom-modules/index.js')
+    const fields = await modules.listModuleFields(organizationId, moduleKey)
+    if (fields.error) {
+      if (fields.error.code === 'projects/custom-module-not-found')
+        return {
+          data: null,
+          error: getError('projects/invalid-request', {
+            description: `Unknown custom module: "${moduleKey}".`,
+          }),
+        }
+      return { data: null, error: fields.error }
+    }
+    return {
+      data: fields.data.map((field) => ({
+        key: field.key,
+        position: field.position,
+      })),
+      error: null,
+    }
+  }
   if (entity === 'project') {
     const result = await customFields.listCustomFields(organizationId)
     if (result.error) return { data: null, error: result.error }

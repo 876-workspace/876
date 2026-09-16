@@ -35,6 +35,10 @@ export function triggerSubjectType(
       return 'time-entry'
     case 'budget.threshold-reached':
       return 'budget'
+    case 'custom-record.created':
+    case 'custom-record.updated':
+    case 'custom-record.status-changed':
+      return 'custom-record'
     default:
       return 'work-item'
   }
@@ -163,6 +167,36 @@ export async function buildSubjectSnapshot(
             threshold: scalar(budget.thresholdPercent),
             project: scalar(budget.projectId),
           },
+        },
+        error: null,
+      }
+    }
+    case 'custom-record': {
+      const modules = await import('../custom-modules/index.js')
+      const result = await modules.retrieveRecordForAutomation(
+        organizationId,
+        subjectId
+      )
+      if (result.error || !result.data)
+        return {
+          snapshot: null,
+          error: result.error ?? getError('projects/automation-subject-not-found'),
+        }
+      const record = result.data
+      const values: LayoutValues = {
+        title: scalar(record.title),
+        state: scalar(record.statusKey),
+        project: scalar(record.projectId),
+        module: scalar(record.moduleKey),
+      }
+      for (const [fieldKey, fieldValue] of Object.entries(record.fields))
+        values[`cf:${fieldKey}`] = scalar(fieldValue as string | string[] | null)
+      return {
+        snapshot: {
+          subjectType,
+          subjectId: record.id,
+          projectId: record.projectId,
+          values,
         },
         error: null,
       }

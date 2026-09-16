@@ -73,6 +73,8 @@ describe('settings navigation registry', () => {
       '/settings/phase-fields',
       '/settings/project-fields',
       '/settings/layouts',
+      '/settings/custom-modules',
+      '/settings/dashboard',
       '/settings/templates',
       '/settings/automation',
       '/settings/users',

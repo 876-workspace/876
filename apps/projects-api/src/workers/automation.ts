@@ -92,6 +92,43 @@ async function executeSetField(
   subject: SubjectSnapshot,
   ctx: AutomationActionContext
 ): Promise<ActionOutcome> {
+  if (subject.subjectType === 'custom-record') {
+    const modules = await import('../modules/custom-modules/index.js')
+    if (fieldKey !== 'title' && fieldKey !== 'status' && !fieldKey.startsWith('cf:'))
+      return { ok: false, errorCode: 'automation/unknown-field' }
+    const patch: {
+      title?: string | null
+      statusKey?: string
+      fields?: Array<{ key: string; value: string | number | boolean | string[] | null }>
+    } =
+      fieldKey === 'title'
+        ? typeof value === 'string' || value === null
+          ? { title: value }
+          : {}
+        : fieldKey === 'status'
+          ? typeof value === 'string'
+            ? { statusKey: value }
+            : {}
+          : {
+              fields: [
+                {
+                  key: fieldKey.slice('cf:'.length),
+                  value: value as string | number | boolean | string[] | null,
+                },
+              ],
+            }
+    if (Object.keys(patch).length === 0)
+      return { ok: false, errorCode: 'automation/invalid-value' }
+    const result = await modules.updateRecordFromAutomation(
+      ctx.organizationId,
+      subject.subjectId,
+      patch,
+      { automationRuleId: ctx.ruleId, causationDepth: ctx.causationDepth }
+    )
+    return result.error
+      ? { ok: false, errorCode: result.error.code }
+      : { ok: true }
+  }
   if (subject.subjectType !== 'work-item')
     return { ok: false, errorCode: 'automation/subject-mismatch' }
   const mutation = issueMutationContext(ctx)

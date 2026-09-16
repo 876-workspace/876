@@ -4,6 +4,14 @@ import { cyclesClient } from './cycles'
 import { eventsClient } from './events'
 import { financeClient } from './finance'
 import { automationRulesClient } from './automation'
+import {
+  customModuleFieldsClient,
+  customModuleLinksClient,
+  customModulesClient,
+  customModuleStatusesClient,
+  customRecordsClient,
+  dashboardWidgetsClient,
+} from './custom-modules'
 import { layoutsClient } from './layouts'
 import { notificationsClient } from './notifications'
 import { phaseCustomFieldsClient } from './phase-custom-fields'
@@ -39,6 +47,12 @@ export const client = {
   layouts: layoutsClient,
   workflows: workflowsClient,
   automationRules: automationRulesClient,
+  customModules: customModulesClient,
+  customModuleFields: customModuleFieldsClient,
+  customModuleStatuses: customModuleStatusesClient,
+  customRecords: customRecordsClient,
+  customModuleLinks: customModuleLinksClient,
+  dashboardWidgets: dashboardWidgetsClient,
   notifications: notificationsClient,
   labels: labelsClient,
   comments: commentsClient,
@@ -77,6 +91,14 @@ export { templatesClient } from './templates'
 export { phaseCustomFieldsClient } from './phase-custom-fields'
 export { projectCustomFieldsClient } from './project-custom-fields'
 export { automationRulesClient } from './automation'
+export {
+  customModuleFieldsClient,
+  customModuleLinksClient,
+  customModulesClient,
+  customModuleStatusesClient,
+  customRecordsClient,
+  dashboardWidgetsClient,
+} from './custom-modules'
 export { layoutsClient } from './layouts'
 export { notificationsClient } from './notifications'
 export { workflowsClient } from './workflows'

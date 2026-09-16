@@ -134,6 +134,9 @@ export const projects = {
   get customFields() {
     return getServiceClient().customFields
   },
+  get customModules() {
+    return getServiceClient().customModules
+  },
   get projectCustomFields() {
     return getServiceClient().projectCustomFields
   },

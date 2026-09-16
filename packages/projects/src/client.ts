@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createCommentsResource } from './resources/comments'
 import { createCustomFieldsResource } from './resources/custom-fields'
+import { createCustomModulesResource } from './resources/custom-modules'
 import { createCustomFieldValuesResource } from './resources/custom-field-values'
 import { createIssuesResource } from './resources/issues'
 import { createIssueDependenciesResource } from './resources/issue-dependencies'
@@ -69,6 +70,7 @@ export function create876ProjectsClient(options: ClientOptions = {}) {
     taskLists: createTaskListsResource(runtime),
     cycles: createCyclesResource(runtime),
     customFields: createCustomFieldsResource(runtime),
+    customModules: createCustomModulesResource(runtime),
     customFieldValues: createCustomFieldValuesResource(runtime),
     presets: createPresetsResource(runtime),
     gantt: createGanttResource(runtime),

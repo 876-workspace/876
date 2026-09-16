@@ -49,6 +49,13 @@ export const ENTITY_PREFIXES = {
   wikiRevision: 'wrv_',
   clientGrant: 'cgt_',
   attachmentLink: 'att_',
+  customModule: 'cmod_',
+  customModuleField: 'cmodf_',
+  customModuleStatus: 'cmods_',
+  customModuleRecord: 'cmodr_',
+  customModuleRecordValue: 'cmodrv_',
+  customModuleLink: 'cmodl_',
+  dashboardWidget: 'dshw_',
 } as const
 
 export type EntityType = keyof typeof ENTITY_PREFIXES
