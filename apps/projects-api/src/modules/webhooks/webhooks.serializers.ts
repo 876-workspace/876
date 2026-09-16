@@ -45,6 +45,8 @@ export type WebhookDeliveryRow = {
   tenantId: string
   endpointId: string
   eventId: string
+  eventType: string
+  payload: unknown
   attempt: number
   status: string
   responseCode: number | null

@@ -4,7 +4,7 @@ import {
   assertSafeWebhookUrl,
   isBlockedAddress,
   type DnsLookup,
-} from '../ssrf.js'
+} from '../../../platform/ssrf.js'
 
 const publicLookup: DnsLookup = async () => ['93.184.216.34']
 
@@ -32,6 +32,7 @@ describe('isBlockedAddress', () => {
     'fd00:ec2::254',
     '::ffff:127.0.0.1',
     '::ffff:10.1.2.3',
+    '2001:db8::1',
     'not-an-ip',
   ]
   for (const address of blocked) {
@@ -50,7 +51,6 @@ describe('isBlockedAddress', () => {
     '192.167.255.255',
     '1.1.1.1',
     '2606:2800:220:1:248:1893:25c8:1946',
-    '2001:db8::1',
   ]
   for (const address of allowed) {
     it(`allows ${address}`, () => {

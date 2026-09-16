@@ -15,14 +15,17 @@ import {
   postWebhook,
   signWebhookBody,
   WEBHOOK_SIGNATURE_HEADER,
+  type WebhookTransport,
 } from '../../platform/webhook-signature.js'
+import type { Prisma } from '../../db/generated/prisma/client.js'
+import type { SecureResolver } from '../../platform/ssrf.js'
 import { parseSealedSecret } from '../automation/automation.serializers.js'
 import * as tenants from '../tenants/index.js'
 import * as repository from './webhooks.repository.js'
 import {
   assertSafeWebhookUrl,
   type DnsLookup,
-} from './ssrf.js'
+} from '../../platform/ssrf.js'
 import {
   computeWebhookRetryDelaySeconds,
   webhookAttemptExhausted,
@@ -102,16 +105,13 @@ export async function createEndpoint(
     }
   const endpointId = generateId('webhookEndpoint')
   const secret = body.secret ?? randomBytes(32).toString('hex')
-  let sealed: unknown
-  try {
-    sealed = await sealWebhookEndpointSecret(
-      resolved.tenant.id,
-      endpointId,
-      secret
-    )
-  } catch {
+  const sealed = await sealWebhookEndpointSecret(
+    resolved.tenant.id,
+    endpointId,
+    secret
+  ).catch(() => null)
+  if (!sealed)
     return { data: null, error: getError('projects/internal-error') }
-  }
   const timestamp = nowDb()
   const row = await repository.createEndpoint({
     id: endpointId,
@@ -172,22 +172,22 @@ export async function updateEndpoint(
         }),
       }
   }
-  let sealed: unknown = existing.secret
-  if (body.secret !== undefined) {
-    try {
-      sealed = await sealWebhookEndpointSecret(
-        resolved.tenant.id,
-        endpointId,
-        body.secret
-      )
-    } catch {
-      return { data: null, error: getError('projects/internal-error') }
-    }
-  }
+  const nextSealed =
+    body.secret === undefined
+      ? null
+      : await sealWebhookEndpointSecret(
+          resolved.tenant.id,
+          endpointId,
+          body.secret
+        ).catch(() => null)
+  if (body.secret !== undefined && !nextSealed)
+    return { data: null, error: getError('projects/internal-error') }
   const row = await repository.updateEndpoint(existing.id, {
     ...(body.url !== undefined ? { url: body.url } : {}),
     ...(body.eventTypes !== undefined ? { eventTypes: body.eventTypes } : {}),
-    ...(body.secret !== undefined ? { secret: sealed } : {}),
+    ...(body.secret !== undefined && nextSealed
+      ? { secret: nextSealed }
+      : {}),
     ...(body.enabled !== undefined ? { enabled: body.enabled } : {}),
     ...(body.enabled === true ? { consecutiveFailures: 0 } : {}),
     updatedAt: nowDb(),
@@ -235,23 +235,99 @@ export async function listDeliveries(
   return { data: rows.map(serializeWebhookDelivery), error: null }
 }
 
-export async function enqueueWebhookDeliveries(event: {
+export type EnqueueWebhookEvent = {
   id: string
   tenantId: string
   type: string
-}): Promise<number> {
+  subjectType: string
+  subjectId: string
+  payload: unknown
+  createdAt: number
+}
+
+function toJsonValue(value: unknown): Prisma.InputJsonValue {
+  return value as Prisma.InputJsonValue
+}
+
+function toStoredPayload(event: EnqueueWebhookEvent): Prisma.InputJsonValue {
+  return {
+    subjectType: event.subjectType,
+    subjectId: event.subjectId,
+    data: toJsonValue(event.payload),
+    createdAt: event.createdAt,
+  }
+}
+
+function readStoredSnapshot(delivery: {
+  payload: unknown
+  createdAt: bigint | number
+}): { subjectType: string; subjectId: string; data: Record<string, unknown>; createdAt: number } {
+  const fallbackCreatedAt =
+    typeof delivery.createdAt === 'bigint'
+      ? Number(delivery.createdAt)
+      : delivery.createdAt
+  if (typeof delivery.payload !== 'object' || delivery.payload === null)
+    return {
+      subjectType: 'unknown',
+      subjectId: 'unknown',
+      data: {},
+      createdAt: fallbackCreatedAt,
+    }
+  const record = delivery.payload as Record<string, unknown>
+  const subjectType =
+    typeof record.subjectType === 'string' ? record.subjectType : 'unknown'
+  const subjectId =
+    typeof record.subjectId === 'string' ? record.subjectId : 'unknown'
+  const data =
+    typeof record.data === 'object' && record.data !== null
+      ? (record.data as Record<string, unknown>)
+      : {}
+  const createdAt =
+    typeof record.createdAt === 'number' && Number.isFinite(record.createdAt)
+      ? record.createdAt
+      : fallbackCreatedAt
+  return { subjectType, subjectId, data, createdAt }
+}
+
+export function buildWebhookEventBody(delivery: {
+  id: string
+  eventId: string
+  eventType: string
+  payload: unknown
+  attempt: number
+  createdAt: bigint | number
+}): Record<string, unknown> {
+  const snapshot = readStoredSnapshot(delivery)
+  return {
+    object: 'projects.webhook-event',
+    id: delivery.eventId,
+    type: delivery.eventType,
+    createdAt: snapshot.createdAt,
+    subject: { type: snapshot.subjectType, id: snapshot.subjectId },
+    data: snapshot.data,
+    deliveryId: delivery.id,
+    attempt: delivery.attempt + 1,
+  }
+}
+
+export async function enqueueWebhookDeliveries(
+  event: EnqueueWebhookEvent
+): Promise<number> {
   const endpoints = await repository.listEnabledEndpoints(event.tenantId)
   const matching = endpoints.filter((endpoint) =>
     endpointMatchesEvent(endpoint, event.type)
   )
   if (matching.length === 0) return 0
   const timestamp = nowDb()
+  const storedPayload = toStoredPayload(event)
   const count = await repository.createDeliveries(
     matching.map((endpoint) => ({
       id: generateId('webhookDelivery'),
       tenantId: event.tenantId,
       endpointId: endpoint.id,
       eventId: event.id,
+      eventType: event.type,
+      payload: storedPayload,
       createdAt: timestamp,
       updatedAt: timestamp,
     }))
@@ -265,8 +341,9 @@ export async function enqueueWebhookDeliveries(event: {
 
 export type DrainWebhooksOptions = {
   limit?: number
-  fetchImpl?: typeof fetch
+  transport?: WebhookTransport
   lookup?: DnsLookup
+  resolver?: SecureResolver
   nowSeconds?: number
 }
 
@@ -306,8 +383,9 @@ export async function drainWebhookDeliveries(
   }
   for (const delivery of due) {
     const outcome = await attemptDelivery(delivery, {
-      fetchImpl: options.fetchImpl,
+      transport: options.transport,
       lookup: options.lookup,
+      resolver: options.resolver,
       nowSeconds,
     })
     if (outcome === 'delivered') result.delivered += 1
@@ -324,9 +402,17 @@ async function attemptDelivery(
     tenantId: string
     endpointId: string
     eventId: string
+    eventType: string
+    payload: unknown
     attempt: number
+    createdAt: bigint | number
   },
-  options: { fetchImpl?: typeof fetch; lookup?: DnsLookup; nowSeconds: number }
+  options: {
+    transport?: WebhookTransport
+    lookup?: DnsLookup
+    resolver?: SecureResolver
+    nowSeconds: number
+  }
 ): Promise<'delivered' | 'scheduled' | 'failed' | 'disabled'> {
   const endpoint = await repository.retrieveEndpoint(
     delivery.tenantId,
@@ -348,19 +434,13 @@ async function attemptDelivery(
   if (!secret) {
     return recordDeliveryFailure(delivery, endpoint, null, 'webhook-secret-unseal-failed', options.nowSeconds)
   }
-  const payload = {
-    object: 'projects.webhook-event',
-    deliveryId: delivery.id,
-    endpointId: endpoint.id,
-    eventId: delivery.eventId,
-    eventType: '*',
-    sentAt: options.nowSeconds,
-  }
+  const payload = buildWebhookEventBody(delivery)
   let status: number
   const startedAt = Date.now()
   try {
     const outcome = await postWebhook(endpoint.url, secret, payload, {
-      fetchImpl: options.fetchImpl,
+      transport: options.transport,
+      resolver: options.resolver,
       now: () => options.nowSeconds * 1000,
     })
     status = outcome.status

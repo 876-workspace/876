@@ -678,6 +678,10 @@ export async function drainAutomation(
       id: event.id,
       tenantId: event.tenantId,
       type: event.type,
+      subjectType: event.subjectType,
+      subjectId: event.subjectId,
+      payload: event.payload ?? {},
+      createdAt: Number(event.createdAt),
     })
     const counts = await processAutomationEvent({
       ...event,

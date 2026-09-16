@@ -40,6 +40,8 @@ model WebhookDelivery {
   tenantId      String  @map("tenant_id")
   endpointId    String  @map("endpoint_id")
   eventId       String  @map("event_id")
+  eventType     String  @map("event_type")
+  payload       Json    @default("{}")
   attempt       Int     @default(0)
   status        String  @default("pending")
   responseCode  Int?    @map("response_code")

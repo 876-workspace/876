@@ -6,6 +6,7 @@ import {
   signWebhookBody,
   WEBHOOK_SIGNATURE_HEADER,
   WEBHOOK_TIMEOUT_MS,
+  type WebhookRequest,
 } from '../webhook.js'
 
 describe('signWebhookBody', () => {
@@ -30,63 +31,50 @@ describe('postWebhook', () => {
   const payload = { ruleId: 'arl_1', trigger: 'work-item.created' }
 
   it('posts JSON with the signature header and returns the status', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue({ status: 200 })
+    const transport = vi.fn(async (_req: WebhookRequest) => ({ status: 200 }))
     const now = () => 1787767200000
 
     const delivery = await postWebhook(
       'https://hooks.example.test/876',
       'rule-secret',
       payload,
-      { fetchImpl, now }
+      { transport, now }
     )
 
     expect(delivery.status).toBe(200)
     expect(delivery.durationMs).toBeGreaterThanOrEqual(0)
-    expect(fetchImpl).toHaveBeenCalledTimes(1)
-    const [url, init] = fetchImpl.mock.calls[0] as [string, RequestInit & { headers: Record<string, string> }]
-    expect(url).toBe('https://hooks.example.test/876')
-    expect(init.method).toBe('POST')
-    expect(init.headers['content-type']).toBe('application/json')
+    expect(transport).toHaveBeenCalledTimes(1)
+    const req = transport.mock.calls[0]?.[0]
+    if (!req) throw new Error('transport was not called')
+    expect(req.url).toBe('https://hooks.example.test/876')
+    expect(req.method).toBe('POST')
+    expect(req.headers['content-type']).toBe('application/json')
     const body = JSON.stringify(payload)
-    expect(init.body).toBe(body)
-    expect(init.headers[WEBHOOK_SIGNATURE_HEADER]).toBe(
+    expect(req.body).toBe(body)
+    expect(req.headers[WEBHOOK_SIGNATURE_HEADER]).toBe(
       signWebhookBody('rule-secret', 1787767200, body)
     )
   })
 
   it('rejects when the endpoint is unreachable', async () => {
-    const fetchImpl = vi.fn().mockRejectedValue(new Error('down'))
+    const transport = vi.fn(async (): Promise<{ status: number }> => {
+      throw new Error('down')
+    })
 
     await expect(
       postWebhook('https://hooks.example.test/876', 's', payload, {
-        fetchImpl,
+        transport,
       })
     ).rejects.toThrow('down')
   })
 
-  it('aborts the request after the webhook timeout', async () => {
-    vi.useFakeTimers()
-    try {
-      let seenSignal: AbortSignal | null = null
-      const fetchImpl = vi.fn().mockImplementation((_url: string, init: { signal: AbortSignal }) => {
-        seenSignal = init.signal
-        return new Promise((_resolve, reject) => {
-          init.signal.addEventListener('abort', () =>
-            reject(new Error('aborted'))
-          )
-        })
-      })
+  it('rejects ssrf-blocked urls before calling the transport', async () => {
+    const transport = vi.fn(async () => ({ status: 200 }))
 
-      const pending = postWebhook('https://hooks.example.test/876', 's', payload, {
-        fetchImpl,
-      })
-      pending.catch(() => {})
-      await vi.advanceTimersByTimeAsync(WEBHOOK_TIMEOUT_MS)
-      await expect(pending).rejects.toThrow('aborted')
-      expect(seenSignal).not.toBeNull()
-    } finally {
-      vi.useRealTimers()
-    }
+    await expect(
+      postWebhook('https://10.0.0.1/hook', 's', payload, { transport })
+    ).rejects.toThrow('blocked-address')
+    expect(transport).not.toHaveBeenCalled()
   })
 
   it('records the timeout budget as ten seconds', () => {

@@ -613,11 +613,19 @@ describe('drainAutomation', () => {
       id: 'aev_1',
       tenantId,
       type: 'work-item.state-changed',
+      subjectType: 'work-item',
+      subjectId: 'iss_1',
+      payload: { organizationId: 'org_1', projectId: 'prj_1' },
+      createdAt: 1000,
     })
     expect(platformWebhooks.enqueueWebhookDeliveries).toHaveBeenCalledWith({
       id: 'aev_2',
       tenantId,
       type: 'work-item.state-changed',
+      subjectType: 'work-item',
+      subjectId: 'iss_1',
+      payload: { organizationId: 'org_1', projectId: 'prj_1' },
+      createdAt: 1000,
     })
     expect(platformWebhooks.drainWebhookDeliveries).toHaveBeenCalled()
     expect(result.webhooks).toMatchObject({ claimed: 2, delivered: 2 })

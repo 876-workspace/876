@@ -53,8 +53,15 @@ function deliveryRow(overrides = {}) {
     tenantId: tenant.id,
     endpointId: 'whep_1',
     eventId: 'aev_1',
+    eventType: 'work-item.created',
+    payload: {
+      subjectType: 'work-item',
+      subjectId: 'iss_1',
+      data: { title: 'Ship' },
+      createdAt: 2000,
+    },
     attempt: 0,
-    status: 'pending',
+    status: 'delivering',
     responseCode: null,
     errorCode: null,
     nextAttemptAt: null,
@@ -64,8 +71,8 @@ function deliveryRow(overrides = {}) {
   }
 }
 
-const okFetch = async () => new Response('{}', { status: 200 })
-const failFetch = async () => new Response('{}', { status: 500 })
+const okTransport = async () => ({ status: 200 })
+const failTransport = async () => ({ status: 500 })
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -209,6 +216,10 @@ describe('enqueueWebhookDeliveries', () => {
       id: 'aev_1',
       tenantId: tenant.id,
       type: 'work-item.created',
+      subjectType: 'work-item',
+      subjectId: 'iss_1',
+      payload: { title: 'Ship' },
+      createdAt: 2000,
     })
     expect(count).toBe(0)
     expect(repository.createDeliveries).not.toHaveBeenCalled()
@@ -225,11 +236,16 @@ describe('enqueueWebhookDeliveries', () => {
       id: 'aev_1',
       tenantId: tenant.id,
       type: 'work-item.created',
+      subjectType: 'work-item',
+      subjectId: 'iss_1',
+      payload: { title: 'Ship' },
+      createdAt: 2000,
     })
     expect(count).toBe(2)
     const payload = repository.createDeliveries.mock.calls[0]?.[0] as Array<{
       endpointId: string
       eventId: string
+      eventType: string
     }>
     expect(payload.map((row) => row.endpointId).sort()).toEqual([
       'whep_a',
@@ -248,7 +264,7 @@ describe('drainWebhookDeliveries', () => {
       endpointRow({ consecutiveFailures: 3 })
     )
     const result = await service.drainWebhookDeliveries({
-      fetchImpl: okFetch as unknown as typeof fetch,
+      transport: okTransport,
       nowSeconds: 2000,
     })
     expect(result).toMatchObject({ claimed: 1, delivered: 1 })
@@ -266,7 +282,7 @@ describe('drainWebhookDeliveries', () => {
     repository.claimDueDeliveries.mockResolvedValueOnce([deliveryRow()])
     repository.retrieveEndpoint.mockResolvedValueOnce(endpointRow())
     const result = await service.drainWebhookDeliveries({
-      fetchImpl: failFetch as unknown as typeof fetch,
+      transport: failTransport,
       nowSeconds: 2000,
     })
     expect(result).toMatchObject({ claimed: 1, scheduled: 1 })
@@ -286,7 +302,7 @@ describe('drainWebhookDeliveries', () => {
     ])
     repository.retrieveEndpoint.mockResolvedValueOnce(endpointRow())
     const result = await service.drainWebhookDeliveries({
-      fetchImpl: failFetch as unknown as typeof fetch,
+      transport: failTransport,
       nowSeconds: 2000,
     })
     expect(result).toMatchObject({ claimed: 1, failed: 1 })
@@ -302,7 +318,7 @@ describe('drainWebhookDeliveries', () => {
       endpointRow({ consecutiveFailures: 19 })
     )
     const result = await service.drainWebhookDeliveries({
-      fetchImpl: failFetch as unknown as typeof fetch,
+      transport: failTransport,
       nowSeconds: 2000,
     })
     expect(result).toMatchObject({ claimed: 1, disabled: 1 })
@@ -316,21 +332,21 @@ describe('drainWebhookDeliveries', () => {
     repository.claimDueDeliveries.mockResolvedValueOnce([deliveryRow()])
     repository.retrieveEndpoint.mockResolvedValueOnce(null)
     const result = await service.drainWebhookDeliveries({
-      fetchImpl: okFetch as unknown as typeof fetch,
+      transport: okTransport,
       nowSeconds: 2000,
     })
     expect(result).toMatchObject({ claimed: 1, failed: 1 })
-    expect(okFetch).toBeDefined()
+    expect(okTransport).toBeDefined()
   })
 
   it('records failures for ssrf-blocked urls without fetching', async () => {
-    const fetching = vi.fn(okFetch)
+    const fetching = vi.fn(okTransport)
     repository.claimDueDeliveries.mockResolvedValueOnce([deliveryRow()])
     repository.retrieveEndpoint.mockResolvedValueOnce(
       endpointRow({ url: 'https://10.0.0.1/hook' })
     )
     const result = await service.drainWebhookDeliveries({
-      fetchImpl: fetching as unknown as typeof fetch,
+      transport: fetching,
       nowSeconds: 2000,
     })
     expect(result).toMatchObject({ claimed: 1, scheduled: 1 })

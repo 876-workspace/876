@@ -4,6 +4,7 @@ export * from './webhooks.routes.js'
 export * from './webhooks.schemas.js'
 export * from './webhooks.serializers.js'
 export {
+  buildWebhookEventBody,
   createEndpoint,
   drainWebhookDeliveries,
   enqueueWebhookDeliveries,
@@ -16,5 +17,6 @@ export {
   updateEndpoint,
   type DrainWebhooksOptions,
   type DrainWebhooksResult,
+  type EnqueueWebhookEvent,
   type ServiceResult as WebhooksServiceResult,
 } from './webhooks.service.js'

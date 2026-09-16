@@ -44,6 +44,8 @@ CREATE TABLE "projects_webhook_deliveries" (
     "tenant_id" TEXT NOT NULL,
     "endpoint_id" TEXT NOT NULL,
     "event_id" TEXT NOT NULL,
+    "event_type" TEXT NOT NULL,
+    "payload" JSONB NOT NULL DEFAULT '{}',
     "attempt" INTEGER NOT NULL DEFAULT 0,
     "status" TEXT NOT NULL DEFAULT 'pending',
     "response_code" INTEGER,
