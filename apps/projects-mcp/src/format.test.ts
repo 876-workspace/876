@@ -67,6 +67,8 @@ const sampleIssue: Issue = {
   type: sampleType,
   state: sampleState,
   milestone: null,
+  taskListId: null,
+  cycleId: null,
   customFields: [],
   priority: 'high',
   assigneeUserId: 'user_2kL9',
@@ -74,6 +76,12 @@ const sampleIssue: Issue = {
   parentIssueId: null,
   estimate: 3,
   dueDate: 1788480000,
+  plannedStartDate: null,
+  plannedFinishDate: null,
+  plannedDurationMinutes: null,
+  blocked: false,
+  relationCount: 0,
+  dependencyCount: 0,
   position: 1,
   labels: [
     {
@@ -143,6 +151,8 @@ describe('format', () => {
         name: 'Ready for QA',
       },
       milestone: null,
+      taskListId: null,
+      cycleId: null,
       customFields: [],
       priority: 'none',
       assigneeUserId: null,
@@ -150,6 +160,12 @@ describe('format', () => {
       parentIssueId: null,
       estimate: null,
       dueDate: null,
+      plannedStartDate: null,
+      plannedFinishDate: null,
+      plannedDurationMinutes: null,
+      blocked: false,
+      relationCount: 0,
+      dependencyCount: 0,
       position: 0,
       labels: [],
       commentCount: 0,
@@ -219,6 +235,7 @@ describe('format', () => {
       createdAt: 1788400000,
       updatedAt: 1788400000,
       memberCount: 5,
+      customFields: [],
     }
 
     const output = formatProject(project)

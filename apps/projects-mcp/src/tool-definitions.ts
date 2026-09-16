@@ -4,6 +4,12 @@ import type { McpServer } from '@modelcontextprotocol/server'
 import type { Config } from './config'
 import { toolError, type ToolResult } from './format'
 import {
+  handleActivityList,
+  handleCustomModulesList,
+  handleCustomRecordGet,
+  handleCustomRecordsList,
+  handleCycleGet,
+  handleCyclesList,
   handleIssueComment,
   handleIssueComments,
   handleIssueCreate,
@@ -14,15 +20,41 @@ import {
   handleLabelCreate,
   handleLabelsList,
   handleMilestonesList,
+  handlePhaseGet,
+  handlePhasesList,
   handleProjectCreate,
   handleProjectGet,
   handleProjectsList,
   handleProjectUpdate,
+  handleReportBudgetVariance,
+  handleReportHealth,
+  handleReportTime,
+  handleReportWork,
+  handleReportWorkload,
+  handleTaskListsList,
+  handleTemplateGet,
+  handleTemplatesList,
+  handleTimeEntriesList,
+  handleTimeEntryCreate,
+  handleTimeSummary,
+  handleWikiPageGet,
   handleWorkflowStatesList,
   handleWorkItemTypesList,
   handleWorkspaceGet,
 } from './handlers'
 import {
+  activityListOutputSchema,
+  activityListSchema,
+  customModulesListOutputSchema,
+  customModulesListSchema,
+  customRecordGetOutputSchema,
+  customRecordGetSchema,
+  customRecordsListOutputSchema,
+  customRecordsListSchema,
+  cycleGetOutputSchema,
+  cycleGetSchema,
+  cyclesListOutputSchema,
+  cyclesListSchema,
   issueCommentOutputSchema,
   issueCommentSchema,
   issueCommentsOutputSchema,
@@ -43,6 +75,10 @@ import {
   labelsListSchema,
   milestonesListOutputSchema,
   milestonesListSchema,
+  phaseGetOutputSchema,
+  phaseGetSchema,
+  phasesListOutputSchema,
+  phasesListSchema,
   projectCreateOutputSchema,
   projectCreateSchema,
   projectGetOutputSchema,
@@ -51,6 +87,30 @@ import {
   projectsListSchema,
   projectUpdateOutputSchema,
   projectUpdateSchema,
+  reportBudgetVarianceOutputSchema,
+  reportBudgetVarianceSchema,
+  reportHealthOutputSchema,
+  reportHealthSchema,
+  reportTimeOutputSchema,
+  reportTimeSchema,
+  reportWorkloadOutputSchema,
+  reportWorkloadSchema,
+  reportWorkOutputSchema,
+  reportWorkSchema,
+  taskListsListOutputSchema,
+  taskListsListSchema,
+  templateGetOutputSchema,
+  templateGetSchema,
+  templatesListOutputSchema,
+  templatesListSchema,
+  timeEntriesListOutputSchema,
+  timeEntriesListSchema,
+  timeEntryCreateOutputSchema,
+  timeEntryCreateSchema,
+  timeSummaryOutputSchema,
+  timeSummaryQuerySchema,
+  wikiPageGetOutputSchema,
+  wikiPageGetSchema,
   workflowStatesListOutputSchema,
   workflowStatesListSchema,
   workItemTypesListOutputSchema,
@@ -326,5 +386,270 @@ export function registerProjectTools(
       annotations: READ_ONLY_ANNOTATIONS,
     },
     withToolErrorBoundary((args) => handleMilestonesList(client, config, args))
+  )
+
+  // 18. phases_list
+  server.registerTool(
+    'phases_list',
+    {
+      description:
+        'List project phases (milestones) with optional project and status filters. Omit projectId to list across the organization.',
+      inputSchema: phasesListSchema,
+      outputSchema: phasesListOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handlePhasesList(client, config, args))
+  )
+
+  // 19. phase_get
+  server.registerTool(
+    'phase_get',
+    {
+      description: 'Retrieve one project phase (milestone) by ID.',
+      inputSchema: phaseGetSchema,
+      outputSchema: phaseGetOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handlePhaseGet(client, config, args))
+  )
+
+  // 20. cycles_list
+  server.registerTool(
+    'cycles_list',
+    {
+      description:
+        'List cycles with optional project and status filters. Omit filters to list across the organization.',
+      inputSchema: cyclesListSchema,
+      outputSchema: cyclesListOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleCyclesList(client, config, args))
+  )
+
+  // 21. cycle_get
+  server.registerTool(
+    'cycle_get',
+    {
+      description: 'Retrieve one cycle by ID with progress and throughput.',
+      inputSchema: cycleGetSchema,
+      outputSchema: cycleGetOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleCycleGet(client, config, args))
+  )
+
+  // 22. task_lists_list
+  server.registerTool(
+    'task_lists_list',
+    {
+      description:
+        'List task lists for one project with progress and ownership.',
+      inputSchema: taskListsListSchema,
+      outputSchema: taskListsListOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleTaskListsList(client, config, args))
+  )
+
+  // 23. time_entries_list
+  server.registerTool(
+    'time_entries_list',
+    {
+      description:
+        'List time entries filtered by user, project, issue, window, billable flag, or approval status.',
+      inputSchema: timeEntriesListSchema,
+      outputSchema: timeEntriesListOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) =>
+      handleTimeEntriesList(client, config, args)
+    )
+  )
+
+  // 24. time_summary
+  server.registerTool(
+    'time_summary',
+    {
+      description:
+        'Summarize logged time totals grouped by project, user, issue, or day for a window.',
+      inputSchema: timeSummaryQuerySchema,
+      outputSchema: timeSummaryOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleTimeSummary(client, config, args))
+  )
+
+  // 25. report_work
+  server.registerTool(
+    'report_work',
+    {
+      description:
+        'Read the work report for a window with counts by state, type, assignee, overdue, and total.',
+      inputSchema: reportWorkSchema,
+      outputSchema: reportWorkOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleReportWork(client, config, args))
+  )
+
+  // 26. report_health
+  server.registerTool(
+    'report_health',
+    {
+      description:
+        'Read the project health report with progress, open items, overdue, and budget consumption per project.',
+      inputSchema: reportHealthSchema,
+      outputSchema: reportHealthOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleReportHealth(client, config, args))
+  )
+
+  // 27. report_time
+  server.registerTool(
+    'report_time',
+    {
+      description:
+        'Read the time report for a window grouped by project, user, or issue with billable splits.',
+      inputSchema: reportTimeSchema,
+      outputSchema: reportTimeOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleReportTime(client, config, args))
+  )
+
+  // 28. report_budget_variance
+  server.registerTool(
+    'report_budget_variance',
+    {
+      description:
+        'Read the budget variance report for a window with budgeted versus actual minutes per project.',
+      inputSchema: reportBudgetVarianceSchema,
+      outputSchema: reportBudgetVarianceOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) =>
+      handleReportBudgetVariance(client, config, args)
+    )
+  )
+
+  // 29. report_workload
+  server.registerTool(
+    'report_workload',
+    {
+      description:
+        'Read the workload report for a window with assigned, planned, logged, and capacity minutes per member.',
+      inputSchema: reportWorkloadSchema,
+      outputSchema: reportWorkloadOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleReportWorkload(client, config, args))
+  )
+
+  // 30. templates_list
+  server.registerTool(
+    'templates_list',
+    {
+      description: 'List project templates available for new projects.',
+      inputSchema: templatesListSchema,
+      outputSchema: templatesListOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleTemplatesList(client, config, args))
+  )
+
+  // 31. template_get
+  server.registerTool(
+    'template_get',
+    {
+      description: 'Retrieve one project template by ID with version and counts.',
+      inputSchema: templateGetSchema,
+      outputSchema: templateGetOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleTemplateGet(client, config, args))
+  )
+
+  // 32. custom_modules_list
+  server.registerTool(
+    'custom_modules_list',
+    {
+      description: 'List custom modules configured in the workspace.',
+      inputSchema: customModulesListSchema,
+      outputSchema: customModulesListOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) =>
+      handleCustomModulesList(client, config, args)
+    )
+  )
+
+  // 33. custom_records_list
+  server.registerTool(
+    'custom_records_list',
+    {
+      description:
+        'List records in one custom module with optional status, project, search, and field filters.',
+      inputSchema: customRecordsListSchema,
+      outputSchema: customRecordsListOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) =>
+      handleCustomRecordsList(client, config, args)
+    )
+  )
+
+  // 34. custom_record_get
+  server.registerTool(
+    'custom_record_get',
+    {
+      description: 'Retrieve one custom module record by module and record ID.',
+      inputSchema: customRecordGetSchema,
+      outputSchema: customRecordGetOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) =>
+      handleCustomRecordGet(client, config, args)
+    )
+  )
+
+  // 35. activity_list
+  server.registerTool(
+    'activity_list',
+    {
+      description:
+        'List recent project activity oldest or newest first with cursor pagination.',
+      inputSchema: activityListSchema,
+      outputSchema: activityListOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleActivityList(client, config, args))
+  )
+
+  // 36. wiki_page_get
+  server.registerTool(
+    'wiki_page_get',
+    {
+      description: 'Retrieve one wiki page by project and slug or ID.',
+      inputSchema: wikiPageGetSchema,
+      outputSchema: wikiPageGetOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleWikiPageGet(client, config, args))
+  )
+
+  // 37. time_entry_create
+  server.registerTool(
+    'time_entry_create',
+    {
+      description:
+        'Log a time entry for a project with start, end, and optional issue, milestone, or note. Requires the projects:write scope.',
+      inputSchema: timeEntryCreateSchema,
+      outputSchema: timeEntryCreateOutputSchema,
+      annotations: CREATE_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) =>
+      handleTimeEntryCreate(client, config, args)
+    )
   )
 }

@@ -4,12 +4,12 @@ import type {
   Issue,
   IssueEvent,
   Label,
-  Milestone,
   Project,
   Tenant,
   WorkflowState,
   WorkItemType,
 } from '@876/projects/contracts'
+import type { MilestoneDetail } from '@876/projects/contracts'
 import { create876ProjectsOperatorClient } from '@876/projects/operator'
 import { vi } from 'vitest'
 
@@ -102,6 +102,7 @@ export const mockProject: Project = {
   createdAt: 1788400000,
   updatedAt: 1788400000,
   memberCount: 3,
+  customFields: [],
 }
 
 export const mockIssue: Issue = {
@@ -126,6 +127,8 @@ export const mockIssue: Issue = {
     isDefault: false,
   },
   milestone: null,
+  taskListId: null,
+  cycleId: null,
   customFields: [],
   priority: 'high',
   assigneeUserId: 'usr_assignee',
@@ -133,6 +136,12 @@ export const mockIssue: Issue = {
   parentIssueId: null,
   estimate: 2,
   dueDate: 1788500000,
+  plannedStartDate: null,
+  plannedFinishDate: null,
+  plannedDurationMinutes: null,
+  blocked: false,
+  relationCount: 0,
+  dependencyCount: 0,
   position: 0,
   labels: [],
   commentCount: 1,
@@ -166,7 +175,7 @@ export const mockLabel: Label = {
   updatedAt: 1788400000,
 }
 
-export const mockMilestone: Milestone = {
+export const mockMilestone: MilestoneDetail = {
   object: 'projects.milestone',
   id: 'ms_v1',
   tenantId: 'tnt_123',
@@ -179,6 +188,7 @@ export const mockMilestone: Milestone = {
   targetDate: 1788500000,
   completedAt: null,
   position: 0,
+  ownerUserId: null,
   createdAt: 1788400000,
   updatedAt: 1788400000,
 }

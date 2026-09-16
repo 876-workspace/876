@@ -19,7 +19,7 @@ describe('server', () => {
     vi.restoreAllMocks()
   })
 
-  it('builds server with instructions and registers all 17 tools', async () => {
+  it('builds server with instructions and registers all 37 tools', async () => {
     const server = buildProjectsMcpServer(config, operatorClient)
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
     await server.connect(serverTransport)
@@ -30,8 +30,14 @@ describe('server', () => {
     const toolsRes = await client.listTools()
 
     expect(client.getInstructions()).toBe(PROJECTS_SERVER_INSTRUCTIONS)
-    expect(toolsRes.tools.length).toBe(17)
+    expect(toolsRes.tools.length).toBe(37)
     expect(toolsRes.tools.map((tool) => tool.name).sort()).toEqual([
+      'activity_list',
+      'custom_modules_list',
+      'custom_record_get',
+      'custom_records_list',
+      'cycle_get',
+      'cycles_list',
       'issue_comment',
       'issue_comments',
       'issue_create',
@@ -42,10 +48,24 @@ describe('server', () => {
       'label_create',
       'labels_list',
       'milestones_list',
+      'phase_get',
+      'phases_list',
       'project_create',
       'project_get',
       'project_update',
       'projects_list',
+      'report_budget_variance',
+      'report_health',
+      'report_time',
+      'report_work',
+      'report_workload',
+      'task_lists_list',
+      'template_get',
+      'templates_list',
+      'time_entries_list',
+      'time_entry_create',
+      'time_summary',
+      'wiki_page_get',
       'work_item_types_list',
       'workflow_states_list',
       'workspace_get',
@@ -78,6 +98,25 @@ describe('server', () => {
       'work_item_types_list',
       'workflow_states_list',
       'milestones_list',
+      'phases_list',
+      'phase_get',
+      'cycles_list',
+      'cycle_get',
+      'task_lists_list',
+      'time_entries_list',
+      'time_summary',
+      'report_work',
+      'report_health',
+      'report_time',
+      'report_budget_variance',
+      'report_workload',
+      'templates_list',
+      'template_get',
+      'custom_modules_list',
+      'custom_records_list',
+      'custom_record_get',
+      'activity_list',
+      'wiki_page_get',
     ]
 
     for (const name of readOnlyTools) {
@@ -94,6 +133,7 @@ describe('server', () => {
       'issue_create',
       'issue_comment',
       'label_create',
+      'time_entry_create',
     ]
     for (const name of creationTools) {
       const tool = toolMap.get(name)
@@ -128,8 +168,8 @@ describe('server', () => {
 
     const toolsRes = await client.listTools()
 
-    expect(toolsRes.tools.length).toBe(17)
-    expect(new Set(toolsRes.tools.map((tool) => tool.name)).size).toBe(17)
+    expect(toolsRes.tools.length).toBe(37)
+    expect(new Set(toolsRes.tools.map((tool) => tool.name)).size).toBe(37)
 
     for (const tool of toolsRes.tools) {
       expect(tool.inputSchema, `${tool.name} inputSchema`).toBeDefined()
