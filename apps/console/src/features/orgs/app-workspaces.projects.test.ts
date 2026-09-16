@@ -22,11 +22,20 @@ describe('876 Projects workspace registry', () => {
         { label: 'Issues', segment: 'issues', iconKey: 'issues' },
         { label: 'Board', segment: 'board', iconKey: 'board' },
         { label: 'Labels', segment: 'labels', iconKey: 'labels' },
+        { label: 'Phases', segment: 'phases', iconKey: 'phases' },
+        { label: 'Cycles', segment: 'cycles', iconKey: 'cycles' },
+        {
+          label: 'Task Lists',
+          segment: 'task-lists',
+          iconKey: 'task-lists',
+        },
+        { label: 'Calendar', segment: 'calendar', iconKey: 'calendar' },
+        { label: 'Time', segment: 'time', iconKey: 'time' },
       ],
     })
   })
 
-  it('declares five sections in the exact expected order', () => {
+  it('declares ten sections in the exact expected order', () => {
     const workspace = findAppWorkspace('projects')
     expect(workspace).toBeDefined()
     expect(workspace?.sections.map((s) => s.label)).toEqual([
@@ -35,6 +44,11 @@ describe('876 Projects workspace registry', () => {
       'Issues',
       'Board',
       'Labels',
+      'Phases',
+      'Cycles',
+      'Task Lists',
+      'Calendar',
+      'Time',
     ])
     expect(workspace?.sections.map((s) => s.segment)).toEqual([
       '',
@@ -42,6 +56,11 @@ describe('876 Projects workspace registry', () => {
       'issues',
       'board',
       'labels',
+      'phases',
+      'cycles',
+      'task-lists',
+      'calendar',
+      'time',
     ])
   })
 

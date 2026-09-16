@@ -36,6 +36,11 @@ export type WorkspaceIconKey =
   | 'issues'
   | 'board'
   | 'labels'
+  | 'phases'
+  | 'cycles'
+  | 'task-lists'
+  | 'calendar'
+  | 'time'
   | 'settings'
   | 'billing'
   | 'packages'
@@ -119,6 +124,11 @@ export const APP_WORKSPACES = [
       { label: 'Issues', segment: 'issues', iconKey: 'issues' },
       { label: 'Board', segment: 'board', iconKey: 'board' },
       { label: 'Labels', segment: 'labels', iconKey: 'labels' },
+      { label: 'Phases', segment: 'phases', iconKey: 'phases' },
+      { label: 'Cycles', segment: 'cycles', iconKey: 'cycles' },
+      { label: 'Task Lists', segment: 'task-lists', iconKey: 'task-lists' },
+      { label: 'Calendar', segment: 'calendar', iconKey: 'calendar' },
+      { label: 'Time', segment: 'time', iconKey: 'time' },
     ],
   },
   {
