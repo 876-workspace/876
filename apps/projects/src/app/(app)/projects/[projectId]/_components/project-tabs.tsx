@@ -13,6 +13,14 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
       label: 'Gantt',
       href: `/projects/${encodeURIComponent(projectId)}/gantt`,
     },
+    {
+      label: 'Time',
+      href: `/projects/${encodeURIComponent(projectId)}/time`,
+    },
+    {
+      label: 'Finance',
+      href: `/projects/${encodeURIComponent(projectId)}/finance`,
+    },
   ]
 
   return <RouteTabs tabs={tabs} className="mb-4" />
