@@ -1,5 +1,7 @@
 import type { Request, Response } from 'express'
 
+import { getSettings } from '../../config/index.js'
+
 import { sendCommunicationsError } from '../../http/result.js'
 import { generateId } from '../../platform/ids.js'
 import { nowUnixSeconds, toDbUnixSeconds } from '../../platform/timestamps.js'
@@ -51,7 +53,7 @@ function resolveNextStatus(current: string, requested?: string): string | undefi
 }
 
 export async function handleResendWebhook(req: Request, res: Response) {
-  const secret = process.env.RESEND_WEBHOOK_SECRET
+  const secret = getSettings().resendWebhookSecret
   if (!secret) return sendCommunicationsError(res, 'communications/invalid-webhook')
 
   if (!Buffer.isBuffer(req.body))

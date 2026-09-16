@@ -1,11 +1,10 @@
 import { PrismaPg } from '@prisma/adapter-pg'
 import { Pool } from 'pg'
 
+import { getSettings } from '../config/index.js'
 import { PrismaClient } from './generated/prisma/client.js'
 
-const connectionString = process.env.COMMUNICATIONS_DATABASE_URL
-if (!connectionString)
-  throw new Error('COMMUNICATIONS_DATABASE_URL is not configured.')
+const connectionString = getSettings().databaseUrl
 
 const pool = new Pool({ connectionString })
 export const prisma = new PrismaClient({ adapter: new PrismaPg(pool) })
