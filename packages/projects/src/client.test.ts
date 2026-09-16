@@ -167,7 +167,7 @@ describe('client / runtime', () => {
     )
   })
 
-  it('create876ProjectsOperatorClient and create876ProjectsServiceClient both return the same resource surface', () => {
+  it('gives the operator the service surface plus platform administration resources', () => {
     const operatorClient = create876ProjectsOperatorClient({
       baseUrl: 'http://test.api',
       internalKey: 'key_1',
@@ -177,90 +177,17 @@ describe('client / runtime', () => {
       internalKey: 'key_1',
     })
 
-    expect(Object.keys(operatorClient).sort()).toEqual([
-      'activity',
-      'automationRules',
-      'baselines',
-      'budgets',
-      'calendar',
-      'capacity',
-      'clientGrants',
-      'comments',
-      'customFieldValues',
-      'customFields',
-      'customModules',
-      'cycles',
-      'discussions',
-      'events',
-      'followers',
-      'gantt',
-      'issueDependencies',
-      'issueRelations',
-      'issues',
-      'labels',
-      'layouts',
-      'milestones',
-      'myWork',
-      'notifications',
-      'presets',
-      'projectBilling',
-      'projectCustomFields',
-      'projectTemplates',
-      'projects',
-      'rates',
-      'reminders',
-      'reports',
-      'taskLists',
-      'tenants',
-      'timeEntries',
-      'timesheets',
-      'wiki',
-      'workItemTypes',
-      'workflowStates',
-      'workflows',
-    ])
-    expect(Object.keys(serviceClient).sort()).toEqual([
-      'activity',
-      'automationRules',
-      'baselines',
-      'budgets',
-      'calendar',
-      'capacity',
-      'clientGrants',
-      'comments',
-      'customFieldValues',
-      'customFields',
-      'customModules',
-      'cycles',
-      'discussions',
-      'events',
-      'followers',
-      'gantt',
-      'issueDependencies',
-      'issueRelations',
-      'issues',
-      'labels',
-      'layouts',
-      'milestones',
-      'myWork',
-      'notifications',
-      'presets',
-      'projectBilling',
-      'projectCustomFields',
-      'projectTemplates',
-      'projects',
-      'rates',
-      'reminders',
-      'reports',
-      'taskLists',
-      'tenants',
-      'timeEntries',
-      'timesheets',
-      'wiki',
-      'workItemTypes',
-      'workflowStates',
-      'workflows',
-    ])
+    const adminResources = [
+      'importJobs',
+      'integrationClients',
+      'metrics',
+      'webhookEndpoints',
+    ]
+    expect(Object.keys(operatorClient).sort()).toEqual(
+      [...Object.keys(serviceClient), ...adminResources].sort()
+    )
+    for (const key of adminResources)
+      expect(Object.keys(serviceClient)).not.toContain(key)
   })
 
   it('returns projects/not-configured when internalKey is missing', async () => {
