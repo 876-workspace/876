@@ -21,10 +21,6 @@ export default async function NewAutomationRulePage() {
         className="mb-4"
       />
       <h1 className="876-page-title mb-2">New rule</h1>
-      <p className="text-muted-foreground mb-6 text-sm">
-        Pick a trigger, add conditions, then choose what the rule does when
-        they match.
-      </p>
       <AutomationRuleForm mode="create" initial={blankUiRule()} />
     </div>
   )

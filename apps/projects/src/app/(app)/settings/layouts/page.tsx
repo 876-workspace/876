@@ -25,9 +25,6 @@ export default async function LayoutsPage() {
     <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">
       <PageBreadcrumb href="/settings" label="Settings" className="mb-4" />
       <h1 className="876-page-title mb-2">Layouts</h1>
-      <p className="text-muted-foreground mb-6 text-sm">
-        Control which fields project, phase, and work-item forms show — and which ones they require.
-      </p>
       {layouts.error ?? types.error ? (
         <div className="mb-4">
           <AppError

@@ -33,7 +33,6 @@ export default async function ProjectGanttPage({
       <ProjectTabs projectId={projectId} />
       <ResourceToolbar
         title="Gantt"
-        description="Planned dates and actuals"
         refresh
       />
       <Suspense fallback={<Skeleton className="mt-4 h-80 w-full" />}>

@@ -17,8 +17,7 @@ export default async function NewIntegrationClientPage() {
       />
       <h1 className="876-page-title mb-2">New client</h1>
       <p className="text-muted-foreground mb-6 text-sm">
-        Name the client and choose its scopes. The secret is shown once after
-        creation — copy it before leaving this page.
+        The secret is shown once after creation.
       </p>
       <div className="max-w-3xl">
         <IntegrationCreateForm />
