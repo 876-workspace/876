@@ -1,0 +1,138 @@
+model EmailDomain {
+  id               String   @id
+  organizationId   String   @map("organization_id")
+  provider         String
+  providerDomainId String   @unique @map("provider_domain_id")
+  name             String
+  region           String?
+  status           String
+  records          Json
+  verifiedAt       BigInt?  @map("verified_at")
+  lastCheckedAt    BigInt?  @map("last_checked_at")
+  createdAt        BigInt   @map("created_at")
+  updatedAt        BigInt   @map("updated_at")
+  deletedAt        BigInt?  @map("deleted_at")
+  deletedBy        String?  @map("deleted_by")
+  deletionReason   String?  @map("deletion_reason")
+
+  senders EmailSender[]
+
+  @@index([organizationId, status])
+  @@index([organizationId, deletedAt])
+  @@map("email_domains")
+}
+
+model EmailSender {
+  id             String       @id
+  organizationId String       @map("organization_id")
+  domainId       String?      @map("domain_id")
+  name           String
+  email          String
+  replyTo        String?      @map("reply_to")
+  kind           String
+  isDefault      Boolean      @default(false) @map("is_default")
+  isActive       Boolean      @default(true) @map("is_active")
+  createdAt      BigInt       @map("created_at")
+  updatedAt      BigInt       @map("updated_at")
+  deletedAt      BigInt?      @map("deleted_at")
+  deletedBy      String?      @map("deleted_by")
+  deletionReason String?      @map("deletion_reason")
+
+  domain     EmailDomain?    @relation(fields: [domainId], references: [id])
+  templates EmailTemplate[]
+  deliveries EmailDelivery[]
+
+  @@index([organizationId, isActive])
+  @@index([organizationId, deletedAt])
+  @@index([domainId])
+  @@map("email_senders")
+}
+
+model EmailTemplate {
+  id             String   @id
+  organizationId String?  @map("organization_id")
+  key            String
+  name           String
+  category       String
+  subject        String
+  html           String
+  text           String?
+  senderId       String?  @map("sender_id")
+  isDefault      Boolean  @default(false) @map("is_default")
+  isSystem       Boolean  @default(false) @map("is_system")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      BigInt   @map("created_at")
+  updatedAt      BigInt   @map("updated_at")
+  deletedAt      BigInt?  @map("deleted_at")
+  deletedBy      String?  @map("deleted_by")
+  deletionReason String?  @map("deletion_reason")
+
+  sender     EmailSender?    @relation(fields: [senderId], references: [id])
+  deliveries EmailDelivery[]
+
+  @@index([organizationId, category, isActive])
+  @@index([organizationId, deletedAt])
+  @@map("email_templates")
+}
+
+model EmailDelivery {
+  id                String   @id
+  organizationId    String   @map("organization_id")
+  resourceType      String?  @map("resource_type")
+  resourceId        String?  @map("resource_id")
+  templateId        String?  @map("template_id")
+  senderId          String?  @map("sender_id")
+  provider          String
+  providerMessageId String?  @unique @map("provider_message_id")
+  idempotencyKey    String   @map("idempotency_key")
+  fromName          String   @map("from_name")
+  fromEmail         String   @map("from_email")
+  replyTo           String?  @map("reply_to")
+  toRecipients      Json     @map("to_recipients")
+  ccRecipients      Json     @map("cc_recipients")
+  bccRecipients     Json     @map("bcc_recipients")
+  subject           String
+  html              String
+  text              String?
+  status            String
+  providerMetadata  Json?    @map("provider_metadata")
+  failureCode       String?  @map("failure_code")
+  failureMessage    String?  @map("failure_message")
+  createdBy         String?  @map("created_by")
+  queuedAt          BigInt?  @map("queued_at")
+  sentAt            BigInt?  @map("sent_at")
+  deliveredAt       BigInt?  @map("delivered_at")
+  openedAt          BigInt?  @map("opened_at")
+  clickedAt         BigInt?  @map("clicked_at")
+  bouncedAt         BigInt?  @map("bounced_at")
+  complainedAt      BigInt?  @map("complained_at")
+  failedAt          BigInt?  @map("failed_at")
+  createdAt         BigInt   @map("created_at")
+  updatedAt         BigInt   @map("updated_at")
+
+  template EmailTemplate?       @relation(fields: [templateId], references: [id])
+  sender   EmailSender?         @relation(fields: [senderId], references: [id])
+  events   EmailDeliveryEvent[]
+
+  @@unique([organizationId, idempotencyKey])
+  @@index([organizationId, status])
+  @@index([organizationId, resourceType, resourceId])
+  @@index([createdAt])
+  @@map("email_deliveries")
+}
+
+model EmailDeliveryEvent {
+  id              String   @id
+  deliveryId      String   @map("delivery_id")
+  provider        String
+  providerEventId String   @unique @map("provider_event_id")
+  type            String
+  occurredAt      BigInt   @map("occurred_at")
+  metadata        Json?
+  createdAt       BigInt   @map("created_at")
+
+  delivery EmailDelivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+
+  @@index([deliveryId, occurredAt])
+  @@map("email_delivery_events")
+}
