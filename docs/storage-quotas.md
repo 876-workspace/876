@@ -1,7 +1,7 @@
 # Storage Quotas — Operations Runbook
 
 Companion to `.claude/rules/storage-architecture.md` and the design spec at
-`plans/2026-07-27-storage-quotas-and-entitlements/briefs/codex/2026-07-27-storage-quotas-and-entitlements.md` §§3–4.
+`plans/jul/27-storage-quotas-and-entitlements/briefs/codex/2026-07-27-storage-quotas-and-entitlements.md` §§3–4.
 
 ---
 

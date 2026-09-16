@@ -74,7 +74,7 @@ This is the live implementation tracker for Phase 2. Update it as work moves fro
 
 ## Tests
 
-- `DONE` Dedicated exhaustive Muse test brief added at `plans/2026-08-31-provisioning-phase-2-and-profiles/briefs/muse/2026-08-31-provisioning-phase-2-routing-exhaustive-tests.md`.
+- `DONE` Dedicated exhaustive Muse test brief added at `plans/aug/31-provisioning-phase-2-and-profiles/briefs/muse/2026-08-31-provisioning-phase-2-routing-exhaustive-tests.md`.
 - `DONE` Resolver unit matrix covering normalization, OR/AND semantics and empty context.
 - `DONE` Specificity/priority/setup-key/group-key deterministic tie-break regression tests including candidate permutations.
 - `DONE` Zero/one/multiple fallback invariant tests.

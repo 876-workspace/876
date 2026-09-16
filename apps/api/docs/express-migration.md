@@ -417,7 +417,7 @@ minutes — and then took roughly as long again to review. Budget for both halve
 
 ### The brief that works
 
-Reuse `plans/2026-08-07-express-modules-migration/briefs/muse/2026-08-07-port-features.md` as the template. The
+Reuse `plans/aug/07-express-modules-migration/briefs/muse/2026-08-07-port-features.md` as the template. The
 parts that earn their place:
 
 1. **Point at the worked example**, not just the rules —
@@ -449,7 +449,7 @@ Two checks, both cheap, both catching things a passing suite cannot:
   end. That is the serialization point; everything else runs in parallel.
 - **Scope each brief to non-overlapping directories** and say explicitly which
   files the delegate must not create, naming the ones another agent is writing.
-- **Write the brief to `plans/<run>/briefs/<tool>/<date>-<task>.md` and commit it**
+- **Write the brief to `plans/<month>/<run>/briefs/<tool>/<date>-<task>.md` and commit it**
   (`.claude/rules/cli.md`). Pass the path, not an inline prompt.
 - **Give every brief the four verification commands** and "0 boundary errors" as
   the bar.
@@ -470,7 +470,7 @@ Two checks, both cheap, both catching things a passing suite cannot:
 
 ```bash
 cd apps/api && muse exec --trust-workspace --reasoning-effort high \
-  --prompt-file /workspaces/876/plans/<run>/briefs/muse/<brief>.md
+  --prompt-file /workspaces/876/plans/<month>/<run>/briefs/muse/<brief>.md
 ```
 
 - **`--trust-workspace` is required.** Without it Muse prints a single warning
@@ -488,7 +488,7 @@ cd apps/api && muse exec --trust-workspace --reasoning-effort high \
 ```bash
 agy --model=gemini-3.6-flash-high --print-timeout 45m \
     --output-format stream-json --dangerously-skip-permissions \
-    --print "$(cat plans/<run>/briefs/agy/<brief>.md)"
+    --print "$(cat plans/<month>/<run>/briefs/agy/<brief>.md)"
 ```
 
 - **Capacity is per model group and is not unlimited.** Measured 2026-08-07:

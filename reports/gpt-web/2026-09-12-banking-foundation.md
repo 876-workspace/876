@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-12  
 **Branch:** `feature/banking`  
-**Run:** `plans/2026-09-12-banking-foundation`  
+**Run:** `plans/sep/12-banking-foundation`  
 **Outcome:** implementation complete; local verification pending  
 **PR:** not opened
 
