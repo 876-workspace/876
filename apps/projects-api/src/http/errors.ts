@@ -259,6 +259,18 @@ export const PROJECTS_ERRORS = {
     message: 'The billing service could not create the invoice draft.',
     httpStatus: 502 as HttpStatusCode,
   },
+  'projects/capacity-not-found': {
+    message: 'The member capacity could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/capacity-overlap': {
+    message: 'This member already has capacity covering that period.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/invalid-period': {
+    message: 'The report period is invalid. The end must be after the start.',
+    httpStatus: 422 as HttpStatusCode,
+  },
   'projects/not-found': {
     message: 'Not found.',
     httpStatus: 404 as HttpStatusCode,

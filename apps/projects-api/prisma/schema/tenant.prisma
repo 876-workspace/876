@@ -35,6 +35,7 @@ model Tenant {
   projectBillings ProjectBilling[]
   budgets Budget[]
   rates Rate[]
+  memberCapacities MemberCapacity[]
 
   @@map("projects_tenants")
 }

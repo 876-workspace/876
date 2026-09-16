@@ -29,6 +29,7 @@ export const ENTITY_PREFIXES = {
   projectBilling: 'prjbil_',
   budget: 'bdg_',
   rate: 'rte_',
+  memberCapacity: 'cap_',
 } as const
 
 export type EntityType = keyof typeof ENTITY_PREFIXES
