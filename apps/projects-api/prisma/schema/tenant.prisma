@@ -32,6 +32,9 @@ model Tenant {
   timeEntries TimeEntry[]
   timesheets Timesheet[]
   timesheetEvents TimesheetEvent[]
+  projectBillings ProjectBilling[]
+  budgets Budget[]
+  rates Rate[]
 
   @@map("projects_tenants")
 }

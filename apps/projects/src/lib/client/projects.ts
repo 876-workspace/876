@@ -29,6 +29,7 @@ import { request } from './request'
 
 type CreateIssueParams = Omit<CreateIssueInput, 'creatorUserId'>
 type UpdateIssueParams = Omit<UpdateIssueInput, 'creatorUserId' | 'actorUserId'>
+type SearchIssuesParams = { q: string; projectId?: string }
 type CreatePhaseParams = CreateMilestoneInput & { ownerUserId?: string | null }
 type UpdatePhaseParams = UpdateMilestoneInput & { ownerUserId?: string | null }
 
@@ -57,6 +58,20 @@ export const issuesClient = {
       body: JSON.stringify(params),
     })
   },
+  /**
+   * One page of work items matching a typed query.
+   *
+   * The signal is the caller's: a picker aborts a query the user has already
+   * typed past, so an older response cannot overwrite a newer one.
+   */
+  search(params: SearchIssuesParams, signal?: AbortSignal) {
+    return request<Issue[]>('/api/issues/search', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(params),
+      signal,
+    })
+  },
 }
 
 export const phasesClient = {
@@ -68,11 +83,14 @@ export const phasesClient = {
     })
   },
   update(phaseId: string, params: UpdatePhaseParams) {
-    return request<MilestoneDetail>(`/api/phases/${encodeURIComponent(phaseId)}`, {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(params),
-    })
+    return request<MilestoneDetail>(
+      `/api/phases/${encodeURIComponent(phaseId)}`,
+      {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(params),
+      }
+    )
   },
   delete(phaseId: string) {
     return request<{ object: string; id: string; deleted: true }>(

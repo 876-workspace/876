@@ -1256,12 +1256,7 @@ export const TIMESHEET_STATUSES = [
 export const timesheetStatusSchema = z.enum(TIMESHEET_STATUSES)
 export type TimesheetStatus = z.infer<typeof timesheetStatusSchema>
 
-export const TIME_SUMMARY_GROUPS = [
-  'project',
-  'user',
-  'issue',
-  'day',
-] as const
+export const TIME_SUMMARY_GROUPS = ['project', 'user', 'issue', 'day'] as const
 export const timeSummaryGroupBySchema = z.enum(TIME_SUMMARY_GROUPS)
 export type TimeSummaryGroupBy = z.infer<typeof timeSummaryGroupBySchema>
 
@@ -1447,4 +1442,189 @@ export interface ApproveTimesheetInput {
 export interface RejectTimesheetInput {
   decidedBy: string
   note: string
+}
+
+export const BILLING_METHODS = [
+  'non-billable',
+  'fixed-fee',
+  'time-and-materials',
+  'hourly',
+  'phase-based',
+] as const
+export const billingMethodSchema = z.enum(BILLING_METHODS)
+export type BillingMethod = z.infer<typeof billingMethodSchema>
+
+export const BUDGET_SCOPES = ['project', 'milestone', 'user'] as const
+export const budgetScopeSchema = z.enum(BUDGET_SCOPES)
+export type BudgetScope = z.infer<typeof budgetScopeSchema>
+
+export const RATE_SCOPES = ['project', 'user', 'project-user'] as const
+export const rateScopeSchema = z.enum(RATE_SCOPES)
+export type RateScope = z.infer<typeof rateScopeSchema>
+
+export const projectBillingSchema = z.object({
+  object: z.literal('projects.project-billing'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  billingMethod: billingMethodSchema,
+  currency: z.string(),
+  billingCustomerId: z.string().nullable(),
+  fixedFeeAmount: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type ProjectBilling = z.infer<typeof projectBillingSchema>
+
+export const budgetSchema = z.object({
+  object: z.literal('projects.budget'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  scope: budgetScopeSchema,
+  milestoneId: z.string().nullable(),
+  userId: z.string().nullable(),
+  amountMinor: z.number().nullable(),
+  hours: z.number().nullable(),
+  thresholdPercent: z.number(),
+  periodStart: z.number().nullable(),
+  periodEnd: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type Budget = z.infer<typeof budgetSchema>
+
+export const budgetListSchema = createListSchema(budgetSchema)
+export type BudgetList = z.infer<typeof budgetListSchema>
+
+export const rateSchema = z.object({
+  object: z.literal('projects.rate'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string().nullable(),
+  userId: z.string().nullable(),
+  scope: rateScopeSchema,
+  billRateMinor: z.number(),
+  costRateMinor: z.number(),
+  currency: z.string(),
+  effectiveFrom: z.number().nullable(),
+  effectiveTo: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type Rate = z.infer<typeof rateSchema>
+
+export const rateListSchema = createListSchema(rateSchema)
+export type RateList = z.infer<typeof rateListSchema>
+
+export const moneyPlannedActualSchema = z.object({
+  plannedMinor: z.number().nullable(),
+  actualMinor: z.number(),
+  varianceMinor: z.number().nullable(),
+})
+export type MoneyPlannedActual = z.infer<typeof moneyPlannedActualSchema>
+
+export const minutesPlannedActualSchema = z.object({
+  plannedMinutes: z.number(),
+  actualMinutes: z.number(),
+  varianceMinutes: z.number(),
+})
+export type MinutesPlannedActual = z.infer<typeof minutesPlannedActualSchema>
+
+export const budgetConsumptionSchema = z.object({
+  budgetId: z.string(),
+  scope: z.string(),
+  kind: z.enum(['amount', 'hours']),
+  spent: z.number(),
+  budget: z.number(),
+  percent: z.number(),
+  overThreshold: z.boolean(),
+  overBudget: z.boolean(),
+  remaining: z.number(),
+})
+export type BudgetConsumption = z.infer<typeof budgetConsumptionSchema>
+
+export const financialSummarySchema = z.object({
+  object: z.literal('projects.financial-summary'),
+  tenantId: z.string(),
+  projectId: z.string(),
+  from: z.number(),
+  to: z.number(),
+  minutes: minutesPlannedActualSchema,
+  cost: moneyPlannedActualSchema,
+  revenue: moneyPlannedActualSchema,
+  unpricedMinutes: z.number(),
+  budgets: z.array(budgetConsumptionSchema),
+})
+export type FinancialSummary = z.infer<typeof financialSummarySchema>
+
+export const invoiceDraftSchema = z.object({
+  object: z.literal('projects.invoice-draft'),
+  invoiceId: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  from: z.number(),
+  to: z.number(),
+  idempotencyKey: z.string(),
+  billedEntryIds: z.array(z.string()),
+  billedCount: z.number(),
+  billedAmountMinor: z.number(),
+})
+export type InvoiceDraft = z.infer<typeof invoiceDraftSchema>
+
+export interface PutProjectBillingInput {
+  billingMethod: BillingMethod
+  currency?: string
+  billingCustomerId?: string | null
+  fixedFeeAmount?: number | null
+}
+
+export interface CreateBudgetInput {
+  scope: BudgetScope
+  milestoneId?: string | null
+  userId?: string | null
+  amountMinor?: number | null
+  hours?: number | null
+  thresholdPercent?: number
+  periodStart?: number | null
+  periodEnd?: number | null
+}
+
+export interface UpdateBudgetInput {
+  amountMinor?: number | null
+  hours?: number | null
+  thresholdPercent?: number
+  periodStart?: number | null
+  periodEnd?: number | null
+  milestoneId?: string | null
+  userId?: string | null
+}
+
+export interface CreateRateInput {
+  scope: RateScope
+  userId?: string | null
+  billRateMinor: number
+  costRateMinor: number
+  currency?: string
+  effectiveFrom?: number | null
+  effectiveTo?: number | null
+}
+
+export interface UpdateRateInput {
+  userId?: string | null
+  billRateMinor?: number
+  costRateMinor?: number
+  currency?: string
+  effectiveFrom?: number | null
+  effectiveTo?: number | null
+}
+
+export interface GetFinancialSummaryQuery {
+  from: number
+  to: number
+}
+
+export interface CreateInvoiceDraftInput {
+  from: number
+  to: number
 }

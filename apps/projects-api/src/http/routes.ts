@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import { createCalendarRouter } from '../modules/calendar/calendar.routes.js'
+import { createFinanceRouter } from '../modules/finance/finance.routes.js'
 import { createTimeRouter } from '../modules/time/time.routes.js'
 import { createIssuesRouter } from '../modules/issues/issues.routes.js'
 import { createLabelsRouter } from '../modules/labels/labels.routes.js'
@@ -19,6 +20,7 @@ export function buildRoutes() {
   router.use('/v1/organizations/:organizationId/labels', createLabelsRouter())
   router.use('/v1/organizations/:organizationId', createCalendarRouter())
   router.use('/v1/organizations/:organizationId', createTimeRouter())
+  router.use('/v1/organizations/:organizationId', createFinanceRouter())
   router.use('/v1/organizations/:organizationId', createWorkStructureRouter())
 
   return router

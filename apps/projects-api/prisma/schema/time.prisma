@@ -14,6 +14,8 @@ model TimeEntry {
   approvalStatus   String   @default("draft") @map("approval_status") // draft|submitted|approved|rejected
   timesheetId      String?  @map("timesheet_id")
   createdBy        String?  @map("created_by")
+  billedInvoiceId  String?  @map("billed_invoice_id") // opaque Billing invoice id; Billing owns the invoice
+  billedAt         BigInt?  @map("billed_at")
   deletedAt        BigInt?  @map("deleted_at")
   deletedBy        String?  @map("deleted_by")
   deletionReason   String?  @map("deletion_reason")

@@ -71,6 +71,7 @@ model Milestone {
   events MilestoneEvent[]
   customFieldValues MilestoneCustomFieldValue[]
   taskLists TaskList[]
+  budgets Budget[]
 
   @@unique([projectId, key])
   @@index([tenantId, status])

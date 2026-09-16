@@ -225,6 +225,40 @@ export const PROJECTS_ERRORS = {
     message: 'This timesheet cannot move from its current status.',
     httpStatus: 422 as HttpStatusCode,
   },
+  'projects/billing-config-not-found': {
+    message: 'The billing configuration for this project could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/budget-not-found': {
+    message: 'The budget could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/rate-not-found': {
+    message: 'The rate could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/invoice-customer-missing': {
+    message:
+      'Configure a billing customer for this project before drafting an invoice.',
+    httpStatus: 422 as HttpStatusCode,
+  },
+  'projects/nothing-to-invoice': {
+    message:
+      'There are no approved, unbilled, billable time entries in this period.',
+    httpStatus: 422 as HttpStatusCode,
+  },
+  'projects/invoice-has-unpriced-entries': {
+    message: 'Some entries have no matching rate and cannot be priced.',
+    httpStatus: 422 as HttpStatusCode,
+  },
+  'projects/entries-already-billed': {
+    message: 'These entries were already billed under different invoices.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/billing-unavailable': {
+    message: 'The billing service could not create the invoice draft.',
+    httpStatus: 502 as HttpStatusCode,
+  },
   'projects/not-found': {
     message: 'Not found.',
     httpStatus: 404 as HttpStatusCode,

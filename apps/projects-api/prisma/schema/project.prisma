@@ -28,6 +28,9 @@ model Project {
   baselines ProjectBaseline[]
   projectEvents ProjectEvent[]
   timeEntries TimeEntry[]
+  billingConfig ProjectBilling?
+  budgets Budget[]
+  rates Rate[]
 
   @@unique([tenantId, key])
   @@unique([tenantId, slug])

@@ -1,0 +1,61 @@
+model ProjectBilling {
+  id                String @id
+  tenantId          String @map("tenant_id")
+  projectId         String @unique @map("project_id")
+  billingMethod     String @default("non-billable") @map("billing_method") // non-billable|fixed-fee|time-and-materials|hourly|phase-based
+  currency          String @default("USD")
+  billingCustomerId String? @map("billing_customer_id") // opaque Billing customer id; Billing owns the record
+  fixedFeeAmount    Int?   @map("fixed_fee_amount") // minor units, integer; required when billingMethod is fixed-fee
+  createdAt         BigInt @map("created_at")
+  updatedAt         BigInt @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId], map: "projects_project_billing_tenant_idx")
+  @@map("projects_project_billing")
+}
+
+model Budget {
+  id               String  @id
+  tenantId         String  @map("tenant_id")
+  projectId        String  @map("project_id")
+  scope            String  // project|milestone|user
+  milestoneId      String? @map("milestone_id")
+  userId           String? @map("user_id")
+  amountMinor      Int?    @map("amount_minor") // minor units, integer; exactly one of amountMinor/hours is set
+  hours            Int?    // whole hours; exactly one of amountMinor/hours is set
+  thresholdPercent Int     @default(80) @map("threshold_percent")
+  periodStart      BigInt? @map("period_start")
+  periodEnd        BigInt? @map("period_end")
+  createdAt        BigInt  @map("created_at")
+  updatedAt        BigInt  @map("updated_at")
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, projectId], map: "projects_budgets_tenant_project_idx")
+  @@map("projects_budgets")
+}
+
+model Rate {
+  id              String  @id
+  tenantId        String  @map("tenant_id")
+  projectId       String? @map("project_id") // set for project and project-user scopes; null for user scope
+  userId          String? @map("user_id") // set for user and project-user scopes; null for project scope
+  scope           String  // project|user|project-user
+  billRateMinor   Int     @map("bill_rate_minor") // per hour, minor units, integer
+  costRateMinor   Int     @map("cost_rate_minor") // per hour, minor units, integer
+  currency        String  @default("USD")
+  effectiveFrom   BigInt? @map("effective_from")
+  effectiveTo     BigInt? @map("effective_to")
+  createdAt       BigInt  @map("created_at")
+  updatedAt       BigInt  @map("updated_at")
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId, userId], map: "projects_rates_tenant_proj_user_idx")
+  @@map("projects_rates")
+}
