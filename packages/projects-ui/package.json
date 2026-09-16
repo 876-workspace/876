@@ -178,6 +178,34 @@
     "./layouts/layout-summary": {
       "types": "./src/layouts/layout-summary.tsx",
       "default": "./src/layouts/layout-summary.tsx"
+    },
+    "./automation/types": {
+      "types": "./src/automation/types.ts",
+      "default": "./src/automation/types.ts"
+    },
+    "./automation/labels": {
+      "types": "./src/automation/labels.ts",
+      "default": "./src/automation/labels.ts"
+    },
+    "./automation/blueprint-editor": {
+      "types": "./src/automation/blueprint-editor.tsx",
+      "default": "./src/automation/blueprint-editor.tsx"
+    },
+    "./automation/automation-rule-list": {
+      "types": "./src/automation/automation-rule-list.tsx",
+      "default": "./src/automation/automation-rule-list.tsx"
+    },
+    "./automation/automation-rule-editor": {
+      "types": "./src/automation/automation-rule-editor.tsx",
+      "default": "./src/automation/automation-rule-editor.tsx"
+    },
+    "./automation/automation-run-table": {
+      "types": "./src/automation/automation-run-table.tsx",
+      "default": "./src/automation/automation-run-table.tsx"
+    },
+    "./automation/notification-list": {
+      "types": "./src/automation/notification-list.tsx",
+      "default": "./src/automation/notification-list.tsx"
     }
   },
   "scripts": {
