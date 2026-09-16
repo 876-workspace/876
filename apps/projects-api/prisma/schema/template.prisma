@@ -1,0 +1,56 @@
+model ProjectTemplate {
+  id              String   @id
+  tenantId        String   @map("tenant_id")
+  key             String
+  name            String
+  description     String?
+  currentVersion  Int      @default(1) @map("current_version")
+  definition      Json
+  sourceProjectId String?  @map("source_project_id")
+  deletedAt       BigInt?  @map("deleted_at")
+  deletedBy       String?  @map("deleted_by")
+  deletionReason  String?  @map("deletion_reason")
+  createdAt       BigInt   @map("created_at")
+  updatedAt       BigInt   @map("updated_at")
+
+  tenant         Tenant                           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sourceProject  Project?                         @relation("TemplateSourceProject", fields: [sourceProjectId], references: [id], onDelete: SetNull)
+  versions       ProjectTemplateVersion[]
+  instantiations ProjectTemplateInstantiation[]
+
+  @@unique([tenantId, key], map: "projects_project_templates_tenant_key_uidx")
+  @@index([tenantId, updatedAt], map: "projects_tpl_tenant_updated_idx")
+  @@map("projects_project_templates")
+}
+
+model ProjectTemplateVersion {
+  id         String @id
+  tenantId   String @map("tenant_id")
+  templateId String @map("template_id")
+  version    Int
+  definition Json
+  createdAt  BigInt @map("created_at")
+
+  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  template ProjectTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, version], map: "projects_tpl_versions_tpl_ver_uidx")
+  @@map("projects_project_template_versions")
+}
+
+model ProjectTemplateInstantiation {
+  id              String @id
+  tenantId        String @map("tenant_id")
+  templateId      String @map("template_id")
+  templateVersion Int    @map("template_version")
+  idempotencyKey  String @map("idempotency_key")
+  projectId       String @map("project_id")
+  createdAt       BigInt @map("created_at")
+
+  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  template ProjectTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  project  Project         @relation("TemplateInstantiationProject", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, templateId, idempotencyKey], map: "projects_tpl_inst_tenant_tpl_key_uidx")
+  @@map("projects_project_template_instantiations")
+}

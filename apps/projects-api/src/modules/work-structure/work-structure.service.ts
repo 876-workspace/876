@@ -5,6 +5,11 @@ import {
   nullableToDbUnixSeconds,
   toDbUnixSeconds,
 } from '../../platform/timestamps.js'
+import {
+  buildCustomFieldValueData,
+  customFieldOptionKeys,
+  missingRequiredFieldKey,
+} from '../custom-fields/field-values.js'
 import * as issues from '../issues/index.js'
 import * as projects from '../projects/index.js'
 import * as tenants from '../tenants/index.js'
@@ -559,7 +564,7 @@ export async function updateCustomField(
 
   if (wasOptionField && !willBeOptionField)
     return { data: null, error: getError('projects/invalid-request') }
-  if (willBeOptionField && optionKeys(nextOptions).length === 0)
+  if (willBeOptionField && customFieldOptionKeys(nextOptions).length === 0)
     return { data: null, error: getError('projects/invalid-request') }
   if (!willBeOptionField && body.options !== undefined)
     return { data: null, error: getError('projects/invalid-request') }
@@ -598,87 +603,6 @@ export async function removeCustomField(
   }
 }
 
-function optionKeys(options: unknown): string[] {
-  if (!Array.isArray(options)) return []
-  return options.flatMap((option) =>
-    typeof option === 'object' &&
-    option !== null &&
-    'key' in option &&
-    typeof option.key === 'string'
-      ? [option.key]
-      : []
-  )
-}
-
-function isEmpty(value: CustomFieldValueInput['value']): boolean {
-  return (
-    value === null ||
-    value === '' ||
-    (Array.isArray(value) && value.length === 0)
-  )
-}
-
-function valueData(
-  field: { fieldType: string; options: unknown },
-  value: CustomFieldValueInput['value']
-) {
-  const empty = {
-    stringValue: null,
-    integerValue: null,
-    decimalValue: null,
-    booleanValue: null,
-    dateValue: null,
-    selectKey: null,
-    selectKeys: [] as string[],
-  }
-  if (isEmpty(value)) return { data: null, error: null }
-  if (
-    (field.fieldType === 'text' ||
-      field.fieldType === 'textarea' ||
-      field.fieldType === 'user' ||
-      field.fieldType === 'url') &&
-    typeof value === 'string'
-  )
-    return { data: { ...empty, stringValue: value }, error: null }
-  if (
-    field.fieldType === 'number' &&
-    typeof value === 'number' &&
-    Number.isInteger(value)
-  )
-    return { data: { ...empty, integerValue: value }, error: null }
-  if (
-    field.fieldType === 'decimal' &&
-    typeof value === 'string' &&
-    /^-?\d+(?:\.\d{1,6})?$/.test(value)
-  )
-    return { data: { ...empty, decimalValue: value }, error: null }
-  if (field.fieldType === 'boolean' && typeof value === 'boolean')
-    return { data: { ...empty, booleanValue: value }, error: null }
-  if (
-    field.fieldType === 'date' &&
-    typeof value === 'number' &&
-    Number.isInteger(value)
-  )
-    return { data: { ...empty, dateValue: BigInt(value) }, error: null }
-  const keys = optionKeys(field.options)
-  if (field.fieldType === 'select' && typeof value === 'string')
-    return keys.includes(value)
-      ? { data: { ...empty, selectKey: value }, error: null }
-      : { data: null, error: getError('projects/custom-field-option-invalid') }
-  if (
-    field.fieldType === 'multi-select' &&
-    Array.isArray(value) &&
-    value.every((key) => keys.includes(key))
-  )
-    return { data: { ...empty, selectKeys: value }, error: null }
-  if (field.fieldType === 'select' || field.fieldType === 'multi-select')
-    return {
-      data: null,
-      error: getError('projects/custom-field-option-invalid'),
-    }
-  return { data: null, error: getError('projects/custom-field-value-invalid') }
-}
-
 function appliesToWorkItemType(
   field: { types?: Array<{ typeId: string }> },
   workItemTypeId: string
@@ -705,7 +629,7 @@ export async function validateIssueCustomFieldValues(
       return { data: null, error: getError('projects/custom-field-not-found') }
     if (!appliesToWorkItemType(field, workItemTypeId))
       return { data: null, error: getError('projects/invalid-request') }
-    const parsed = valueData(field, input.value)
+    const parsed = buildCustomFieldValueData(field, input.value)
     if (parsed.error) return { data: null, error: parsed.error }
     inputByFieldId.set(input.fieldId, input)
   }
@@ -719,21 +643,18 @@ export async function validateIssueCustomFieldValues(
     for (const value of existingValues) existingFieldIds.add(value.fieldId)
   }
 
-  for (const field of fields) {
-    if (!field.required || !appliesToWorkItemType(field, workItemTypeId))
-      continue
-    const input = inputByFieldId.get(field.id)
-    const hasValue = input
-      ? !isEmpty(input.value)
-      : existingFieldIds.has(field.id)
-    if (!hasValue)
-      return {
-        data: null,
-        error: getError('projects/required-custom-field-missing', {
-          param: field.key,
-        }),
-      }
-  }
+  const missingKey = missingRequiredFieldKey(
+    fields.filter((field) => appliesToWorkItemType(field, workItemTypeId)),
+    inputs,
+    existingFieldIds
+  )
+  if (missingKey)
+    return {
+      data: null,
+      error: getError('projects/required-custom-field-missing', {
+        param: missingKey,
+      }),
+    }
 
   return { data: null, error: null }
 }
@@ -752,7 +673,7 @@ export async function setCustomFieldValueForTenant(
   )
   if (!field)
     return { data: null, error: getError('projects/custom-field-not-found') }
-  const parsed = valueData(field, input.value)
+  const parsed = buildCustomFieldValueData(field, input.value)
   if (parsed.error) return { data: null, error: parsed.error }
   if (!parsed.data) {
     await repository.clearCustomFieldValue(
@@ -880,7 +801,7 @@ export async function validateCustomFieldValues(
     const field = await repository.retrieveCustomField(tenantId, input.fieldId)
     if (!field)
       return { data: null, error: getError('projects/custom-field-not-found') }
-    const parsed = valueData(field, input.value)
+    const parsed = buildCustomFieldValueData(field, input.value)
     if (parsed.error) return { data: null, error: parsed.error }
   }
   return { data: null, error: null }

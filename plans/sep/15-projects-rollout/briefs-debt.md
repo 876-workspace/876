@@ -8,3 +8,4 @@
 7. Console renders cycle, task-list, calendar, timesheet-list, baseline-comparison and attachment tables with Console-local markup (`apps/console/src/features/projects/components`, `operator-format.ts`). Per shared-product-ui these belong in `@876/projects-ui` and must be promoted, with the Projects app adopting the same components.
 8. Workload `plannedMinutes` is always 0: issues carry point estimates, not effort. Needs an effort field or removal from the contract.
 9. `apps/console/src/lib/permissions.test.ts` pinned counts fail on main since the commerce permission catalog landed; not caused by Projects.
+10. Template instantiation checks dependency cycles with its own ref-graph walk (templates module) instead of the issue-dependency service's check — consolidate into one pure cycle detector.

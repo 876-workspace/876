@@ -2,7 +2,8 @@ import {
   fromDbUnixSeconds,
   nullableFromDbUnixSeconds,
 } from '../../platform/timestamps.js'
-import { readCustomFieldValue } from './custom-field-value.js'
+// Direct leaf import: field-values is pure, while the barrel pulls DB-backed modules.
+import { readCustomFieldValue } from '../custom-fields/field-values.js'
 
 type Timestamp = bigint | number
 type DecimalString = { toString(): string }

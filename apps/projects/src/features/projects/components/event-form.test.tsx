@@ -56,6 +56,7 @@ function project(): Project {
     createdAt: 0,
     updatedAt: 0,
     memberCount: 2,
+    customFields: [],
   }
 }
 

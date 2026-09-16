@@ -1,0 +1,6 @@
+export * from './templates.routes.js'
+export * from './templates.service.js'
+export * from './templates.schemas.js'
+export * from './templates.serializers.js'
+export * from './templates.capture.js'
+export * from './templates.materialize.js'

@@ -138,6 +138,46 @@
     "./reports/csv-export-link": {
       "types": "./src/reports/csv-export-link.tsx",
       "default": "./src/reports/csv-export-link.tsx"
+    },
+    "./templates/types": {
+      "types": "./src/templates/types.ts",
+      "default": "./src/templates/types.ts"
+    },
+    "./templates/template-list": {
+      "types": "./src/templates/template-list.tsx",
+      "default": "./src/templates/template-list.tsx"
+    },
+    "./templates/template-summary": {
+      "types": "./src/templates/template-summary.tsx",
+      "default": "./src/templates/template-summary.tsx"
+    },
+    "./templates/template-preview-table": {
+      "types": "./src/templates/template-preview-table.tsx",
+      "default": "./src/templates/template-preview-table.tsx"
+    },
+    "./templates/instantiate-options": {
+      "types": "./src/templates/instantiate-options.tsx",
+      "default": "./src/templates/instantiate-options.tsx"
+    },
+    "./layouts/types": {
+      "types": "./src/layouts/types.ts",
+      "default": "./src/layouts/types.ts"
+    },
+    "./layouts/evaluate-rules": {
+      "types": "./src/layouts/evaluate-rules.ts",
+      "default": "./src/layouts/evaluate-rules.ts"
+    },
+    "./layouts/layout-renderer": {
+      "types": "./src/layouts/layout-renderer.tsx",
+      "default": "./src/layouts/layout-renderer.tsx"
+    },
+    "./layouts/layout-editor": {
+      "types": "./src/layouts/layout-editor.tsx",
+      "default": "./src/layouts/layout-editor.tsx"
+    },
+    "./layouts/layout-summary": {
+      "types": "./src/layouts/layout-summary.tsx",
+      "default": "./src/layouts/layout-summary.tsx"
     }
   },
   "scripts": {

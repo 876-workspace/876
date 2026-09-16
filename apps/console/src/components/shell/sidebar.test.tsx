@@ -225,6 +225,7 @@ describe('Sidebar', () => {
         'Task Lists',
         'Calendar',
         'Time',
+        'Templates',
       ])
       expect(screen.queryByRole('link', { name: 'Storage' })).toBeNull()
     })

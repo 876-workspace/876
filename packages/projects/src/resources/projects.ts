@@ -6,10 +6,13 @@ import {
   projectMemberListSchema,
   projectMemberSchema,
   projectSchema,
+  projectTemplateSchema,
   type AddProjectMemberInput,
+  type CloneProjectInput,
   type CreateProjectInput,
   type ListProjectsQuery,
   type RequestOptions,
+  type SaveAsTemplateInput,
   type UpdateProjectInput,
 } from '../types'
 
@@ -112,6 +115,40 @@ export function createProjectsResource(runtime: Runtime) {
           signal: options.signal,
         },
         deletedSchema
+      )
+    },
+    clone(
+      organizationId: string,
+      projectId: string,
+      input: CloneProjectInput,
+      options: RequestOptions = {}
+    ) {
+      return request(
+        runtime,
+        {
+          method: 'POST',
+          path: `${root(organizationId)}/${encodeURIComponent(projectId)}/clone`,
+          body: input,
+          signal: options.signal,
+        },
+        projectSchema
+      )
+    },
+    saveAsTemplate(
+      organizationId: string,
+      projectId: string,
+      input: SaveAsTemplateInput,
+      options: RequestOptions = {}
+    ) {
+      return request(
+        runtime,
+        {
+          method: 'POST',
+          path: `${root(organizationId)}/${encodeURIComponent(projectId)}/save-as-template`,
+          body: input,
+          signal: options.signal,
+        },
+        projectTemplateSchema
       )
     },
     members: {

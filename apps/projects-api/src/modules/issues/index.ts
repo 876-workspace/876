@@ -8,6 +8,7 @@ export {
   createDependency,
   createRelation,
   listDependencies,
+  listDependenciesForIssueIds,
   listRelations,
   removeDependency,
   removeRelation,

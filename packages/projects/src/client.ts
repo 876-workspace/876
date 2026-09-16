@@ -7,6 +7,8 @@ import { createIssuesResource } from './resources/issues'
 import { createIssueDependenciesResource } from './resources/issue-dependencies'
 import { createIssueRelationsResource } from './resources/issue-relations'
 import { createLabelsResource } from './resources/labels'
+import { createLayoutsResource } from './resources/layouts'
+import { createProjectCustomFieldsResource } from './resources/project-custom-fields'
 import { createBaselinesResource } from './resources/baselines'
 import { createBudgetsResource } from './resources/budgets'
 import { createCapacityResource } from './resources/capacity'
@@ -25,6 +27,7 @@ import { createMilestonesResource } from './resources/milestones'
 import { createTaskListsResource } from './resources/task-lists'
 import { createPresetsResource } from './resources/presets'
 import { createProjectsResource } from './resources/projects'
+import { createProjectTemplatesResource } from './resources/project-templates'
 import { createTenantsResource } from './resources/tenants'
 import { createWorkflowStatesResource } from './resources/workflow-states'
 import { createWorkItemTypesResource } from './resources/work-item-types'
@@ -36,10 +39,13 @@ export function create876ProjectsClient(options: ClientOptions = {}) {
   return {
     tenants: createTenantsResource(runtime),
     projects: createProjectsResource(runtime),
+    projectTemplates: createProjectTemplatesResource(runtime),
     issues: createIssuesResource(runtime),
     issueRelations: createIssueRelationsResource(runtime),
     issueDependencies: createIssueDependenciesResource(runtime),
     labels: createLabelsResource(runtime),
+    layouts: createLayoutsResource(runtime),
+    projectCustomFields: createProjectCustomFieldsResource(runtime),
     comments: createCommentsResource(runtime),
     workItemTypes: createWorkItemTypesResource(runtime),
     workflowStates: createWorkflowStatesResource(runtime),

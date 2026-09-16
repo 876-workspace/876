@@ -55,6 +55,7 @@ const project: Project = {
   createdAt: 1,
   updatedAt: 1,
   memberCount: 2,
+  customFields: [],
 }
 
 const otherProject: Project = {

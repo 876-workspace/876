@@ -5,6 +5,8 @@ import {
   nullableToDbUnixSeconds,
   toDbUnixSeconds,
 } from '../../platform/timestamps.js'
+import * as customFields from '../custom-fields/index.js'
+import * as layouts from '../layouts/index.js'
 import * as tenants from '../tenants/index.js'
 import { resolveOwnedWorkItemType } from '../work-structure/work-item-type-access.js'
 import * as repository from './projects.repository.js'
@@ -33,6 +35,10 @@ export type PaginatedProjects = {
 }
 
 const KEY_REGEX = /^[A-Z0-9]{2,10}$/
+
+export function isValidProjectKey(key: string): boolean {
+  return KEY_REGEX.test(key)
+}
 
 export function deriveKeyBase(name: string): string {
   const cleaned = name.toUpperCase().replace(/[^A-Z0-9]/g, '')
@@ -108,6 +114,62 @@ async function validateDefaultWorkItemType(
     : getError('projects/work-item-type-not-found')
 }
 
+function projectLayoutIncoming(body: CreateProjectBody | UpdateProjectBody) {
+  const incoming: layouts.LayoutFieldInput = {}
+  if (body.name !== undefined) incoming.title = body.name
+  if (body.description !== undefined) incoming.description = body.description
+  if (body.status !== undefined) incoming.state = body.status
+  if (body.startDate !== undefined) incoming.startDate = body.startDate
+  if (body.targetDate !== undefined) incoming.dueDate = body.targetDate
+  return incoming
+}
+
+function projectLayoutExisting(project: {
+  name: string
+  description: string | null
+  status: string
+  startDate: bigint | number | null
+  targetDate: bigint | number | null
+}) {
+  return {
+    title: project.name,
+    description: project.description,
+    state: project.status,
+    startDate:
+      project.startDate === null || project.startDate === undefined
+        ? null
+        : Number(project.startDate),
+    dueDate:
+      project.targetDate === null || project.targetDate === undefined
+        ? null
+        : Number(project.targetDate),
+  } satisfies layouts.LayoutFieldInput
+}
+
+async function projectLayoutExistingValues(
+  tenantId: string,
+  projectId: string
+): Promise<layouts.LayoutFieldInput> {
+  const values = await customFields.listCustomFieldValuesForTenant(
+    tenantId,
+    projectId
+  )
+  const existing: layouts.LayoutFieldInput = {}
+  for (const value of values) existing[`cf:${value.fieldKey}`] = value.value
+  return existing
+}
+
+async function attachCustomFields(
+  tenantId: string,
+  rows: ProjectRow[]
+): Promise<Map<string, customFields.SerializedProjectCustomFieldValue[]>> {
+  if (rows.length === 0) return new Map()
+  return customFields.listCustomFieldValuesForProjects(
+    tenantId,
+    rows.map((row) => row.id)
+  )
+}
+
 /**
  * Resolves a project row for another module by id or key.
  *
@@ -159,9 +221,12 @@ export async function list(
     includeArchived,
   })
 
+  const valuesByProject = await attachCustomFields(tenant.id, pagedRows)
   return {
     data: {
-      items: pagedRows.map((row) => serializeProject(row)),
+      items: pagedRows.map((row) =>
+        serializeProject(row, undefined, valuesByProject.get(row.id) ?? [])
+      ),
       hasMore,
       totalCount,
     },
@@ -182,6 +247,14 @@ export async function create(
     body.defaultWorkItemTypeId
   )
   if (defaultTypeError) return { data: null, error: defaultTypeError }
+
+  const layoutCheck = await layouts.enforceLayoutRules({
+    organizationId,
+    entity: 'project',
+    existing: {},
+    incoming: projectLayoutIncoming(body),
+  })
+  if (layoutCheck.error) return { data: null, error: layoutCheck.error }
 
   let key: string
   if (body.key !== undefined) {
@@ -218,7 +291,7 @@ export async function create(
     updatedAt: now,
   })
 
-  return { data: serializeProject(created, 0), error: null }
+  return { data: serializeProject(created, 0, []), error: null }
 }
 
 export async function retrieve(
@@ -228,9 +301,13 @@ export async function retrieve(
   const resolved = await resolveTenant(organizationId)
   if (resolved.error !== null) return { data: null, error: resolved.error }
   const row = await repository.retrieve(resolved.tenant.id, projectId)
-  return row
-    ? { data: serializeProject(row), error: null }
-    : { data: null, error: getError('projects/project-not-found') }
+  if (!row)
+    return { data: null, error: getError('projects/project-not-found') }
+  const values = await customFields.listCustomFieldValuesForTenant(
+    resolved.tenant.id,
+    row.id
+  )
+  return { data: serializeProject(row, undefined, values), error: null }
 }
 
 export async function update(
@@ -260,6 +337,17 @@ export async function update(
       return { data: null, error: getError('projects/project-key-taken') }
   }
 
+  const layoutCheck = await layouts.enforceLayoutRules({
+    organizationId,
+    entity: 'project',
+    existing: {
+      ...projectLayoutExisting(existing),
+      ...(await projectLayoutExistingValues(tenant.id, projectId)),
+    },
+    incoming: projectLayoutIncoming(body),
+  })
+  if (layoutCheck.error) return { data: null, error: layoutCheck.error }
+
   const updatedParams: Parameters<typeof repository.update>[2] = {
     updatedAt: toDbUnixSeconds(nowUnixSeconds()),
   }
@@ -280,7 +368,11 @@ export async function update(
   if (body.position !== undefined) updatedParams.position = body.position
 
   const updated = await repository.update(tenant.id, projectId, updatedParams)
-  return { data: serializeProject(updated), error: null }
+  const values = await customFields.listCustomFieldValuesForTenant(
+    tenant.id,
+    updated.id
+  )
+  return { data: serializeProject(updated, undefined, values), error: null }
 }
 
 export async function remove(

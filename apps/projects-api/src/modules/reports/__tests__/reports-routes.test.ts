@@ -3,7 +3,30 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { errorHandler } from '../../../http/error-handler.js'
 
-const { tenantsRepo, repository } = vi.hoisted(() => ({
+const {
+  layoutsRepo,
+  projectCustomFieldsRepo,
+ tenantsRepo, repository } = vi.hoisted(() => ({
+  layoutsRepo: {
+    listLayouts: vi.fn(),
+    retrieveLayout: vi.fn(),
+    createLayout: vi.fn(),
+    updateLayout: vi.fn(),
+    softDeleteLayout: vi.fn(),
+    clearDefaultInScope: vi.fn(),
+  },
+  projectCustomFieldsRepo: {
+    listProjectCustomFields: vi.fn(),
+    retrieveProjectCustomField: vi.fn(),
+    retrieveProjectCustomFieldByKey: vi.fn(),
+    createProjectCustomField: vi.fn(),
+    updateProjectCustomField: vi.fn(),
+    archiveProjectCustomField: vi.fn(),
+    listProjectCustomFieldValues: vi.fn(),
+    listProjectCustomFieldValuesForProjects: vi.fn(),
+    upsertProjectCustomFieldValue: vi.fn(),
+    clearProjectCustomFieldValue: vi.fn(),
+  },
   tenantsRepo: { retrieveByOrganization: vi.fn() },
   repository: {
     listCapacities: vi.fn(),
@@ -155,6 +178,11 @@ vi.mock('../../finance/finance.repository.js', () => ({
 vi.mock('../reports.repository.js', () => repository)
 vi.mock('@876/billing/service', () => ({ create876BillingServiceClient: vi.fn() }))
 
+vi.mock('../../layouts/layouts.repository.js', () => layoutsRepo)
+vi.mock(
+  '../../custom-fields/project-custom-fields.repository.js',
+  () => projectCustomFieldsRepo
+)
 const { createReportsRouter } = await import('../reports.routes.js')
 
 const tenant = {
@@ -201,6 +229,10 @@ async function requestRaw(
 }
 
 beforeEach(() => {
+  layoutsRepo.listLayouts.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFields.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValues.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValuesForProjects.mockResolvedValue([])
   vi.clearAllMocks()
   process.env.PROJECTS_INTERNAL_KEY = 'test-internal-key'
   tenantsRepo.retrieveByOrganization.mockResolvedValue(tenant)

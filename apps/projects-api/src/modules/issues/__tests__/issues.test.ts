@@ -2,6 +2,8 @@ import express from 'express'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const {
+  layoutsRepo,
+  projectCustomFieldsRepo,
   tenantsRepo,
   projectsRepo,
   labelsRepo,
@@ -27,6 +29,26 @@ const {
     updateIssue: vi.fn(),
   }
   return {
+    layoutsRepo: {
+      listLayouts: vi.fn(),
+      retrieveLayout: vi.fn(),
+      createLayout: vi.fn(),
+      updateLayout: vi.fn(),
+      softDeleteLayout: vi.fn(),
+      clearDefaultInScope: vi.fn(),
+    },
+    projectCustomFieldsRepo: {
+      listProjectCustomFields: vi.fn(),
+      retrieveProjectCustomField: vi.fn(),
+      retrieveProjectCustomFieldByKey: vi.fn(),
+      createProjectCustomField: vi.fn(),
+      updateProjectCustomField: vi.fn(),
+      archiveProjectCustomField: vi.fn(),
+      listProjectCustomFieldValues: vi.fn(),
+      listProjectCustomFieldValuesForProjects: vi.fn(),
+      upsertProjectCustomFieldValue: vi.fn(),
+      clearProjectCustomFieldValue: vi.fn(),
+    },
     tenantsRepo: {
       retrieveByOrganization: vi.fn(),
     },
@@ -184,6 +206,11 @@ vi.mock('../issue-links.repository.js', () => issueLinksRepo)
 
 vi.mock('../../projects/gantt.repository.js', () => ganttRepo)
 vi.mock('../../projects/baselines.repository.js', () => baselinesRepo)
+vi.mock('../../layouts/layouts.repository.js', () => layoutsRepo)
+vi.mock(
+  '../../custom-fields/project-custom-fields.repository.js',
+  () => projectCustomFieldsRepo
+)
 const service = await import('../issues.service.js')
 const { createIssuesRouter } = await import('../issues.routes.js')
 
@@ -339,6 +366,10 @@ async function requestJson(
 }
 
 beforeEach(() => {
+  layoutsRepo.listLayouts.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFields.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValues.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValuesForProjects.mockResolvedValue([])
   vi.clearAllMocks()
   delete process.env.DELETION_MODE
   process.env.PROJECTS_INTERNAL_KEY = 'test-internal-key'

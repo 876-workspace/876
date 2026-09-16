@@ -1,7 +1,30 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { repository, tenants, projects, issues, taskListsRepo, cyclesRepo } =
+const {
+  layoutsRepo,
+  projectCustomFieldsRepo,
+ repository, tenants, projects, issues, taskListsRepo, cyclesRepo } =
   vi.hoisted(() => ({
+  layoutsRepo: {
+    listLayouts: vi.fn(),
+    retrieveLayout: vi.fn(),
+    createLayout: vi.fn(),
+    updateLayout: vi.fn(),
+    softDeleteLayout: vi.fn(),
+    clearDefaultInScope: vi.fn(),
+  },
+  projectCustomFieldsRepo: {
+    listProjectCustomFields: vi.fn(),
+    retrieveProjectCustomField: vi.fn(),
+    retrieveProjectCustomFieldByKey: vi.fn(),
+    createProjectCustomField: vi.fn(),
+    updateProjectCustomField: vi.fn(),
+    archiveProjectCustomField: vi.fn(),
+    listProjectCustomFieldValues: vi.fn(),
+    listProjectCustomFieldValuesForProjects: vi.fn(),
+    upsertProjectCustomFieldValue: vi.fn(),
+    clearProjectCustomFieldValue: vi.fn(),
+  },
     repository: {
       listWorkItemTypes: vi.fn(),
       retrieveWorkItemType: vi.fn(),
@@ -78,6 +101,11 @@ vi.mock('../../tenants/index.js', () => tenants)
 vi.mock('../../projects/index.js', () => projects)
 vi.mock('../../issues/index.js', () => issues)
 
+vi.mock('../../layouts/layouts.repository.js', () => layoutsRepo)
+vi.mock(
+  '../../custom-fields/project-custom-fields.repository.js',
+  () => projectCustomFieldsRepo
+)
 const service = await import('../work-structure.service.js')
 
 const SECOND = 1787767200n
@@ -246,6 +274,10 @@ function resetRepositoryDefaults() {
 }
 
 beforeEach(() => {
+  layoutsRepo.listLayouts.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFields.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValues.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValuesForProjects.mockResolvedValue([])
   vi.clearAllMocks()
   resetRepositoryDefaults()
   tenants.resolveTenant.mockResolvedValue(tenant)

@@ -109,6 +109,43 @@ export const PROJECTS_ERRORS = {
     message: 'Complete all required custom fields.',
     httpStatus: 400 as HttpStatusCode,
   },
+  'projects/layout-not-found': {
+    message: 'The layout could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/layout-required-fields': {
+    message: 'The active layout requires additional fields.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/layout-field-disabled': {
+    message: 'The active layout does not allow changing this field.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/template-not-found': {
+    message: 'The project template could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/template-key-taken': {
+    message: 'Another template already uses that key.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/invalid-template-key': {
+    message: 'A template key must be kebab-case, starting with a letter.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/invalid-template-definition': {
+    message: 'The template definition is invalid.',
+    httpStatus: 422 as HttpStatusCode,
+  },
+  'projects/template-missing-references': {
+    message:
+      'Some types, states, or labels in the template are missing from this workspace.',
+    httpStatus: 422 as HttpStatusCode,
+  },
+  'projects/template-dependency-cycle': {
+    message: 'The template dependencies would create a scheduling cycle.',
+    httpStatus: 422 as HttpStatusCode,
+  },
   'projects/preset-not-found': {
     message: 'The requested work structure preset could not be found.',
     httpStatus: 404 as HttpStatusCode,

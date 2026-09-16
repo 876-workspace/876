@@ -1,5 +1,7 @@
 import { ProjectDetail } from '@876/projects-ui/project-detail'
 import { AppError } from '@876/ui/app-error'
+import { buttonVariants } from '@876/ui/button'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
@@ -50,6 +52,25 @@ export async function ProjectDetailData({
           error={enrichmentError}
           variant="banner"
         />
+      ) : null}
+      {canEdit ? (
+        <nav
+          aria-label="Project actions"
+          className="flex flex-wrap items-center gap-2"
+        >
+          <Link
+            href={`/projects/${encodeURIComponent(projectResult.data.id)}/save-as-template`}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            Save as template
+          </Link>
+          <Link
+            href={`/projects/${encodeURIComponent(projectResult.data.id)}/clone`}
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          >
+            Clone
+          </Link>
+        </nav>
       ) : null}
       <ProjectDetail
         project={projectResult.data}

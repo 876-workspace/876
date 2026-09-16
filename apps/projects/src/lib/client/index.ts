@@ -18,6 +18,7 @@ import {
 import { onboarding } from './onboarding'
 import { remindersClient } from './reminders'
 import { taskListsClient } from './task-lists'
+import { templatesClient } from './templates'
 
 export const client = {
   appMemberships,
@@ -38,6 +39,7 @@ export const client = {
   events: eventsClient,
   finance: financeClient,
   reminders: remindersClient,
+  templates: templatesClient,
 }
 
 export { appMemberships } from './app-memberships'
@@ -48,6 +50,7 @@ export { financeClient } from './finance'
 export { onboarding } from './onboarding'
 export { remindersClient } from './reminders'
 export { taskListsClient } from './task-lists'
+export { templatesClient } from './templates'
 export { phaseCustomFieldsClient } from './phase-custom-fields'
 export {
   projectsClient,

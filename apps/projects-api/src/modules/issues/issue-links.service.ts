@@ -76,6 +76,19 @@ async function resolveLinkEndpoint(
   return row
 }
 
+/**
+ * Lists every dependency touching any of the given issues.
+ *
+ * Template capture snapshots a whole project's dependency graph in one
+ * query instead of walking each issue, so cloning preserves the graph shape.
+ */
+export async function listDependenciesForIssueIds(
+  tenantId: string,
+  issueIds: string[],
+) {
+  return repository.listDependenciesForIssues(tenantId, issueIds)
+}
+
 export async function listRelations(
   organizationId: string,
   issueRef: string

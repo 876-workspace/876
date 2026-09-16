@@ -118,6 +118,13 @@ export const navConfig = defineNavigation([
             icon: 'time',
             requires: { permission: 'projects/dashboard.view' },
           },
+          {
+            key: 'projects-templates',
+            title: 'Templates',
+            href: '/projects/templates',
+            icon: 'templates',
+            requires: { permission: 'projects/dashboard.view' },
+          },
         ],
       },
       {

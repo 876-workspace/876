@@ -24,6 +24,9 @@ model Tenant {
   customFieldValues CustomFieldValue[]
   milestoneCustomFields MilestoneCustomField[]
   milestoneCustomFieldValues MilestoneCustomFieldValue[]
+  projectCustomFields ProjectCustomField[]
+  projectCustomFieldValues ProjectCustomFieldValue[]
+  layouts Layout[]
   baselines ProjectBaseline[]
   baselineItems ProjectBaselineItem[]
   projectEvents ProjectEvent[]
@@ -36,6 +39,9 @@ model Tenant {
   budgets Budget[]
   rates Rate[]
   memberCapacities MemberCapacity[]
+  projectTemplates ProjectTemplate[]
+  projectTemplateVersions ProjectTemplateVersion[]
+  projectTemplateInstantiations ProjectTemplateInstantiation[]
 
   @@map("projects_tenants")
 }

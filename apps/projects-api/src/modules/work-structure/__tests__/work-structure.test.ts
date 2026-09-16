@@ -1,7 +1,30 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { tenants, projects, issues, repository, taskListsRepo, cyclesRepo } =
+const {
+  layoutsRepo,
+  projectCustomFieldsRepo,
+ tenants, projects, issues, repository, taskListsRepo, cyclesRepo } =
   vi.hoisted(() => ({
+  layoutsRepo: {
+    listLayouts: vi.fn(),
+    retrieveLayout: vi.fn(),
+    createLayout: vi.fn(),
+    updateLayout: vi.fn(),
+    softDeleteLayout: vi.fn(),
+    clearDefaultInScope: vi.fn(),
+  },
+  projectCustomFieldsRepo: {
+    listProjectCustomFields: vi.fn(),
+    retrieveProjectCustomField: vi.fn(),
+    retrieveProjectCustomFieldByKey: vi.fn(),
+    createProjectCustomField: vi.fn(),
+    updateProjectCustomField: vi.fn(),
+    archiveProjectCustomField: vi.fn(),
+    listProjectCustomFieldValues: vi.fn(),
+    listProjectCustomFieldValuesForProjects: vi.fn(),
+    upsertProjectCustomFieldValue: vi.fn(),
+    clearProjectCustomFieldValue: vi.fn(),
+  },
     tenants: { resolveTenant: vi.fn(), setPresetKey: vi.fn() },
     projects: { resolveProject: vi.fn() },
     issues: { resolveIssue: vi.fn() },
@@ -76,6 +99,11 @@ vi.mock('../work-structure.repository.js', () => repository)
 vi.mock('../task-lists.repository.js', () => taskListsRepo)
 vi.mock('../cycles.repository.js', () => cyclesRepo)
 
+vi.mock('../../layouts/layouts.repository.js', () => layoutsRepo)
+vi.mock(
+  '../../custom-fields/project-custom-fields.repository.js',
+  () => projectCustomFieldsRepo
+)
 const service = await import('../work-structure.service.js')
 const serializers = await import('../work-structure.serializers.js')
 
@@ -149,6 +177,10 @@ const customField = {
 }
 
 beforeEach(() => {
+  layoutsRepo.listLayouts.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFields.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValues.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValuesForProjects.mockResolvedValue([])
   vi.clearAllMocks()
   tenants.resolveTenant.mockResolvedValue(tenant)
   projects.resolveProject.mockResolvedValue({

@@ -70,6 +70,7 @@ describe('settings navigation registry', () => {
       '/settings/workflow-states',
       '/settings/custom-fields',
       '/settings/phase-fields',
+      '/settings/templates',
       '/settings/users',
       '/settings/capacity',
     ])

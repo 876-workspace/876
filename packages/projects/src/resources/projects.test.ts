@@ -25,6 +25,7 @@ const sampleProject: Project = {
   createdAt: 1680000000,
   updatedAt: 1690000000,
   memberCount: 2,
+  customFields: [],
 }
 
 const sampleMember: ProjectMember = {

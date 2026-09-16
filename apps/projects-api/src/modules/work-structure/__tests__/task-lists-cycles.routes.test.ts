@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { errorHandler } from '../../../http/error-handler.js'
 
 const {
+  layoutsRepo,
+  projectCustomFieldsRepo,
   taskListsRepo,
   cyclesRepo,
   workStructureRepo,
@@ -13,6 +15,26 @@ const {
   milestoneDetailsRepo,
   milestoneListRepo,
 } = vi.hoisted(() => ({
+  layoutsRepo: {
+    listLayouts: vi.fn(),
+    retrieveLayout: vi.fn(),
+    createLayout: vi.fn(),
+    updateLayout: vi.fn(),
+    softDeleteLayout: vi.fn(),
+    clearDefaultInScope: vi.fn(),
+  },
+  projectCustomFieldsRepo: {
+    listProjectCustomFields: vi.fn(),
+    retrieveProjectCustomField: vi.fn(),
+    retrieveProjectCustomFieldByKey: vi.fn(),
+    createProjectCustomField: vi.fn(),
+    updateProjectCustomField: vi.fn(),
+    archiveProjectCustomField: vi.fn(),
+    listProjectCustomFieldValues: vi.fn(),
+    listProjectCustomFieldValuesForProjects: vi.fn(),
+    upsertProjectCustomFieldValue: vi.fn(),
+    clearProjectCustomFieldValue: vi.fn(),
+  },
   taskListsRepo: {
     listTaskLists: vi.fn(),
     retrieveTaskList: vi.fn(),
@@ -81,6 +103,11 @@ vi.mock('../../issues/index.js', () => issues)
 vi.mock('../milestone-details.repository.js', () => milestoneDetailsRepo)
 vi.mock('../milestone-list.repository.js', () => milestoneListRepo)
 
+vi.mock('../../layouts/layouts.repository.js', () => layoutsRepo)
+vi.mock(
+  '../../custom-fields/project-custom-fields.repository.js',
+  () => projectCustomFieldsRepo
+)
 const { createWorkStructureRouter } =
   await import('../work-structure.routes.js')
 
@@ -181,6 +208,10 @@ async function requestJson(
 const ORG = '/v1/organizations/org_1'
 
 beforeEach(() => {
+  layoutsRepo.listLayouts.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFields.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValues.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValuesForProjects.mockResolvedValue([])
   vi.clearAllMocks()
   process.env.PROJECTS_INTERNAL_KEY = 'test-internal-key'
   tenants.resolveTenant.mockResolvedValue(tenant)
