@@ -61,6 +61,8 @@ function communicationsError(error: { code: string; message: string }): never {
   switch (error.code) {
     case 'communications/not-configured':
       throw appError('billing/email-not-configured')
+    case 'communications/idempotency-conflict':
+      throw appError('billing/idempotency-conflict')
     case 'communications/sender-not-found':
     case 'communications/sender-domain-not-verified':
     case 'communications/domain-not-verified':
