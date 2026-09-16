@@ -31,14 +31,12 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
       {
         label: 'Teams',
         icon: 'teams',
-        availability: 'available',
-        href: '/settings/teams',
+        availability: 'planned',
       },
       {
         label: 'Categories',
         icon: 'categories',
-        availability: 'available',
-        href: '/settings/categories',
+        availability: 'planned',
       },
     ],
   },
@@ -48,8 +46,7 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
       {
         label: 'Priorities',
         icon: 'priorities',
-        availability: 'available',
-        href: '/settings/priorities',
+        availability: 'planned',
       },
       {
         label: 'Statuses',
