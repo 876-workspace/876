@@ -34,6 +34,10 @@ export type PaginatedProjects = {
 
 const KEY_REGEX = /^[A-Z0-9]{2,10}$/
 
+export function isValidProjectKey(key: string): boolean {
+  return KEY_REGEX.test(key)
+}
+
 export function deriveKeyBase(name: string): string {
   const cleaned = name.toUpperCase().replace(/[^A-Z0-9]/g, '')
   const base = cleaned.slice(0, 6)

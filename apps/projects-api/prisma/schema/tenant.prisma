@@ -36,6 +36,9 @@ model Tenant {
   budgets Budget[]
   rates Rate[]
   memberCapacities MemberCapacity[]
+  projectTemplates ProjectTemplate[]
+  projectTemplateVersions ProjectTemplateVersion[]
+  projectTemplateInstantiations ProjectTemplateInstantiation[]
 
   @@map("projects_tenants")
 }

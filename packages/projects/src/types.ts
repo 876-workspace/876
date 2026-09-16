@@ -1802,3 +1802,211 @@ export interface UpdateCapacityInput {
   effectiveFrom?: number
   effectiveTo?: number | null
 }
+
+export const templateDefinitionSchema = z.object({
+  schemaVersion: z.literal(1),
+  project: z
+    .object({
+      description: z.string().nullable().optional(),
+      status: projectStatusSchema.optional(),
+      health: projectHealthSchema.optional(),
+      billingMethod: z.string().optional(),
+      currency: z.string().optional(),
+      fixedFeeAmount: z.number().nullable().optional(),
+    })
+    .optional(),
+  phases: z
+    .array(
+      z.object({
+        ref: z.string(),
+        key: z.string(),
+        name: z.string(),
+        description: z.string().nullable().optional(),
+        startOffsetDays: z.number().optional(),
+        durationDays: z.number().nullable().optional(),
+        position: z.number().optional(),
+      })
+    )
+    .optional(),
+  taskLists: z
+    .array(
+      z.object({
+        ref: z.string(),
+        name: z.string(),
+        description: z.string().nullable().optional(),
+        phaseRef: z.string().nullable().optional(),
+        startOffsetDays: z.number().optional(),
+        durationDays: z.number().nullable().optional(),
+        position: z.number().optional(),
+      })
+    )
+    .optional(),
+  workItems: z
+    .array(
+      z.object({
+        ref: z.string(),
+        title: z.string(),
+        description: z.string().nullable().optional(),
+        typeKey: z.string(),
+        stateKey: z.string(),
+        priority: issuePrioritySchema.optional(),
+        estimate: z.number().nullable().optional(),
+        labels: z.array(z.string()).optional(),
+        phaseRef: z.string().nullable().optional(),
+        taskListRef: z.string().nullable().optional(),
+        parentRef: z.string().nullable().optional(),
+        startOffsetDays: z.number().optional(),
+        dueOffsetDays: z.number().optional(),
+        durationDays: z.number().nullable().optional(),
+      })
+    )
+    .optional(),
+  dependencies: z
+    .array(
+      z.object({
+        fromRef: z.string(),
+        toRef: z.string(),
+        type: issueDependencyTypeSchema.optional(),
+        lagDays: z.number().optional(),
+      })
+    )
+    .optional(),
+  customFieldDefinitions: z
+    .array(
+      z.object({
+        key: z.string(),
+        label: z.string(),
+        fieldType: z.string(),
+        options: z.array(z.object({ key: z.string(), label: z.string() })).optional(),
+        required: z.boolean().optional(),
+        description: z.string().nullable().optional(),
+        typeKeys: z.array(z.string()).optional(),
+      })
+    )
+    .optional(),
+  budgetDefaults: z
+    .array(
+      z.object({
+        scope: z.string(),
+        phaseRef: z.string().nullable().optional(),
+        amountMinor: z.number().nullable().optional(),
+        hours: z.number().nullable().optional(),
+        thresholdPercent: z.number().optional(),
+        periodStartOffsetDays: z.number().nullable().optional(),
+        periodEndOffsetDays: z.number().nullable().optional(),
+      })
+    )
+    .optional(),
+})
+export type TemplateDefinition = z.infer<typeof templateDefinitionSchema>
+
+export const templateCountsSchema = z.object({
+  phases: z.number(),
+  taskLists: z.number(),
+  workItems: z.number(),
+  dependencies: z.number(),
+})
+export type TemplateCounts = z.infer<typeof templateCountsSchema>
+
+export const projectTemplateSchema = z.object({
+  object: z.literal('projects.project-template'),
+  id: z.string(),
+  key: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  currentVersion: z.number(),
+  sourceProjectId: z.string().nullable(),
+  counts: templateCountsSchema,
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type ProjectTemplate = z.infer<typeof projectTemplateSchema>
+
+export const projectTemplateListSchema = createListSchema(projectTemplateSchema)
+export type ProjectTemplateList = z.infer<typeof projectTemplateListSchema>
+
+export const projectTemplateVersionSchema = z.object({
+  object: z.literal('projects.project-template-version'),
+  id: z.string(),
+  templateId: z.string(),
+  version: z.number(),
+  createdAt: z.number(),
+})
+export type ProjectTemplateVersion = z.infer<typeof projectTemplateVersionSchema>
+
+export const projectTemplateVersionListSchema = createListSchema(
+  projectTemplateVersionSchema
+)
+export type ProjectTemplateVersionList = z.infer<
+  typeof projectTemplateVersionListSchema
+>
+
+export const templatePreviewSchema = z.object({
+  object: z.literal('projects.template-preview'),
+  startDate: z.number(),
+  phases: z.array(
+    z.object({
+      ref: z.string(),
+      name: z.string(),
+      start: z.number().nullable(),
+      end: z.number().nullable(),
+    })
+  ),
+  workItems: z.array(
+    z.object({
+      ref: z.string(),
+      title: z.string(),
+      start: z.number().nullable(),
+      due: z.number().nullable(),
+    })
+  ),
+  missing: z.object({
+    workItemTypes: z.array(z.string()),
+    workflowStates: z.array(z.string()),
+    labels: z.array(z.string()),
+  }),
+})
+export type TemplatePreview = z.infer<typeof templatePreviewSchema>
+
+export interface CreateProjectTemplateInput {
+  key: string
+  name: string
+  description?: string | null
+  definition: TemplateDefinition
+  sourceProjectId?: string | null
+}
+
+export interface UpdateProjectTemplateInput {
+  name?: string
+  description?: string | null
+  definition?: TemplateDefinition
+}
+
+export interface SaveAsTemplateInput {
+  key: string
+  name?: string
+  description?: string | null
+}
+
+export interface TemplateIncludeFlags {
+  includeWorkItems?: boolean
+  includeDependencies?: boolean
+  includeBudgets?: boolean
+}
+
+export interface PreviewTemplateInput extends TemplateIncludeFlags {
+  startDate: number
+}
+
+export interface InstantiateTemplateInput extends TemplateIncludeFlags {
+  name: string
+  key?: string
+  startDate: number
+  idempotencyKey?: string
+}
+
+export interface CloneProjectInput {
+  name: string
+  key?: string
+  startDate?: number | null
+}

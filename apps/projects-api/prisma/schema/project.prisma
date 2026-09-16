@@ -31,6 +31,8 @@ model Project {
   billingConfig ProjectBilling?
   budgets Budget[]
   rates Rate[]
+  sourcedTemplates ProjectTemplate[] @relation("TemplateSourceProject")
+  templateInstantiations ProjectTemplateInstantiation[] @relation("TemplateInstantiationProject")
 
   @@unique([tenantId, key])
   @@unique([tenantId, slug])

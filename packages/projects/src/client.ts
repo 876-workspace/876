@@ -25,6 +25,7 @@ import { createMilestonesResource } from './resources/milestones'
 import { createTaskListsResource } from './resources/task-lists'
 import { createPresetsResource } from './resources/presets'
 import { createProjectsResource } from './resources/projects'
+import { createProjectTemplatesResource } from './resources/project-templates'
 import { createTenantsResource } from './resources/tenants'
 import { createWorkflowStatesResource } from './resources/workflow-states'
 import { createWorkItemTypesResource } from './resources/work-item-types'
@@ -36,6 +37,7 @@ export function create876ProjectsClient(options: ClientOptions = {}) {
   return {
     tenants: createTenantsResource(runtime),
     projects: createProjectsResource(runtime),
+    projectTemplates: createProjectTemplatesResource(runtime),
     issues: createIssuesResource(runtime),
     issueRelations: createIssueRelationsResource(runtime),
     issueDependencies: createIssueDependenciesResource(runtime),
