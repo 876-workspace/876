@@ -41,6 +41,10 @@ function resourcePath(invoiceId: string) {
   return `/api/v1/invoices/${encodeURIComponent(invoiceId)}`
 }
 
+function emailQuery(params: DocumentEmailPrepareParams) {
+  return { senderId: params.senderId, templateId: params.templateId }
+}
+
 /** `$876.billing.invoices.*` — tenant-scoped invoice operations. */
 export function createInvoicesResource(runtime: Runtime) {
   return {
@@ -155,7 +159,7 @@ export function createInvoicesResource(runtime: Runtime) {
         {
           method: 'GET',
           path: `${resourcePath(invoiceId)}/email`,
-          query: params,
+          query: emailQuery(params),
           signal: options?.signal,
         },
         DocumentEmailCompositionSchema
