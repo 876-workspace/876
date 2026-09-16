@@ -11,7 +11,7 @@ import { providerErrorToAppError } from '../../providers/provider-errors.js'
 import {
   emailDeliveryStatusSchema,
   emailRecipientSchema,
-  type CreateEmailDeliveryInput,
+  type CreateEmailDeliveryValues,
   type EmailDelivery,
   type EmailRecipient,
 } from '../../types/communications.js'
@@ -80,7 +80,7 @@ function recipientsEqual(left: unknown, right: EmailRecipient[]): boolean {
 
 function matchesExisting(
   row: DeliveryRow,
-  input: CreateEmailDeliveryInput,
+  input: CreateEmailDeliveryValues,
   sender: { id: string; name: string; email: string; replyTo: string | null }
 ): boolean {
   return (
@@ -196,7 +196,7 @@ export async function retrieveDelivery(
 
 export async function createDelivery(
   organizationId: string,
-  input: CreateEmailDeliveryInput,
+  input: CreateEmailDeliveryValues,
   actorId: string | null,
   provider?: EmailProvider
 ): Promise<ServiceResult<EmailDelivery>> {

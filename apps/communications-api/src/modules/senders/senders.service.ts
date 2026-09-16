@@ -8,7 +8,7 @@ import {
 } from '../../platform/timestamps.js'
 import {
   emailSenderKindSchema,
-  type CreateEmailSenderInput,
+  type CreateEmailSenderValues,
   type EnsureManagedSenderInput,
   type EmailSender,
   type UpdateEmailSenderInput,
@@ -141,7 +141,7 @@ export async function ensureManagedSender(
 
 export async function createSender(
   organizationId: string,
-  input: CreateEmailSenderInput
+  input: CreateEmailSenderValues
 ): Promise<ServiceResult<EmailSender>> {
   if (input.kind !== 'custom-domain')
     return err('communications/invalid-request')

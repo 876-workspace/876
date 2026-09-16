@@ -235,7 +235,12 @@ export const createEmailSenderSchema = z.object({
   kind: emailSenderKindSchema,
   isDefault: z.boolean().optional().default(false),
 })
-export type CreateEmailSenderInput = z.infer<typeof createEmailSenderSchema>
+// z.input, not z.infer: fields with a Zod default are required in the output
+// type but optional for a caller. Using z.infer forces every call site to pass
+// values the schema would have supplied.
+export type CreateEmailSenderInput = z.input<typeof createEmailSenderSchema>
+/** Post-validation shape, with schema defaults applied. What a service receives. */
+export type CreateEmailSenderValues = z.output<typeof createEmailSenderSchema>
 
 /**
  * Input for provisioning an organization's free `managed` sender.
@@ -302,7 +307,11 @@ export const createEmailDeliverySchema = z.object({
   templateId: z.string().trim().min(1).optional(),
   idempotencyKey: z.string().trim().min(1).max(256),
 })
-export type CreateEmailDeliveryInput = z.infer<typeof createEmailDeliverySchema>
+export type CreateEmailDeliveryInput = z.input<typeof createEmailDeliverySchema>
+/** Post-validation shape, with schema defaults applied. What a service receives. */
+export type CreateEmailDeliveryValues = z.output<
+  typeof createEmailDeliverySchema
+>
 
 export interface ListEmailDeliveriesQuery extends RequestOptions {
   limit?: number
