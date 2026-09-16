@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   invoiceRetrieve: vi.fn(),
   quoteRetrieve: vi.fn(),
   templateResolve: vi.fn(),
+  templateList: vi.fn(),
   templateRender: vi.fn(),
   senderList: vi.fn(),
   deliveryCreate: vi.fn(),
@@ -24,6 +25,7 @@ vi.mock('@/lib/services/communications', () => ({
   communicationsService: () => ({
     templates: {
       resolve: mocks.templateResolve,
+      list: mocks.templateList,
       render: mocks.templateRender,
     },
     senders: { list: mocks.senderList },
@@ -159,6 +161,16 @@ beforeEach(() => {
   mocks.invoiceRetrieve.mockResolvedValue(invoice())
   mocks.quoteRetrieve.mockResolvedValue(quote())
   mocks.templateResolve.mockResolvedValue({ data: template, error: null })
+  mocks.templateList.mockResolvedValue({
+    data: {
+      object: 'list',
+      data: [template],
+      has_more: false,
+      total_count: 1,
+      url: '/templates',
+    },
+    error: null,
+  })
   mocks.templateRender.mockResolvedValue({
     data: {
       object: 'email_composition',
@@ -212,6 +224,60 @@ describe('prepareDocumentEmail', () => {
     )
   })
 
+  it('returns only active sender and matching-category template choices', async () => {
+    const inactiveSender = {
+      ...sender,
+      id: 'esnd_inactive',
+      email: 'old@example.com',
+      isDefault: false,
+      isActive: false,
+    }
+    const quoteTemplate = {
+      ...template,
+      id: 'etpl_quote',
+      key: 'billing.quote.default',
+      name: 'Quote',
+      category: 'quote',
+    }
+    const inactiveTemplate = {
+      ...template,
+      id: 'etpl_inactive',
+      key: 'billing.invoice.inactive',
+      name: 'Old invoice',
+      isDefault: false,
+      isActive: false,
+    }
+    mocks.senderList.mockResolvedValue({
+      data: {
+        object: 'list',
+        data: [sender, inactiveSender],
+        has_more: false,
+        total_count: 2,
+        url: '/senders',
+      },
+      error: null,
+    })
+    mocks.templateList.mockResolvedValue({
+      data: {
+        object: 'list',
+        data: [template, quoteTemplate, inactiveTemplate],
+        has_more: false,
+        total_count: 3,
+        url: '/templates',
+      },
+      error: null,
+    })
+
+    const result = await prepareDocumentEmail(tenantId, 'invoice', 'inv_1', {})
+
+    expect(result.senderOptions).toEqual([
+      expect.objectContaining({ id: 'esnd_1', isDefault: true }),
+    ])
+    expect(result.templateOptions).toEqual([
+      expect.objectContaining({ id: 'etpl_1', name: 'Invoice' }),
+    ])
+  })
+
   it('uses explicitly requested template and sender ids', async () => {
     await prepareDocumentEmail(tenantId, 'invoice', 'inv_1', {
       templateId: 'etpl_custom',
@@ -227,7 +293,9 @@ describe('prepareDocumentEmail', () => {
 
   it('passes currency-precision-aware totals to the renderer', async () => {
     mocks.enabledCurrencyDecimalPlaces.mockResolvedValue(0)
-    mocks.invoiceRetrieve.mockResolvedValue(invoice({ currency: 'JPY', total: 12345n }))
+    mocks.invoiceRetrieve.mockResolvedValue(
+      invoice({ currency: 'JPY', total: 12345n })
+    )
 
     await prepareDocumentEmail(tenantId, 'invoice', 'inv_1', {})
 
@@ -295,8 +363,20 @@ describe('prepareDocumentEmail', () => {
   })
 
   it('prepares a sendable quote through the same Communications boundary', async () => {
-    mocks.templateResolve.mockResolvedValue({
-      data: { ...template, category: 'quote', key: 'billing.quote.default' },
+    const quoteTemplate = {
+      ...template,
+      category: 'quote',
+      key: 'billing.quote.default',
+    }
+    mocks.templateResolve.mockResolvedValue({ data: quoteTemplate, error: null })
+    mocks.templateList.mockResolvedValue({
+      data: {
+        object: 'list',
+        data: [quoteTemplate],
+        has_more: false,
+        total_count: 1,
+        url: '/templates',
+      },
       error: null,
     })
 
@@ -408,7 +488,11 @@ describe('sendDocumentEmail', () => {
   })
 
   it('records quote send lifecycle after an accepted delivery', async () => {
-    const quoteDelivery = { ...delivery(), resourceType: 'quote', resourceId: 'quo_1' }
+    const quoteDelivery = {
+      ...delivery(),
+      resourceType: 'quote',
+      resourceId: 'quo_1',
+    }
     mocks.deliveryCreate.mockResolvedValue({ data: quoteDelivery, error: null })
 
     await sendDocumentEmail(tenantId, 'quote', 'quo_1', body, idempotency)
