@@ -12,6 +12,18 @@ export type DocumentEmailSender = {
   replyTo: string | null
 }
 
+export type DocumentEmailSenderOption = DocumentEmailSender & {
+  isDefault: boolean
+}
+
+export type DocumentEmailTemplateOption = {
+  id: string
+  name: string
+  isDefault: boolean
+  isSystem: boolean
+  senderId: string | null
+}
+
 export type DocumentEmailPrepareParams = {
   senderId?: string
   templateId?: string
@@ -38,10 +50,12 @@ export type DocumentEmailComposition = {
   resourceType: DocumentEmailResourceType
   resourceId: string
   sender: DocumentEmailSender
+  senderOptions: DocumentEmailSenderOption[]
   to: DocumentEmailRecipient[]
   cc: DocumentEmailRecipient[]
   bcc: DocumentEmailRecipient[]
   templateId: string | null
+  templateOptions: DocumentEmailTemplateOption[]
   subject: string
   html: string
   text: string | null
