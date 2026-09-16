@@ -295,6 +295,7 @@ describe('getVisibleSettingsSections', () => {
       'Payment Modes',
       'Payment Providers',
       'Accounting Providers',
+      'Email settings',
       'Roles & Permissions',
     ])
   })
