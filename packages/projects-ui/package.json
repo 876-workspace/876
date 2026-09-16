@@ -206,6 +206,50 @@
     "./automation/notification-list": {
       "types": "./src/automation/notification-list.tsx",
       "default": "./src/automation/notification-list.tsx"
+    },
+    "./collaboration/types": {
+      "types": "./src/collaboration/types.ts",
+      "default": "./src/collaboration/types.ts"
+    },
+    "./collaboration/activity-feed": {
+      "types": "./src/collaboration/activity-feed.tsx",
+      "default": "./src/collaboration/activity-feed.tsx"
+    },
+    "./collaboration/follow-button": {
+      "types": "./src/collaboration/follow-button.tsx",
+      "default": "./src/collaboration/follow-button.tsx"
+    },
+    "./collaboration/discussion-list": {
+      "types": "./src/collaboration/discussion-list.tsx",
+      "default": "./src/collaboration/discussion-list.tsx"
+    },
+    "./collaboration/discussion-thread": {
+      "types": "./src/collaboration/discussion-thread.tsx",
+      "default": "./src/collaboration/discussion-thread.tsx"
+    },
+    "./collaboration/wiki-tree": {
+      "types": "./src/collaboration/wiki-tree.tsx",
+      "default": "./src/collaboration/wiki-tree.tsx"
+    },
+    "./collaboration/wiki-page-view": {
+      "types": "./src/collaboration/wiki-page-view.tsx",
+      "default": "./src/collaboration/wiki-page-view.tsx"
+    },
+    "./collaboration/wiki-revision-list": {
+      "types": "./src/collaboration/wiki-revision-list.tsx",
+      "default": "./src/collaboration/wiki-revision-list.tsx"
+    },
+    "./collaboration/client-grant-list": {
+      "types": "./src/collaboration/client-grant-list.tsx",
+      "default": "./src/collaboration/client-grant-list.tsx"
+    },
+    "./collaboration/client-visible-badge": {
+      "types": "./src/collaboration/client-visible-badge.tsx",
+      "default": "./src/collaboration/client-visible-badge.tsx"
+    },
+    "./collaboration/mention-input": {
+      "types": "./src/collaboration/mention-input.tsx",
+      "default": "./src/collaboration/mention-input.tsx"
     }
   },
   "scripts": {
