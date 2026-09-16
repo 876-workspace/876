@@ -75,6 +75,19 @@ never fail, roll back, or 500 a package update; every failure path returns a typ
 reason and logs it. The idempotency key is derived from tenant, package and
 category, so a package returning to a status it already held does not email twice.
 
+**Organization email settings** — `packages/communications-ui` holds four
+presentation-only panels (senders, domains, DNS records, templates) so no host
+grows a second copy, and Billing hosts them at `settings/email` beside branding
+and templates. A synchronous shell with per-panel Suspense; domain add and verify
+go through auth-first route handlers with the organization resolved server-side.
+
+**Console operator jurisdiction** — seven routes under Console's own organization
+vocabulary, each checking `console:organizations`, then auditing, then making one
+operator call. Console mounts the same shared panels and adds the delivery history
+only it can see. Reading a delivery exposes the recipient address and rendered
+body, so delivery reads and the verify mutation write audit events; configuration
+reads deliberately do not.
+
 **Two new rules**, mirrored byte-identical into `.agents/rules/`:
 
 - `email.md` — the binding standard: single sender, provider boundary, the three
@@ -131,13 +144,16 @@ nothing had been installed, compiled, migrated or run. In order of severity:
 
 Local verification is the merge gate per `.claude/rules/deployment.md`.
 
-| Package                   | Typecheck | Tests          | Other                               |
-| ------------------------- | --------- | -------------- | ----------------------------------- |
-| `@876/communications-api` | 0 errors  | 133            | boundaries clean, builds, **boots** |
-| `@876/communications`     | 0 errors  | 23             | —                                   |
-| `@876/billing-api`        | 0 errors  | 1166           | boundaries clean                    |
-| `@876/couriers-api`       | 0 errors  | 38 in packages | boundaries clean                    |
-| `@876/billing-ui`         | 0 errors  | 699            | —                                   |
+| Package                   | Typecheck      | Tests                           | Other                                  |
+| ------------------------- | -------------- | ------------------------------- | -------------------------------------- |
+| `@876/communications-api` | 0 errors       | 133                             | boundaries clean, builds, **boots**    |
+| `@876/communications`     | 0 errors       | 23                              | —                                      |
+| `@876/billing-api`        | 0 errors       | 1166                            | boundaries clean                       |
+| `@876/couriers-api`       | 0 errors       | 38 in packages                  | boundaries clean                       |
+| `@876/billing-ui`         | 0 errors       | 699                             | —                                      |
+| `@876/communications-ui`  | 0 errors       | 28                              | —                                      |
+| `@876/billing` (app)      | 8 pre-existing | 1085                            | —                                      |
+| `@876/console`            | 4 pre-existing | 1837 pass / 6 pre-existing fail | guard-coverage + registry binding pass |
 
 Repo gates: `check-app-structure`, `check:rsc-boundaries`, `check:transpile`,
 `check:error-contract`, `check:service-bundle`, `check:env` all pass.
@@ -151,10 +167,18 @@ same slug received a distinct address, and the slug `postmaster` was refused. Th
 Resend error contract was probed live (422 `validation_error` with the documented
 `{statusCode, name, message}` body) without sending an email.
 
-Known **pre-existing** `main` failures, deliberately not fixed here: a
-`couriers-api` OpenAPI snapshot drift in unrelated `me-addresses-*` operations,
-and 8 `RouteContext` errors in unrelated CRM routes in `billing` and `invoice`
-(stale Next generated types).
+Known **pre-existing** `main` failures, verified untouched by this branch and
+deliberately not fixed: a `couriers-api` OpenAPI snapshot drift in unrelated
+`me-addresses-*` operations; 8 `RouteContext` errors in unrelated CRM routes in
+`billing` and `invoice` (stale Next generated types); 4 `projects` fixture type
+errors and 6 Console test failures (4 permission counts shifted by the committed
+commerce catalog, 2 projects page tests).
+
+**Two pre-existing boot failures were fixed**, because `check:service-bundle`
+cannot pass while they stand and both services would crash in production:
+`commerce-api` had no `noExternal` at all while depending on `@876/core`, and
+`projects-api` omitted `@876/billing`. Unrelated to email, and flagged as such in
+their own commit.
 
 ## Not in this PR
 
