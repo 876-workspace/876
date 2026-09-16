@@ -1,7 +1,9 @@
 import { PhaseDetail } from '@876/projects-ui/phase-detail'
 import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
+import { AttachmentsData } from '@/features/projects/components/attachments-data'
 import { PhaseComments } from '@/features/projects/components/phase-comments'
 import { PhaseCustomFieldsForm } from '@/features/projects/components/phase-custom-fields-form'
 import { loadMemberLabels } from '@/features/projects/member-labels'
@@ -76,9 +78,13 @@ export async function PhaseDetailData({
         fields={fields.data?.data ?? []}
         fieldValues={values.data?.data ?? []}
         ownerLabels={members.labels}
-        editHref={canEdit ? `/phases/${encodeURIComponent(phase.id)}/edit` : undefined}
+        editHref={
+          canEdit ? `/phases/${encodeURIComponent(phase.id)}/edit` : undefined
+        }
         cloneHref={
-          canCreate ? `/phases/${encodeURIComponent(phase.id)}/clone` : undefined
+          canCreate
+            ? `/phases/${encodeURIComponent(phase.id)}/clone`
+            : undefined
         }
       />
 
@@ -96,6 +102,22 @@ export async function PhaseDetailData({
         userLabels={members.labels}
         canEdit={canEdit}
       />
+
+      <Suspense
+        fallback={
+          <div className="text-muted-foreground text-sm">
+            Loading attachments…
+          </div>
+        }
+      >
+        <AttachmentsData
+          orgId={orgId}
+          userId={currentUserId}
+          resourceType="milestone"
+          resourceId={phase.id}
+          canEdit={canEdit}
+        />
+      </Suspense>
     </div>
   )
 }

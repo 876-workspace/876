@@ -5,6 +5,7 @@ import { PageBreadcrumb } from '@/components/page-breadcrumb'
 import { ProjectDetailData } from './_components/project-detail-data'
 import { ProjectDetailSkeleton } from './_components/project-detail-skeleton'
 import { ProjectTabs } from './_components/project-tabs'
+import { canAccess } from '@/lib/auth/access-context'
 import {
   requireAppAccess,
   requireProjectsContext,
@@ -18,8 +19,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProjectDetailPage({ params }: Props) {
-  await requireAppAccess({ module: 'projects', permission: 'projects.view' })
-  const { orgId } = await requireProjectsContext()
+  const access = await requireAppAccess({
+    module: 'projects',
+    permission: 'projects.view',
+  })
+  const { orgId, userId } = await requireProjectsContext()
   const { projectId } = await params
 
   return (
@@ -27,7 +31,12 @@ export default async function ProjectDetailPage({ params }: Props) {
       <PageBreadcrumb href="/projects" label="Projects" className="mb-4" />
       <ProjectTabs projectId={projectId} />
       <Suspense fallback={<ProjectDetailSkeleton />}>
-        <ProjectDetailData orgId={orgId} projectId={projectId} />
+        <ProjectDetailData
+          orgId={orgId}
+          userId={userId}
+          projectId={projectId}
+          canEdit={canAccess(access, 'projects.edit')}
+        />
       </Suspense>
     </div>
   )

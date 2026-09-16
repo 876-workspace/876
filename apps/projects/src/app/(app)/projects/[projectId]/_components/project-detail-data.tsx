@@ -3,16 +3,21 @@ import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
+import { AttachmentsData } from '@/features/projects/components/attachments-data'
 import { WorkBreakdownData } from '@/features/projects/components/work-breakdown-data'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { projects } from '@/lib/services/projects'
 
 export async function ProjectDetailData({
   orgId,
+  userId,
   projectId,
+  canEdit,
 }: {
   orgId: string
+  userId: string
   projectId: string
+  canEdit: boolean
 }) {
   const [projectResult, issuesResult, membersResult] = await Promise.all([
     projects.projects.retrieve(orgId, projectId),
@@ -62,6 +67,17 @@ export async function ProjectDetailData({
         fallback={<div className="876-card h-64 animate-pulse" aria-hidden />}
       >
         <WorkBreakdownData orgId={orgId} projectId={projectId} />
+      </Suspense>
+      <Suspense
+        fallback={<div className="876-card h-64 animate-pulse" aria-hidden />}
+      >
+        <AttachmentsData
+          orgId={orgId}
+          userId={userId}
+          resourceType="project"
+          resourceId={projectResult.data.id}
+          canEdit={canEdit}
+        />
       </Suspense>
     </div>
   )

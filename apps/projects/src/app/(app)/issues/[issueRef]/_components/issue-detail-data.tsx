@@ -3,6 +3,7 @@ import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
+import { AttachmentsData } from '@/features/projects/components/attachments-data'
 import { IssueCommentsLoader } from '@/features/projects/components/issue-comments-loader'
 import { IssueLinksData } from '@/features/projects/components/issue-links-data'
 import { RemindersData } from '@/features/projects/components/reminders-data'
@@ -12,10 +13,12 @@ import { projects } from '@/lib/services/projects'
 export async function IssueDetailData({
   orgId,
   userId,
+  canEdit,
   issueRef,
 }: {
   orgId: string
   userId: string
+  canEdit: boolean
   issueRef: string
 }) {
   const decodedIssueRef = decodeURIComponent(issueRef)
@@ -130,6 +133,23 @@ export async function IssueDetailData({
             orgId={orgId}
             userId={userId}
             target={{ issueId: issueResult.data.id }}
+          />
+        </Suspense>
+      </div>
+      <div className="mt-6 lg:mr-[33.333333%]">
+        <Suspense
+          fallback={
+            <div className="text-muted-foreground text-sm">
+              Loading attachments…
+            </div>
+          }
+        >
+          <AttachmentsData
+            orgId={orgId}
+            userId={userId}
+            resourceType="issue"
+            resourceId={issueResult.data.id}
+            canEdit={canEdit}
           />
         </Suspense>
       </div>
