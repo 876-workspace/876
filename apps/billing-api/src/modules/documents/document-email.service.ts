@@ -176,18 +176,38 @@ async function renderVariables(
 }
 
 async function resolveSender(
-  organizationId: string,
+  organization: { organizationId: string; name: string; slug: string },
   senderId: string | undefined,
   templateSenderId: string | null
 ) {
-  const result = await communicationsService().senders.list(organizationId)
+  const communications = communicationsService()
+  const result = await communications.senders.list(organization.organizationId)
   if (result.error) communicationsError(result.error)
 
-  const activeSenders = result.data.data.filter((candidate) => candidate.isActive)
+  let activeSenders = result.data.data.filter((candidate) => candidate.isActive)
+
+  // An organization with no sender has simply never been provisioned one. Give
+  // it the free `managed` identity rather than refusing to send — that is the
+  // zero-setup default, and it is idempotent. Only do this when nothing specific
+  // was requested; a request for a named sender that does not exist is still an
+  // error rather than a silent substitution.
+  if (activeSenders.length === 0 && !senderId && !templateSenderId) {
+    const ensured = await communications.senders.ensureManaged(
+      organization.organizationId,
+      {
+        organizationName: organization.name,
+        organizationSlug: organization.slug,
+      }
+    )
+    if (ensured.error) communicationsError(ensured.error)
+    activeSenders = [ensured.data]
+  }
+
   const requestedId = senderId ?? templateSenderId ?? undefined
   const sender = requestedId
     ? activeSenders.find((candidate) => candidate.id === requestedId)
-    : activeSenders.find((candidate) => candidate.isDefault)
+    : (activeSenders.find((candidate) => candidate.isDefault) ??
+      activeSenders[0])
 
   if (!sender) throw appError('billing/email-sender-required')
   return { sender, activeSenders }
@@ -217,7 +237,7 @@ export async function prepareDocumentEmail(
   if (templateListResult.error) communicationsError(templateListResult.error)
 
   const { sender, activeSenders } = await resolveSender(
-    organization.organizationId,
+    organization,
     query.senderId,
     templateResult.data.senderId
   )

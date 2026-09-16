@@ -38,6 +38,9 @@ export async function tenantOrganization(tenantId: string) {
     tenantId: tenant.id,
     organizationId: tenant.organizationId,
     name: tenant.name,
+    // Durable, server-owned identifier. Used to derive the organization's free
+    // `managed` email sender address — never a display name.
+    slug: tenant.slug,
   }
 }
 
