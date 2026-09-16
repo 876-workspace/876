@@ -45,12 +45,24 @@ function recipientsToInput(recipients: DocumentEmailRecipient[]): string {
   return recipients.map((recipient) => recipient.email).join(', ')
 }
 
-function parseRecipients(value: string): DocumentEmailRecipient[] {
+function parseRecipients(
+  value: string,
+  knownRecipients: DocumentEmailRecipient[] = []
+): DocumentEmailRecipient[] {
+  const names = new Map(
+    knownRecipients
+      .filter((recipient) => recipient.name)
+      .map((recipient) => [recipient.email.toLowerCase(), recipient.name!])
+  )
+
   return value
     .split(/[,;\n]+/)
     .map((email) => email.trim())
     .filter(Boolean)
-    .map((email) => ({ email }))
+    .map((email) => {
+      const name = names.get(email.toLowerCase())
+      return name ? { email, name } : { email }
+    })
 }
 
 function escapeHtml(value: string): string {
@@ -110,7 +122,10 @@ export function DocumentEmailComposer({
       const result = await prepare(params)
       setLoading(false)
       if (result.error || !result.data) {
-        setError(result.error?.message ?? `Failed to prepare the ${documentLabel} email.`)
+        setError(
+          result.error?.message ??
+            `Failed to prepare the ${documentLabel} email.`
+        )
         return
       }
       applyComposition(result.data)
@@ -130,7 +145,7 @@ export function DocumentEmailComposer({
   function submit() {
     if (!composition) return
 
-    const recipients = parseRecipients(to)
+    const recipients = parseRecipients(to, composition.to)
     if (recipients.length === 0) {
       setError('Add at least one recipient.')
       return
@@ -150,8 +165,8 @@ export function DocumentEmailComposer({
         senderId,
         templateId: templateId || null,
         to: recipients,
-        cc: parseRecipients(cc),
-        bcc: parseRecipients(bcc),
+        cc: parseRecipients(cc, composition.cc),
+        bcc: parseRecipients(bcc, composition.bcc),
         subject: subject.trim(),
         html: bodyDirty ? plainTextToHtml(body) : composition.html,
         text: bodyDirty ? body : composition.text,
