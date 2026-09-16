@@ -5,6 +5,12 @@ import { resolveNavigation } from '@876/core/access'
 import { AppError } from '@876/ui/app-error'
 
 import { Shell } from '@/components/shell/shell'
+import {
+  callerRoleKeys,
+  orgScopeModules,
+  resolveCustomModuleNavEntries,
+  visibleModules,
+} from '@/lib/custom-modules/module-access'
 import { getAppsDirectory } from '@/lib/apps-directory'
 import { resolveAccessContext } from '@/lib/auth/access-context'
 import { getProjectsContextResult } from '@/lib/auth/context'
@@ -50,6 +56,23 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   const { uiFeatures } = await getFeatures()
 
+  let customModuleNav: ReturnType<typeof resolveCustomModuleNavEntries>[] = []
+  if (access.status === 'ok') {
+    try {
+      const roleKeys = callerRoleKeys(access.context.permissions)
+      const { serviceWithRoleKeys: withRoles } = await import(
+        '@/lib/custom-modules/service-with-roles'
+      )
+      const listed = await withRoles(roleKeys).customModules.listModules(orgId)
+      if (listed.data) {
+        const visible = visibleModules(orgScopeModules(listed.data.data), roleKeys)
+        if (visible.length > 0) customModuleNav = [resolveCustomModuleNavEntries(visible)]
+      }
+    } catch {
+      customModuleNav = []
+    }
+  }
+
   let notificationCount = 0
   try {
     const { projects } = await import('@/lib/services/projects')
@@ -71,7 +94,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       uiFeatures={uiFeatures}
       navigation={
         access.status === 'ok'
-          ? resolveNavigation(navConfig, access.context)
+          ? [...resolveNavigation(navConfig, access.context), ...customModuleNav]
           : []
       }
       notificationCount={notificationCount}

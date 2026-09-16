@@ -5,6 +5,7 @@ import { requireAppPermission } from '@/lib/auth/require-projects-context'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
+import { DashboardWidgetsData } from './_components/dashboard-widgets-data'
 import { HomeData, HomeSkeleton } from './_components/home-data'
 import { HomeHeader } from './_components/home-header'
 
@@ -43,6 +44,9 @@ export default async function HomePage() {
       />
       <Suspense fallback={<HomeSkeleton />}>
         <HomeData nowSeconds={nowSeconds} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <DashboardWidgetsData />
       </Suspense>
     </div>
   )

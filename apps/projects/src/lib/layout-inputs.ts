@@ -1,6 +1,14 @@
+import type { LayoutEntity } from '@876/projects/contracts'
 import { z } from 'zod'
 
-const entitySchema = z.enum(['project', 'phase', 'work-item'])
+const customModuleEntitySchema = z
+  .string()
+  .regex(/^custom-module:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)
+
+const entitySchema = z.union([
+  z.enum(['project', 'phase', 'work-item']),
+  customModuleEntitySchema,
+]) as z.ZodType<LayoutEntity>
 
 const layoutFieldSchema = z.strictObject({
   fieldKey: z.string().trim().min(1).max(120),

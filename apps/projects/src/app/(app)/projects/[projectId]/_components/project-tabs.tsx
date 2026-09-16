@@ -2,7 +2,13 @@
 
 import { RouteTabs, type RouteTabItem } from '@876/ui/route-tabs'
 
-export function ProjectTabs({ projectId }: { projectId: string }) {
+export function ProjectTabs({
+  projectId,
+  moduleTabs = [],
+}: {
+  projectId: string
+  moduleTabs?: { key: string; label: string }[]
+}) {
   const base = `/projects/${encodeURIComponent(projectId)}`
   const tabs: RouteTabItem[] = [
     {
@@ -38,6 +44,10 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
       label: 'Finance',
       href: `${base}/finance`,
     },
+    ...moduleTabs.map((module) => ({
+      label: module.label,
+      href: `${base}/m/${encodeURIComponent(module.key)}`,
+    })),
   ]
 
   return <RouteTabs tabs={tabs} className="mb-4" />

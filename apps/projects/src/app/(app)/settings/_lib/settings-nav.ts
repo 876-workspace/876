@@ -47,6 +47,18 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
         href: '/settings/layouts',
       },
       {
+        label: 'Custom modules',
+        icon: 'categories',
+        availability: 'available',
+        href: '/settings/custom-modules',
+      },
+      {
+        label: 'Dashboard',
+        icon: 'templates',
+        availability: 'available',
+        href: '/settings/dashboard',
+      },
+      {
         label: 'Templates',
         icon: 'templates',
         availability: 'available',

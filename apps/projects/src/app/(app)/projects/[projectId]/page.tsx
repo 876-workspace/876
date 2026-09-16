@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
 import { PageBreadcrumb } from '@/components/page-breadcrumb'
+import { ProjectModuleTabs } from './_components/project-module-tabs'
 import { ProjectDetailData } from './_components/project-detail-data'
 import { ProjectDetailSkeleton } from './_components/project-detail-skeleton'
 import { ProjectTabs } from './_components/project-tabs'
@@ -30,6 +31,7 @@ export default async function ProjectDetailPage({ params }: Props) {
     <div className="px-4 pt-5 pb-8 sm:px-6 lg:px-8">
       <PageBreadcrumb href="/projects" label="Projects" className="mb-4" />
       <ProjectTabs projectId={projectId} />
+      <ProjectModuleTabs orgId={orgId} projectId={projectId} roleKeys={access.permissions} />
       <Suspense fallback={<ProjectDetailSkeleton />}>
         <ProjectDetailData
           orgId={orgId}
