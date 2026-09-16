@@ -2,6 +2,7 @@
 
 - **Run ID:** `2026-09-15-projects-rollout`
 - **Status:** `IN_PROGRESS`
+- **Handoff:** see `HANDOFF.md` beside this file — session one ended 2026-09-16 with phases 1–9 merged.
 - **Mode:** Claude orchestrates; free/prepaid delegates write code (user, 2026-09-15: "implement all the phases with the free models, orchestrate all phases, merge in the PRs as you go alone, when all done manually deploy prod for all touched apps").
 - **Delegate order:** Cline free → opencode free → Command Code DeepSeek V4.1 Flash → Codex `-p muse` (unlimited). GPT/Codex terra quota is out. Max two local delegates at once.
 
@@ -27,15 +28,15 @@ GitHub Actions jobs fail in 2–4 s (billing block) and Cloudflare Workers Build
 
 | Phase | Scope | Branch | PR | Status |
 | ----- | ----- | ------ | -- | ------ |
-| 1 | Foundation | feature/projects-phase-1-foundation | #599 | verified, awaiting merge |
-| 2 | Phases | feature/projects-phase-2-phases | — | verification fixes running (Codex muse) |
-| 3 | Task Lists, WBS, Cycles | — | — | pending |
-| 4 | Relationships & dependencies | — | — | pending |
-| 5 | Gantt, critical path, baselines, roadmap | — | — | pending |
-| 6 | Calendar, reminders, recurrence, My Work | — | — | pending |
-| 7 | Files & attachments (876 Storage) | — | — | pending |
-| 8 | Time tracking & timesheets | — | — | pending |
-| 9 | Budgets & billing (Billing plane) | — | — | pending |
+| 1 | Foundation | feature/projects-phase-1-foundation | #599 | merged |
+| 2 | Phases | feature/projects-phase-2-phases | #600 | merged |
+| 3 | Task Lists, WBS, Cycles | feature/projects-phase-3-task-lists | #601 | merged |
+| 4 | Relationships & dependencies | feature/projects-phase-4-dependencies | #602 | merged |
+| 5 | Gantt, critical path, baselines | feature/projects-phase-5-gantt | #603 | merged |
+| 6 | Calendar, reminders, recurrence, My Work | feature/projects-phase-6-calendar | #604 | merged |
+| 7 | Files & attachments (876 Storage) | feature/projects-phase-7-files | #605 | merged |
+| 8 | Time tracking & timesheets | feature/projects-phase-8-time | #606 | merged |
+| 9 | Budgets & billing (Billing plane) | feature/projects-phase-8-time | #606 | **API + client only — no UI yet** |
 | 10 | Reports & resource planning | — | — | pending |
 | 11 | Templates & cloning | — | — | pending |
 | 12 | Custom fields & layouts | — | — | pending |
