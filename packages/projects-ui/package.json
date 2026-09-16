@@ -250,6 +250,34 @@
     "./collaboration/mention-input": {
       "types": "./src/collaboration/mention-input.tsx",
       "default": "./src/collaboration/mention-input.tsx"
+    },
+    "./custom-modules/types": {
+      "types": "./src/custom-modules/types.ts",
+      "default": "./src/custom-modules/types.ts"
+    },
+    "./custom-modules/custom-module-list": {
+      "types": "./src/custom-modules/custom-module-list.tsx",
+      "default": "./src/custom-modules/custom-module-list.tsx"
+    },
+    "./custom-modules/status-editor": {
+      "types": "./src/custom-modules/status-editor.tsx",
+      "default": "./src/custom-modules/status-editor.tsx"
+    },
+    "./custom-modules/record-list": {
+      "types": "./src/custom-modules/record-list.tsx",
+      "default": "./src/custom-modules/record-list.tsx"
+    },
+    "./custom-modules/record-status-badge": {
+      "types": "./src/custom-modules/record-status-badge.tsx",
+      "default": "./src/custom-modules/record-status-badge.tsx"
+    },
+    "./custom-modules/record-summary": {
+      "types": "./src/custom-modules/record-summary.tsx",
+      "default": "./src/custom-modules/record-summary.tsx"
+    },
+    "./custom-modules/dashboard-widget": {
+      "types": "./src/custom-modules/dashboard-widget.tsx",
+      "default": "./src/custom-modules/dashboard-widget.tsx"
     }
   },
   "scripts": {
