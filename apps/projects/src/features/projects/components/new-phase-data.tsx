@@ -7,12 +7,15 @@ import { projects } from '@/lib/services/projects'
 
 export async function NewPhaseData() {
   const { orgId } = await requireProjectsContext()
-  const [projectList, members] = await Promise.all([
+  const [projectList, members, layoutResult, fieldResult] = await Promise.all([
     projects.projects.list(orgId, { limit: 100 }),
     loadMemberLabels(orgId),
+    projects.layouts.resolve(orgId, { entity: 'phase' }),
+    projects.milestones.customFields.list(orgId),
   ])
 
-  const loadError = projectList.error ?? members.error
+  const loadError =
+    projectList.error ?? members.error ?? layoutResult.error ?? fieldResult.error
   const memberOptions = Object.entries(members.labels).map(([userId, label]) => ({
     userId,
     label,
@@ -31,6 +34,8 @@ export async function NewPhaseData() {
         mode="create"
         projects={projectList.data?.data ?? []}
         members={memberOptions}
+        layout={layoutResult.data ?? null}
+        customFields={fieldResult.data?.data ?? []}
       />
     </div>
   )

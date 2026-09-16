@@ -3,7 +3,9 @@ import { baselinesClient } from './baselines'
 import { cyclesClient } from './cycles'
 import { eventsClient } from './events'
 import { financeClient } from './finance'
+import { layoutsClient } from './layouts'
 import { phaseCustomFieldsClient } from './phase-custom-fields'
+import { projectCustomFieldsClient } from './project-custom-fields'
 import {
   commentsClient,
   customFieldsClient,
@@ -29,6 +31,8 @@ export const client = {
   cycles: cyclesClient,
   taskLists: taskListsClient,
   phaseCustomFields: phaseCustomFieldsClient,
+  projectCustomFields: projectCustomFieldsClient,
+  layouts: layoutsClient,
   labels: labelsClient,
   comments: commentsClient,
   workItemTypes: workItemTypesClient,
@@ -52,6 +56,8 @@ export { remindersClient } from './reminders'
 export { taskListsClient } from './task-lists'
 export { templatesClient } from './templates'
 export { phaseCustomFieldsClient } from './phase-custom-fields'
+export { projectCustomFieldsClient } from './project-custom-fields'
+export { layoutsClient } from './layouts'
 export {
   projectsClient,
   issuesClient,

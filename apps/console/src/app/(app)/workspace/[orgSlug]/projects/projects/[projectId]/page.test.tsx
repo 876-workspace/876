@@ -7,6 +7,7 @@ import type { Project } from '@876/projects/contracts'
 const mocks = vi.hoisted(() => ({
   retrieveProject: vi.fn(),
   listIssues: vi.fn(),
+  listProjectFields: vi.fn(),
   resolveOrg: vi.fn(),
 }))
 
@@ -24,6 +25,9 @@ vi.mock('@/lib/services/projects', () => ({
     },
     issues: {
       list: mocks.listIssues,
+    },
+    projectCustomFields: {
+      list: mocks.listProjectFields,
     },
   },
 }))
@@ -55,6 +59,7 @@ const mockProject: Project = {
   createdAt: 1700000000,
   updatedAt: 1700000000,
   memberCount: 8,
+  customFields: [],
 }
 
 afterEach(cleanup)
@@ -72,6 +77,10 @@ describe('OrganizationProjectDetailPage', () => {
       error: null,
     })
     mocks.listIssues.mockResolvedValue({
+      data: { object: 'list', data: [], hasMore: false, totalCount: 0 },
+      error: null,
+    })
+    mocks.listProjectFields.mockResolvedValue({
       data: { object: 'list', data: [], hasMore: false, totalCount: 0 },
       error: null,
     })

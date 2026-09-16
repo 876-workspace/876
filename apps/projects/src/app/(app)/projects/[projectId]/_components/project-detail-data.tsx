@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { AttachmentsData } from '@/features/projects/components/attachments-data'
+import { ProjectCustomFieldsPanel } from '@/features/projects/components/project-custom-fields-panel'
 import { WorkBreakdownData } from '@/features/projects/components/work-breakdown-data'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { projects } from '@/lib/services/projects'
@@ -21,11 +22,13 @@ export async function ProjectDetailData({
   projectId: string
   canEdit: boolean
 }) {
-  const [projectResult, issuesResult, membersResult] = await Promise.all([
-    projects.projects.retrieve(orgId, projectId),
-    projects.issues.list(orgId, { project: projectId, limit: 100 }),
-    loadMemberLabels(orgId),
-  ])
+  const [projectResult, issuesResult, membersResult, projectFieldsResult] =
+    await Promise.all([
+      projects.projects.retrieve(orgId, projectId),
+      projects.issues.list(orgId, { project: projectId, limit: 100 }),
+      loadMemberLabels(orgId),
+      projects.projectCustomFields.list(orgId),
+    ])
 
   if (projectResult.error?.code === 'projects/project-not-found') notFound()
   if (projectResult.error || !projectResult.data)
@@ -83,6 +86,10 @@ export async function ProjectDetailData({
             : null
         }
         issuesHref="/issues"
+      />
+      <ProjectCustomFieldsPanel
+        fields={projectFieldsResult.data?.data ?? []}
+        values={projectResult.data?.customFields ?? []}
       />
       <Suspense
         fallback={<div className="876-card h-64 animate-pulse" aria-hidden />}

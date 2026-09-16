@@ -16,12 +16,15 @@ import type {
   IssueEvent,
   IssueRelation,
   Label,
+  Layout,
   MilestoneCustomField,
   MilestoneCustomFieldValue,
   MilestoneDetail,
   MilestoneEvent,
   MilestoneSummary,
   Project,
+  ProjectCustomField,
+  ProjectCustomFieldValue,
   ProjectEvent,
   ProjectTemplate,
   ProjectTemplateVersion,
@@ -98,6 +101,7 @@ export function makeProject(overrides: Partial<Project> = {}): Project {
     createdAt: 1700000000,
     updatedAt: 1700000000,
     memberCount: 8,
+    customFields: [],
     ...overrides,
   }
 }
@@ -657,6 +661,72 @@ export function makeTemplatePreview(
     phases: [{ ref: 'phase-discover', name: 'Discover', start: 1720000000, end: 1720604800 }],
     workItems: [{ ref: 'item-kickoff', title: 'Kickoff', start: 1720000000, due: 1720086400 }],
     missing: { workItemTypes: [], workflowStates: [], labels: [] },
+    ...overrides,
+  }
+}
+
+export function makeLayout(overrides: Partial<Layout> = {}): Layout {
+  return {
+    object: 'projects.layout',
+    id: 'lay_test',
+    entity: 'project',
+    workItemTypeId: null,
+    name: 'Project default',
+    version: 2,
+    isDefault: true,
+    builtIn: false,
+    sections: [
+      {
+        key: 'basics',
+        title: 'Basics',
+        columns: 1,
+        fields: [
+          { fieldKey: 'title', width: 1, visible: true },
+          { fieldKey: 'cf:team', width: 1, visible: true },
+        ],
+      },
+    ],
+    rules: [],
+    ...overrides,
+  }
+}
+
+export function makeProjectField(
+  overrides: Partial<ProjectCustomField> = {}
+): ProjectCustomField {
+  return {
+    object: 'projects.project-custom-field',
+    id: 'pcf_1',
+    tenantId: 'tenant_1',
+    key: 'team',
+    label: 'Team',
+    fieldType: 'text',
+    options: null,
+    required: false,
+    description: null,
+    position: 0,
+    archivedAt: null,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeProjectFieldValue(
+  overrides: Partial<ProjectCustomFieldValue> = {}
+): ProjectCustomFieldValue {
+  return {
+    object: 'projects.project-custom-field-value',
+    id: 'pcfv_1',
+    tenantId: 'tenant_1',
+    projectId: 'proj_test',
+    fieldId: 'pcf_1',
+    fieldKey: 'team',
+    fieldType: 'text',
+    value: 'Platform',
+    updatedBy: null,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
     ...overrides,
   }
 }

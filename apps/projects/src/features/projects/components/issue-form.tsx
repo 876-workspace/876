@@ -11,6 +11,8 @@ import type {
   WorkItemType,
   WorkflowState,
 } from '@876/projects/contracts'
+import { LayoutRenderer } from '@876/projects-ui/layouts/layout-renderer'
+import type { Layout, LayoutValues } from '@876/projects/layout-rules'
 import { AppError, type AppErrorValue } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { FormRow } from '@876/ui/form-row'
@@ -22,6 +24,19 @@ import { useRouter } from 'next/navigation'
 import { useMemo, useState, type FormEvent } from 'react'
 
 import { issuesClient } from '@/lib/client'
+import {
+  customFieldInputValue,
+  descriptorLabel,
+  isLayoutRuleError,
+  issueLayoutDescriptors,
+  issueToLayoutValues,
+  layoutDateTimestamp,
+  layoutRuleErrorTitle,
+  layoutText,
+  layoutTextOrNull,
+  missingLayoutFields,
+  readLayoutFormValues,
+} from './layout-form-helpers'
 
 type MemberOption = { userId: string; label: string }
 
@@ -37,6 +52,8 @@ type Props = {
   members?: MemberOption[]
   issues?: Issue[]
   issue?: Issue
+  /** Server-resolved layout; when present the fields render through it. */
+  layout?: Layout | null
 }
 
 type FieldValue = string | number | boolean | string[] | null
@@ -123,6 +140,7 @@ function IssueForm({
   members = [],
   issues = [],
   issue,
+  layout = null,
 }: Props) {
   const router = useRouter()
   const editing = Boolean(issue)
@@ -171,6 +189,8 @@ function IssueForm({
   )
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<AppErrorValue | null>(null)
+  const [ruleFields, setRuleFields] = useState<string[]>([])
+  const useLayout = layout !== null
 
   const selectedWorkItemType = useMemo(
     () => workItemTypes.find((type) => type.key === typeKey) ?? null,
@@ -215,8 +235,182 @@ function IssueForm({
     [issue?.id, issues, projectId]
   )
 
+  const layoutDescriptors = useMemo(
+    () =>
+      issueLayoutDescriptors({
+        customFields: applicableFields,
+        workflowStates,
+        milestones: availableMilestones,
+        taskLists: availableTaskLists,
+        labels,
+        members,
+      }),
+    [
+      applicableFields,
+      workflowStates,
+      availableMilestones,
+      availableTaskLists,
+      labels,
+      members,
+    ]
+  )
+
+  const layoutSeed = useMemo<LayoutValues>(() => {
+    const seed = issueToLayoutValues(issue)
+    if (!issue) {
+      seed.state =
+        workflowStates.find((state) => state.isDefault)?.key ?? null
+      seed.priority = 'none'
+    }
+    return seed
+  }, [issue, workflowStates])
+
+  function reportLayoutRuleError(
+    code: string | undefined,
+    message: string,
+    values: LayoutValues
+  ) {
+    const missing = missingLayoutFields(layout as Layout, values)
+    setRuleFields(missing)
+    setError({
+      code: code ?? 'projects/layout-required-fields',
+      message: `${layoutRuleErrorTitle(code)}${missing.length > 0 ? ` Missing: ${missing.map((field) => descriptorLabel(layoutDescriptors, field)).join(', ')}` : ''} ${message}`.trim(),
+    })
+  }
+
+  async function onLayoutSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (pending || !layout) return
+
+    const formValues = readLayoutFormValues(event.currentTarget, layout)
+    const missing = missingLayoutFields(layout, formValues)
+    if (missing.length > 0) {
+      setRuleFields(missing)
+      setError({
+        code: 'projects/layout-required-fields',
+        message: `${layoutRuleErrorTitle('projects/layout-required-fields')} Missing: ${missing.map((field) => descriptorLabel(layoutDescriptors, field)).join(', ')}`,
+      })
+      return
+    }
+
+    const formTitle = layoutText(formValues.title)
+    if (!formTitle) {
+      setRuleFields(['title'])
+      setError({
+        code: 'projects/layout-required-fields',
+        message: `${layoutRuleErrorTitle('projects/layout-required-fields')} Missing: Title`,
+      })
+      return
+    }
+
+    setPending(true)
+    setError(null)
+    setRuleFields([])
+
+    const fieldById = new Map(
+      applicableFields.map((field) => [`cf:${field.key}`, field])
+    )
+    const layoutCustomFields = [...fieldById.entries()].flatMap(
+      ([fieldKey, field]) => {
+        const raw = formValues[fieldKey]
+        if (
+          !editing &&
+          (raw === undefined || raw === null || raw === '' ||
+            (Array.isArray(raw) && raw.length === 0))
+        )
+          return []
+        return [
+          {
+            fieldId: field.id,
+            value: customFieldInputValue(field.fieldType, raw),
+          },
+        ]
+      }
+    )
+
+    const system = {
+      title: formTitle,
+      description: layoutTextOrNull(formValues.description),
+      status: layoutText(formValues.state) || undefined,
+      priority: (layoutText(formValues.priority) || 'none') as
+        | 'none'
+        | 'low'
+        | 'medium'
+        | 'high'
+        | 'urgent',
+      assigneeUserId: layoutTextOrNull(formValues.assignee),
+      estimate:
+        layoutText(formValues.estimate) === ''
+          ? null
+          : Number(layoutText(formValues.estimate)),
+      dueDate: layoutDateTimestamp(
+        typeof formValues.dueDate === 'string' ? formValues.dueDate : null
+      ),
+      plannedStartDate: layoutDateTimestamp(
+        typeof formValues.startDate === 'string' ? formValues.startDate : null
+      ),
+      labelIds: Array.isArray(formValues.labels)
+        ? formValues.labels
+        : formValues.labels
+          ? [formValues.labels]
+          : [],
+      milestoneId: layoutTextOrNull(formValues.phase),
+      taskListId: layoutTextOrNull(formValues.taskList),
+    }
+
+    const result = issue
+      ? await issuesClient.update(issue.identifier, {
+          ...system,
+          projectId: projectId || issue.projectId,
+          description: system.description,
+          typeKey: typeKey || issue.typeKey,
+          status: system.status ?? issue.status,
+          milestoneId: system.milestoneId,
+          parentIssueId: parentIssueId || null,
+          ...(cycleId !== (issue.cycleId ?? '')
+            ? { cycleId: cycleId || null }
+            : {}),
+          ...(layoutCustomFields.length > 0
+            ? { customFields: layoutCustomFields }
+            : {}),
+        })
+      : await issuesClient.create({
+          ...system,
+          projectId: projectId || undefined,
+          typeKey: typeKey || undefined,
+          ...(cycleId ? { cycleId } : {}),
+          ...(parentIssueId ? { parentIssueId } : {}),
+          ...(system.labelIds.length > 0 ? { labelIds: system.labelIds } : {}),
+          ...(layoutCustomFields.length > 0
+            ? { customFields: layoutCustomFields }
+            : {}),
+        })
+    setPending(false)
+
+    if (result.error || !result.data) {
+      if (isLayoutRuleError(result.error?.code))
+        reportLayoutRuleError(
+          result.error?.code,
+          result.error?.message ?? '',
+          formValues
+        )
+      else
+        setError({
+          code:
+            result.error?.code ??
+            (editing ? 'projects/update-failed' : 'projects/create-failed'),
+          message: result.error?.message ?? 'Something went wrong.',
+        })
+      return
+    }
+
+    router.push(`/issues/${result.data.identifier}`)
+    router.refresh()
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (useLayout) return onLayoutSubmit(event)
     if (!title.trim() || pending) return
 
     const requiredMissing = applicableFields.some((field) => {
@@ -314,6 +508,110 @@ function IssueForm({
 
     router.push(`/issues/${result.data.identifier}`)
     router.refresh()
+  }
+
+  if (useLayout && layout) {
+    return (
+      <form onSubmit={onSubmit} className="max-w-2xl space-y-4">
+        {error ? (
+          <AppError
+            title={editing ? 'Issue not updated' : 'Issue not created'}
+            error={error}
+            variant="banner"
+          />
+        ) : null}
+        {ruleFields.length > 0 ? (
+          <ul aria-label="Fields to complete" className="text-sm">
+            {ruleFields.map((fieldKey) => (
+              <li key={fieldKey}>{descriptorLabel(layoutDescriptors, fieldKey)}</li>
+            ))}
+          </ul>
+        ) : null}
+        <FormRow label="Project" htmlFor="project">
+          <NativeSelect
+            id="project"
+            value={projectId}
+            onChange={(event) => {
+              setProjectId(event.target.value)
+              setCycleId('')
+              setParentIssueId('')
+            }}
+            className="w-full"
+          >
+            {!editing ? <option value="">Triage</option> : null}
+            {projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </NativeSelect>
+        </FormRow>
+        <FormRow label="Type" htmlFor="type">
+          <NativeSelect
+            id="type"
+            value={typeKey}
+            onChange={(event) => setTypeKey(event.target.value)}
+            className="w-full"
+          >
+            <option value="">Default work item type</option>
+            {workItemTypes.map((type) => (
+              <option key={type.id} value={type.key}>
+                {type.name}
+              </option>
+            ))}
+          </NativeSelect>
+        </FormRow>
+        <FormRow label="Cycle" htmlFor="cycle">
+          <NativeSelect
+            id="cycle"
+            value={cycleId}
+            onChange={(event) => setCycleId(event.target.value)}
+            className="w-full"
+          >
+            <option value="">No cycle</option>
+            {availableCycles.map((cycle) => (
+              <option key={cycle.id} value={cycle.id}>
+                {cycle.name}
+              </option>
+            ))}
+          </NativeSelect>
+        </FormRow>
+        <FormRow label="Parent" htmlFor="parent">
+          <NativeSelect
+            id="parent"
+            value={parentIssueId}
+            onChange={(event) => setParentIssueId(event.target.value)}
+            className="w-full"
+          >
+            <option value="">No parent</option>
+            {parentOptions.map((candidate) => (
+              <option key={candidate.id} value={candidate.id}>
+                {candidate.identifier} — {candidate.title}
+              </option>
+            ))}
+          </NativeSelect>
+        </FormRow>
+        <LayoutRenderer
+          layout={layout}
+          fields={layoutDescriptors}
+          values={layoutSeed}
+        />
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={() => router.back()}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="info" disabled={pending}>
+            {pending
+              ? editing
+                ? 'Saving…'
+                : 'Creating…'
+              : editing
+                ? 'Save changes'
+                : 'Create issue'}
+          </Button>
+        </div>
+      </form>
+    )
   }
 
   return (

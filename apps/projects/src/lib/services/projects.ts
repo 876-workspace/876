@@ -110,6 +110,12 @@ export const projects = {
   get customFields() {
     return getServiceClient().customFields
   },
+  get projectCustomFields() {
+    return getServiceClient().projectCustomFields
+  },
+  get layouts() {
+    return getServiceClient().layouts
+  },
   get customFieldValues() {
     return getServiceClient().customFieldValues
   },

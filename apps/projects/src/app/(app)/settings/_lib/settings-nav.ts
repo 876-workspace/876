@@ -29,6 +29,18 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
         href: '/settings/phase-fields',
       },
       {
+        label: 'Project fields',
+        icon: 'preferences',
+        availability: 'available',
+        href: '/settings/project-fields',
+      },
+      {
+        label: 'Layouts',
+        icon: 'templates',
+        availability: 'available',
+        href: '/settings/layouts',
+      },
+      {
         label: 'Templates',
         icon: 'templates',
         availability: 'available',

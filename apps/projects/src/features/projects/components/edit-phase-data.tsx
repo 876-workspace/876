@@ -12,11 +12,14 @@ export async function EditPhaseData({
   orgId: string
   phaseId: string
 }) {
-  const [phaseResult, projectList, members] = await Promise.all([
-    projects.milestones.retrieve(orgId, phaseId),
-    projects.projects.list(orgId, { limit: 100 }),
-    loadMemberLabels(orgId),
-  ])
+  const [phaseResult, projectList, members, layoutResult, fieldResult] =
+    await Promise.all([
+      projects.milestones.retrieve(orgId, phaseId),
+      projects.projects.list(orgId, { limit: 100 }),
+      loadMemberLabels(orgId),
+      projects.layouts.resolve(orgId, { entity: 'phase' }),
+      projects.milestones.customFields.list(orgId),
+    ])
 
   if (phaseResult.error?.code === 'projects/milestone-not-found') notFound()
   if (phaseResult.error || !phaseResult.data)
@@ -33,7 +36,18 @@ export async function EditPhaseData({
       />
     )
 
-  const loadError = projectList.error ?? members.error
+  const phaseValuesResult = phaseResult.data
+    ? await projects.milestones.customFields.values.list(
+        orgId,
+        phaseResult.data.id
+      )
+    : null
+  const loadError =
+    projectList.error ??
+    members.error ??
+    layoutResult.error ??
+    fieldResult.error ??
+    phaseValuesResult?.error
   const memberOptions = Object.entries(members.labels).map(([userId, label]) => ({
     userId,
     label,
@@ -53,6 +67,9 @@ export async function EditPhaseData({
         phase={phaseResult.data}
         projects={projectList.data?.data ?? []}
         members={memberOptions}
+        layout={layoutResult.data ?? null}
+        customFields={fieldResult.data?.data ?? []}
+        customValues={phaseValuesResult?.data?.data ?? []}
       />
     </div>
   )

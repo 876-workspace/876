@@ -74,6 +74,7 @@ const mockProjects: Project[] = [
     createdAt: 1700000000,
     updatedAt: 1700000000,
     memberCount: 2,
+    customFields: [],
   },
 ]
 

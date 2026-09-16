@@ -32,6 +32,11 @@ export async function NewIssueData() {
     projects.cycles.list(orgId),
   ])
   const projectItems = projectList.data?.data ?? []
+  const defaultTypeId = (types.data?.data ?? []).find((type) => type.isDefault)?.id
+  const layoutResult = await projects.layouts.resolve(orgId, {
+    entity: 'work-item',
+    ...(defaultTypeId ? { workItemTypeId: defaultTypeId } : {}),
+  })
   const milestoneResults = await listProjectMilestones(orgId, projectItems)
   const taskListResults = await listProjectTaskLists(orgId, projectItems)
   const loadError = [
@@ -72,6 +77,7 @@ export async function NewIssueData() {
           userId,
           label,
         }))}
+        layout={layoutResult.data ?? null}
       />
     </div>
   )
