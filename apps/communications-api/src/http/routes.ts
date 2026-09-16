@@ -10,21 +10,24 @@ export function buildRoutes() {
   const router = Router()
   const service = Router()
 
-  service.use(requireInternalKey)
   service.use(
     '/organizations/:organizationId/email/domains',
+    requireInternalKey,
     buildDomainRoutes()
   )
   service.use(
     '/organizations/:organizationId/email/senders',
+    requireInternalKey,
     buildSenderRoutes()
   )
   service.use(
     '/organizations/:organizationId/email/templates',
+    requireInternalKey,
     buildTemplateRoutes()
   )
   service.use(
     '/organizations/:organizationId/email/deliveries',
+    requireInternalKey,
     buildDeliveryRoutes()
   )
 
