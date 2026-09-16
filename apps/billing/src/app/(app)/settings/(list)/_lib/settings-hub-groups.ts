@@ -26,6 +26,7 @@ const SETTINGS_SECTION_ICON_KEYS: Record<string, SettingsHubIconKey> = {
   '/settings/discounts': 'items',
   '/settings/payment-providers': 'integrations',
   '/settings/accounting-providers': 'integrations',
+  '/settings/email': 'email',
   '/settings/users': 'members',
   '/settings/roles': 'roles',
 }
@@ -48,7 +49,11 @@ const SETTINGS_GROUPS = [
   },
   {
     label: 'Integrations',
-    hrefs: ['/settings/payment-providers', '/settings/accounting-providers'],
+    hrefs: [
+      '/settings/payment-providers',
+      '/settings/accounting-providers',
+      '/settings/email',
+    ],
   },
   {
     label: 'Access',

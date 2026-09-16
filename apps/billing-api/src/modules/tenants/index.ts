@@ -1,4 +1,7 @@
-export { tenantAuthorizationByOrganizationId } from './tenants.service'
+export {
+  tenantAuthorizationByOrganizationId,
+  tenantOrganization,
+} from './tenants.service'
 export {
   provisionTenantWorkspace,
   type TenantProvisioningInput,

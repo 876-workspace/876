@@ -11,6 +11,7 @@ import {
   CreditCard,
   Globe2,
   KeyRound,
+  Mail,
   PaintBrush,
   ReceiptText,
   RefreshCw,
@@ -101,6 +102,15 @@ export const BILLING_SETTINGS_SECTIONS = [
     href: '/settings/accounting-providers',
     icon: CircleStackIcon,
     iconColor: 'text-indigo-600 dark:text-indigo-400',
+    permissions: ['settings:read'],
+  },
+  {
+    title: 'Email settings',
+    description:
+      'Manage the free sender, sending domains with DNS records, and templates.',
+    href: '/settings/email',
+    icon: Mail,
+    iconColor: 'text-sky-600 dark:text-sky-400',
     permissions: ['settings:read'],
   },
   {

@@ -29,6 +29,7 @@
     "api:contract:manifest:check": "tsx scripts/generate_v1_contract_manifest.ts --check"
   },
   "dependencies": {
+    "@876/communications": "workspace:*",
     "@876/core": "workspace:*",
     "@workos-inc/node": "10.10.0",
     "@876/server": "workspace:*",

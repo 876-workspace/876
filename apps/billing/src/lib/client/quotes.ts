@@ -1,4 +1,11 @@
-import type { QuotePreference, QuotePreferenceUpdateParams } from '@876/billing'
+import type {
+  DocumentEmailComposition,
+  DocumentEmailDelivery,
+  DocumentEmailPrepareParams,
+  DocumentEmailSendParams,
+  QuotePreference,
+  QuotePreferenceUpdateParams,
+} from '@876/billing'
 
 import type { InvoiceResource } from '@/types/invoice'
 import type {
@@ -12,6 +19,34 @@ import type {
 import type { SalesOrderResource } from '@/types/sales-order'
 
 import { request } from './request'
+
+function emailPath(quoteId: string) {
+  return `/api/v1/quotes/${encodeURIComponent(quoteId)}/email`
+}
+
+function prepareEmail(
+  quoteId: string,
+  params: DocumentEmailPrepareParams = {}
+) {
+  const search = new URLSearchParams()
+  if (params.senderId) search.set('senderId', params.senderId)
+  if (params.templateId) search.set('templateId', params.templateId)
+  const query = search.size > 0 ? `?${search.toString()}` : ''
+  return request<DocumentEmailComposition>(`${emailPath(quoteId)}${query}`, {
+    method: 'GET',
+  })
+}
+
+function sendEmail(quoteId: string, params: DocumentEmailSendParams) {
+  return request<DocumentEmailDelivery>(
+    `/api/v1/quotes/${encodeURIComponent(quoteId)}/send-email`,
+    {
+      method: 'POST',
+      headers: { 'Idempotency-Key': crypto.randomUUID() },
+      body: JSON.stringify(params),
+    }
+  )
+}
 
 export const create = (params: QuoteCreateInput) =>
   request<QuoteCreated>('/api/v1/quotes', {
@@ -70,6 +105,8 @@ export const quotes = {
   retrieve,
   update,
   send: (quoteId: string) => transition(quoteId, 'send'),
+  prepareEmail,
+  sendEmail,
   accept: (quoteId: string) => transition(quoteId, 'accept'),
   decline: (quoteId: string) => transition(quoteId, 'decline'),
   cancel: (quoteId: string) => transition(quoteId, 'cancel'),

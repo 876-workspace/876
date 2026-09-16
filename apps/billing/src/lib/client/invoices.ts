@@ -1,4 +1,11 @@
 import type {
+  DocumentEmailComposition,
+  DocumentEmailDelivery,
+  DocumentEmailPrepareParams,
+  DocumentEmailSendParams,
+} from '@876/billing'
+
+import type {
   InvoiceCreated,
   InvoiceCreateInput,
   InvoiceDeleted,
@@ -11,6 +18,34 @@ import type {
 } from '@/types/invoice'
 
 import { request } from './request'
+
+function emailPath(invoiceId: string) {
+  return `/api/v1/invoices/${encodeURIComponent(invoiceId)}/email`
+}
+
+function prepareEmail(
+  invoiceId: string,
+  params: DocumentEmailPrepareParams = {}
+) {
+  const search = new URLSearchParams()
+  if (params.senderId) search.set('senderId', params.senderId)
+  if (params.templateId) search.set('templateId', params.templateId)
+  const query = search.size > 0 ? `?${search.toString()}` : ''
+  return request<DocumentEmailComposition>(`${emailPath(invoiceId)}${query}`, {
+    method: 'GET',
+  })
+}
+
+function sendEmail(invoiceId: string, params: DocumentEmailSendParams) {
+  return request<DocumentEmailDelivery>(
+    `/api/v1/invoices/${encodeURIComponent(invoiceId)}/send-email`,
+    {
+      method: 'POST',
+      headers: { 'Idempotency-Key': crypto.randomUUID() },
+      body: JSON.stringify(params),
+    }
+  )
+}
 
 export const create = (params: InvoiceCreateInput) =>
   request<InvoiceCreated>('/api/v1/invoices', {
@@ -82,6 +117,8 @@ export const invoices = {
   update,
   finalize,
   send,
+  prepareEmail,
+  sendEmail,
   void: voidInvoice,
   writeOff,
   delete: deleteInvoice,

@@ -1,10 +1,17 @@
 'use client'
 
+import { useCallback, useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+import type {
+  DocumentEmailPrepareParams,
+  DocumentEmailSendParams,
+} from '@876/billing'
+import { DocumentEmailComposer } from '@876/billing-ui/panels/document-email-composer'
 import {
   QuoteLifecycleActions,
   type QuoteLifecycleUiAction,
 } from '@876/billing-ui/quote-lifecycle-actions'
-import { useRouter } from 'next/navigation'
 import { Button } from '@876/ui/button'
 
 import { client } from '@/lib/client'
@@ -24,8 +31,35 @@ export function QuoteActions({
   canWrite: boolean
 }) {
   const router = useRouter()
+  const [emailOpen, setEmailOpen] = useState(false)
+
+  const prepareEmail = useCallback(
+    async (params: DocumentEmailPrepareParams) => {
+      const result = await client.quotes.prepareEmail(quoteId, params)
+      if (result.error)
+        return { data: null, error: { message: result.error.message } }
+      return { data: result.data, error: null }
+    },
+    [quoteId]
+  )
+
+  const sendEmail = useCallback(
+    async (params: DocumentEmailSendParams) => {
+      const result = await client.quotes.sendEmail(quoteId, params)
+      if (result.error)
+        return { data: null, error: { message: result.error.message } }
+      router.refresh()
+      return { data: result.data, error: null }
+    },
+    [quoteId, router]
+  )
 
   const onAction = async (action: QuoteLifecycleUiAction) => {
+    if (action === 'send') {
+      setEmailOpen(true)
+      return
+    }
+
     if (action === 'delete') {
       const result = await client.quotes.delete(quoteId)
       if (result.error) return { error: result.error.message }
@@ -51,33 +85,45 @@ export function QuoteActions({
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <QuoteLifecycleActions
-        status={status}
-        isExpired={isExpired}
-        canWrite={canWrite}
-        canDelete={canWrite}
-        canConvert={canWrite}
-        editHref={`/quotes/${quoteId}/edit`}
-        sharePath={`/quotes/${quoteId}`}
-        convertedInvoiceHref={
-          convertedInvoiceId ? `/invoices/${convertedInvoiceId}` : undefined
-        }
-        onAction={onAction}
-      />
-      {canWrite && status === 'ACCEPTED' ? (
-        <Button
-          variant="outline"
-          onClick={async () => {
-            const result = await client.quotes.convertToSalesOrder(quoteId)
-            if (result.error || !result.data) return
-            router.push(`/sales-orders/${result.data.id}`)
-            router.refresh()
-          }}
-        >
-          Convert to sales order
-        </Button>
+    <>
+      <div className="flex flex-wrap gap-2">
+        <QuoteLifecycleActions
+          status={status}
+          isExpired={isExpired}
+          canWrite={canWrite}
+          canDelete={canWrite}
+          canConvert={canWrite}
+          editHref={`/quotes/${quoteId}/edit`}
+          sharePath={`/quotes/${quoteId}`}
+          convertedInvoiceHref={
+            convertedInvoiceId ? `/invoices/${convertedInvoiceId}` : undefined
+          }
+          onAction={onAction}
+        />
+        {canWrite && status === 'ACCEPTED' ? (
+          <Button
+            variant="outline"
+            onClick={async () => {
+              const result = await client.quotes.convertToSalesOrder(quoteId)
+              if (result.error || !result.data) return
+              router.push(`/sales-orders/${result.data.id}`)
+              router.refresh()
+            }}
+          >
+            Convert to sales order
+          </Button>
+        ) : null}
+      </div>
+
+      {canWrite ? (
+        <DocumentEmailComposer
+          open={emailOpen}
+          onOpenChange={setEmailOpen}
+          documentLabel="quote"
+          prepare={prepareEmail}
+          send={sendEmail}
+        />
       ) : null}
-    </div>
+    </>
   )
 }

@@ -9,7 +9,11 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   external: ['@prisma/client', '.prisma/client'],
-  noExternal: ['@876/core', '@876/server'],
+  // Workspace packages publish TypeScript sources, so anything left external is
+  // resolved as .ts at runtime and Node cannot load it — the built service fails
+  // to boot with ERR_MODULE_NOT_FOUND. Every @876/* runtime dependency must be
+  // bundled.
+  noExternal: ['@876/core', '@876/server', '@876/communications'],
   esbuildOptions(options) {
     options.conditions = [...(options.conditions ?? []), 'react-server']
   },

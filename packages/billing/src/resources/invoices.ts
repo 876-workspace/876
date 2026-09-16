@@ -1,3 +1,14 @@
+import type {
+  DocumentEmailComposition,
+  DocumentEmailPrepareParams,
+  DocumentEmailSendOptions,
+  DocumentEmailSendParams,
+  DocumentEmailDelivery,
+} from '../types/document-email'
+import {
+  DocumentEmailCompositionSchema,
+  DocumentEmailDeliverySchema,
+} from '../types/document-email.schema'
 import { InvoiceDetailSchema } from '../types/invoice.schema'
 import type { InvoiceDetail } from '../types/invoice'
 
@@ -25,6 +36,14 @@ import type {
   RecurringInvoiceFromInvoiceParams,
   RequestOptions,
 } from '../types'
+
+function resourcePath(invoiceId: string) {
+  return `/api/v1/invoices/${encodeURIComponent(invoiceId)}`
+}
+
+function emailQuery(params: DocumentEmailPrepareParams) {
+  return { senderId: params.senderId, templateId: params.templateId }
+}
 
 /** `$876.billing.invoices.*` — tenant-scoped invoice operations. */
 export function createInvoicesResource(runtime: Runtime) {
@@ -64,7 +83,7 @@ export function createInvoicesResource(runtime: Runtime) {
         runtime,
         {
           method: 'GET',
-          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}`,
+          path: resourcePath(invoiceId),
           signal: options?.signal,
         },
         InvoiceDetailSchema
@@ -80,7 +99,7 @@ export function createInvoicesResource(runtime: Runtime) {
         runtime,
         {
           method: 'PATCH',
-          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}`,
+          path: resourcePath(invoiceId),
           body: params,
           signal: options?.signal,
         },
@@ -93,7 +112,7 @@ export function createInvoicesResource(runtime: Runtime) {
         runtime,
         {
           method: 'DELETE',
-          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}`,
+          path: resourcePath(invoiceId),
           signal: options?.signal,
         },
         DeletedInvoiceSchema
@@ -109,7 +128,7 @@ export function createInvoicesResource(runtime: Runtime) {
         runtime,
         {
           method: 'POST',
-          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}/finalize`,
+          path: `${resourcePath(invoiceId)}/finalize`,
           body: params,
           signal: options?.signal,
         },
@@ -122,11 +141,46 @@ export function createInvoicesResource(runtime: Runtime) {
         runtime,
         {
           method: 'POST',
-          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}/send`,
+          path: `${resourcePath(invoiceId)}/send`,
           body: {},
           signal: options?.signal,
         },
         InvoiceCreatedSchema
+      )
+    },
+    /** Resolves the default recipient, sender, and rendered template without sending. */
+    prepareEmail(
+      invoiceId: string,
+      params: DocumentEmailPrepareParams = {},
+      options?: RequestOptions
+    ) {
+      return Request<DocumentEmailComposition>(
+        runtime,
+        {
+          method: 'GET',
+          path: `${resourcePath(invoiceId)}/email`,
+          query: emailQuery(params),
+          signal: options?.signal,
+        },
+        DocumentEmailCompositionSchema
+      )
+    },
+    /** Sends an invoice email through the shared Communications service. */
+    sendEmail(
+      invoiceId: string,
+      params: DocumentEmailSendParams,
+      options: DocumentEmailSendOptions
+    ) {
+      return Request<DocumentEmailDelivery>(
+        runtime,
+        {
+          method: 'POST',
+          path: `${resourcePath(invoiceId)}/send-email`,
+          body: params,
+          headers: { 'Idempotency-Key': options.idempotencyKey },
+          signal: options.signal,
+        },
+        DocumentEmailDeliverySchema
       )
     },
     /** Voids an unsettled finalized invoice. */
@@ -139,7 +193,7 @@ export function createInvoicesResource(runtime: Runtime) {
         runtime,
         {
           method: 'POST',
-          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}/void`,
+          path: `${resourcePath(invoiceId)}/void`,
           body: params,
           signal: options?.signal,
         },
@@ -156,7 +210,7 @@ export function createInvoicesResource(runtime: Runtime) {
         runtime,
         {
           method: 'POST',
-          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}/write-off`,
+          path: `${resourcePath(invoiceId)}/write-off`,
           body: params,
           signal: options?.signal,
         },
@@ -169,7 +223,7 @@ export function createInvoicesResource(runtime: Runtime) {
         runtime,
         {
           method: 'POST',
-          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}/clone`,
+          path: `${resourcePath(invoiceId)}/clone`,
           body: {},
           signal: options?.signal,
         },
@@ -186,7 +240,7 @@ export function createInvoicesResource(runtime: Runtime) {
         runtime,
         {
           method: 'POST',
-          path: `/api/v1/invoices/${encodeURIComponent(invoiceId)}/make-recurring`,
+          path: `${resourcePath(invoiceId)}/make-recurring`,
           body: params,
           signal: options?.signal,
         },

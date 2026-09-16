@@ -20,6 +20,7 @@ import { currencies } from './currencies'
 import { customers } from './customers'
 import { discounts } from './discounts'
 import { documentTemplates } from './document-templates'
+import { emailDomains } from './email-domains'
 import { invoices } from './invoices'
 import { invoicePreferences } from './invoice-preferences'
 import { items } from './items'
@@ -712,6 +713,7 @@ describe('Billing browser resource clients', () => {
       customers,
       discounts,
       documentTemplates,
+      emailDomains,
       invoices,
       invoicePreferences,
       invites,

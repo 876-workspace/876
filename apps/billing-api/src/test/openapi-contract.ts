@@ -4,7 +4,16 @@ import { fileURLToPath } from 'node:url'
 type JsonObject = Record<string, unknown>
 type HttpMethod =
   'delete' | 'get' | 'head' | 'options' | 'patch' | 'post' | 'put'
-type OperationKey = `${Uppercase<HttpMethod>} ${string}`
+export type OperationKey = `${Uppercase<HttpMethod>} ${string}`
+
+export type CompareOpenApiContractsOptions = {
+  /**
+   * Operations this Express service deliberately adds beyond the frozen FastAPI
+   * contract. Each entry is a reviewed, additive extension; anything not listed
+   * is still reported as an unexpected extra.
+   */
+  intentionalAdditions?: readonly OperationKey[]
+}
 
 type ValueMismatch = {
   field: string
@@ -31,6 +40,11 @@ export type OpenApiContractComparison = {
   changedComponentSchemas: string[]
   missingOperations: OperationKey[]
   extraOperations: OperationKey[]
+  /**
+   * Declared additions that the Express app no longer serves. A stale entry means
+   * an intentional addition was removed without removing its declaration.
+   */
+  unusedIntentionalAdditions: OperationKey[]
   valueMismatches: ValueMismatch[]
   statusMismatches: StatusMismatch[]
   schemaMismatches: SchemaMismatch[]
@@ -151,7 +165,8 @@ function compareSchemas(
 
 export function compareOpenApiContracts(
   expectedDocument: unknown,
-  actualDocument: unknown
+  actualDocument: unknown,
+  options: CompareOpenApiContractsOptions = {}
 ): OpenApiContractComparison {
   const expectedRoot = expectedDocument as JsonObject
   const actualRoot = actualDocument as JsonObject
@@ -189,7 +204,18 @@ export function compareOpenApiContracts(
   const missingOperations = [...expected.keys()].filter(
     (key) => !actual.has(key)
   )
-  const extraOperations = [...actual.keys()].filter((key) => !expected.has(key))
+  // The frozen document stays an exact oracle for everything it contains: an
+  // operation may never be removed, and a retained one may never change shape.
+  // Deliberate *additions* are a different question, so each one is declared by
+  // the caller and reviewed there rather than silently tolerated here.
+  const declaredAdditions = new Set(options.intentionalAdditions ?? [])
+  const extraOperations = [...actual.keys()].filter(
+    (key) => !expected.has(key) && !declaredAdditions.has(key)
+  )
+  const undeclaredAdditionKeys = new Set(extraOperations)
+  const unusedIntentionalAdditions = [...declaredAdditions].filter(
+    (key) => !actual.has(key) && !undeclaredAdditionKeys.has(key)
+  )
   const valueMismatches: ValueMismatch[] = []
   const statusMismatches: StatusMismatch[] = []
   const schemaMismatches: SchemaMismatch[] = []
@@ -255,6 +281,7 @@ export function compareOpenApiContracts(
     changedComponentSchemas: changedComponentSchemas.sort(),
     missingOperations: missingOperations.sort(),
     extraOperations: extraOperations.sort(),
+    unusedIntentionalAdditions: unusedIntentionalAdditions.sort(),
     valueMismatches,
     statusMismatches,
     schemaMismatches,
@@ -267,6 +294,7 @@ export function openApiContractsMatch(
   return (
     comparison.missingOperations.length === 0 &&
     comparison.extraOperations.length === 0 &&
+    comparison.unusedIntentionalAdditions.length === 0 &&
     comparison.documentMismatches.length === 0 &&
     comparison.missingComponentSchemas.length === 0 &&
     comparison.extraComponentSchemas.length === 0 &&
@@ -325,6 +353,11 @@ export function formatOpenApiContractComparison(
   )
   appendList(lines, 'Missing operations', comparison.missingOperations)
   appendList(lines, 'Extra operations', comparison.extraOperations)
+  appendList(
+    lines,
+    'Declared intentional additions no longer served',
+    comparison.unusedIntentionalAdditions
+  )
 
   for (const [field, affected] of groupedValueMismatches(
     comparison.valueMismatches

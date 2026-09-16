@@ -66,6 +66,30 @@ export const BILLING_ERRORS = {
     message: 'Document template not found.',
     httpStatus: HttpStatus.NOT_FOUND,
   },
+  'billing/email-delivery-failed': {
+    message: 'The email could not be delivered to the email provider.',
+    httpStatus: HttpStatus.BAD_GATEWAY,
+  },
+  'billing/email-not-configured': {
+    message: 'Transactional email is not configured for this Billing service.',
+    httpStatus: HttpStatus.SERVICE_UNAVAILABLE,
+  },
+  'billing/email-recipient-required': {
+    message: 'Add a customer email address before sending this document.',
+    httpStatus: HttpStatus.UNPROCESSABLE_ENTITY,
+  },
+  'billing/email-sender-required': {
+    message: 'Configure an active default sender before sending email.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/email-template-unavailable': {
+    message: 'No active email template is available for this document.',
+    httpStatus: HttpStatus.CONFLICT,
+  },
+  'billing/email-unavailable': {
+    message: 'Transactional email is temporarily unavailable.',
+    httpStatus: HttpStatus.SERVICE_UNAVAILABLE,
+  },
   'billing/idempotency-conflict': {
     message: 'The idempotency key was already used for another command.',
     httpStatus: HttpStatus.CONFLICT,
