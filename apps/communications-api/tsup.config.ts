@@ -9,6 +9,7 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   external: ['@prisma/client', '.prisma/client'],
+  noExternal: ['@876/core'],
   esbuildOptions(options) {
     options.conditions = [...(options.conditions ?? []), 'react-server']
   },
