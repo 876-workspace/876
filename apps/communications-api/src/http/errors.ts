@@ -73,6 +73,10 @@ export const COMMUNICATIONS_ERRORS = {
     message: 'Not found.',
     httpStatus: 404 as HttpStatusCode,
   },
+  'communications/internal-error': {
+    message: 'An unexpected error occurred.',
+    httpStatus: 500 as HttpStatusCode,
+  },
 } as const satisfies Record<
   string,
   { message: string; httpStatus: HttpStatusCode }
