@@ -54,6 +54,10 @@ function preferencePath(organizationId: string): string {
   return `/api/v1/integrations/organizations/${encodeURIComponent(organizationId)}/quote-preferences`
 }
 
+function emailQuery(params: DocumentEmailPrepareParams) {
+  return { senderId: params.senderId, templateId: params.templateId }
+}
+
 /** `$876.billing.quotes.*` — shared finance quote integrations. */
 export function createIntegrationQuotesResource(runtime: IntegrationRuntime) {
   const transition = (
@@ -129,7 +133,7 @@ export function createIntegrationQuotesResource(runtime: IntegrationRuntime) {
         {
           method: 'GET',
           path: `${resourcePath(organizationId, quoteId)}/email`,
-          query: params,
+          query: emailQuery(params),
         },
         DocumentEmailCompositionSchema
       )
