@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { z } from 'zod'
 
 import { sendError, sendList, sendResult } from '../../http/result.js'
 import {
@@ -11,9 +12,15 @@ import {
   deleteTemplate,
   listTemplates,
   renderTemplate,
+  resolveTemplate,
   retrieveTemplate,
   updateTemplate,
 } from './templates.service.js'
+
+const resolveQuerySchema = z.object({
+  category: z.string().trim().min(1).max(120),
+  templateId: z.string().trim().min(1).optional(),
+})
 
 export function buildTemplateRoutes() {
   const router = Router({ mergeParams: true })
@@ -33,6 +40,23 @@ export function buildTemplateRoutes() {
       return sendError(res, 'communications/invalid-request')
 
     return sendResult(res, await createTemplate(organizationId, parsed.data), 201)
+  })
+
+  // Registered before /:templateId so "resolve" cannot be consumed as an id.
+  router.get('/resolve', async (req, res) => {
+    const organizationId = req.params.organizationId
+    const parsed = resolveQuerySchema.safeParse(req.query)
+    if (!organizationId || !parsed.success)
+      return sendError(res, 'communications/invalid-request')
+
+    return sendResult(
+      res,
+      await resolveTemplate(
+        organizationId,
+        parsed.data.category,
+        parsed.data.templateId
+      )
+    )
   })
 
   router.get('/:templateId', async (req, res) => {
