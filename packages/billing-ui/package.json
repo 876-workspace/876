@@ -303,6 +303,10 @@
       "types": "./src/panels/document-toolbar.tsx",
       "default": "./src/panels/document-toolbar.tsx"
     },
+    "./panels/document-email-composer": {
+      "types": "./src/panels/document-email-composer.tsx",
+      "default": "./src/panels/document-email-composer.tsx"
+    },
     "./document/invoice-document-data": {
       "types": "./src/document/invoice-document-data.ts",
       "default": "./src/document/invoice-document-data.ts"
