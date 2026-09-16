@@ -89,6 +89,21 @@ export const projects = {
   get baselines() {
     return getServiceClient().baselines
   },
+  get timeEntries() {
+    return getServiceClient().timeEntries
+  },
+  get timesheets() {
+    return getServiceClient().timesheets
+  },
+  get projectBilling() {
+    return getServiceClient().projectBilling
+  },
+  get budgets() {
+    return getServiceClient().budgets
+  },
+  get rates() {
+    return getServiceClient().rates
+  },
   get customFields() {
     return getServiceClient().customFields
   },

@@ -2,6 +2,7 @@ import { appMemberships } from './app-memberships'
 import { baselinesClient } from './baselines'
 import { cyclesClient } from './cycles'
 import { eventsClient } from './events'
+import { financeClient } from './finance'
 import { phaseCustomFieldsClient } from './phase-custom-fields'
 import {
   commentsClient,
@@ -35,6 +36,7 @@ export const client = {
   customFields: customFieldsClient,
   baselines: baselinesClient,
   events: eventsClient,
+  finance: financeClient,
   reminders: remindersClient,
 }
 
@@ -42,6 +44,7 @@ export { appMemberships } from './app-memberships'
 export { baselinesClient } from './baselines'
 export { cyclesClient } from './cycles'
 export { eventsClient } from './events'
+export { financeClient } from './finance'
 export { onboarding } from './onboarding'
 export { remindersClient } from './reminders'
 export { taskListsClient } from './task-lists'
