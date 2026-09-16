@@ -1237,3 +1237,214 @@ export interface GetCalendarQuery {
   projectId?: string
   kinds?: CalendarEntryKind[]
 }
+
+export const TIME_APPROVAL_STATUSES = [
+  'draft',
+  'submitted',
+  'approved',
+  'rejected',
+] as const
+export const timeApprovalStatusSchema = z.enum(TIME_APPROVAL_STATUSES)
+export type TimeApprovalStatus = z.infer<typeof timeApprovalStatusSchema>
+
+export const TIMESHEET_STATUSES = [
+  'draft',
+  'submitted',
+  'approved',
+  'rejected',
+] as const
+export const timesheetStatusSchema = z.enum(TIMESHEET_STATUSES)
+export type TimesheetStatus = z.infer<typeof timesheetStatusSchema>
+
+export const TIME_SUMMARY_GROUPS = [
+  'project',
+  'user',
+  'issue',
+  'day',
+] as const
+export const timeSummaryGroupBySchema = z.enum(TIME_SUMMARY_GROUPS)
+export type TimeSummaryGroupBy = z.infer<typeof timeSummaryGroupBySchema>
+
+export const timeEntrySchema = z.object({
+  object: z.literal('projects.time-entry'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  issueId: z.string().nullable(),
+  milestoneId: z.string().nullable(),
+  taskListId: z.string().nullable(),
+  userId: z.string(),
+  startedAt: z.number(),
+  endedAt: z.number().nullable(),
+  durationMinutes: z.number().nullable(),
+  billable: z.boolean(),
+  note: z.string().nullable(),
+  approvalStatus: z.string(),
+  timesheetId: z.string().nullable(),
+  createdBy: z.string().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type TimeEntry = z.infer<typeof timeEntrySchema>
+
+export const timerStartResultSchema = z.object({
+  stopped: timeEntrySchema.nullable(),
+  started: timeEntrySchema,
+})
+export type TimerStartResult = z.infer<typeof timerStartResultSchema>
+
+export const timeTotalsSchema = z.object({
+  totalMinutes: z.number(),
+  billableMinutes: z.number(),
+  nonBillableMinutes: z.number(),
+  entryCount: z.number(),
+})
+export type TimeTotals = z.infer<typeof timeTotalsSchema>
+
+export const timesheetSchema = z.object({
+  object: z.literal('projects.timesheet'),
+  id: z.string(),
+  tenantId: z.string(),
+  userId: z.string(),
+  periodStart: z.number(),
+  periodEnd: z.number(),
+  status: z.string(),
+  submittedAt: z.number().nullable(),
+  decidedAt: z.number().nullable(),
+  decidedBy: z.string().nullable(),
+  note: z.string().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type Timesheet = z.infer<typeof timesheetSchema>
+
+export const timesheetDetailSchema = timesheetSchema.extend({
+  entries: z.array(timeEntrySchema),
+  totals: timeTotalsSchema,
+})
+export type TimesheetDetail = z.infer<typeof timesheetDetailSchema>
+
+export const timesheetEventSchema = z.object({
+  object: z.literal('projects.timesheet-event'),
+  id: z.string(),
+  tenantId: z.string(),
+  timesheetId: z.string(),
+  actorUserId: z.string(),
+  from: z.string(),
+  to: z.string(),
+  note: z.string().nullable(),
+  createdAt: z.number(),
+})
+export type TimesheetEvent = z.infer<typeof timesheetEventSchema>
+
+export const timeSummaryGroupSchema = z.object({
+  key: z.string().nullable(),
+  totalMinutes: z.number(),
+  billableMinutes: z.number(),
+  nonBillableMinutes: z.number(),
+  entryCount: z.number(),
+})
+export type TimeSummaryGroupResult = z.infer<typeof timeSummaryGroupSchema>
+
+export const timeSummarySchema = z.object({
+  object: z.literal('projects.time-summary'),
+  groupBy: z.string(),
+  from: z.number(),
+  to: z.number(),
+  groups: z.array(timeSummaryGroupSchema),
+  totals: timeTotalsSchema,
+})
+export type TimeSummary = z.infer<typeof timeSummarySchema>
+
+export const timeEntryListSchema = createListSchema(timeEntrySchema)
+export type TimeEntryList = z.infer<typeof timeEntryListSchema>
+
+export const timesheetListSchema = createListSchema(timesheetSchema)
+export type TimesheetList = z.infer<typeof timesheetListSchema>
+
+export const timesheetEventListSchema = createListSchema(timesheetEventSchema)
+export type TimesheetEventList = z.infer<typeof timesheetEventListSchema>
+
+export interface ListTimeEntriesQuery {
+  userId?: string
+  projectId?: string
+  issueId?: string
+  from?: number
+  to?: number
+  billable?: boolean
+  approvalStatus?: TimeApprovalStatus
+}
+
+export interface CreateTimeEntryInput {
+  userId: string
+  projectId: string
+  issueId?: string | null
+  milestoneId?: string | null
+  taskListId?: string | null
+  startedAt: number
+  endedAt: number
+  durationMinutes?: number
+  billable?: boolean
+  note?: string | null
+  createdBy?: string | null
+}
+
+export interface UpdateTimeEntryInput {
+  projectId?: string
+  issueId?: string | null
+  milestoneId?: string | null
+  taskListId?: string | null
+  startedAt?: number
+  endedAt?: number | null
+  durationMinutes?: number | null
+  billable?: boolean
+  note?: string | null
+}
+
+export interface StartTimerInput {
+  userId: string
+  projectId: string
+  issueId?: string | null
+  milestoneId?: string | null
+  taskListId?: string | null
+  note?: string | null
+  billable?: boolean
+  startedAt?: number
+}
+
+export interface StopTimerInput {
+  userId: string
+  endedAt?: number
+}
+
+export interface GetTimeSummaryQuery {
+  groupBy: TimeSummaryGroupBy
+  from: number
+  to: number
+  userId?: string
+  projectId?: string
+  issueId?: string
+}
+
+export interface CreateTimesheetInput {
+  userId: string
+  periodStart: number
+  periodEnd: number
+  note?: string | null
+  entryIds?: string[]
+}
+
+export interface ListTimesheetsQuery {
+  userId?: string
+  status?: TimesheetStatus
+}
+
+export interface ApproveTimesheetInput {
+  decidedBy: string
+  note?: string | null
+}
+
+export interface RejectTimesheetInput {
+  decidedBy: string
+  note: string
+}

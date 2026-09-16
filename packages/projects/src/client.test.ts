@@ -47,6 +47,8 @@ describe('client / runtime', () => {
       'reminders',
       'taskLists',
       'tenants',
+      'timeEntries',
+      'timesheets',
       'workItemTypes',
       'workflowStates',
     ])
@@ -154,6 +156,8 @@ describe('client / runtime', () => {
       'reminders',
       'taskLists',
       'tenants',
+      'timeEntries',
+      'timesheets',
       'workItemTypes',
       'workflowStates',
     ])
@@ -177,6 +181,8 @@ describe('client / runtime', () => {
       'reminders',
       'taskLists',
       'tenants',
+      'timeEntries',
+      'timesheets',
       'workItemTypes',
       'workflowStates',
     ])
