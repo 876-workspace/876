@@ -70,6 +70,22 @@
     "./mobile-list": {
       "types": "./src/mobile-list.tsx",
       "default": "./src/mobile-list.tsx"
+    },
+    "./time-entry-list": {
+      "types": "./src/time-entry-list.tsx",
+      "default": "./src/time-entry-list.tsx"
+    },
+    "./timer-bar": {
+      "types": "./src/timer-bar.tsx",
+      "default": "./src/timer-bar.tsx"
+    },
+    "./timesheet-summary": {
+      "types": "./src/timesheet-summary.tsx",
+      "default": "./src/timesheet-summary.tsx"
+    },
+    "./timesheet-actions": {
+      "types": "./src/timesheet-actions.tsx",
+      "default": "./src/timesheet-actions.tsx"
     }
   },
   "scripts": {
