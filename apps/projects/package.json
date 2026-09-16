@@ -30,7 +30,8 @@
     "server-only": "0.0.1",
     "sonner": "2.0.8",
     "zod": "4.4.3",
-    "@876/projects": "workspace:*"
+    "@876/projects": "workspace:*",
+    "@876/storage": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.3",
