@@ -91,7 +91,7 @@ function invoice(overrides: Record<string, unknown> = {}) {
     number: 'INV-001',
     status: 'OPEN',
     currency: 'JMD',
-    total: 12345n,
+    totalAmount: 12345n,
     dueAt: 86400,
     customer: {
       name: 'Ada Lovelace',
@@ -108,7 +108,7 @@ function quote(overrides: Record<string, unknown> = {}) {
     number: 'QUO-001',
     status: 'DRAFT',
     currency: 'JMD',
-    total: 5000n,
+    totalAmount: 5000n,
     expiresAt: 1000,
     sentAt: null,
     customer: { name: 'Ada Lovelace', email: 'ada@example.com' },
@@ -294,7 +294,7 @@ describe('prepareDocumentEmail', () => {
   it('passes currency-precision-aware totals to the renderer', async () => {
     mocks.enabledCurrencyDecimalPlaces.mockResolvedValue(0)
     mocks.invoiceRetrieve.mockResolvedValue(
-      invoice({ currency: 'JPY', total: 12345n })
+      invoice({ currency: 'JPY', totalAmount: 12345n })
     )
 
     await prepareDocumentEmail(tenantId, 'invoice', 'inv_1', {})
