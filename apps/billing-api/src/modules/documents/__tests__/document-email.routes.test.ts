@@ -56,10 +56,28 @@ const composition = {
     email: 'billing@kingstonsupplies.example',
     replyTo: null,
   },
+  senderOptions: [
+    {
+      id: 'sender_default',
+      name: 'Kingston Supplies',
+      email: 'billing@kingstonsupplies.example',
+      replyTo: null,
+      isDefault: true,
+    },
+  ],
   to: [{ email: 'customer@example.com', name: 'Customer' }],
   cc: [],
   bcc: [],
   templateId: 'template_invoice_default',
+  templateOptions: [
+    {
+      id: 'template_invoice_default',
+      name: 'Invoice',
+      isDefault: true,
+      isSystem: true,
+      senderId: null,
+    },
+  ],
   subject: 'Invoice INV-001 from Kingston Supplies',
   html: '<p>Your invoice is ready.</p>',
   text: 'Your invoice is ready.',
@@ -224,6 +242,15 @@ describe('Document email routes', () => {
       resourceType: 'quote' as const,
       resourceId: QUOTE,
       templateId: 'template_quote_default',
+      templateOptions: [
+        {
+          id: 'template_quote_default',
+          name: 'Quote',
+          isDefault: true,
+          isSystem: true,
+          senderId: null,
+        },
+      ],
     }
     mocks.prepareDocumentEmail.mockResolvedValue(quoteComposition)
 
