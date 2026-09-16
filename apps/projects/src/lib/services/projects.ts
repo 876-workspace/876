@@ -65,6 +65,15 @@ export const projects = {
   get workflowStates() {
     return getServiceClient().workflowStates
   },
+  get workflows() {
+    return getServiceClient().workflows
+  },
+  get automationRules() {
+    return getServiceClient().automationRules
+  },
+  get notifications() {
+    return getServiceClient().notifications
+  },
   get milestones() {
     return getServiceClient().milestones
   },

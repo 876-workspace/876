@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   listEvents: vi.fn(),
   listFields: vi.fn(),
   memberLabels: vi.fn(),
+  listStates: vi.fn(),
   linksData: vi.fn(),
 }))
 
@@ -21,6 +22,7 @@ vi.mock('@/lib/services/projects', () => ({
       events: { list: mocks.listEvents },
     },
     customFields: { list: mocks.listFields },
+    workflowStates: { list: mocks.listStates },
   },
 }))
 vi.mock('@/features/projects/member-labels', () => ({
@@ -42,6 +44,7 @@ vi.mock('next/navigation', () => ({
   notFound: () => {
     throw new Error('notFound')
   },
+  useRouter: () => ({ refresh: vi.fn() }),
 }))
 
 import { IssueDetailData } from './issue-detail-data'
@@ -108,6 +111,7 @@ beforeEach(() => {
   mocks.listEvents.mockResolvedValue({ data: { data: [] }, error: null })
   mocks.listFields.mockResolvedValue({ data: { data: [] }, error: null })
   mocks.memberLabels.mockResolvedValue({ labels: {} })
+  mocks.listStates.mockResolvedValue({ data: { data: [] }, error: null })
 })
 
 describe('IssueDetailData', () => {

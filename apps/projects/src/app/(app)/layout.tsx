@@ -50,6 +50,18 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   const { uiFeatures } = await getFeatures()
 
+  let notificationCount = 0
+  try {
+    const { projects } = await import('@/lib/services/projects')
+    const notifications = await projects.notifications.list(orgId, userId)
+    if (notifications.data)
+      notificationCount = notifications.data.data.filter(
+        (notification) => notification.readAt === null
+      ).length
+  } catch {
+    notificationCount = 0
+  }
+
   return (
     <Shell
       user={{ name: displayName, email, avatar: user?.avatar ?? null }}
@@ -62,6 +74,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           ? resolveNavigation(navConfig, access.context)
           : []
       }
+      notificationCount={notificationCount}
     >
       {access.status === 'unavailable' ? (
         <AppError

@@ -3,7 +3,9 @@ import { baselinesClient } from './baselines'
 import { cyclesClient } from './cycles'
 import { eventsClient } from './events'
 import { financeClient } from './finance'
+import { automationRulesClient } from './automation'
 import { layoutsClient } from './layouts'
+import { notificationsClient } from './notifications'
 import { phaseCustomFieldsClient } from './phase-custom-fields'
 import { projectCustomFieldsClient } from './project-custom-fields'
 import {
@@ -19,6 +21,7 @@ import {
 } from './projects'
 import { onboarding } from './onboarding'
 import { remindersClient } from './reminders'
+import { workflowsClient } from './workflows'
 import { taskListsClient } from './task-lists'
 import { templatesClient } from './templates'
 
@@ -33,6 +36,9 @@ export const client = {
   phaseCustomFields: phaseCustomFieldsClient,
   projectCustomFields: projectCustomFieldsClient,
   layouts: layoutsClient,
+  workflows: workflowsClient,
+  automationRules: automationRulesClient,
+  notifications: notificationsClient,
   labels: labelsClient,
   comments: commentsClient,
   workItemTypes: workItemTypesClient,
@@ -57,7 +63,10 @@ export { taskListsClient } from './task-lists'
 export { templatesClient } from './templates'
 export { phaseCustomFieldsClient } from './phase-custom-fields'
 export { projectCustomFieldsClient } from './project-custom-fields'
+export { automationRulesClient } from './automation'
 export { layoutsClient } from './layouts'
+export { notificationsClient } from './notifications'
+export { workflowsClient } from './workflows'
 export {
   projectsClient,
   issuesClient,
