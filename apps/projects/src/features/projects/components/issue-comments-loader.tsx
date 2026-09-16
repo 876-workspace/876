@@ -2,6 +2,7 @@ import { AppError } from '@876/ui/app-error'
 
 import { IssueCommentsData } from '@/features/projects/components/issue-comments-data'
 import { projects } from '@/lib/services/projects'
+import { listIssueCommentVisibility } from '@/lib/visibility'
 
 /**
  * The server half of the comment thread. It sits inside the record's Suspense
@@ -12,10 +13,12 @@ export async function IssueCommentsLoader({
   orgId,
   issueRef,
   currentUserId,
+  canToggleClientVisibility,
 }: {
   orgId: string
   issueRef: string
   currentUserId?: string | null
+  canToggleClientVisibility?: boolean
 }) {
   const result = await projects.comments.list(orgId, issueRef)
 
@@ -29,11 +32,25 @@ export async function IssueCommentsLoader({
     )
   }
 
+  if (canToggleClientVisibility !== true) {
+    return (
+      <IssueCommentsData
+        issueRef={issueRef}
+        comments={result.data?.data ?? []}
+        currentUserId={currentUserId}
+      />
+    )
+  }
+
+  const visibilityById = await listIssueCommentVisibility(orgId, issueRef)
   return (
     <IssueCommentsData
       issueRef={issueRef}
       comments={result.data?.data ?? []}
       currentUserId={currentUserId}
+      visibilityById={visibilityById}
+      visibilityBasePath={`/api/issues/${encodeURIComponent(issueRef)}/comments`}
+      canToggleClientVisibility
     />
   )
 }

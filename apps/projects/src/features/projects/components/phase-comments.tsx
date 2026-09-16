@@ -7,6 +7,7 @@ import { Markdown } from '@876/ui/markdown'
 import { MarkdownEditor } from '@876/ui/markdown-editor'
 import { useState } from 'react'
 
+import { ClientVisibleToggle } from '@/features/collaboration/components/client-visible-toggle'
 import { phasesClient } from '@/lib/client'
 
 function formatDate(timestamp: number) {
@@ -25,12 +26,18 @@ export function PhaseComments({
   currentUserId,
   userLabels,
   canEdit,
+  clientVisibilityById,
+  commentVisibilityBasePath,
+  canToggleClientVisibility,
 }: {
   phaseId: string
   comments: readonly MilestoneComment[]
   currentUserId: string
   userLabels: Readonly<Record<string, string>>
   canEdit: boolean
+  clientVisibilityById?: Readonly<Record<string, boolean>>
+  commentVisibilityBasePath?: string
+  canToggleClientVisibility?: boolean
 }) {
   const [items, setItems] = useState([...comments])
   const [body, setBody] = useState('')
@@ -177,6 +184,17 @@ export function PhaseComments({
                 ) : (
                   <>
                     <Markdown content={comment.body} className="mt-2" />
+                    {canToggleClientVisibility &&
+                    commentVisibilityBasePath &&
+                    clientVisibilityById?.[comment.id] !== undefined ? (
+                      <div className="mt-3">
+                        <ClientVisibleToggle
+                          endpoint={`${commentVisibilityBasePath.replace(/\/+$/, '')}/${encodeURIComponent(comment.id)}/visibility`}
+                          initialVisible={clientVisibilityById[comment.id] ?? false}
+                          label={`Comment ${comment.id}`}
+                        />
+                      </div>
+                    ) : null}
                     {own && canEdit ? (
                       <div className="mt-3 flex justify-end gap-2">
                         <Button

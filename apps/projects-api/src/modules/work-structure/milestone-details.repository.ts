@@ -189,3 +189,14 @@ export async function clearMilestoneCustomFieldValue(
     where: { tenantId, milestoneId, fieldId },
   })
 }
+
+export async function setMilestoneCommentVisibility(
+  id: string,
+  clientVisible: boolean,
+  updatedAt: bigint
+) {
+  return prisma.milestoneComment.update({
+    where: { id },
+    data: { clientVisible, updatedAt },
+  })
+}

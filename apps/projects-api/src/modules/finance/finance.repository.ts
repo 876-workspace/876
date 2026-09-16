@@ -302,3 +302,33 @@ export async function markEntriesBilled(
     return result.count
   })
 }
+
+export async function listBilledEntries(
+  tenantId: string,
+  projectId: string
+): Promise<FinanceTimeEntryRow[]> {
+  const rows = await prisma.timeEntry.findMany({
+    where: {
+      tenantId,
+      projectId,
+      ...liveEntryWhere,
+      billable: true,
+      approvalStatus: 'approved',
+      billedInvoiceId: { not: null },
+    },
+    select: {
+      id: true,
+      tenantId: true,
+      projectId: true,
+      milestoneId: true,
+      userId: true,
+      startedAt: true,
+      durationMinutes: true,
+      billable: true,
+      approvalStatus: true,
+      billedInvoiceId: true,
+    },
+    orderBy: [{ startedAt: 'asc' }, { id: 'asc' }],
+  })
+  return rows as FinanceTimeEntryRow[]
+}

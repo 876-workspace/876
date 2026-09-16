@@ -528,3 +528,28 @@ export async function seedMissing(
       })
   })
 }
+
+export async function setMilestoneVisibility(
+  id: string,
+  clientVisible: boolean,
+  updatedAt: bigint
+) {
+  return prisma.milestone.update({
+    where: { id },
+    data: { clientVisible, updatedAt },
+  })
+}
+
+export async function listVisibleMilestones(
+  tenantId: string,
+  projectId: string,
+  options: { limit: number; startingAfter?: string }
+) {
+  return prisma.milestone.findMany({
+    where: { tenantId, projectId, clientVisible: true, deletedAt: null },
+    cursor: options.startingAfter ? { id: options.startingAfter } : undefined,
+    skip: options.startingAfter ? 1 : 0,
+    take: options.limit + 1,
+    orderBy: [{ position: 'asc' }, { key: 'asc' }],
+  })
+}

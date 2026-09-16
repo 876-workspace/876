@@ -38,6 +38,7 @@ import {
   serializeProjectBilling,
   serializeRate,
   type BudgetRow,
+  type SerializedBilledInvoice,
   type RateRow,
   type SerializedBudget,
   type SerializedBudgetConsumption,
@@ -804,4 +805,62 @@ export async function createInvoiceDraft(
     },
     error: null,
   }
+}
+
+export async function listBilledInvoices(
+  organizationId: string,
+  projectIdOrKey: string
+): Promise<ServiceResult<SerializedBilledInvoice[]>> {
+  const resolved = await resolveTenant(organizationId)
+  if (resolved.error || !resolved.tenant)
+    return { data: null, error: resolved.error }
+  const project = await projects.resolveProject(
+    resolved.tenant.id,
+    projectIdOrKey
+  )
+  if (!project)
+    return { data: null, error: getError('projects/project-not-found') }
+
+  const entries = await repository.listBilledEntries(
+    resolved.tenant.id,
+    project.id
+  )
+  const byInvoice = new Map<string, { minutes: number; count: number }>()
+  for (const entry of entries) {
+    if (!entry.billedInvoiceId || entry.durationMinutes == null) continue
+    const bucket = byInvoice.get(entry.billedInvoiceId) ?? {
+      minutes: 0,
+      count: 0,
+    }
+    bucket.minutes += entry.durationMinutes
+    bucket.count += 1
+    byInvoice.set(entry.billedInvoiceId, bucket)
+  }
+
+  const invoices: SerializedBilledInvoice[] = []
+  for (const [invoiceId, totals] of byInvoice) {
+    const retrieved = await billing().invoices.retrieve(
+      organizationId,
+      invoiceId
+    )
+    if (retrieved.error || !retrieved.data)
+      return {
+        data: null,
+        error: getError('projects/billing-unavailable', {
+          description: retrieved.error
+            ? `${retrieved.error.code}: ${retrieved.error.message}`
+            : 'The billing service returned no invoice.',
+        }),
+      }
+    invoices.push({
+      object: 'projects.billed-invoice',
+      invoiceId,
+      tenantId: resolved.tenant.id,
+      projectId: project.id,
+      status: retrieved.data.status,
+      billedMinutes: totals.minutes,
+      entryCount: totals.count,
+    })
+  }
+  return { data: invoices, error: null }
 }

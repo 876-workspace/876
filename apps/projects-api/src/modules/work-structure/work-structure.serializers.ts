@@ -50,6 +50,7 @@ export type MilestoneRow = {
   targetDate: Timestamp | null
   completedAt: Timestamp | null
   position: number
+  clientVisible: boolean
   deletedAt: Timestamp | null
   createdAt: Timestamp
   updatedAt: Timestamp

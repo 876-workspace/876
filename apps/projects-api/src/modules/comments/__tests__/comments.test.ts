@@ -3,9 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { errorHandler } from '../../../http/error-handler.js'
 
-const { tenantsRepo, issuesRepo, repository } = vi.hoisted(() => ({
-  tenantsRepo: { resolveTenant: vi.fn() },
-  issuesRepo: { resolveIssue: vi.fn() },
+const { tenantsRepo, issuesRepo, repository, collaboration } = vi.hoisted(
+  () => ({
+    tenantsRepo: { resolveTenant: vi.fn() },
+    issuesRepo: { resolveIssue: vi.fn() },
+    collaboration: {
+      ensureFollows: vi.fn(),
+      ensureFollowsForTenant: vi.fn(),
+      notifyMentionedUsers: vi.fn(),
+      mentionedUserIds: vi.fn(() => []),
+    },
   repository: {
     list: vi.fn(),
     count: vi.fn(),
@@ -14,10 +21,12 @@ const { tenantsRepo, issuesRepo, repository } = vi.hoisted(() => ({
     update: vi.fn(),
     softDelete: vi.fn(),
     hardDelete: vi.fn(),
-  },
-}))
+    },
+  })
+)
 
 vi.mock('../../tenants/index.js', () => tenantsRepo)
+vi.mock('../../collaboration/index.js', () => collaboration)
 vi.mock('../../issues/index.js', () => issuesRepo)
 vi.mock('../comments.repository.js', () => repository)
 

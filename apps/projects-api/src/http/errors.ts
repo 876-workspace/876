@@ -328,6 +328,54 @@ export const PROJECTS_ERRORS = {
     message: 'The notification could not be found.',
     httpStatus: 404 as HttpStatusCode,
   },
+  'projects/discussion-not-found': {
+    message: 'The discussion could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/discussion-post-not-found': {
+    message: 'The discussion post could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/discussion-locked': {
+    message: 'This discussion is locked and no longer accepts posts.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/discussion-post-forbidden': {
+    message: 'Only the post author can change this post.',
+    httpStatus: 403 as HttpStatusCode,
+  },
+  'projects/wiki-page-not-found': {
+    message: 'The wiki page could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/wiki-page-slug-taken': {
+    message: 'Another page in this project already uses that slug.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/wiki-revision-not-found': {
+    message: 'The wiki revision could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/wiki-invalid-parent': {
+    message: 'A page cannot be its own ancestor.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/attachment-link-not-found': {
+    message: 'The attachment link could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/client-grant-not-found': {
+    message: 'This project is not shared with that user.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/client-grant-exists': {
+    message: 'This project is already shared with that user.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/portal-forbidden': {
+    message: 'This shared project does not include that section.',
+    httpStatus: 403 as HttpStatusCode,
+  },
   'projects/not-found': {
     message: 'Not found.',
     httpStatus: 404 as HttpStatusCode,

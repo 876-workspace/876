@@ -65,6 +65,7 @@ function milestoneRow(overrides: Partial<MilestoneRow> = {}): MilestoneRow {
     name: 'Version 1',
     description: null,
     status: 'open',
+    clientVisible: false,
     ownerUserId: null,
     startDate: BigInt(SECOND),
     targetDate: BigInt(SECOND + 100000),

@@ -86,6 +86,11 @@ export function createWorkStructureRouter(): Router {
     requireInternalKey,
     controller.removeMilestone
   )
+  router.patch(
+    '/milestones/:id/client-visibility',
+    requireInternalKey,
+    controller.setMilestoneVisibility
+  )
   router.get(
     '/milestones/:id/summary',
     requireInternalKey,
@@ -110,6 +115,11 @@ export function createWorkStructureRouter(): Router {
     '/milestones/:id/comments/:commentId',
     requireInternalKey,
     milestoneDetails.removeComment
+  )
+  router.patch(
+    '/milestones/:id/comments/:commentId/client-visibility',
+    requireInternalKey,
+    milestoneDetails.setCommentVisibility
   )
   router.get(
     '/milestones/:id/events',

@@ -3,23 +3,40 @@
 import { RouteTabs, type RouteTabItem } from '@876/ui/route-tabs'
 
 export function ProjectTabs({ projectId }: { projectId: string }) {
+  const base = `/projects/${encodeURIComponent(projectId)}`
   const tabs: RouteTabItem[] = [
     {
       label: 'Overview',
-      href: `/projects/${encodeURIComponent(projectId)}`,
+      href: base,
       exact: true,
     },
     {
+      label: 'Activity',
+      href: `${base}/activity`,
+    },
+    {
+      label: 'Discussions',
+      href: `${base}/discussions`,
+    },
+    {
+      label: 'Wiki',
+      href: `${base}/wiki`,
+    },
+    {
+      label: 'Clients',
+      href: `${base}/clients`,
+    },
+    {
       label: 'Gantt',
-      href: `/projects/${encodeURIComponent(projectId)}/gantt`,
+      href: `${base}/gantt`,
     },
     {
       label: 'Time',
-      href: `/projects/${encodeURIComponent(projectId)}/time`,
+      href: `${base}/time`,
     },
     {
       label: 'Finance',
-      href: `/projects/${encodeURIComponent(projectId)}/finance`,
+      href: `${base}/finance`,
     },
   ]
 

@@ -1,0 +1,5 @@
+export * from './wiki.routes.js'
+export * from './wiki.service.js'
+export * from './wiki.schemas.js'
+export * from './wiki.serializers.js'
+export * from './wiki.slug.js'

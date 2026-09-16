@@ -74,6 +74,21 @@ export const projects = {
   get notifications() {
     return getServiceClient().notifications
   },
+  get followers() {
+    return getServiceClient().followers
+  },
+  get activity() {
+    return getServiceClient().activity
+  },
+  get discussions() {
+    return getServiceClient().discussions
+  },
+  get wiki() {
+    return getServiceClient().wiki
+  },
+  get clientGrants() {
+    return getServiceClient().clientGrants
+  },
   get milestones() {
     return getServiceClient().milestones
   },

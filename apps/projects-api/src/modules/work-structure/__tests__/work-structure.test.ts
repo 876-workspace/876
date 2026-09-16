@@ -151,6 +151,7 @@ const milestone = {
   name: 'Version 1',
   description: null,
   status: 'open',
+  clientVisible: false,
   ownerUserId: null,
   startDate: null,
   targetDate: 20n,

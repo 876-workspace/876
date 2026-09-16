@@ -12,6 +12,8 @@ const mocks = vi.hoisted(() => ({
   memberLabels: vi.fn(),
   listStates: vi.fn(),
   linksData: vi.fn(),
+  listFollowers: vi.fn(),
+  getIssueVisibility: vi.fn(),
 }))
 
 vi.mock('@/lib/services/projects', () => ({
@@ -23,10 +25,14 @@ vi.mock('@/lib/services/projects', () => ({
     },
     customFields: { list: mocks.listFields },
     workflowStates: { list: mocks.listStates },
+    followers: { list: mocks.listFollowers },
   },
 }))
 vi.mock('@/features/projects/member-labels', () => ({
   loadMemberLabels: mocks.memberLabels,
+}))
+vi.mock('@/lib/visibility', () => ({
+  getIssueVisibility: mocks.getIssueVisibility,
 }))
 vi.mock('@/features/projects/components/issue-links-data', () => ({
   IssueLinksData: (props: Record<string, unknown>) => {
@@ -100,6 +106,7 @@ async function renderDetail(issue: Issue) {
       orgId: 'org_1',
       userId: 'usr_1',
       canEdit: true,
+      canToggleVisibility: false,
       issueRef: 'CONSOLE-2',
     })
   )
@@ -112,6 +119,8 @@ beforeEach(() => {
   mocks.listFields.mockResolvedValue({ data: { data: [] }, error: null })
   mocks.memberLabels.mockResolvedValue({ labels: {} })
   mocks.listStates.mockResolvedValue({ data: { data: [] }, error: null })
+  mocks.listFollowers.mockResolvedValue({ data: { data: [] }, error: null })
+  mocks.getIssueVisibility.mockResolvedValue(null)
 })
 
 describe('IssueDetailData', () => {

@@ -151,6 +151,16 @@ export type SerializedInvoiceDraft = {
   billedAmountMinor: number
 }
 
+export type SerializedBilledInvoice = {
+  object: 'projects.billed-invoice'
+  invoiceId: string
+  tenantId: string
+  projectId: string
+  status: string
+  billedMinutes: number
+  entryCount: number
+}
+
 export function serializeProjectBilling(
   row: ProjectBillingRow
 ): SerializedProjectBilling {

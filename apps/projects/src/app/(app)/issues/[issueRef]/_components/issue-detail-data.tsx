@@ -6,24 +6,33 @@ import { Suspense } from 'react'
 import { AttachmentsData } from '@/features/projects/components/attachments-data'
 import { IssueCommentsLoader } from '@/features/projects/components/issue-comments-loader'
 import { IssueStatusSelect } from '@/features/projects/components/issue-status-select'
+import { IssueVisibilityData } from './issue-visibility-data'
 import { IssueLinksData } from '@/features/projects/components/issue-links-data'
 import { RemindersData } from '@/features/projects/components/reminders-data'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { projects } from '@/lib/services/projects'
+import { getIssueVisibility } from '@/lib/visibility'
 
 export async function IssueDetailData({
   orgId,
   userId,
   canEdit,
+  canToggleVisibility,
   issueRef,
 }: {
   orgId: string
   userId: string
   canEdit: boolean
+  canToggleVisibility: boolean
   issueRef: string
 }) {
   const decodedIssueRef = decodeURIComponent(issueRef)
   const issuePromise = projects.issues.retrieve(orgId, decodedIssueRef)
+  const followPromise = projects.followers.list(orgId, {
+    subjectType: 'work-item',
+    subjectId: decodedIssueRef,
+    limit: 100,
+  })
   const eventsPromise = projects.issues.events.list(orgId, decodedIssueRef)
   const fieldsPromise = projects.customFields.list(orgId)
   const membersPromise = loadMemberLabels(orgId)
@@ -52,6 +61,9 @@ export async function IssueDetailData({
   const parentPromise = issueResult.data.parentIssueId
     ? projects.issues.retrieve(orgId, issueResult.data.parentIssueId)
     : Promise.resolve({ data: null, error: null })
+  const visibilityPromise = canToggleVisibility
+    ? getIssueVisibility(orgId, decodedIssueRef)
+    : Promise.resolve(null)
   const [
     eventsResult,
     fieldsResult,
@@ -59,6 +71,8 @@ export async function IssueDetailData({
     subIssuesResult,
     parentResult,
     statesResult,
+    followResult,
+    visible,
   ] = await Promise.all([
     eventsPromise,
     fieldsPromise,
@@ -66,7 +80,12 @@ export async function IssueDetailData({
     subIssuesPromise,
     parentPromise,
     statesPromise,
+    followPromise,
+    visibilityPromise,
   ])
+  const following = followResult.data
+    ? followResult.data.data.some((follower) => follower.userId === userId)
+    : false
   const enrichmentError =
     eventsResult.error ??
     fieldsResult.error ??
@@ -78,6 +97,13 @@ export async function IssueDetailData({
   return (
     <>
       <div className="space-y-4">
+        <IssueVisibilityData
+          issueRef={issueResult.data.identifier}
+          issueTitle={issueResult.data.title}
+          canToggleVisibility={canToggleVisibility}
+          following={following}
+          visible={visible}
+        />
         <IssueStatusSelect
           issueRef={issueResult.data.identifier}
           currentStatus={issueResult.data.status}
@@ -132,6 +158,7 @@ export async function IssueDetailData({
             orgId={orgId}
             issueRef={issueResult.data.identifier}
             currentUserId={userId}
+            canToggleClientVisibility={canToggleVisibility}
           />
         </Suspense>
       </div>

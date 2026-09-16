@@ -6,6 +6,7 @@ import {
   toDbUnixSeconds,
 } from '../../platform/timestamps.js'
 import * as automation from '../automation/index.js'
+import * as collaboration from '../collaboration/index.js'
 import * as labels from '../labels/index.js'
 import * as layouts from '../layouts/index.js'
 import * as projects from '../projects/index.js'
@@ -383,6 +384,12 @@ export async function create(
 
   const issueId = generateId('issue')
   let createdRow: IssueRow
+  const createdMentionedUserIds = body.description
+    ? collaboration.mentionedUserIds(
+        body.description,
+        body.creatorUserId ?? null
+      )
+    : []
 
   try {
     createdRow = await repository.transaction(async (tx) => {
@@ -460,6 +467,32 @@ export async function create(
         if (customFields.error) throw new IssueMutationError(customFields.error)
       }
 
+      await collaboration.ensureFollows(tx.transactionClient, tenant.id, [
+        ...(body.creatorUserId
+          ? [
+              {
+                subjectType: 'work-item',
+                subjectId: issue.id,
+                userId: body.creatorUserId,
+              },
+            ]
+          : []),
+        ...(body.assigneeUserId
+          ? [
+              {
+                subjectType: 'work-item',
+                subjectId: issue.id,
+                userId: body.assigneeUserId,
+              },
+            ]
+          : []),
+        ...createdMentionedUserIds.map((userId) => ({
+          subjectType: 'work-item',
+          subjectId: issue.id,
+          userId,
+        })),
+      ])
+
       return issue
     })
   } catch (error) {
@@ -467,6 +500,14 @@ export async function create(
       return { data: null, error: error.projectsError }
     throw error
   }
+
+  await collaboration.notifyMentionedUsers({
+    tenantId: tenant.id,
+    userIds: createdMentionedUserIds,
+    subjectType: 'work-item',
+    subjectId: createdRow.id,
+    title: `You were mentioned in ${createdRow.identifier}`,
+  })
 
   const enrichment = await repository.getBatchEnrichment([createdRow.id])
   const details = enrichment.get(createdRow.id)
@@ -882,6 +923,14 @@ export async function update(
   if (canceledAt !== undefined) updateParams.canceledAt = canceledAt
 
   let updatedRow: IssueRow
+  const updatedMentionedUserIds =
+    body.description !== undefined && body.description !== null
+      ? collaboration.mentionedUserIds(
+          body.description,
+          body.actorUserId ?? null
+        )
+      : []
+
   try {
     updatedRow = await repository.transaction(async (tx) => {
       const issue = await tx.updateIssue(existing.id, updateParams)
@@ -950,6 +999,23 @@ export async function update(
           tx.transactionClient
         )
 
+      await collaboration.ensureFollows(tx.transactionClient, tenant.id, [
+        ...(body.assigneeUserId !== undefined && body.assigneeUserId !== null
+          ? [
+              {
+                subjectType: 'work-item',
+                subjectId: issue.id,
+                userId: body.assigneeUserId,
+              },
+            ]
+          : []),
+        ...updatedMentionedUserIds.map((userId) => ({
+          subjectType: 'work-item',
+          subjectId: issue.id,
+          userId,
+        })),
+      ])
+
       return issue
     })
   } catch (error) {
@@ -957,6 +1023,14 @@ export async function update(
       return { data: null, error: error.projectsError }
     throw error
   }
+
+  await collaboration.notifyMentionedUsers({
+    tenantId: tenant.id,
+    userIds: updatedMentionedUserIds,
+    subjectType: 'work-item',
+    subjectId: updatedRow.id,
+    title: `You were mentioned in ${updatedRow.identifier}`,
+  })
 
   const enrichment = await repository.getBatchEnrichment([updatedRow.id])
   const details = enrichment.get(updatedRow.id)
@@ -1053,4 +1127,81 @@ export async function listEvents(
 
   const rows = await repository.listEvents(tenant.id, existing.id)
   return { data: rows.map(serializeIssueEvent), error: null }
+}
+
+export async function listVisibleIssues(
+  organizationId: string,
+  projectIdOrKey: string,
+  query: { limit?: number; starting_after?: string }
+): Promise<ServiceResult<{ items: IssueRow[]; hasMore: boolean }>> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null)
+    return { data: null, error: tenantResolution.error }
+  const tenant = tenantResolution.tenant
+
+  const projectResolution = await resolveProject(tenant, projectIdOrKey)
+  if (projectResolution.error !== null)
+    return { data: null, error: projectResolution.error }
+
+  const limit = Math.min(Math.max(query.limit ?? 25, 1), 100)
+  const rows = await repository.listVisibleIssues(
+    tenant.id,
+    projectResolution.project.id,
+    { limit, startingAfter: query.starting_after }
+  )
+  const hasMore = rows.length > limit
+  return {
+    data: { items: hasMore ? rows.slice(0, limit) : rows, hasMore },
+    error: null,
+  }
+}
+
+export async function retrieveVisibleIssue(
+  organizationId: string,
+  projectId: string,
+  issueRef: string
+): Promise<ServiceResult<IssueRow>> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null)
+    return { data: null, error: tenantResolution.error }
+
+  const row = await resolveIssue(tenantResolution.tenant.id, issueRef)
+  if (
+    !row ||
+    row.deletedAt !== null ||
+    row.projectId !== projectId ||
+    !row.clientVisible
+  )
+    return { data: null, error: getError('projects/issue-not-found') }
+  return { data: row, error: null }
+}
+
+export async function setIssueVisibility(
+  organizationId: string,
+  issueRef: string,
+  clientVisible: boolean
+): Promise<
+  ServiceResult<{ object: string; id: string; clientVisible: boolean }>
+> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null)
+    return { data: null, error: tenantResolution.error }
+
+  const existing = await resolveIssue(tenantResolution.tenant.id, issueRef)
+  if (!existing || existing.deletedAt !== null)
+    return { data: null, error: getError('projects/issue-not-found') }
+
+  const updated = await repository.setIssueVisibility(
+    existing.id,
+    clientVisible,
+    toDbUnixSeconds(nowUnixSeconds())
+  )
+  return {
+    data: {
+      object: 'projects.issue',
+      id: updated.id,
+      clientVisible: updated.clientVisible,
+    },
+    error: null,
+  }
 }

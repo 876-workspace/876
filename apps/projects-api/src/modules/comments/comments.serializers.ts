@@ -6,6 +6,7 @@ export type CommentRow = {
   issueId: string
   authorUserId: string | null
   body: string
+  clientVisible: boolean
   deletedAt: bigint | number | null
   createdAt: bigint | number
   updatedAt: bigint | number

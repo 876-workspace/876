@@ -30,7 +30,12 @@ import { createProjectsResource } from './resources/projects'
 import { createProjectTemplatesResource } from './resources/project-templates'
 import { createTenantsResource } from './resources/tenants'
 import { createAutomationRulesResource } from './resources/automation-rules'
+import { createActivityResource } from './resources/activity'
+import { createClientGrantsResource } from './resources/client-grants'
+import { createDiscussionsResource } from './resources/discussions'
+import { createFollowersResource } from './resources/followers'
 import { createNotificationsResource } from './resources/notifications'
+import { createWikiResource } from './resources/wiki'
 import { createWorkflowStatesResource } from './resources/workflow-states'
 import { createWorkflowsResource } from './resources/workflows'
 import { createWorkItemTypesResource } from './resources/work-item-types'
@@ -55,6 +60,11 @@ export function create876ProjectsClient(options: ClientOptions = {}) {
     workflows: createWorkflowsResource(runtime),
     automationRules: createAutomationRulesResource(runtime),
     notifications: createNotificationsResource(runtime),
+    followers: createFollowersResource(runtime),
+    activity: createActivityResource(runtime),
+    discussions: createDiscussionsResource(runtime),
+    wiki: createWikiResource(runtime),
+    clientGrants: createClientGrantsResource(runtime),
     milestones: createMilestonesResource(runtime),
     taskLists: createTaskListsResource(runtime),
     cycles: createCyclesResource(runtime),

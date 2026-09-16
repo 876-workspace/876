@@ -5,6 +5,7 @@ import type { IssueMutationContext } from './issues.service.js'
 import {
   createIssueBodySchema,
   issueParamsSchema,
+  issueVisibilityBodySchema,
   listIssuesQuerySchema,
   organizationParamsSchema,
   updateIssueBodySchema,
@@ -77,5 +78,18 @@ export async function listEvents(req: Request, res: Response) {
     res,
     result,
     `/v1/organizations/${params.organizationId}/issues/${params.issueRef}/events`
+  )
+}
+
+export async function setVisibility(req: Request, res: Response) {
+  const params = issueParamsSchema.parse(req.params)
+  const body = issueVisibilityBodySchema.parse(req.body)
+  return sendProjectsResult(
+    res,
+    await service.setIssueVisibility(
+      params.organizationId,
+      params.issueRef,
+      body.clientVisible
+    )
   )
 }

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
+import { FollowData } from '@/features/collaboration/components/follow-data'
 import { AttachmentsData } from '@/features/projects/components/attachments-data'
 import { ProjectCustomFieldsPanel } from '@/features/projects/components/project-custom-fields-panel'
 import { WorkBreakdownData } from '@/features/projects/components/work-breakdown-data'
@@ -56,6 +57,14 @@ export async function ProjectDetailData({
           variant="banner"
         />
       ) : null}
+      <div className="flex flex-wrap items-center gap-2">
+        <FollowData
+          orgId={orgId}
+          userId={userId}
+          subjectType="project"
+          subjectId={projectResult.data.id}
+        />
+      </div>
       {canEdit ? (
         <nav
           aria-label="Project actions"

@@ -17,6 +17,11 @@ export function createIssuesRouter(): Router {
   router.get('/:issueRef', requireInternalKey, controller.retrieve)
   router.patch('/:issueRef', requireInternalKey, controller.update)
   router.delete('/:issueRef', requireInternalKey, controller.remove)
+  router.patch(
+    '/:issueRef/client-visibility',
+    requireInternalKey,
+    controller.setVisibility
+  )
   router.get('/:issueRef/events', requireInternalKey, controller.listEvents)
   router.get(
     '/:issueRef/relations',

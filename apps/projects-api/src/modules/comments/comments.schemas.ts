@@ -37,3 +37,9 @@ export const updateCommentBodySchema = z.strictObject({
 export type ListCommentsQuery = z.infer<typeof listCommentsQuerySchema>
 export type CreateCommentBody = z.infer<typeof createCommentBodySchema>
 export type UpdateCommentBody = z.infer<typeof updateCommentBodySchema>
+
+export const commentVisibilityBodySchema = z.strictObject({
+  clientVisible: z.boolean(),
+})
+
+export type CommentVisibilityBody = z.infer<typeof commentVisibilityBodySchema>

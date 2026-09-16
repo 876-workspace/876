@@ -75,6 +75,12 @@ export const createIssueBodySchema = z.strictObject({
   position: z.number().int().optional(),
 })
 
+export const issueVisibilityBodySchema = z.strictObject({
+  clientVisible: z.boolean(),
+})
+
+export type IssueVisibilityBody = z.infer<typeof issueVisibilityBodySchema>
+
 export const updateIssueBodySchema = z
   .strictObject({
     projectId: z.string().trim().min(1).optional(),

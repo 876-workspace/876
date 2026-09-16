@@ -47,6 +47,14 @@ model Tenant {
   projectTemplates ProjectTemplate[]
   projectTemplateVersions ProjectTemplateVersion[]
   projectTemplateInstantiations ProjectTemplateInstantiation[]
+  followers Follower[]
+  discussions Discussion[]
+  discussionPosts DiscussionPost[]
+  discussionPostEdits DiscussionPostEdit[]
+  wikiPages WikiPage[]
+  wikiRevisions WikiRevision[]
+  clientGrants ClientGrant[]
+  attachmentLinks AttachmentLink[]
 
   @@map("projects_tenants")
 }

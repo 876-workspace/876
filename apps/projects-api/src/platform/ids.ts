@@ -41,6 +41,14 @@ export const ENTITY_PREFIXES = {
   automationEvent: 'aev_',
   automationRun: 'arn_',
   notification: 'ntf_',
+  follower: 'flw_',
+  discussion: 'dsc_',
+  discussionPost: 'dpt_',
+  discussionPostEdit: 'dpe_',
+  wikiPage: 'wpg_',
+  wikiRevision: 'wrv_',
+  clientGrant: 'cgt_',
+  attachmentLink: 'att_',
 } as const
 
 export type EntityType = keyof typeof ENTITY_PREFIXES

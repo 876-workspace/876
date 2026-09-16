@@ -36,6 +36,7 @@ export type IssueRow = {
   plannedFinishDate?: bigint | number | null
   plannedDurationMinutes?: number | null
   position: number
+  clientVisible: boolean
   startedAt: bigint | number | null
   completedAt: bigint | number | null
   canceledAt: bigint | number | null

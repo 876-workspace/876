@@ -10,6 +10,7 @@ import {
   customFieldValueParamsSchema,
   issueParamsSchema,
   milestoneListQuerySchema,
+  milestoneVisibilityBodySchema,
   organizationParamsSchema,
   resourceParamsSchema,
   setCustomFieldValueBodySchema,
@@ -236,5 +237,14 @@ export async function clearCustomFieldValue(req: Request, res: Response) {
   return sendProjectsResult(
     res,
     await service.clearCustomFieldValue(organizationId, issueRef, id)
+  )
+}
+
+export async function setMilestoneVisibility(req: Request, res: Response) {
+  const { organizationId, id } = resourceParamsSchema.parse(req.params)
+  const { clientVisible } = milestoneVisibilityBodySchema.parse(req.body)
+  return sendProjectsResult(
+    res,
+    await service.setMilestoneVisibility(organizationId, id, clientVisible)
   )
 }
