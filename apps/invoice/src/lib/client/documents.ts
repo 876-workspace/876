@@ -1,5 +1,12 @@
 'use client'
 
+import type {
+  DocumentEmailComposition,
+  DocumentEmailDelivery,
+  DocumentEmailPrepareParams,
+  DocumentEmailSendParams,
+} from '@876/billing'
+
 import { request } from './request'
 
 export interface DocumentLineCreateParams {
@@ -72,6 +79,40 @@ function commandHeaders() {
   return { 'Idempotency-Key': crypto.randomUUID() }
 }
 
+function emailPath(documentId: string, endpoint: DocumentEndpoint) {
+  return `${endpoint}/${encodeURIComponent(documentId)}/email`
+}
+
+function prepareEmail(
+  documentId: string,
+  endpoint: DocumentEndpoint,
+  params: DocumentEmailPrepareParams = {}
+) {
+  const search = new URLSearchParams()
+  if (params.senderId) search.set('senderId', params.senderId)
+  if (params.templateId) search.set('templateId', params.templateId)
+  const query = search.size > 0 ? `?${search.toString()}` : ''
+  return request<DocumentEmailComposition>(
+    `${emailPath(documentId, endpoint)}${query}`,
+    { method: 'GET' }
+  )
+}
+
+function sendEmail(
+  documentId: string,
+  endpoint: DocumentEndpoint,
+  params: DocumentEmailSendParams
+) {
+  return request<DocumentEmailDelivery>(
+    `${endpoint}/${encodeURIComponent(documentId)}/send-email`,
+    {
+      method: 'POST',
+      headers: commandHeaders(),
+      body: JSON.stringify(params),
+    }
+  )
+}
+
 export const documents = {
   create(
     params: DocumentCreateParams,
@@ -114,6 +155,18 @@ export const documents = {
         body: JSON.stringify({}),
       }
     )
+  },
+  prepareInvoiceEmail(invoiceId: string, params: DocumentEmailPrepareParams = {}) {
+    return prepareEmail(invoiceId, '/api/invoices', params)
+  },
+  sendInvoiceEmail(invoiceId: string, params: DocumentEmailSendParams) {
+    return sendEmail(invoiceId, '/api/invoices', params)
+  },
+  prepareQuoteEmail(quoteId: string, params: DocumentEmailPrepareParams = {}) {
+    return prepareEmail(quoteId, '/api/quotes', params)
+  },
+  sendQuoteEmail(quoteId: string, params: DocumentEmailSendParams) {
+    return sendEmail(quoteId, '/api/quotes', params)
   },
   void(invoiceId: string, reason: string | null) {
     return request<DocumentUpdated>(
