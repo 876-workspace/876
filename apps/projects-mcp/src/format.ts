@@ -1,7 +1,12 @@
 import type { CallToolResult } from '@modelcontextprotocol/server'
 
 import type {
+  BudgetVarianceReport,
   Comment,
+  CustomModule,
+  CustomRecord,
+  Cycle,
+  HealthReport,
   Issue,
   IssueEventList,
   IssueList,
@@ -10,10 +15,19 @@ import type {
   MilestoneList,
   Project,
   ProjectList,
+  ProjectTemplate,
+  TaskList,
   Tenant,
+  TimeEntry,
+  TimeReport,
+  TimeSummary,
+  WorkloadReport,
+  WorkReport,
   WorkflowStateList,
   WorkItemTypeList,
 } from '@876/projects/contracts'
+import type { ActivityFeed, ActivityItem, WikiPage } from '@876/projects'
+import type { MilestoneDetail } from '@876/projects/contracts'
 
 /**
  * The MCP SDK owns this contract, so it is aliased rather than restated.
@@ -268,6 +282,229 @@ export function formatMilestoneList(list: MilestoneList): string {
     return `${milestone.key.padEnd(20)} ${milestone.status.padEnd(10)} ${milestone.name}${targetDate ? `  target:${targetDate}` : ''}`
   })
   return [header, ...lines].join('\n')
+}
+
+export function formatPhase(phase: MilestoneDetail): string {
+  const lines: string[] = [`${phase.key}: ${phase.name}`, `Status: ${phase.status}`]
+  if (phase.description) {
+    lines.push(`\nDescription:\n${phase.description}`)
+  }
+  const targetDate = formatDate(phase.targetDate)
+  if (targetDate) lines.push(`Target Date: ${targetDate}`)
+  const startDate = formatDate(phase.startDate)
+  if (startDate) lines.push(`Start Date: ${startDate}`)
+  if (phase.ownerUserId) lines.push(`Owner: @${phase.ownerUserId}`)
+  return lines.join('\n')
+}
+
+export function formatPhaseList(phases: readonly MilestoneDetail[]): string {
+  if (phases.length === 0) return '0 phases found.'
+  const header = `${phases.length} phase${phases.length === 1 ? '' : 's'}:`
+  const lines = phases.map((phase) => {
+    const targetDate = formatDate(phase.targetDate)
+    return `${phase.key.padEnd(20)} ${phase.status.padEnd(10)} ${phase.name}${targetDate ? `  target:${targetDate}` : ''}`
+  })
+  return [header, ...lines].join('\n')
+}
+
+export function formatCycle(cycle: Cycle): string {
+  const lines: string[] = [
+    `${cycle.name} (#${cycle.number})`,
+    `Status: ${cycle.status}`,
+  ]
+  const startsAt = formatDate(cycle.startsAt)
+  if (startsAt) lines.push(`Starts: ${startsAt}`)
+  const endsAt = formatDate(cycle.endsAt)
+  if (endsAt) lines.push(`Ends: ${endsAt}`)
+  if (cycle.goal) lines.push(`\nGoal:\n${cycle.goal}`)
+  if (cycle.description) lines.push(`\nDescription:\n${cycle.description}`)
+  lines.push(
+    `Progress: ${cycle.progress.completed}/${cycle.progress.total} items (${cycle.progress.completedEstimatePoints}/${cycle.progress.estimatePoints} pts)`
+  )
+  return lines.join('\n')
+}
+
+export function formatCycleList(cycles: readonly Cycle[]): string {
+  if (cycles.length === 0) return '0 cycles found.'
+  const header = `${cycles.length} cycle${cycles.length === 1 ? '' : 's'}:`
+  const lines = cycles.map((cycle) => {
+    const endsAt = formatDate(cycle.endsAt)
+    return `${cycle.name.padEnd(24)} ${cycle.status.padEnd(10)} #${cycle.number}${endsAt ? `  ends:${endsAt}` : ''}`
+  })
+  return [header, ...lines].join('\n')
+}
+
+export function formatTaskList(taskList: TaskList): string {
+  const lines: string[] = [taskList.name, `Progress: ${taskList.progress.completed}/${taskList.progress.total}`]
+  if (taskList.description) lines.push(`\nDescription:\n${taskList.description}`)
+  if (taskList.ownerUserId) lines.push(`Owner: @${taskList.ownerUserId}`)
+  const targetDate = formatDate(taskList.targetDate)
+  if (targetDate) lines.push(`Target Date: ${targetDate}`)
+  return lines.join('\n')
+}
+
+export function formatTaskListList(taskLists: readonly TaskList[]): string {
+  if (taskLists.length === 0) return '0 task lists found.'
+  const header = `${taskLists.length} task list${taskLists.length === 1 ? '' : 's'}:`
+  const lines = taskLists.map(
+    (taskList) => `${taskList.name.padEnd(28)} ${taskList.progress.completed}/${taskList.progress.total} items`
+  )
+  return [header, ...lines].join('\n')
+}
+
+export function formatTimeEntry(entry: TimeEntry): string {
+  const parts = [`Time entry ${entry.id}`, `Project: ${entry.projectId}`]
+  if (entry.issueId) parts.push(`Issue: ${entry.issueId}`)
+  parts.push(`User: @${entry.userId}`)
+  const started = formatDate(entry.startedAt)
+  if (started) parts.push(`Started: ${started}`)
+  if (entry.durationMinutes !== null && entry.durationMinutes !== undefined) {
+    parts.push(`Duration: ${entry.durationMinutes}m`)
+  }
+  parts.push(`Billable: ${entry.billable ? 'yes' : 'no'}`)
+  parts.push(`Approval: ${entry.approvalStatus}`)
+  if (entry.note) parts.push(`\nNote:\n${entry.note}`)
+  return parts.join('\n')
+}
+
+export function formatTimeEntryList(entries: readonly TimeEntry[]): string {
+  if (entries.length === 0) return '0 time entries found.'
+  const header = `${entries.length} time entr${entries.length === 1 ? 'y' : 'ies'}:`
+  const lines = entries.map((entry) => {
+    const started = formatDate(entry.startedAt)
+    const duration = entry.durationMinutes !== null && entry.durationMinutes !== undefined ? ` ${entry.durationMinutes}m` : ''
+    return `${entry.id.padEnd(16)} @${entry.userId.padEnd(16)} ${entry.projectId}${duration}${started ? `  ${started}` : ''}`
+  })
+  return [header, ...lines].join('\n')
+}
+
+export function formatTimeSummary(summary: TimeSummary): string {
+  const lines: string[] = [`Time summary by ${summary.groupBy}:`]
+  if (summary.groups.length === 0) {
+    lines.push('  No time recorded.')
+  } else {
+    for (const group of summary.groups) {
+      lines.push(`  ${(group.key ?? 'unassigned').padEnd(20)} ${group.totalMinutes}m (${group.entryCount} entries)`)
+    }
+  }
+  lines.push(`Total: ${summary.totals.totalMinutes}m across ${summary.totals.entryCount} entries`)
+  return lines.join('\n')
+}
+
+export function formatWorkReport(report: WorkReport): string {
+  const lines: string[] = [`Work report: ${report.total} items (${report.overdue} overdue)`]
+  if (report.byState.length > 0) {
+    lines.push('By state:')
+    for (const row of report.byState) lines.push(`  ${row.key.padEnd(20)} ${row.count}`)
+  }
+  if (report.byType.length > 0) {
+    lines.push('By type:')
+    for (const row of report.byType) lines.push(`  ${row.key.padEnd(20)} ${row.count}`)
+  }
+  if (report.byAssignee.length > 0) {
+    lines.push('By assignee:')
+    for (const row of report.byAssignee) lines.push(`  ${(row.key || 'unassigned').padEnd(20)} ${row.count}`)
+  }
+  return lines.join('\n')
+}
+
+export function formatHealthReport(report: HealthReport): string {
+  if (report.data.length === 0) return '0 projects in the health report.'
+  const header = `${report.data.length} project${report.data.length === 1 ? '' : 's'}:`
+  const lines = report.data.map(
+    (row) => `${row.name.padEnd(24)} ${row.health.padEnd(10)} open:${row.openItems} overdue:${row.overdue}`
+  )
+  return [header, ...lines].join('\n')
+}
+
+export function formatTimeReport(report: TimeReport): string {
+  const lines: string[] = [`Time report by ${report.groupBy}:`]
+  if (report.data.length === 0) {
+    lines.push('  No time recorded.')
+  } else {
+    for (const row of report.data) {
+      lines.push(`  ${row.key.padEnd(20)} billable:${row.billableMinutes}m non-billable:${row.nonBillableMinutes}m`)
+    }
+  }
+  return lines.join('\n')
+}
+
+export function formatBudgetVarianceReport(report: BudgetVarianceReport): string {
+  if (report.data.length === 0) return '0 projects in the budget variance report.'
+  const header = `${report.data.length} project${report.data.length === 1 ? '' : 's'}:`
+  const lines = report.data.map(
+    (row) => `${row.name.padEnd(24)} actual:${row.actualMinutes}m`
+  )
+  return [header, ...lines].join('\n')
+}
+
+export function formatWorkloadReport(report: WorkloadReport): string {
+  if (report.data.length === 0) return '0 members in the workload report.'
+  const header = `${report.data.length} member${report.data.length === 1 ? '' : 's'}:`
+  const lines = report.data.map(
+    (row) => `@${row.userId.padEnd(18)} open:${row.assignedOpenItems} logged:${row.loggedMinutes}m planned:${row.plannedMinutes}m`
+  )
+  return [header, ...lines].join('\n')
+}
+
+export function formatProjectTemplate(template: ProjectTemplate): string {
+  const lines: string[] = [`${template.key}: ${template.name}`, `Version: ${template.currentVersion}`]
+  if (template.description) lines.push(`\nDescription:\n${template.description}`)
+  lines.push(
+    `Counts: ${template.counts.phases} phases, ${template.counts.taskLists} task lists, ${template.counts.workItems} work items`
+  )
+  return lines.join('\n')
+}
+
+export function formatProjectTemplateList(templates: readonly ProjectTemplate[]): string {
+  if (templates.length === 0) return '0 templates found.'
+  const header = `${templates.length} template${templates.length === 1 ? '' : 's'}:`
+  const lines = templates.map((template) => `${template.key.padEnd(20)} v${template.currentVersion}  ${template.name}`)
+  return [header, ...lines].join('\n')
+}
+
+export function formatCustomModuleList(modules: readonly CustomModule[]): string {
+  if (modules.length === 0) return '0 custom modules configured.'
+  const header = `${modules.length} custom module${modules.length === 1 ? '' : 's'}:`
+  const lines = modules.map((module) => `${module.key.padEnd(20)} ${module.pluralName}`)
+  return [header, ...lines].join('\n')
+}
+
+export function formatCustomRecord(record: CustomRecord): string {
+  const lines: string[] = [`${record.title}`, `Status: ${record.statusKey}`]
+  const fieldKeys = Object.keys(record.fields)
+  if (fieldKeys.length > 0) {
+    lines.push(`Fields: ${fieldKeys.length}`)
+  }
+  return lines.join('\n')
+}
+
+export function formatCustomRecordList(records: readonly CustomRecord[]): string {
+  if (records.length === 0) return '0 records found.'
+  const header = `${records.length} record${records.length === 1 ? '' : 's'}:`
+  const lines = records.map((record) => `${record.id.padEnd(16)} ${record.statusKey.padEnd(14)} ${record.title}`)
+  return [header, ...lines].join('\n')
+}
+
+export function formatActivityFeed(feed: ActivityFeed): string {
+  if (feed.items.length === 0) return '0 activity items recorded.'
+  const header = `${feed.items.length} activit${feed.items.length === 1 ? 'y item' : 'y items'}:`
+  const lines = feed.items.map((item: ActivityItem) => formatActivityItem(item))
+  return [header, ...lines].join('\n')
+}
+
+export function formatActivityItem(item: ActivityItem): string {
+  const dateStr = formatDate(item.createdAt)
+  const actorStr = item.actorUserId ? ` by @${item.actorUserId}` : ''
+  const changeStr = item.fromValue || item.toValue ? `: ${item.fromValue ?? 'none'} -> ${item.toValue ?? 'none'}` : ''
+  return `[${dateStr}] ${item.type}${actorStr}${changeStr}`
+}
+
+export function formatWikiPage(page: WikiPage): string {
+  const lines: string[] = [page.title, `Slug: ${page.slug}`]
+  if (page.body) lines.push(`\n${page.body}`)
+  lines.push(`Revisions: ${page.revisionCount}`)
+  return lines.join('\n')
 }
 
 export function toolSuccess<T>(

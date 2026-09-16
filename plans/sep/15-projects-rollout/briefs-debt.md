@@ -9,3 +9,4 @@
 8. Workload `plannedMinutes` is always 0: issues carry point estimates, not effort. Needs an effort field or removal from the contract.
 9. `apps/console/src/lib/permissions.test.ts` pinned counts fail on main since the commerce permission catalog landed; not caused by Projects.
 10. Template instantiation checks dependency cycles with its own ref-graph walk (templates module) instead of the issue-dependency service's check — consolidate into one pure cycle detector.
+11. projects-mcp `hasWriteScope()` returns true when `PROJECTS_SCOPES` is unset (keeps pre-existing write tools working). Decide whether deployed MCP must set scopes explicitly and fail closed.

@@ -24,7 +24,8 @@ Set these variables in `apps/projects-mcp/.env` or in the MCP client definition:
 | `PROJECTS_API_URL`         | No       | HTTP origin of the `@876/projects-api` service. Defaults to production (`https://876-projects-api.vercel.app`). |
 | `PROJECTS_INTERNAL_KEY`    | Yes      | Operator secret sent in the `x-internal-key` header.                                                            |
 | `PROJECTS_ORGANIZATION_ID` | Yes      | Organization ID (`org_...`) scoping all operations.                                                             |
-| `PROJECTS_DEFAULT_USER_ID` | No       | Fallback user ID (`usr_...`) for issue and comment creation.                                                    |
+| `PROJECTS_DEFAULT_USER_ID` | No       | Fallback user ID (`usr_...`) for issue, comment, and time entry creation.                                       |
+| `PROJECTS_SCOPES`          | No       | Comma-separated scopes (e.g. `projects:read,projects:write`). Writes require `projects:write`; omit for full operator access. |
 
 Startup fails with exit code 1 if any required variable is missing. The target organization must already have a provisioned tenant (`POST /v1/tenants/ensure`).
 
@@ -81,6 +82,26 @@ therefore silently override this default for every MCP client you launch.
 | `work_item_types_list` | `readOnly`, `idempotent` | List active work item types before assigning a type to an issue.                           |
 | `workflow_states_list` | `readOnly`, `idempotent` | List active workflow states before assigning a state to an issue.                          |
 | `milestones_list`      | `readOnly`, `idempotent` | List a project's milestones, optionally filtered by status.                                |
+| `phases_list`            | `readOnly`, `idempotent` | List project phases (milestones), optionally filtered by project and status.               |
+| `phase_get`              | `readOnly`, `idempotent` | Retrieve one project phase by ID.                                                          |
+| `cycles_list`            | `readOnly`, `idempotent` | List cycles, optionally filtered by project and status.                                    |
+| `cycle_get`              | `readOnly`, `idempotent` | Retrieve one cycle with progress and throughput.                                           |
+| `task_lists_list`        | `readOnly`, `idempotent` | List task lists for one project with progress.                                             |
+| `time_entries_list`      | `readOnly`, `idempotent` | List time entries by user, project, issue, window, or approval.                            |
+| `time_summary`           | `readOnly`, `idempotent` | Summarize logged time grouped by project, user, issue, or day.                             |
+| `report_work`            | `readOnly`, `idempotent` | Read the work report for a window.                                                         |
+| `report_health`          | `readOnly`, `idempotent` | Read the project health report.                                                            |
+| `report_time`            | `readOnly`, `idempotent` | Read the time report grouped by project, user, or issue.                                   |
+| `report_budget_variance` | `readOnly`, `idempotent` | Read the budget variance report for a window.                                              |
+| `report_workload`        | `readOnly`, `idempotent` | Read the workload report for a window.                                                     |
+| `templates_list`         | `readOnly`, `idempotent` | List project templates available for new projects.                                         |
+| `template_get`           | `readOnly`, `idempotent` | Retrieve one project template by ID.                                                       |
+| `custom_modules_list`    | `readOnly`, `idempotent` | List custom modules configured in the workspace.                                           |
+| `custom_records_list`    | `readOnly`, `idempotent` | List records in one custom module with optional filters.                                   |
+| `custom_record_get`      | `readOnly`, `idempotent` | Retrieve one custom module record by module and record ID.                                 |
+| `activity_list`          | `readOnly`, `idempotent` | List recent project activity with cursor pagination.                                       |
+| `wiki_page_get`          | `readOnly`, `idempotent` | Retrieve one wiki page by project and slug or ID.                                          |
+| `time_entry_create`      | mutable                  | Log a time entry for a project. Requires `projects:write`.                                 |
 
 The update tools are intentionally not annotated as idempotent: the Projects API advances `updatedAt` on each update call, and update inputs can clear or replace existing values. The conservative annotations prevent clients from treating those writes as safely repeatable or additive-only.
 

@@ -116,3 +116,33 @@ export const CUSTOM_MODULE_RECORDS_SKELETON_COLUMNS: DataTableSkeletonColumn[] =
     { label: 'Status', cell: 'badge', width: '130px' },
     { label: 'Updated', width: '130px' },
   ]
+
+export const INTEGRATIONS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
+  { label: 'Client' },
+  { label: 'Scopes', width: '200px' },
+  { label: 'Status', cell: 'badge', width: '110px' },
+  { label: 'Last used', width: '130px' },
+  { label: 'Created', width: '130px' },
+]
+
+export const WEBHOOK_ENDPOINTS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
+  { label: 'URL' },
+  { label: 'Events', width: '130px' },
+  { label: 'Status', cell: 'badge', width: '110px' },
+  { label: 'Failures', width: '110px' },
+]
+
+export const WEBHOOK_DELIVERIES_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
+  { label: 'Event type' },
+  { label: 'Status', cell: 'badge', width: '110px' },
+  { label: 'Response', width: '110px' },
+  { label: 'Attempt', width: '90px' },
+  { label: 'Next attempt', width: '150px' },
+]
+
+export const IMPORT_JOBS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
+  { label: 'Source' },
+  { label: 'Status', cell: 'badge', width: '110px' },
+  { label: 'Rows', width: '130px' },
+  { label: 'Created', width: '130px' },
+]

@@ -59,3 +59,36 @@ export async function unsealWebhookSecret(
     automationWebhookContext({ tenantId, ruleId })
   )
 }
+
+export function webhookEndpointContext(params: {
+  tenantId: string
+  endpointId: string
+}): Record<string, string> {
+  return {
+    tenant_id: params.tenantId,
+    webhook_endpoint_id: params.endpointId,
+    type: 'webhook-endpoint-secret',
+  }
+}
+
+export async function sealWebhookEndpointSecret(
+  tenantId: string,
+  endpointId: string,
+  plaintext: string
+): Promise<SealedValue> {
+  return getAutomationSecureFieldProvider().seal(
+    plaintext,
+    webhookEndpointContext({ tenantId, endpointId })
+  )
+}
+
+export async function unsealWebhookEndpointSecret(
+  tenantId: string,
+  endpointId: string,
+  sealed: SealedValue
+): Promise<string> {
+  return getAutomationSecureFieldProvider().unseal(
+    sealed,
+    webhookEndpointContext({ tenantId, endpointId })
+  )
+}

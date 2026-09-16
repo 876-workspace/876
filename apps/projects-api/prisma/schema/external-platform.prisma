@@ -1,0 +1,103 @@
+model IntegrationClient {
+  id             String   @id
+  tenantId       String   @map("tenant_id")
+  organizationId String   @map("organization_id")
+  name           String
+  scopes         String[] @default([])
+  secretHash     String   @map("secret_hash")
+  keyPrefix      String   @map("key_prefix")
+  lastUsedAt     BigInt?  @map("last_used_at")
+  revokedAt      BigInt?  @map("revoked_at")
+  createdAt      BigInt   @map("created_at")
+  updatedAt      BigInt   @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId], map: "projects_iclients_tenant_idx")
+  @@map("projects_integration_clients")
+}
+
+model WebhookEndpoint {
+  id                  String   @id
+  tenantId            String   @map("tenant_id")
+  url                 String
+  eventTypes          String[] @default([]) @map("event_types")
+  secret              Json
+  enabled             Boolean  @default(true)
+  consecutiveFailures Int      @default(0) @map("consecutive_failures")
+  createdAt           BigInt   @map("created_at")
+  updatedAt           BigInt   @map("updated_at")
+
+  tenant     Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+
+  @@index([tenantId, enabled], map: "projects_whep_tenant_enabled_idx")
+  @@map("projects_webhook_endpoints")
+}
+
+model WebhookDelivery {
+  id            String  @id
+  tenantId      String  @map("tenant_id")
+  endpointId    String  @map("endpoint_id")
+  eventId       String  @map("event_id")
+  eventType     String  @map("event_type")
+  payload       Json    @default("{}")
+  attempt       Int     @default(0)
+  status        String  @default("pending")
+  responseCode  Int?    @map("response_code")
+  errorCode     String? @map("error_code")
+  nextAttemptAt BigInt? @map("next_attempt_at")
+  createdAt     BigInt  @map("created_at")
+  updatedAt     BigInt  @map("updated_at")
+
+  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  endpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@unique([endpointId, eventId], map: "projects_whdl_endpoint_event_uidx")
+  @@index([tenantId, status, nextAttemptAt], map: "projects_whdl_tenant_status_idx")
+  @@map("projects_webhook_deliveries")
+}
+
+model ImportJob {
+  id             String  @id
+  tenantId       String  @map("tenant_id")
+  source         String
+  projectId      String? @map("project_id")
+  status         String  @default("preview")
+  rowCount       Int     @default(0) @map("row_count")
+  successCount   Int     @default(0) @map("success_count")
+  failureCount   Int     @default(0) @map("failure_count")
+  contentHash    String  @map("content_hash")
+  bundle         Json    @default("{}")
+  preview        Json    @default("{}")
+  unmappedFields Json    @default("[]") @map("unmapped_fields")
+  createdAt      BigInt  @map("created_at")
+  updatedAt      BigInt  @map("updated_at")
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rows   ImportJobRow[]
+
+  @@index([tenantId, status], map: "projects_impj_tenant_status_idx")
+  @@map("projects_import_jobs")
+}
+
+model ImportJobRow {
+  id        String  @id
+  tenantId  String  @map("tenant_id")
+  jobId     String  @map("job_id")
+  rowIndex  Int     @map("row_index")
+  kind      String
+  status    String  @default("pending")
+  externalRef String? @map("external_ref")
+  createdId String? @map("created_id")
+  error     Json?
+  createdAt BigInt  @map("created_at")
+  updatedAt BigInt  @map("updated_at")
+
+  tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  job    ImportJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, rowIndex], map: "projects_impr_job_row_uidx")
+  @@index([jobId, status], map: "projects_impr_job_status_idx")
+  @@map("projects_import_job_rows")
+}

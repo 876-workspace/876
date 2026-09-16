@@ -37,6 +37,11 @@ import {
   postWebhook,
 } from '../modules/automation/webhook.js'
 import {
+  drainWebhookDeliveries,
+  enqueueWebhookDeliveries,
+  type DrainWebhooksResult,
+} from '../modules/webhooks/index.js'
+import {
   matchesConditions,
   type LayoutCondition,
 } from '../../../../packages/projects/src/layout-rules.js'
@@ -650,6 +655,7 @@ export type DrainResult = ProcessedEventCounts & {
   claimed: number
   processedEvents: number
   swept: { tenants: number; dueApproaching: number; budgetThreshold: number }
+  webhooks: DrainWebhooksResult
 }
 
 export async function drainAutomation(
@@ -665,8 +671,18 @@ export async function drainAutomation(
     failed: 0,
     skipped: 0,
     swept,
+    webhooks: { claimed: 0, delivered: 0, scheduled: 0, failed: 0, disabled: 0 },
   }
   for (const event of claimed) {
+    await enqueueWebhookDeliveries({
+      id: event.id,
+      tenantId: event.tenantId,
+      type: event.type,
+      subjectType: event.subjectType,
+      subjectId: event.subjectId,
+      payload: event.payload ?? {},
+      createdAt: Number(event.createdAt),
+    })
     const counts = await processAutomationEvent({
       ...event,
       causationDepth: Number(event.causationDepth),
@@ -677,5 +693,6 @@ export async function drainAutomation(
     totals.failed += counts.failed
     totals.skipped += counts.skipped
   }
+  totals.webhooks = await drainWebhookDeliveries()
   return totals
 }

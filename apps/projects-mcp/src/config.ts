@@ -5,11 +5,29 @@
  */
 export const DEFAULT_PROJECTS_API_URL = 'https://876-projects-api.vercel.app'
 
+export const PROJECTS_WRITE_SCOPE = 'projects:write'
+
 export interface Config {
   apiUrl: string
   internalKey: string
   organizationId: string
   defaultUserId?: string
+  scopes?: string[]
+}
+
+export function hasWriteScope(config: Config): boolean {
+  if (config.scopes === undefined) return true
+  return config.scopes.includes(PROJECTS_WRITE_SCOPE)
+}
+
+function parseScopes(raw: string | undefined): string[] | undefined {
+  if (raw === undefined) return undefined
+  const scopes = raw
+    .split(/[\s,]+/)
+    .map((scope) => scope.trim())
+    .filter((scope) => scope.length > 0)
+  if (scopes.length === 0) return undefined
+  return [...new Set(scopes)]
 }
 
 export class ConfigError extends Error {
@@ -44,12 +62,14 @@ export function validateConfig(
   }
 
   const defaultUserId = env.PROJECTS_DEFAULT_USER_ID?.trim() || undefined
+  const scopes = parseScopes(env.PROJECTS_SCOPES?.trim() || undefined)
 
   return {
     apiUrl,
     internalKey,
     organizationId,
     defaultUserId,
+    ...(scopes !== undefined ? { scopes } : {}),
   }
 }
 
