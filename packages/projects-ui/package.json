@@ -138,6 +138,26 @@
     "./reports/csv-export-link": {
       "types": "./src/reports/csv-export-link.tsx",
       "default": "./src/reports/csv-export-link.tsx"
+    },
+    "./templates/types": {
+      "types": "./src/templates/types.ts",
+      "default": "./src/templates/types.ts"
+    },
+    "./templates/template-list": {
+      "types": "./src/templates/template-list.tsx",
+      "default": "./src/templates/template-list.tsx"
+    },
+    "./templates/template-summary": {
+      "types": "./src/templates/template-summary.tsx",
+      "default": "./src/templates/template-summary.tsx"
+    },
+    "./templates/template-preview-table": {
+      "types": "./src/templates/template-preview-table.tsx",
+      "default": "./src/templates/template-preview-table.tsx"
+    },
+    "./templates/instantiate-options": {
+      "types": "./src/templates/instantiate-options.tsx",
+      "default": "./src/templates/instantiate-options.tsx"
     }
   },
   "scripts": {
