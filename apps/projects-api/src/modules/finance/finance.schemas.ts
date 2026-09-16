@@ -50,7 +50,8 @@ export const putBillingBodySchema = z
   })
   .refine(
     (data) =>
-      data.billingMethod !== 'fixed-fee' || data.fixedFeeAmount !== null,
+      data.billingMethod !== 'fixed-fee' ||
+      typeof data.fixedFeeAmount === 'number',
     {
       message: 'fixedFeeAmount is required when billingMethod is fixed-fee',
       path: ['fixedFeeAmount'],
@@ -87,7 +88,7 @@ export const createBudgetBodySchema = z
   })
   .refine(
     (data) =>
-      (data.amountMinor ?? null) !== null !== ((data.hours ?? null) !== null),
+      ((data.amountMinor ?? null) !== null) !== ((data.hours ?? null) !== null),
     { message: 'Exactly one of amountMinor or hours must be set' }
   )
   .refine(
@@ -203,4 +204,6 @@ export const createInvoiceDraftBodySchema = z
     message: 'to must be at or after from',
   })
 
-export type CreateInvoiceDraftBody = z.infer<typeof createInvoiceDraftBodySchema>
+export type CreateInvoiceDraftBody = z.infer<
+  typeof createInvoiceDraftBodySchema
+>
