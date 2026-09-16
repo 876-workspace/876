@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 
 import { IssueCommentsLoader } from '@/features/projects/components/issue-comments-loader'
 import { IssueLinksData } from '@/features/projects/components/issue-links-data'
+import { RemindersData } from '@/features/projects/components/reminders-data'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { projects } from '@/lib/services/projects'
 
@@ -114,6 +115,21 @@ export async function IssueDetailData({
             orgId={orgId}
             issueRef={issueResult.data.identifier}
             currentUserId={userId}
+          />
+        </Suspense>
+      </div>
+      <div className="mt-6 lg:mr-[33.333333%]">
+        <Suspense
+          fallback={
+            <div className="text-muted-foreground text-sm">
+              Loading reminders…
+            </div>
+          }
+        >
+          <RemindersData
+            orgId={orgId}
+            userId={userId}
+            target={{ issueId: issueResult.data.id }}
           />
         </Suspense>
       </div>

@@ -68,6 +68,18 @@ export const projects = {
   get cycles() {
     return getServiceClient().cycles
   },
+  get events() {
+    return getServiceClient().events
+  },
+  get reminders() {
+    return getServiceClient().reminders
+  },
+  get calendar() {
+    return getServiceClient().calendar
+  },
+  get myWork() {
+    return getServiceClient().myWork
+  },
   get taskLists() {
     return getServiceClient().taskLists
   },
