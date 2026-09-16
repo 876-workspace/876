@@ -425,3 +425,126 @@ export async function listInvoices(
     error: null,
   }
 }
+
+function revokedGrantError(scope: PortalScope): ProjectsError | null {
+  if (scope.grant.revokedAt !== null)
+    return getError('projects/client-grant-not-found')
+  if (scope.grant.projectId !== scope.projectId)
+    return getError('projects/client-grant-not-found')
+  if (scope.grant.userId !== scope.portalUserId)
+    return getError('projects/client-grant-not-found')
+  if (scope.grant.tenantId !== scope.tenantId)
+    return getError('projects/client-grant-not-found')
+  return null
+}
+
+export async function createIssueComment(
+  scope: PortalScope,
+  issueRef: string,
+  body: { body: string }
+): Promise<ServiceResult<PortalComment>> {
+  const revoked = revokedGrantError(scope)
+  if (revoked) return { data: null, error: revoked }
+  const denied = flagError(scope.grant.allowComments)
+  if (denied) return { data: null, error: denied }
+  const issue = await issues.retrieveVisibleIssue(
+    scope.organizationId,
+    scope.projectId,
+    issueRef
+  )
+  if (issue.error) return { data: null, error: issue.error }
+  const created = await comments.create(
+    scope.organizationId,
+    issue.data.identifier,
+    { body: body.body, authorUserId: scope.portalUserId }
+  )
+  if (created.error) return { data: null, error: created.error }
+  const visibility = await comments.setCommentVisibility(
+    scope.organizationId,
+    issue.data.identifier,
+    created.data.id,
+    true
+  )
+  if (visibility.error) return { data: null, error: visibility.error }
+  return {
+    data: serializePortalComment({
+      id: created.data.id,
+      issueId: created.data.issueId,
+      authorUserId: created.data.authorUserId,
+      body: created.data.body,
+      createdAt: created.data.createdAt,
+      updatedAt: created.data.updatedAt,
+    }),
+    error: null,
+  }
+}
+
+export async function createMilestoneComment(
+  scope: PortalScope,
+  milestoneId: string,
+  body: { body: string }
+): Promise<ServiceResult<PortalMilestoneComment>> {
+  const revoked = revokedGrantError(scope)
+  if (revoked) return { data: null, error: revoked }
+  const denied = flagError(scope.grant.allowComments)
+  if (denied) return { data: null, error: denied }
+  const milestone = await workStructure.retrieveVisibleMilestone(
+    scope.organizationId,
+    scope.projectId,
+    milestoneId
+  )
+  if (milestone.error) return { data: null, error: milestone.error }
+  const created = await milestoneDetails.createComment(
+    scope.organizationId,
+    milestone.data.id,
+    { body: body.body, authorUserId: scope.portalUserId }
+  )
+  if (created.error) return { data: null, error: created.error }
+  const visibility = await milestoneDetails.setMilestoneCommentVisibility(
+    scope.organizationId,
+    milestone.data.id,
+    created.data.id,
+    true
+  )
+  if (visibility.error) return { data: null, error: visibility.error }
+  return {
+    data: serializePortalMilestoneComment({
+      id: created.data.id,
+      milestoneId: created.data.milestoneId,
+      authorUserId: created.data.authorUserId,
+      body: created.data.body,
+      createdAt: created.data.createdAt,
+      updatedAt: created.data.updatedAt,
+    }),
+    error: null,
+  }
+}
+
+export async function createDiscussionPost(
+  scope: PortalScope,
+  discussionId: string,
+  body: { body: string }
+): Promise<ServiceResult<PortalDiscussionPost>> {
+  const revoked = revokedGrantError(scope)
+  if (revoked) return { data: null, error: revoked }
+  const denied = flagError(scope.grant.allowDiscussions)
+  if (denied) return { data: null, error: denied }
+  const existing = await discussions.retrieveDiscussion(
+    scope.organizationId,
+    scope.projectId,
+    discussionId
+  )
+  if (existing.error) return { data: null, error: existing.error }
+  if (!existing.data.clientVisible)
+    return { data: null, error: getError('projects/discussion-not-found') }
+  if (existing.data.locked)
+    return { data: null, error: getError('projects/discussion-locked') }
+  const created = await discussions.createPost(
+    scope.organizationId,
+    scope.projectId,
+    existing.data.id,
+    { body: body.body, authorUserId: scope.portalUserId }
+  )
+  if (created.error) return { data: null, error: created.error }
+  return { data: serializePortalDiscussionPost(created.data), error: null }
+}

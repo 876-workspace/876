@@ -14,6 +14,7 @@ import {
   portalIssueListSchema,
   portalIssueSchema,
   portalMilestoneCommentArraySchema,
+  portalMilestoneCommentSchema,
   portalMilestoneListSchema,
   portalMilestoneSchema,
   portalPhaseHoursArraySchema,
@@ -61,6 +62,9 @@ function portalRequest<T>(
     dataSchema
   )
 }
+
+export const portalDiscussionPostSchema =
+  portalDiscussionDetailSchema.shape.posts.element
 
 export function create876ProjectsPortalClient(options: PortalClientOptions) {
   const portal: PortalRuntime = {
@@ -118,6 +122,24 @@ export function create876ProjectsPortalClient(options: PortalClientOptions) {
         portalCommentArraySchema
       )
     },
+    createIssueComment(
+      organizationId: string,
+      projectId: string,
+      issueRef: string,
+      input: { body: string },
+      options: RequestOptions = {}
+    ) {
+      return portalRequest(
+        portal,
+        {
+          method: 'POST',
+          path: `${base(organizationId, projectId)}/issues/${encodeURIComponent(issueRef)}/comments`,
+          body: input,
+          signal: options.signal,
+        },
+        portalCommentSchema
+      )
+    },
     listMilestones(
       organizationId: string,
       projectId: string,
@@ -166,6 +188,24 @@ export function create876ProjectsPortalClient(options: PortalClientOptions) {
         portalMilestoneCommentArraySchema
       )
     },
+    createMilestoneComment(
+      organizationId: string,
+      projectId: string,
+      milestoneId: string,
+      input: { body: string },
+      options: RequestOptions = {}
+    ) {
+      return portalRequest(
+        portal,
+        {
+          method: 'POST',
+          path: `${base(organizationId, projectId)}/milestones/${encodeURIComponent(milestoneId)}/comments`,
+          body: input,
+          signal: options.signal,
+        },
+        portalMilestoneCommentSchema
+      )
+    },
     listDiscussions(
       organizationId: string,
       projectId: string,
@@ -196,6 +236,24 @@ export function create876ProjectsPortalClient(options: PortalClientOptions) {
           signal: options.signal,
         },
         portalDiscussionDetailSchema
+      )
+    },
+    createDiscussionPost(
+      organizationId: string,
+      projectId: string,
+      discussionId: string,
+      input: { body: string },
+      options: RequestOptions = {}
+    ) {
+      return portalRequest(
+        portal,
+        {
+          method: 'POST',
+          path: `${base(organizationId, projectId)}/discussions/${encodeURIComponent(discussionId)}/posts`,
+          body: input,
+          signal: options.signal,
+        },
+        portalDiscussionPostSchema
       )
     },
     listWikiPages(

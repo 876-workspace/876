@@ -41,3 +41,19 @@ export const portalActivityQuerySchema = z.strictObject({
 
 export type PortalListQuery = z.infer<typeof portalListQuerySchema>
 export type PortalActivityQuery = z.infer<typeof portalActivityQuerySchema>
+
+export const portalCreateCommentBodySchema = z.strictObject({
+  body: z.string().trim().min(1).max(10000),
+})
+
+export type PortalCreateCommentBody = z.infer<
+  typeof portalCreateCommentBodySchema
+>
+
+export const portalCreateDiscussionPostBodySchema = z.strictObject({
+  body: z.string().trim().min(1).max(20000),
+})
+
+export type PortalCreateDiscussionPostBody = z.infer<
+  typeof portalCreateDiscussionPostBodySchema
+>

@@ -4,6 +4,8 @@ import { sendProjectsList, sendProjectsResult } from '../../http/result.js'
 import { portalContext, portalScope } from './portal-auth.js'
 import {
   portalActivityQuerySchema,
+  portalCreateCommentBodySchema,
+  portalCreateDiscussionPostBodySchema,
   portalDiscussionParamsSchema,
   portalIssueParamsSchema,
   portalListQuerySchema,
@@ -142,5 +144,47 @@ export async function listInvoices(req: Request, res: Response) {
   return sendProjectsResult(
     res,
     await service.listInvoices(portalScope(portalContext(res)))
+  )
+}
+
+export async function createIssueComment(req: Request, res: Response) {
+  const params = portalIssueParamsSchema.parse(req.params)
+  const body = portalCreateCommentBodySchema.parse(req.body)
+  return sendProjectsResult(
+    res,
+    await service.createIssueComment(
+      portalScope(portalContext(res)),
+      params.issueRef,
+      body
+    ),
+    201
+  )
+}
+
+export async function createMilestoneComment(req: Request, res: Response) {
+  const params = portalMilestoneParamsSchema.parse(req.params)
+  const body = portalCreateCommentBodySchema.parse(req.body)
+  return sendProjectsResult(
+    res,
+    await service.createMilestoneComment(
+      portalScope(portalContext(res)),
+      params.milestoneId,
+      body
+    ),
+    201
+  )
+}
+
+export async function createDiscussionPost(req: Request, res: Response) {
+  const params = portalDiscussionParamsSchema.parse(req.params)
+  const body = portalCreateDiscussionPostBodySchema.parse(req.body)
+  return sendProjectsResult(
+    res,
+    await service.createDiscussionPost(
+      portalScope(portalContext(res)),
+      params.discussionId,
+      body
+    ),
+    201
   )
 }

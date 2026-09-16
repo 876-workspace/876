@@ -5,7 +5,6 @@ import { z } from 'zod'
 
 import { resolvePortalApiAccess } from '@/lib/portal-access'
 import { getPortalClient } from '@/lib/services/portal'
-import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'
 
@@ -16,9 +15,9 @@ const commentSchema = z.strictObject({
 })
 
 /**
- * Client-portal work-item comment. Retrieving the issue through the portal
- * client proves the live grant and the record's client visibility before
- * the internal client records the comment under the portal user.
+ * Client-portal work-item comment. The write belongs to the portal API:
+ * this handler authorizes the grant and delegates the verified write to
+ * the portal client, returning only the portal serializer.
  */
 export async function POST(request: Request, { params }: Context) {
   const { projectId, issueRef } = await params
@@ -35,24 +34,31 @@ export async function POST(request: Request, { params }: Context) {
     return apiJson({ error: 'Enter a comment.' }, { status: 422 })
 
   const portal = getPortalClient(gate.access.userId)
-  const visible = await portal.retrieveIssue(
+  const result = await portal.createIssueComment(
     gate.access.orgId,
     decodedProjectId,
-    decodedIssueRef
-  )
-  if (visible.error || !visible.data)
-    return apiJson({ error: 'Not found.' }, { status: 404 })
-
-  const result = await projects.comments.create(
-    gate.access.orgId,
     decodedIssueRef,
-    { body: parsed.data.body, authorUserId: gate.access.userId }
+    { body: parsed.data.body }
   )
-  if (result.error || !result.data)
+  if (result.error || !result.data) {
+    const code = result.error?.code ?? ''
+    if (code === 'projects/portal-forbidden')
+      return apiJson(
+        { error: result.error?.message ?? 'Not found.' },
+        { status: 403 }
+      )
+    if (
+      code === 'projects/client-grant-not-found' ||
+      code === 'projects/issue-not-found' ||
+      code === 'projects/not-found' ||
+      code.endsWith('-not-found')
+    )
+      return apiJson({ error: 'Not found.' }, { status: 404 })
     return apiJson(
       { error: result.error?.message ?? 'The comment could not be added.' },
       { status: 400 }
     )
+  }
 
   return apiJson({ data: result.data }, { status: 201 })
 }

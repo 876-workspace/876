@@ -26,6 +26,9 @@ export {
   type PaginatedAttachmentLinks,
 } from './attachment-links.service.js'
 export {
+  createDiscussionPost,
+  createIssueComment,
+  createMilestoneComment,
   getTimeByPhase,
   listActivity,
   listAttachments,

@@ -5,7 +5,6 @@ import { z } from 'zod'
 
 import { resolvePortalApiAccess } from '@/lib/portal-access'
 import { getPortalClient } from '@/lib/services/portal'
-import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'
 
@@ -16,13 +15,9 @@ const replySchema = z.strictObject({
 })
 
 /**
- * Client-portal discussion reply.
- *
- * The grant is resolved through the portal client (never `projects.view`):
- * retrieving the discussion through it proves both the live grant and the
- * record's client visibility. The write itself goes through the internal
- * client with the portal user as author, since the portal route family is
- * read-only.
+ * Client-portal discussion reply. The write belongs to the portal API:
+ * this handler authorizes the grant and delegates the verified write to
+ * the portal client, returning only the portal serializer.
  */
 export async function POST(request: Request, { params }: Context) {
   const { projectId, discussionId } = await params
@@ -39,28 +34,36 @@ export async function POST(request: Request, { params }: Context) {
     return apiJson({ error: 'Enter a reply.' }, { status: 422 })
 
   const portal = getPortalClient(gate.access.userId)
-  const visible = await portal.retrieveDiscussion(
-    gate.access.orgId,
-    decodedProjectId,
-    decodedDiscussionId
-  )
-  if (visible.error || !visible.data)
-    return apiJson({ error: 'Not found.' }, { status: 404 })
-
-  const result = await projects.discussions.createPost(
+  const result = await portal.createDiscussionPost(
     gate.access.orgId,
     decodedProjectId,
     decodedDiscussionId,
-    { ...parsed.data, authorUserId: gate.access.userId }
+    { body: parsed.data.body }
   )
-  if (result.error || !result.data)
+  if (result.error || !result.data) {
+    const code = result.error?.code ?? ''
+    if (code === 'projects/discussion-locked')
+      return apiJson(
+        { error: result.error?.message ?? 'This discussion is locked.' },
+        { status: 409 }
+      )
+    if (code === 'projects/portal-forbidden')
+      return apiJson(
+        { error: result.error?.message ?? 'Not found.' },
+        { status: 403 }
+      )
+    if (
+      code === 'projects/client-grant-not-found' ||
+      code === 'projects/discussion-not-found' ||
+      code === 'projects/not-found' ||
+      code.endsWith('-not-found')
+    )
+      return apiJson({ error: 'Not found.' }, { status: 404 })
     return apiJson(
       { error: result.error?.message ?? 'The reply could not be posted.' },
-      {
-        status:
-          result.error?.code === 'projects/discussion-locked' ? 403 : 400,
-      }
+      { status: 400 }
     )
+  }
 
   return apiJson({ data: result.data }, { status: 201 })
 }

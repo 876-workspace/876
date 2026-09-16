@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   resolveAccess: vi.fn(),
-  createDiscussionPost: vi.fn(),
+  createIssueComment: vi.fn(),
 }))
 
 vi.mock('@/lib/portal-access', () => ({
@@ -10,14 +10,14 @@ vi.mock('@/lib/portal-access', () => ({
 }))
 vi.mock('@/lib/services/portal', () => ({
   getPortalClient: () => ({
-    createDiscussionPost: mocks.createDiscussionPost,
+    createIssueComment: mocks.createIssueComment,
   }),
 }))
 
 const { POST } = await import('./route')
 
 function request(body: unknown) {
-  return new Request('http://localhost/api/portal/prj_1/discussions/dis_1', {
+  return new Request('http://localhost/api/portal/prj_1/work/ALPHA-7/comments', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
@@ -25,7 +25,7 @@ function request(body: unknown) {
 }
 
 const context = {
-  params: Promise.resolve({ projectId: 'prj_1', discussionId: 'dis_1' }),
+  params: Promise.resolve({ projectId: 'prj_1', issueRef: 'ALPHA-7' }),
 }
 
 beforeEach(() => {
@@ -33,11 +33,11 @@ beforeEach(() => {
   mocks.resolveAccess.mockResolvedValue({
     access: { orgId: 'org_1', userId: 'usr_client' },
   })
-  mocks.createDiscussionPost.mockResolvedValue({
+  mocks.createIssueComment.mockResolvedValue({
     data: {
-      object: 'portal.discussion-post',
-      id: 'post_1',
-      discussionId: 'dis_1',
+      object: 'portal.comment',
+      id: 'cmt_1',
+      issueId: 'iss_1',
       authorUserId: 'usr_client',
       body: 'Hello',
       createdAt: 1787767400,
@@ -47,7 +47,7 @@ beforeEach(() => {
   })
 })
 
-describe('POST /api/portal/[projectId]/discussions/[discussionId]/posts', () => {
+describe('POST /api/portal/[projectId]/work/[issueRef]/comments', () => {
   it('denies without a live grant instead of leaking existence', async () => {
     mocks.resolveAccess.mockResolvedValue({
       access: undefined,
@@ -59,53 +59,41 @@ describe('POST /api/portal/[projectId]/discussions/[discussionId]/posts', () => 
     const response = await POST(request({ body: 'Hello' }), context)
 
     expect(response.status).toBe(404)
-    expect(mocks.createDiscussionPost).not.toHaveBeenCalled()
+    expect(mocks.createIssueComment).not.toHaveBeenCalled()
   })
 
-  it('rejects empty replies', async () => {
+  it('rejects empty comments', async () => {
     const response = await POST(request({ body: '' }), context)
 
     expect(response.status).toBe(422)
-    expect(mocks.createDiscussionPost).not.toHaveBeenCalled()
+    expect(mocks.createIssueComment).not.toHaveBeenCalled()
   })
 
   it('delegates the verified write to the portal client', async () => {
     const response = await POST(request({ body: 'Hello' }), context)
 
     expect(response.status).toBe(201)
-    expect(mocks.createDiscussionPost).toHaveBeenCalledWith(
+    expect(mocks.createIssueComment).toHaveBeenCalledWith(
       'org_1',
       'prj_1',
-      'dis_1',
+      'ALPHA-7',
       { body: 'Hello' }
     )
     const payload = await response.json()
-    expect(payload.data.object).toBe('portal.discussion-post')
+    expect(payload.data.object).toBe('portal.comment')
     expect(payload.data).not.toHaveProperty('tenantId')
   })
 
-  it('hides discussions outside the client grant', async () => {
-    mocks.createDiscussionPost.mockResolvedValue({
+  it('hides issues outside the client grant', async () => {
+    mocks.createIssueComment.mockResolvedValue({
       data: null,
-      error: { code: 'projects/discussion-not-found', message: 'Not found.' },
+      error: { code: 'projects/issue-not-found', message: 'Not found.' },
     })
 
     const response = await POST(request({ body: 'Hello' }), context)
 
     expect(response.status).toBe(404)
-  })
-
-  it('maps a locked discussion to 409', async () => {
-    mocks.createDiscussionPost.mockResolvedValue({
-      data: null,
-      error: {
-        code: 'projects/discussion-locked',
-        message: 'This discussion is locked.',
-      },
-    })
-
-    const response = await POST(request({ body: 'Hello' }), context)
-
-    expect(response.status).toBe(409)
+    const payload = await response.json()
+    expect(payload.error.message).toBe('Not found.')
   })
 })
