@@ -63,6 +63,24 @@ export type EmailSenderObject = {
   updatedAt: number
 }
 
+export type EmailTemplateObject = {
+  object: 'email_template'
+  id: string
+  organizationId: string | null
+  key: string
+  name: string
+  category: string
+  subject: string
+  html: string
+  text: string | null
+  senderId: string | null
+  isDefault: boolean
+  isSystem: boolean
+  isActive: boolean
+  createdAt: number
+  updatedAt: number
+}
+
 export type EmailRecipient = {
   email: string
   name?: string
@@ -101,6 +119,12 @@ export type EmailDeliveryObject = {
   updatedAt: number
 }
 
+const headerTextSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .refine((value) => !/[\r\n]/.test(value), 'Line breaks are not allowed.')
+
 const domainNameSchema = z
   .string()
   .trim()
@@ -118,7 +142,7 @@ export const createEmailDomainSchema = z.object({
 })
 
 export const createEmailSenderSchema = z.object({
-  name: z.string().trim().min(1).max(160),
+  name: headerTextSchema.max(160),
   email: z.email(),
   replyTo: z.email().nullable().optional(),
   domainId: z.string().trim().min(1).nullable().optional(),
@@ -131,17 +155,45 @@ export const updateEmailSenderSchema = createEmailSenderSchema
   .partial()
   .extend({ isActive: z.boolean().optional() })
 
+export const createEmailTemplateSchema = z.object({
+  key: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1)
+    .max(120)
+    .regex(/^[a-z0-9][a-z0-9.-]*$/),
+  name: z.string().trim().min(1).max(160),
+  category: z.string().trim().toLowerCase().min(1).max(120),
+  subject: headerTextSchema.max(998),
+  html: z.string().min(1),
+  text: z.string().nullable().optional(),
+  senderId: z.string().trim().min(1).nullable().optional(),
+  isDefault: z.boolean().optional().default(false),
+})
+
+export const updateEmailTemplateSchema = createEmailTemplateSchema.partial().extend({
+  isActive: z.boolean().optional(),
+})
+
+export const renderEmailTemplateSchema = z.object({
+  variables: z.record(
+    z.string(),
+    z.union([z.string(), z.number(), z.boolean()])
+  ),
+})
+
 export const emailRecipientSchema = z.object({
   email: z.email(),
-  name: z.string().trim().min(1).max(160).optional(),
+  name: headerTextSchema.max(160).optional(),
 })
 
 export const createEmailDeliverySchema = z.object({
   senderId: z.string().trim().min(1),
-  to: z.array(emailRecipientSchema).min(1),
+  to: z.array(emailRecipientSchema).min(1).max(50),
   cc: z.array(emailRecipientSchema).max(50).optional().default([]),
   bcc: z.array(emailRecipientSchema).max(50).optional().default([]),
-  subject: z.string().trim().min(1).max(998),
+  subject: headerTextSchema.max(998),
   html: z.string().min(1),
   text: z.string().optional(),
   resourceType: z.string().trim().min(1).max(80).optional(),
@@ -153,4 +205,7 @@ export const createEmailDeliverySchema = z.object({
 export type CreateEmailDomainInput = z.infer<typeof createEmailDomainSchema>
 export type CreateEmailSenderInput = z.infer<typeof createEmailSenderSchema>
 export type UpdateEmailSenderInput = z.infer<typeof updateEmailSenderSchema>
+export type CreateEmailTemplateInput = z.infer<typeof createEmailTemplateSchema>
+export type UpdateEmailTemplateInput = z.infer<typeof updateEmailTemplateSchema>
+export type RenderEmailTemplateInput = z.infer<typeof renderEmailTemplateSchema>
 export type CreateEmailDeliveryInput = z.infer<typeof createEmailDeliverySchema>
