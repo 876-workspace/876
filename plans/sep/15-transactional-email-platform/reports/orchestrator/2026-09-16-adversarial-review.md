@@ -170,3 +170,58 @@ custom domains therefore exhaust the plan at three organizations. That is a
 strong independent argument for the `managed` shared-domain default being the
 primary path rather than a convenience, and it means custom-domain
 authentication is gated on a paid plan.
+
+## The most serious defect: the built services could not start
+
+Found only by running `dist/`, after every typecheck and test suite was green.
+
+`@876/communications` was absent from both services' tsup `noExternal` lists, and
+workspace packages publish **raw TypeScript** through their `exports` maps. So the
+bundle kept a bare `import '@876/communications'`, Node resolved
+`packages/communications/src/contracts.ts` at runtime, and the process died on its
+extensionless relative import:
+
+```
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+  '/root/projects/876/packages/communications/src/types'
+  imported from .../packages/communications/src/contracts.ts
+```
+
+`apps/billing-api` had the same gap and would have failed to boot on its next
+deploy once the document-email code shipped.
+
+Two things make this worth recording:
+
+1. **No source-based check can see it.** Typecheck, lint, boundaries and every
+   unit test run from source, where the TypeScript resolves fine. Only executing
+   the build reveals it.
+2. **The repository already had a gate for exactly this** —
+   `scripts/check-service-bundle.mjs`, wired to `pnpm check:service-bundle`. Its
+   header documents PR #274 taking the deployed API down the same way, and it
+   discovers services automatically from the presence of a `tsup.config.ts`, so it
+   covered the new service from the moment it existed. GPT web's own plan listed
+   `pnpm check:service-bundle` among its verification commands. The gate did not
+   fail — it was simply never run, because nothing was ever run.
+
+That is the sharpest illustration of the whole review: the defects here were not
+subtle reasoning errors. They were the predictable consequence of writing 9,200
+lines of code without executing a single command, against a repository that
+already had a check for several of them.
+
+## Live end-to-end verification of the built service
+
+After the bundling fix, `dist/server.js` was run against the real Neon database:
+
+| Probe                                                    | Result                                                                                                             |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `GET /health`                                            | `{"status":"ok","service":"communications-api"}`                                                                   |
+| `GET /ready` (real query)                                | `{"status":"ready"}` — Neon connectivity confirmed                                                                 |
+| `GET /v1/does-not-exist` (no credentials)                | **404**, not 401 — per-route guard placement confirmed live                                                        |
+| `GET /v1/organizations/…/email/domains` (no credentials) | **401**                                                                                                            |
+| `GET …/email/templates` (authenticated)                  | all **5** system templates, including the 3 courier ones — proving the separate courier migration actually applied |
+| `POST …/email/senders/managed`                           | `acme-freight@mail.87six.dev`, `kind: managed`, `domainId: null`, reply-to lowercased                              |
+| same call again, with a different name and slug          | **same sender id and same address** — idempotent, and a rename does not rewrite snapshotted evidence               |
+| same slug, different organization                        | `acme-freight-05e8ac@mail.87six.dev` — two organizations can never share a from-address                            |
+| slug `postmaster`                                        | `org-fe0a70@mail.87six.dev` — a reserved mailbox cannot be impersonated                                            |
+
+Smoke-test rows were removed afterwards.
