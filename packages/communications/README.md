@@ -8,12 +8,20 @@ Typed client and wire contracts for the 876 Communications service.
 | --- | --- | --- |
 | `@876/communications` | base server client | supplied by caller |
 | `@876/communications/service` | first-party 876 app/backend | Communications internal service key |
+| `@876/communications/operator` | 876 itself, via Console | Communications internal service key |
 | `@876/communications/contracts` | types and Zod schemas only | none |
 
-There is intentionally no `session` entrypoint yet. The current Communications
-API exposes an internal first-party service boundary only; adding a differently
-named client without matching backend authorization would misrepresent caller
-authority.
+`operator` records caller intent so Console's imports state the authority they
+exercise. It does **not** currently carry a distinct credential class: the service
+exposes one internal-key tier, so `operator` and `service` build the same client,
+as `@876/storage`'s equivalents do. Do not describe them as separate key classes
+or separate routes until the backend enforces that.
+
+There is intentionally no `session` entrypoint. A signed-in user reaches
+Communications through its host app's own route handler, which authorizes the
+session and then calls `service` server-side — the host route is the session
+boundary (`app-api-routing.md`). Adding a `session` client without matching
+backend authorization would misrepresent caller authority.
 
 ## Usage
 

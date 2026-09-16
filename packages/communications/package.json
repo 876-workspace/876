@@ -18,6 +18,10 @@
     "./service": {
       "types": "./src/service.ts",
       "default": "./src/service.ts"
+    },
+    "./operator": {
+      "types": "./src/operator.ts",
+      "default": "./src/operator.ts"
     }
   },
   "scripts": {
