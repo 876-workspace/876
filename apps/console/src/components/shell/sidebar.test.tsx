@@ -226,6 +226,8 @@ describe('Sidebar', () => {
         'Calendar',
         'Time',
         'Templates',
+        'Layouts',
+        'Project Fields',
       ])
       expect(screen.queryByRole('link', { name: 'Storage' })).toBeNull()
     })

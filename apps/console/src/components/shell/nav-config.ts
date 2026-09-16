@@ -125,6 +125,20 @@ export const navConfig = defineNavigation([
             icon: 'templates',
             requires: { permission: 'projects/dashboard.view' },
           },
+          {
+            key: 'projects-layouts',
+            title: 'Layouts',
+            href: '/projects/layouts',
+            icon: 'layouts',
+            requires: { permission: 'projects/dashboard.view' },
+          },
+          {
+            key: 'projects-project-fields',
+            title: 'Project Fields',
+            href: '/projects/project-fields',
+            icon: 'forms',
+            requires: { permission: 'projects/dashboard.view' },
+          },
         ],
       },
       {

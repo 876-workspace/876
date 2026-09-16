@@ -25,6 +25,8 @@ describe('Projects platform navigation children', () => {
       '/projects/calendar',
       '/projects/time',
       '/projects/templates',
+      '/projects/layouts',
+      '/projects/project-fields',
     ])
   })
 

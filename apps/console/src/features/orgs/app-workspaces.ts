@@ -42,6 +42,7 @@ export type WorkspaceIconKey =
   | 'calendar'
   | 'time'
   | 'templates'
+  | 'layouts'
   | 'settings'
   | 'billing'
   | 'packages'
@@ -131,6 +132,8 @@ export const APP_WORKSPACES = [
       { label: 'Calendar', segment: 'calendar', iconKey: 'calendar' },
       { label: 'Time', segment: 'time', iconKey: 'time' },
       { label: 'Templates', segment: 'templates', iconKey: 'templates' },
+      { label: 'Layouts', segment: 'layouts', iconKey: 'layouts' },
+      { label: 'Project Fields', segment: 'project-fields', iconKey: 'forms' },
     ],
   },
   {

@@ -29,6 +29,21 @@ export const TEMPLATES_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
   { label: 'Updated', width: '130px' },
 ]
 
+export const LAYOUTS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
+  { label: 'Layout' },
+  { label: 'Entity', width: '130px' },
+  { label: 'Type', width: '150px' },
+  { label: 'Default', cell: 'badge', width: '110px' },
+  { label: 'Version', width: '90px' },
+]
+
+export const PROJECT_FIELDS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
+  { label: 'Field' },
+  { label: 'Key', width: '180px' },
+  { label: 'Type', width: '130px' },
+  { label: 'Required', cell: 'badge', width: '110px' },
+]
+
 export const CALENDAR_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
   { label: 'Date', width: '130px' },
   { label: 'Title' },
