@@ -1,0 +1,12 @@
+# Implementation Plan: 876 Projects Phase 16 — External Platform
+
+- **Run ID:** `2026-09-16-projects-phase-16` · **Branch:** `feature/projects-phase-16-platform` · **Status:** `PLANNED`
+
+## Binding decisions
+1. **Public API = integration tier** (`access-tiers.md`): `/v1/integration/*` route family, org-scoped OAuth/app credential with named scopes `projects:read`, `projects:write`, `time:read`, `time:write`, `webhooks:manage`. Implemented as routes over the **existing services** (no business logic copies). Published in OpenAPI generated from Zod; operation ids stable. `@876/projects/integration` entrypoint.
+2. **Webhooks**: `projects_webhook_endpoints` (tenant, url https-only, event types, secret sealed via `@876/core/crypto/secure-field`, enabled, failure count) + `projects_webhook_deliveries` (endpoint, event id, attempt, status, response code, next attempt). Events come from the phase-13 outbox (one event stream; no second producer). Signature identical to automation webhooks (share the signer). Retries: exponential, max 8, auto-disable after 20 consecutive failures. SSRF guard: reject private/loopback/link-local resolved addresses.
+3. **CSV import/export**: work items and time entries. Import is a two-step job (`projects_import_jobs`: upload parsed server-side → validation preview with per-row errors → commit in batches, idempotent per job). Export streams CSV with formula-injection guard (reuse phase-10 CSV serializer).
+4. **Importers** Jira (CSV export + REST JSON), Trello (board JSON), Asana (CSV), Zoho Projects (CSV): each a pure **mapper** to one normalized `ImportBundle` consumed by the same import job pipeline. No per-source write path. Unmapped fields go to a report, never dropped silently.
+5. **MCP**: extend the existing Projects MCP server (`plans/sep/07-projects-mcp-modernization`) with read tools for phases, cycles, time, reports, templates, custom module records, and **approved write** tools (create/update work item, log time, add comment) that require `projects:write` scope; no delete tools.
+6. **Observability**: structured pino events for automation runs, webhook deliveries, import jobs; `GET /internal/metrics/summary` (internal key) returning counts/failure rates per subsystem for a Console dashboard page; Sentry breadcrumbs without payload bodies.
+7. Console: webhook endpoints + delivery log (read-only + replay requiring `requireConsolePermission` and audit), import jobs, integration clients, metrics dashboard.
