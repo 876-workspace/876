@@ -79,6 +79,8 @@ const envSchema = z.object({
   OAUTH_JWKS_URL: str(),
   SENTRY_DSN: str(),
   BILLING_API_URL: str(),
+  COMMUNICATIONS_API_URL: str(),
+  COMMUNICATIONS_INTERNAL_KEY: str(),
   CORS_ALLOWED_ORIGINS: z
     .string()
     .optional()
@@ -123,6 +125,8 @@ function build(env: NodeJS.ProcessEnv) {
     },
     sentryDsn: e.SENTRY_DSN,
     billingApiUrl: e.BILLING_API_URL,
+    communicationsApiUrl: e.COMMUNICATIONS_API_URL,
+    communicationsInternalKey: e.COMMUNICATIONS_INTERNAL_KEY,
     corsOrigins: e.CORS_ALLOWED_ORIGINS.split(',')
       .map((o) => o.trim())
       .filter(Boolean),
