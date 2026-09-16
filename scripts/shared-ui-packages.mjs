@@ -21,6 +21,7 @@ export const SHARED_UI_PACKAGES = [
   '@876/access-ui',
   '@876/billing-ui',
   '@876/projects-ui',
+  '@876/communications-ui',
 ]
 
 /**
