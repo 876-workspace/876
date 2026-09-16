@@ -23,6 +23,25 @@ export async function retrieveByEmail(organizationId: string, email: string) {
   })
 }
 
+/**
+ * Platform-wide lookup, deliberately not organization-scoped. Two organizations
+ * must never share a from-address on the shared platform sending domain, so
+ * claiming a `managed` address requires knowing whether any other organization
+ * already holds it. See .agents/rules/email.md.
+ */
+export async function findOwnerOfEmail(email: string) {
+  return prisma.emailSender.findFirst({
+    where: { email: { equals: email, mode: 'insensitive' }, deletedAt: null },
+    select: { id: true, organizationId: true },
+  })
+}
+
+export async function retrieveManaged(organizationId: string) {
+  return prisma.emailSender.findFirst({
+    where: { organizationId, kind: 'managed', deletedAt: null },
+  })
+}
+
 export async function countActive(organizationId: string) {
   return prisma.emailSender.count({
     where: { organizationId, isActive: true, deletedAt: null },

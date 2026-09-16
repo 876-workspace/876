@@ -5,8 +5,10 @@ import {
   deletedEmailSenderSchema,
   emailSenderListSchema,
   emailSenderSchema,
+  ensureManagedSenderSchema,
   updateEmailSenderSchema,
   type CreateEmailSenderInput,
+  type EnsureManagedSenderInput,
   type RequestOptions,
   type UpdateEmailSenderInput,
 } from '../types'
@@ -39,6 +41,28 @@ export function createSendersResource(runtime: Runtime) {
         {
           method: 'POST',
           path: root(organizationId),
+          body: parsed,
+          signal: options.signal,
+        },
+        emailSenderSchema
+      )
+    },
+    /**
+     * Provision the organization's free `managed` sender, or return the existing
+     * one unchanged. Idempotent, and the from-address is derived server-side —
+     * the caller cannot choose it.
+     */
+    ensureManaged(
+      organizationId: string,
+      input: EnsureManagedSenderInput,
+      options: RequestOptions = {}
+    ) {
+      const parsed = ensureManagedSenderSchema.parse(input)
+      return request(
+        runtime,
+        {
+          method: 'POST',
+          path: `${root(organizationId)}/managed`,
           body: parsed,
           signal: options.signal,
         },
@@ -89,7 +113,9 @@ export function createSendersResource(runtime: Runtime) {
           method: 'DELETE',
           path: `${root(organizationId)}/${encodeURIComponent(senderId)}`,
           signal: options.signal,
-          headers: options.actorId ? { 'x-actor-id': options.actorId } : undefined,
+          headers: options.actorId
+            ? { 'x-actor-id': options.actorId }
+            : undefined,
         },
         deletedEmailSenderSchema
       )

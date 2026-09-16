@@ -9,14 +9,20 @@ import {
 import {
   emailSenderKindSchema,
   type CreateEmailSenderInput,
-  type EmailSenderObject,
+  type EnsureManagedSenderInput,
+  type EmailSender,
   type UpdateEmailSenderInput,
 } from '../../types/communications.js'
+import {
+  managedLocalPartCandidates,
+  managedSenderAddress,
+} from './senders.managed.js'
 import * as repository from './senders.repository.js'
+import { getSettings } from '../../config/index.js'
 
 type SenderRow = NonNullable<Awaited<ReturnType<typeof repository.retrieve>>>
 
-function toObject(row: SenderRow): EmailSenderObject {
+function toObject(row: SenderRow): EmailSender {
   return {
     object: 'email_sender',
     id: row.id,
@@ -54,7 +60,7 @@ async function validateCustomDomain(
 
 export async function listSenders(
   organizationId: string
-): Promise<ServiceResult<EmailSenderObject[]>> {
+): Promise<ServiceResult<EmailSender[]>> {
   const rows = await repository.list(organizationId)
   return ok(rows.map(toObject))
 }
@@ -62,16 +68,81 @@ export async function listSenders(
 export async function retrieveSender(
   organizationId: string,
   id: string
-): Promise<ServiceResult<EmailSenderObject>> {
+): Promise<ServiceResult<EmailSender>> {
   const row = await repository.retrieve(organizationId, id)
   if (!row) return err('communications/sender-not-found')
+  return ok(toObject(row))
+}
+
+/**
+ * Provision the organization's free, zero-setup sending identity.
+ *
+ * Every organization gets one so that sending works on day one with no DNS work
+ * — the same default Zoho applies. It is backed by the single platform-verified
+ * domain, so this costs no DNS write and no provider call.
+ *
+ * Idempotent: an organization that already has a `managed` sender gets it back
+ * unchanged, because the address is durable evidence on every delivery already
+ * sent from it.
+ *
+ * The address is server-derived from the organization's durable slug. The caller
+ * supplies the organization's identity because Communications references
+ * organizations by opaque id and does not read the identity store.
+ */
+export async function ensureManagedSender(
+  organizationId: string,
+  input: EnsureManagedSenderInput
+): Promise<ServiceResult<EmailSender>> {
+  const existing = await repository.retrieveManaged(organizationId)
+  if (existing) return ok(toObject(existing))
+
+  const platformSendingDomain = getSettings().platformSendingDomain
+  if (!platformSendingDomain) return err('communications/invalid-request')
+
+  const candidates = managedLocalPartCandidates({
+    organizationId,
+    organizationSlug: input.organizationSlug,
+  })
+
+  let email: string | null = null
+  for (const candidate of candidates) {
+    const address = managedSenderAddress(candidate, platformSendingDomain)
+    const owner = await repository.findOwnerOfEmail(address)
+    if (!owner) {
+      email = address
+      break
+    }
+    // Another organization already sends from this address. Fall through to the
+    // next deterministic candidate rather than ever reusing it.
+    if (owner.organizationId === organizationId) {
+      email = address
+      break
+    }
+  }
+
+  if (!email) return err('communications/sender-already-exists')
+
+  const activeCount = await repository.countActive(organizationId)
+  const now = toDbUnixSeconds(nowUnixSeconds())
+  const row = await repository.create({
+    id: generateId('sender'),
+    organizationId,
+    domainId: null,
+    name: input.organizationName.trim(),
+    email,
+    replyTo: input.replyTo?.trim().toLowerCase() ?? null,
+    kind: 'managed',
+    isDefault: activeCount === 0,
+    now,
+  })
+
   return ok(toObject(row))
 }
 
 export async function createSender(
   organizationId: string,
   input: CreateEmailSenderInput
-): Promise<ServiceResult<EmailSenderObject>> {
+): Promise<ServiceResult<EmailSender>> {
   if (input.kind !== 'custom-domain')
     return err('communications/invalid-request')
 
@@ -108,7 +179,7 @@ export async function updateSender(
   organizationId: string,
   id: string,
   input: UpdateEmailSenderInput
-): Promise<ServiceResult<EmailSenderObject>> {
+): Promise<ServiceResult<EmailSender>> {
   const current = await repository.retrieve(organizationId, id)
   if (!current) return err('communications/sender-not-found')
 

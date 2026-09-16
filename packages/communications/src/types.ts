@@ -237,6 +237,21 @@ export const createEmailSenderSchema = z.object({
 })
 export type CreateEmailSenderInput = z.infer<typeof createEmailSenderSchema>
 
+/**
+ * Input for provisioning an organization's free `managed` sender.
+ *
+ * Note what is absent: there is no `email`, no `localPart`, and no `domainId`.
+ * The address is derived server-side from the organization's durable slug, so a
+ * caller cannot choose or spoof an address on the shared platform sending
+ * domain. See the email rule's sending-identity section.
+ */
+export const ensureManagedSenderSchema = z.object({
+  organizationName: headerTextSchema.max(160),
+  organizationSlug: z.string().trim().min(1).max(120),
+  replyTo: z.string().email().nullable().optional(),
+})
+export type EnsureManagedSenderInput = z.infer<typeof ensureManagedSenderSchema>
+
 export const updateEmailSenderSchema = createEmailSenderSchema
   .omit({ kind: true })
   .partial()
