@@ -3,6 +3,7 @@ import type { Request, Response } from 'express'
 import { sendProjectsList, sendProjectsResult } from '../../http/result.js'
 import {
   commentParamsSchema,
+  commentVisibilityBodySchema,
   createCommentBodySchema,
   issueParamsSchema,
   listCommentsQuerySchema,
@@ -68,4 +69,18 @@ export async function remove(req: Request, res: Response) {
     params.commentId
   )
   return sendProjectsResult(res, result)
+}
+
+export async function setVisibility(req: Request, res: Response) {
+  const params = commentParamsSchema.parse(req.params)
+  const body = commentVisibilityBodySchema.parse(req.body)
+  return sendProjectsResult(
+    res,
+    await service.setCommentVisibility(
+      params.organizationId,
+      params.issueRef,
+      params.commentId,
+      body.clientVisible
+    )
+  )
 }

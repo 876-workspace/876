@@ -26,6 +26,10 @@
     "./layout-rules": {
       "types": "./src/layout-rules.ts",
       "default": "./src/layout-rules.ts"
+    },
+    "./portal": {
+      "types": "./src/portal.ts",
+      "default": "./src/portal.ts"
     }
   },
   "scripts": {

@@ -214,3 +214,11 @@ export type UpdateMilestoneBody = z.infer<typeof updateMilestoneBodySchema>
 export type CreateCustomFieldBody = z.infer<typeof createCustomFieldBodySchema>
 export type UpdateCustomFieldBody = z.infer<typeof updateCustomFieldBodySchema>
 export type CustomFieldValueInput = z.infer<typeof customFieldValueInputSchema>
+
+export const milestoneVisibilityBodySchema = z.strictObject({
+  clientVisible: z.boolean(),
+})
+
+export type MilestoneVisibilityBody = z.infer<
+  typeof milestoneVisibilityBodySchema
+>

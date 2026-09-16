@@ -34,6 +34,10 @@ model Project {
   rates Rate[]
   sourcedTemplates ProjectTemplate[] @relation("TemplateSourceProject")
   templateInstantiations ProjectTemplateInstantiation[] @relation("TemplateInstantiationProject")
+  discussions Discussion[]
+  wikiPages WikiPage[]
+  clientGrants ClientGrant[]
+  attachmentLinks AttachmentLink[]
 
   @@unique([tenantId, key])
   @@unique([tenantId, slug])

@@ -7,6 +7,7 @@ import {
   createMilestoneWithActorBodySchema,
   milestoneCommentBodySchema,
   milestoneCommentDeleteQuerySchema,
+  milestoneCommentVisibilityBodySchema,
   milestoneCommentParamsSchema,
   milestoneCommentUpdateBodySchema,
   milestoneDetailParamsSchema,
@@ -177,5 +178,22 @@ export async function cloneMilestone(req: Request, res: Response) {
       cloneMilestoneBodySchema.parse(req.body)
     ),
     201
+  )
+}
+
+export async function setCommentVisibility(req: Request, res: Response) {
+  const { organizationId, id, commentId } =
+    milestoneCommentParamsSchema.parse(req.params)
+  const { clientVisible } = milestoneCommentVisibilityBodySchema.parse(
+    req.body
+  )
+  return sendProjectsResult(
+    res,
+    await service.setMilestoneCommentVisibility(
+      organizationId,
+      id,
+      commentId,
+      clientVisible
+    )
   )
 }

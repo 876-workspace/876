@@ -27,6 +27,7 @@ import type {
   UpdateMilestoneWithActorBody,
 } from './milestone-details.schemas.js'
 import * as automation from '../automation/index.js'
+import * as collaboration from '../collaboration/index.js'
 import * as layouts from '../layouts/index.js'
 import * as core from './work-structure.service.js'
 import * as structureRepository from './work-structure.repository.js'
@@ -125,6 +126,36 @@ export async function createMilestone(
     null,
     milestone.key
   )
+
+  const createdMentioned = milestone.description
+    ? collaboration.mentionedUserIds(milestone.description, actorUserId ?? null)
+    : []
+  await collaboration.ensureFollowsForTenant(milestone.tenantId, [
+    ...(actorUserId
+      ? [{ subjectType: 'phase', subjectId: milestone.id, userId: actorUserId }]
+      : []),
+    ...(milestone.ownerUserId
+      ? [
+          {
+            subjectType: 'phase',
+            subjectId: milestone.id,
+            userId: milestone.ownerUserId,
+          },
+        ]
+      : []),
+    ...createdMentioned.map((userId) => ({
+      subjectType: 'phase' as const,
+      subjectId: milestone.id,
+      userId,
+    })),
+  ])
+  await collaboration.notifyMentionedUsers({
+    tenantId: milestone.tenantId,
+    userIds: createdMentioned,
+    subjectType: 'phase',
+    subjectId: milestone.id,
+    title: `You were mentioned in ${milestone.name}`,
+  })
   return { data: milestone, error: null }
 }
 
@@ -203,6 +234,37 @@ export async function updateMilestone(
     statusChanged ? before.milestone.status : null,
     statusChanged ? updated.data.status : null
   )
+
+  const ownerChanged =
+    input.ownerUserId !== undefined &&
+    input.ownerUserId !== before.milestone.ownerUserId;
+  const updatedMentioned =
+    input.description !== undefined && input.description !== null
+      ? collaboration.mentionedUserIds(input.description, actorUserId ?? null)
+      : [];
+  await collaboration.ensureFollowsForTenant(updated.data.tenantId, [
+    ...(ownerChanged && input.ownerUserId
+      ? [
+          {
+            subjectType: 'phase',
+            subjectId: updated.data.id,
+            userId: input.ownerUserId,
+          },
+        ]
+      : []),
+    ...updatedMentioned.map((userId) => ({
+      subjectType: 'phase' as const,
+      subjectId: updated.data.id,
+      userId,
+    })),
+  ])
+  await collaboration.notifyMentionedUsers({
+    tenantId: updated.data.tenantId,
+    userIds: updatedMentioned,
+    subjectType: 'phase',
+    subjectId: updated.data.id,
+    title: `You were mentioned in ${updated.data.name}`,
+  })
   return updated
 }
 
@@ -266,6 +328,25 @@ export async function createComment(
     body.authorUserId,
     'comment-added'
   )
+  const commentMentioned = collaboration.mentionedUserIds(
+    body.body,
+    body.authorUserId
+  )
+  await collaboration.ensureFollowsForTenant(resolved.milestone.tenantId, [
+    { subjectType: 'phase', subjectId: id, userId: body.authorUserId },
+    ...commentMentioned.map((userId) => ({
+      subjectType: 'phase' as const,
+      subjectId: id,
+      userId,
+    })),
+  ])
+  await collaboration.notifyMentionedUsers({
+    tenantId: resolved.milestone.tenantId,
+    userIds: commentMentioned,
+    subjectType: 'phase',
+    subjectId: id,
+    title: `You were mentioned in ${resolved.milestone.name}`,
+  })
   return { data: serializeMilestoneComment(row as MilestoneCommentRow), error: null }
 }
 
@@ -542,4 +623,56 @@ export async function cloneMilestone(
     if (copied.error) return { data: null, error: copied.error }
   }
   return created
+}
+
+export async function listVisibleMilestoneComments(
+  organizationId: string,
+  id: string
+) {
+  const resolved = await resolveMilestone(organizationId, id)
+  if (resolved.error || !resolved.milestone)
+    return { data: null, error: resolved.error ?? getError('projects/milestone-not-found') }
+  const rows = await details.listMilestoneComments(
+    resolved.milestone.tenantId,
+    id
+  )
+  return {
+    data: (rows as MilestoneCommentRow[]).filter(
+      (row) => row.clientVisible
+    ),
+    error: null,
+  }
+}
+
+export async function setMilestoneCommentVisibility(
+  organizationId: string,
+  id: string,
+  commentId: string,
+  clientVisible: boolean
+): Promise<
+  ServiceResult<{ object: string; id: string; clientVisible: boolean }>
+> {
+  const resolved = await resolveMilestone(organizationId, id)
+  if (resolved.error || !resolved.milestone)
+    return { data: null, error: resolved.error ?? getError('projects/milestone-not-found') }
+  const existing = await details.retrieveMilestoneComment(
+    resolved.milestone.tenantId,
+    id,
+    commentId
+  )
+  if (!existing)
+    return { data: null, error: getError('projects/comment-not-found') }
+  const updated = await details.setMilestoneCommentVisibility(
+    existing.id,
+    clientVisible,
+    now()
+  )
+  return {
+    data: {
+      object: 'projects.milestone-comment',
+      id: (updated as MilestoneCommentRow).id,
+      clientVisible: (updated as MilestoneCommentRow).clientVisible,
+    },
+    error: null,
+  }
 }

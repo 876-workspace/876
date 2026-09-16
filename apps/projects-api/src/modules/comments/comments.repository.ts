@@ -89,3 +89,15 @@ export async function hardDelete(id: string): Promise<void> {
     where: { id },
   })
 }
+
+export async function setCommentVisibility(
+  id: string,
+  clientVisible: boolean,
+  updatedAt: bigint
+): Promise<CommentRow> {
+  const row = await prisma.comment.update({
+    where: { id },
+    data: { clientVisible, updatedAt },
+  })
+  return row as CommentRow
+}

@@ -472,3 +472,30 @@ export async function transaction<T>(
     return callback(txRepo)
   })
 }
+
+export async function setIssueVisibility(
+  id: string,
+  clientVisible: boolean,
+  updatedAt: bigint
+): Promise<IssueRow> {
+  const row = await prisma.issue.update({
+    where: { id },
+    data: { clientVisible, updatedAt },
+  })
+  return row as IssueRow
+}
+
+export async function listVisibleIssues(
+  tenantId: string,
+  projectId: string,
+  options: { limit: number; startingAfter?: string }
+): Promise<IssueRow[]> {
+  const rows = await prisma.issue.findMany({
+    where: { tenantId, projectId, clientVisible: true, deletedAt: null },
+    cursor: options.startingAfter ? { id: options.startingAfter } : undefined,
+    skip: options.startingAfter ? 1 : 0,
+    take: options.limit + 1,
+    orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+  })
+  return rows as IssueRow[]
+}

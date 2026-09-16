@@ -37,6 +37,7 @@ import {
   type CustomFieldValueRow,
   type SerializedCustomField,
   type SerializedCustomFieldValue,
+  type MilestoneRow,
   type SerializedMilestone,
   type SerializedWorkItemType,
   type SerializedWorkflowState,
@@ -919,4 +920,67 @@ export async function applyPreset(
   if (result.error) return result
   await tenants.setPresetKey(resolved.tenant.id, key)
   return { data: null, error: null }
+}
+
+export async function listVisibleMilestones(
+  organizationId: string,
+  projectIdOrKey: string,
+  query: { limit?: number; starting_after?: string }
+): Promise<ServiceResult<MilestoneRow[]>> {
+  const resolved = await resolveTenant(organizationId)
+  if (resolved.error) return { data: null, error: resolved.error }
+  const project = await resolveProject(resolved.tenant.id, projectIdOrKey)
+  if (project.error) return { data: null, error: project.error }
+
+  const limit = Math.min(Math.max(query.limit ?? 25, 1), 100)
+  const rows = await repository.listVisibleMilestones(
+    resolved.tenant.id,
+    project.project.id,
+    { limit, startingAfter: query.starting_after }
+  )
+  return { data: rows as MilestoneRow[], error: null }
+}
+
+export async function retrieveVisibleMilestone(
+  organizationId: string,
+  projectId: string,
+  id: string
+): Promise<ServiceResult<MilestoneRow>> {
+  const resolved = await resolveTenant(organizationId)
+  if (resolved.error) return { data: null, error: resolved.error }
+  const row = await repository.retrieveMilestone(resolved.tenant.id, id)
+  if (
+    !row ||
+    row.projectId !== projectId ||
+    !(row as MilestoneRow).clientVisible
+  )
+    return { data: null, error: getError('projects/milestone-not-found') }
+  return { data: row as MilestoneRow, error: null }
+}
+
+export async function setMilestoneVisibility(
+  organizationId: string,
+  id: string,
+  clientVisible: boolean
+): Promise<
+  ServiceResult<{ object: string; id: string; clientVisible: boolean }>
+> {
+  const resolved = await resolveTenant(organizationId)
+  if (resolved.error) return { data: null, error: resolved.error }
+  const existing = await repository.retrieveMilestone(resolved.tenant.id, id)
+  if (!existing)
+    return { data: null, error: getError('projects/milestone-not-found') }
+  const updated = await repository.setMilestoneVisibility(
+    existing.id,
+    clientVisible,
+    now()
+  )
+  return {
+    data: {
+      object: 'projects.milestone',
+      id: updated.id,
+      clientVisible: (updated as MilestoneRow).clientVisible,
+    },
+    error: null,
+  }
 }

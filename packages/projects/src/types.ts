@@ -2354,3 +2354,462 @@ export interface CloneProjectInput {
   key?: string
   startDate?: number | null
 }
+
+export const followerSchema = z.object({
+  object: z.literal('projects.follower'),
+  id: z.string(),
+  tenantId: z.string(),
+  subjectType: z.string(),
+  subjectId: z.string(),
+  userId: z.string(),
+  createdAt: z.number(),
+})
+export type Follower = z.infer<typeof followerSchema>
+export const followerListSchema = createListSchema(followerSchema)
+export type FollowerList = z.infer<typeof followerListSchema>
+
+export const activityItemSchema = z.object({
+  object: z.literal('projects.activity-item'),
+  id: z.string(),
+  kind: z.string(),
+  subjectType: z.string(),
+  subjectId: z.string(),
+  actorUserId: z.string().nullable(),
+  type: z.string(),
+  fromValue: z.string().nullable(),
+  toValue: z.string().nullable(),
+  createdAt: z.number(),
+})
+export type ActivityItem = z.infer<typeof activityItemSchema>
+
+export const activityFeedSchema = z.object({
+  object: z.literal('projects.activity-feed'),
+  items: z.array(activityItemSchema),
+  nextCursor: z.string().nullable(),
+  hasMore: z.boolean(),
+})
+export type ActivityFeed = z.infer<typeof activityFeedSchema>
+
+export const discussionSchema = z.object({
+  object: z.literal('projects.discussion'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  title: z.string(),
+  body: z.string(),
+  pinned: z.boolean(),
+  locked: z.boolean(),
+  clientVisible: z.boolean(),
+  authorUserId: z.string().nullable(),
+  postCount: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type Discussion = z.infer<typeof discussionSchema>
+export const discussionListSchema = createListSchema(discussionSchema)
+export type DiscussionList = z.infer<typeof discussionListSchema>
+
+export const discussionPostSchema = z.object({
+  object: z.literal('projects.discussion-post'),
+  id: z.string(),
+  tenantId: z.string(),
+  discussionId: z.string(),
+  authorUserId: z.string().nullable(),
+  body: z.string(),
+  editCount: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type DiscussionPost = z.infer<typeof discussionPostSchema>
+export const discussionPostListSchema = createListSchema(discussionPostSchema)
+export type DiscussionPostList = z.infer<typeof discussionPostListSchema>
+
+export const wikiPageSchema = z.object({
+  object: z.literal('projects.wiki-page'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  slug: z.string(),
+  title: z.string(),
+  body: z.string(),
+  parentPageId: z.string().nullable(),
+  revisionCount: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type WikiPage = z.infer<typeof wikiPageSchema>
+export const wikiPageListSchema = createListSchema(wikiPageSchema)
+export type WikiPageList = z.infer<typeof wikiPageListSchema>
+
+export const wikiRevisionSchema = z.object({
+  object: z.literal('projects.wiki-revision'),
+  id: z.string(),
+  pageId: z.string(),
+  title: z.string(),
+  body: z.string(),
+  authorUserId: z.string().nullable(),
+  createdAt: z.number(),
+})
+export type WikiRevision = z.infer<typeof wikiRevisionSchema>
+export const wikiRevisionListSchema = createListSchema(wikiRevisionSchema)
+export type WikiRevisionList = z.infer<typeof wikiRevisionListSchema>
+
+export const clientGrantSchema = z.object({
+  object: z.literal('projects.client-grant'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  userId: z.string(),
+  allowComments: z.boolean(),
+  allowDiscussions: z.boolean(),
+  allowFiles: z.boolean(),
+  allowTime: z.boolean(),
+  allowInvoices: z.boolean(),
+  allowWiki: z.boolean(),
+  invitedBy: z.string().nullable(),
+  revokedAt: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type ClientGrant = z.infer<typeof clientGrantSchema>
+export const clientGrantListSchema = createListSchema(clientGrantSchema)
+export type ClientGrantList = z.infer<typeof clientGrantListSchema>
+
+export const attachmentLinkSchema = z.object({
+  object: z.literal('projects.attachment-link'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  issueId: z.string().nullable(),
+  milestoneId: z.string().nullable(),
+  url: z.string(),
+  name: z.string().nullable(),
+  clientVisible: z.boolean(),
+  createdBy: z.string().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type AttachmentLink = z.infer<typeof attachmentLinkSchema>
+export const attachmentLinkListSchema = createListSchema(attachmentLinkSchema)
+export type AttachmentLinkList = z.infer<typeof attachmentLinkListSchema>
+
+export const visibilityResultSchema = z.object({
+  object: z.string(),
+  id: z.string(),
+  clientVisible: z.boolean(),
+})
+export type VisibilityResult = z.infer<typeof visibilityResultSchema>
+
+export interface FollowInput {
+  subjectType: 'project' | 'phase' | 'work-item'
+  subjectId: string
+  userId: string
+}
+
+export interface ListFollowersQuery {
+  subjectType: 'project' | 'phase' | 'work-item'
+  subjectId: string
+  limit?: number
+  startingAfter?: string
+}
+
+export interface UnfollowInput {
+  subjectType: 'project' | 'phase' | 'work-item'
+  subjectId: string
+  userId: string
+}
+
+export interface ListDiscussionsQuery {
+  limit?: number
+  startingAfter?: string
+}
+
+export interface CreateDiscussionInput {
+  title: string
+  body: string
+  authorUserId?: string
+  pinned?: boolean
+}
+
+export interface UpdateDiscussionInput {
+  title?: string
+  body?: string
+  pinned?: boolean
+  locked?: boolean
+}
+
+export interface CreateDiscussionPostInput {
+  body: string
+  authorUserId?: string
+}
+
+export interface UpdateDiscussionPostInput {
+  body: string
+  authorUserId: string
+}
+
+export interface ListWikiPagesQuery {
+  limit?: number
+  startingAfter?: string
+  parentPageId?: string | null
+}
+
+export interface CreateWikiPageInput {
+  title: string
+  body: string
+  slug?: string
+  parentPageId?: string | null
+  authorUserId?: string
+}
+
+export interface UpdateWikiPageInput {
+  title?: string
+  body?: string
+  parentPageId?: string | null
+  authorUserId?: string
+}
+
+export interface RestoreWikiRevisionInput {
+  revisionId: string
+  authorUserId?: string
+}
+
+export interface InviteClientGrantInput {
+  userId: string
+  invitedBy?: string
+  allowComments?: boolean
+  allowDiscussions?: boolean
+  allowFiles?: boolean
+  allowTime?: boolean
+  allowInvoices?: boolean
+  allowWiki?: boolean
+}
+
+export interface UpdateClientGrantInput {
+  allowComments?: boolean
+  allowDiscussions?: boolean
+  allowFiles?: boolean
+  allowTime?: boolean
+  allowInvoices?: boolean
+  allowWiki?: boolean
+}
+
+export interface CreateAttachmentLinkInput {
+  url: string
+  name?: string
+  issueId?: string | null
+  milestoneId?: string | null
+  createdBy?: string
+}
+
+export interface UpdateAttachmentLinkInput {
+  url?: string
+  name?: string | null
+}
+
+export const portalIssueSchema = z.object({
+  object: z.literal('portal.issue'),
+  id: z.string(),
+  projectId: z.string(),
+  identifier: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  status: z.string(),
+  priority: z.string(),
+  milestoneId: z.string().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type PortalIssue = z.infer<typeof portalIssueSchema>
+export const portalIssueListSchema = createListSchema(portalIssueSchema)
+export type PortalIssueList = z.infer<typeof portalIssueListSchema>
+
+export const portalMilestoneSchema = z.object({
+  object: z.literal('portal.milestone'),
+  id: z.string(),
+  projectId: z.string(),
+  key: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  status: z.string(),
+  startDate: z.number().nullable(),
+  targetDate: z.number().nullable(),
+  completedAt: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type PortalMilestone = z.infer<typeof portalMilestoneSchema>
+export const portalMilestoneListSchema = createListSchema(portalMilestoneSchema)
+export type PortalMilestoneList = z.infer<typeof portalMilestoneListSchema>
+
+export const portalCommentSchema = z.object({
+  object: z.literal('portal.comment'),
+  id: z.string(),
+  issueId: z.string(),
+  authorUserId: z.string().nullable(),
+  body: z.string(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type PortalComment = z.infer<typeof portalCommentSchema>
+export const portalCommentListSchema = createListSchema(portalCommentSchema)
+export type PortalCommentList = z.infer<typeof portalCommentListSchema>
+
+export const portalMilestoneCommentSchema = z.object({
+  object: z.literal('portal.milestone-comment'),
+  id: z.string(),
+  milestoneId: z.string(),
+  authorUserId: z.string().nullable(),
+  body: z.string(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type PortalMilestoneComment = z.infer<typeof portalMilestoneCommentSchema>
+export const portalMilestoneCommentListSchema = createListSchema(
+  portalMilestoneCommentSchema
+)
+export type PortalMilestoneCommentList = z.infer<
+  typeof portalMilestoneCommentListSchema
+>
+
+export const portalDiscussionSchema = z.object({
+  object: z.literal('portal.discussion'),
+  id: z.string(),
+  projectId: z.string(),
+  title: z.string(),
+  body: z.string(),
+  pinned: z.boolean(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type PortalDiscussion = z.infer<typeof portalDiscussionSchema>
+export const portalDiscussionListSchema = createListSchema(portalDiscussionSchema)
+export type PortalDiscussionList = z.infer<typeof portalDiscussionListSchema>
+
+export const portalDiscussionDetailSchema = z.object({
+  discussion: portalDiscussionSchema,
+  posts: z.array(
+    z.object({
+      object: z.literal('portal.discussion-post'),
+      id: z.string(),
+      discussionId: z.string(),
+      authorUserId: z.string().nullable(),
+      body: z.string(),
+      createdAt: z.number(),
+      updatedAt: z.number(),
+    })
+  ),
+})
+export type PortalDiscussionDetail = z.infer<typeof portalDiscussionDetailSchema>
+
+export const portalWikiPageSchema = z.object({
+  object: z.literal('portal.wiki-page'),
+  id: z.string(),
+  projectId: z.string(),
+  slug: z.string(),
+  title: z.string(),
+  body: z.string(),
+  parentPageId: z.string().nullable(),
+  updatedAt: z.number(),
+})
+export type PortalWikiPage = z.infer<typeof portalWikiPageSchema>
+export const portalWikiPageListSchema = createListSchema(portalWikiPageSchema)
+export type PortalWikiPageList = z.infer<typeof portalWikiPageListSchema>
+
+export const portalAttachmentSchema = z.object({
+  object: z.literal('portal.attachment'),
+  id: z.string(),
+  issueId: z.string().nullable(),
+  milestoneId: z.string().nullable(),
+  url: z.string(),
+  name: z.string().nullable(),
+  createdAt: z.number(),
+})
+export type PortalAttachment = z.infer<typeof portalAttachmentSchema>
+export const portalAttachmentListSchema = createListSchema(portalAttachmentSchema)
+export type PortalAttachmentList = z.infer<typeof portalAttachmentListSchema>
+
+export const portalActivityItemSchema = z.object({
+  object: z.literal('portal.activity-item'),
+  id: z.string(),
+  kind: z.string(),
+  subjectType: z.string(),
+  subjectId: z.string(),
+  type: z.string(),
+  createdAt: z.number(),
+})
+export type PortalActivityItem = z.infer<typeof portalActivityItemSchema>
+
+export const portalActivityFeedSchema = z.object({
+  items: z.array(portalActivityItemSchema),
+  nextCursor: z.string().nullable(),
+  hasMore: z.boolean(),
+})
+export type PortalActivityFeed = z.infer<typeof portalActivityFeedSchema>
+
+export const portalPhaseHoursSchema = z.object({
+  object: z.literal('portal.phase-hours'),
+  milestoneId: z.string().nullable(),
+  milestoneName: z.string().nullable(),
+  hours: z.number(),
+})
+export type PortalPhaseHours = z.infer<typeof portalPhaseHoursSchema>
+
+export const portalInvoiceSchema = z.object({
+  object: z.literal('portal.invoice'),
+  invoiceId: z.string(),
+  status: z.string(),
+  billedHours: z.number(),
+  entryCount: z.number(),
+})
+export type PortalInvoice = z.infer<typeof portalInvoiceSchema>
+
+export const portalCommentArraySchema = z.array(portalCommentSchema)
+export type PortalCommentArray = z.infer<typeof portalCommentArraySchema>
+
+export const portalMilestoneCommentArraySchema = z.array(
+  portalMilestoneCommentSchema
+)
+export type PortalMilestoneCommentArray = z.infer<
+  typeof portalMilestoneCommentArraySchema
+>
+
+export const portalPhaseHoursArraySchema = z.array(portalPhaseHoursSchema)
+export type PortalPhaseHoursArray = z.infer<typeof portalPhaseHoursArraySchema>
+
+export const portalInvoiceArraySchema = z.array(portalInvoiceSchema)
+export type PortalInvoiceArray = z.infer<typeof portalInvoiceArraySchema>
+
+export interface PortalClientOptions {
+  baseUrl?: string
+  internalKey?: string
+  actingUserId: string
+  fetch?: typeof fetch
+  requestId?: string
+}
+
+export const unfollowResultSchema = z.object({
+  unfollowed: z.boolean(),
+})
+export type UnfollowResult = z.infer<typeof unfollowResultSchema>
+
+export interface ListActivityQuery {
+  limit?: number
+  cursor?: string
+}
+
+export interface ListClientGrantsQuery {
+  limit?: number
+  startingAfter?: string
+  includeRevoked?: boolean
+}
+
+export interface PortalListQuery {
+  limit?: number
+  startingAfter?: string
+}
+
+export interface PortalActivityQuery {
+  limit?: number
+  cursor?: string
+}

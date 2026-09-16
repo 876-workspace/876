@@ -1,0 +1,151 @@
+model Follower {
+  id          String @id
+  tenantId    String @map("tenant_id")
+  subjectType String @map("subject_type") // project|phase|work-item
+  subjectId   String @map("subject_id")
+  userId      String @map("user_id")
+  createdAt   BigInt @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, subjectType, subjectId, userId])
+  @@index([tenantId, userId])
+  @@map("projects_followers")
+}
+
+model Discussion {
+  id             String   @id
+  tenantId       String   @map("tenant_id")
+  projectId      String   @map("project_id")
+  title          String
+  body           String
+  pinned         Boolean  @default(false)
+  locked         Boolean  @default(false)
+  clientVisible  Boolean  @default(false) @map("client_visible")
+  authorUserId   String?  @map("author_user_id")
+  deletedAt      BigInt?  @map("deleted_at")
+  createdAt      BigInt   @map("created_at")
+  updatedAt      BigInt   @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  posts   DiscussionPost[]
+
+  @@index([tenantId, projectId])
+  @@map("projects_discussions")
+}
+
+model DiscussionPost {
+  id           String  @id
+  tenantId     String  @map("tenant_id")
+  discussionId String  @map("discussion_id")
+  authorUserId String? @map("author_user_id")
+  body         String
+  deletedAt    BigInt? @map("deleted_at")
+  createdAt    BigInt  @map("created_at")
+  updatedAt    BigInt  @map("updated_at")
+
+  tenant     Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  discussion Discussion          @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  edits      DiscussionPostEdit[]
+
+  @@index([discussionId, createdAt])
+  @@map("projects_discussion_posts")
+}
+
+model DiscussionPostEdit {
+  id        String  @id
+  tenantId  String  @map("tenant_id")
+  postId    String  @map("post_id")
+  body      String
+  editedBy  String? @map("edited_by")
+  createdAt BigInt  @map("created_at")
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  post   DiscussionPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@map("projects_discussion_post_edits")
+}
+
+model WikiPage {
+  id           String  @id
+  tenantId     String  @map("tenant_id")
+  projectId    String  @map("project_id")
+  slug         String
+  title        String
+  parentPageId String? @map("parent_page_id")
+  deletedAt    BigInt? @map("deleted_at")
+  createdAt    BigInt  @map("created_at")
+  updatedAt    BigInt  @map("updated_at")
+
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent    WikiPage?      @relation("WikiPageTree", fields: [parentPageId], references: [id], onDelete: SetNull)
+  children  WikiPage[]     @relation("WikiPageTree")
+  revisions WikiRevision[]
+
+  @@unique([projectId, slug])
+  @@index([tenantId, projectId])
+  @@map("projects_wiki_pages")
+}
+
+model WikiRevision {
+  id           String  @id
+  tenantId     String  @map("tenant_id")
+  pageId       String  @map("page_id")
+  title        String
+  body         String
+  authorUserId String? @map("author_user_id")
+  createdAt    BigInt  @map("created_at")
+
+  tenant Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  page   WikiPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, createdAt])
+  @@map("projects_wiki_revisions")
+}
+
+model ClientGrant {
+  id               String  @id
+  tenantId         String  @map("tenant_id")
+  projectId        String  @map("project_id")
+  userId           String  @map("user_id")
+  allowComments    Boolean @default(true) @map("allow_comments")
+  allowDiscussions Boolean @default(true) @map("allow_discussions")
+  allowFiles       Boolean @default(true) @map("allow_files")
+  allowTime        Boolean @default(true) @map("allow_time")
+  allowInvoices    Boolean @default(true) @map("allow_invoices")
+  allowWiki        Boolean @default(true) @map("allow_wiki")
+  invitedBy        String? @map("invited_by")
+  revokedAt        BigInt? @map("revoked_at")
+  createdAt        BigInt  @map("created_at")
+  updatedAt        BigInt  @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, projectId, userId])
+  @@index([tenantId, userId])
+  @@map("projects_client_grants")
+}
+
+model AttachmentLink {
+  id            String  @id
+  tenantId      String  @map("tenant_id")
+  projectId     String  @map("project_id")
+  issueId       String? @map("issue_id")
+  milestoneId   String? @map("milestone_id")
+  url           String
+  name          String?
+  clientVisible Boolean @default(false) @map("client_visible")
+  createdBy     String? @map("created_by")
+  createdAt     BigInt  @map("created_at")
+  updatedAt     BigInt  @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId])
+  @@map("projects_attachment_links")
+}

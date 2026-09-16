@@ -1,6 +1,7 @@
 import { getError, type ProjectsError } from '../../http/errors.js'
 import { generateId } from '../../platform/ids.js'
 import { nowUnixSeconds, toDbUnixSeconds } from '../../platform/timestamps.js'
+import * as collaboration from '../collaboration/index.js'
 import * as issues from '../issues/index.js'
 import * as tenants from '../tenants/index.js'
 import * as repository from './comments.repository.js'
@@ -117,6 +118,34 @@ export async function create(
     updatedAt: timestamp,
   })
 
+  const mentioned = collaboration.mentionedUserIds(
+    body.body,
+    body.authorUserId ?? null
+  )
+  await collaboration.ensureFollowsForTenant(tenant.id, [
+    ...(body.authorUserId
+      ? [
+          {
+            subjectType: 'work-item',
+            subjectId: issue.id,
+            userId: body.authorUserId,
+          },
+        ]
+      : []),
+    ...mentioned.map((userId) => ({
+      subjectType: 'work-item' as const,
+      subjectId: issue.id,
+      userId,
+    })),
+  ])
+  await collaboration.notifyMentionedUsers({
+    tenantId: tenant.id,
+    userIds: mentioned,
+    subjectType: 'work-item',
+    subjectId: issue.id,
+    title: `You were mentioned in ${issue.identifier}`,
+  })
+
   return { data: serializeComment(created), error: null }
 }
 
@@ -173,6 +202,68 @@ export async function remove(
       object: 'projects.comment',
       id: commentId,
       deleted: true,
+    },
+    error: null,
+  }
+}
+
+export async function listVisibleComments(
+  organizationId: string,
+  issueRef: string
+): Promise<ServiceResult<SerializedComment[]>> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null)
+    return { data: null, error: tenantResolution.error }
+
+  const issueResolution = await resolveIssue(
+    tenantResolution.tenant.id,
+    issueRef
+  )
+  if (issueResolution.error !== null)
+    return { data: null, error: issueResolution.error }
+
+  const limit = 100
+  const rows = await repository.list(issueResolution.issue.id, { limit })
+  return {
+    data: rows
+      .filter((row) => row.clientVisible)
+      .map(serializeComment),
+    error: null,
+  }
+}
+
+export async function setCommentVisibility(
+  organizationId: string,
+  issueRef: string,
+  commentId: string,
+  clientVisible: boolean
+): Promise<
+  ServiceResult<{ object: string; id: string; clientVisible: boolean }>
+> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null)
+    return { data: null, error: tenantResolution.error }
+  const issueResolution = await resolveIssue(tenantResolution.tenant.id, issueRef)
+  if (issueResolution.error !== null)
+    return { data: null, error: issueResolution.error }
+
+  const existing = await repository.retrieve(
+    issueResolution.issue.id,
+    commentId
+  )
+  if (!existing)
+    return { data: null, error: getError('projects/comment-not-found') }
+
+  const updated = await repository.setCommentVisibility(
+    existing.id,
+    clientVisible,
+    toDbUnixSeconds(nowUnixSeconds())
+  )
+  return {
+    data: {
+      object: 'projects.comment',
+      id: updated.id,
+      clientVisible: updated.clientVisible,
     },
     error: null,
   }

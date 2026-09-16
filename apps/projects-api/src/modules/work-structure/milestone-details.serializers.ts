@@ -29,6 +29,7 @@ export type MilestoneCommentRow = {
   milestoneId: string
   authorUserId: string | null
   body: string
+  clientVisible: boolean
   createdAt: Timestamp
   updatedAt: Timestamp
 }

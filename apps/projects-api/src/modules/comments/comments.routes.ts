@@ -10,6 +10,11 @@ export function createCommentsRouter(): Router {
   router.post('/', requireInternalKey, controller.create)
   router.get('/:commentId', requireInternalKey, controller.retrieve)
   router.patch('/:commentId', requireInternalKey, controller.update)
+  router.patch(
+    '/:commentId/client-visibility',
+    requireInternalKey,
+    controller.setVisibility
+  )
   router.delete('/:commentId', requireInternalKey, controller.remove)
 
   return router

@@ -20,6 +20,7 @@ const {
   baselinesRepo,
   automation,
   workflows,
+  collaboration,
 } = vi.hoisted(() => {
   const transactionClient = { transaction: 'projects-test-transaction' }
   const tx = {
@@ -167,6 +168,12 @@ const {
     },
     automation: { appendOutboxEvent: vi.fn() },
     workflows: { checkTransition: vi.fn() },
+    collaboration: {
+      ensureFollows: vi.fn(),
+      ensureFollowsForTenant: vi.fn(),
+      notifyMentionedUsers: vi.fn(),
+      mentionedUserIds: vi.fn(() => []),
+    },
     txMock: tx,
     ganttRepo: {
       listGanttMilestones: vi.fn(),
@@ -209,6 +216,7 @@ vi.mock('../issues.repository.js', () => repository)
 vi.mock('../issue-links.repository.js', () => issueLinksRepo)
 vi.mock('../../automation/index.js', () => automation)
 vi.mock('../../workflows/index.js', () => workflows)
+vi.mock('../../collaboration/index.js', () => collaboration)
 
 vi.mock('../../projects/gantt.repository.js', () => ganttRepo)
 vi.mock('../../projects/baselines.repository.js', () => baselinesRepo)

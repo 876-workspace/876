@@ -160,3 +160,11 @@ export type SetMilestoneCustomFieldsBody = z.infer<
   typeof setMilestoneCustomFieldsBodySchema
 >
 export type CloneMilestoneBody = z.infer<typeof cloneMilestoneBodySchema>
+
+export const milestoneCommentVisibilityBodySchema = z.strictObject({
+  clientVisible: z.boolean(),
+})
+
+export type MilestoneCommentVisibilityBody = z.infer<
+  typeof milestoneCommentVisibilityBodySchema
+>
