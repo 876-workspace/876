@@ -3,6 +3,10 @@ import type {
   FinancialSummary,
   ProjectBilling,
   Rate,
+  AutomationRule,
+  AutomationRun,
+  WorkflowBlueprint,
+  WorkflowTransition,
 } from '@876/projects'
 import type {
   Baseline,
@@ -727,6 +731,118 @@ export function makeProjectFieldValue(
     updatedBy: null,
     createdAt: 1700000000,
     updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeWorkItemType(
+  overrides: Partial<WorkItemType> = {}
+): WorkItemType {
+  return {
+    object: 'projects.work-item-type',
+    id: 'wit_task_1',
+    tenantId: 'tenant_1',
+    key: 'task',
+    name: 'Task',
+    iconKey: 'circle-check',
+    color: '#3b82f6',
+    hierarchyLevel: 1,
+    description: null,
+    isDefault: true,
+    position: 0,
+    archivedAt: null,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeWorkflowState(
+  overrides: Partial<WorkflowState> = {}
+): WorkflowState {
+  return {
+    object: 'projects.workflow-state',
+    id: 'ws_todo',
+    tenantId: 'tenant_1',
+    key: 'todo',
+    name: 'To Do',
+    category: 'backlog',
+    color: '#94a3b8',
+    description: null,
+    isDefault: true,
+    position: 0,
+    archivedAt: null,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeWorkflowTransition(
+  overrides: Partial<WorkflowTransition> = {}
+): WorkflowTransition {
+  return {
+    object: 'projects.workflow-transition',
+    id: 'wtr_1',
+    workItemTypeId: 'wit_task_1',
+    fromStateKey: 'todo',
+    toStateKey: 'in-progress',
+    name: 'Start work',
+    requiredPermission: null,
+    requiredFieldKeys: [],
+    requiresComment: false,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeWorkflowBlueprint(
+  overrides: Partial<WorkflowBlueprint> = {}
+): WorkflowBlueprint {
+  return {
+    object: 'projects.workflow-blueprint',
+    workItemTypeId: 'wit_task_1',
+    updatedAt: 1700000000,
+    transitions: [makeWorkflowTransition()],
+    ...overrides,
+  }
+}
+
+export function makeAutomationRule(
+  overrides: Partial<AutomationRule> = {}
+): AutomationRule {
+  return {
+    object: 'projects.automation-rule',
+    id: 'rule_1',
+    projectId: null,
+    name: 'Ping on review',
+    enabled: true,
+    trigger: 'work-item.state-changed',
+    conditions: [{ fieldKey: 'priority', op: 'equals', value: 'high' }],
+    actions: [{ type: 'notify', userId: 'user_eng', title: 'Review ready' }],
+    hasWebhookSecret: false,
+    createdAt: 1700000000,
+    updatedAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeAutomationRun(
+  overrides: Partial<AutomationRun> = {}
+): AutomationRun {
+  return {
+    object: 'projects.automation-run',
+    id: 'run_1',
+    ruleId: 'rule_1',
+    eventId: 'evt_1',
+    status: 'succeeded',
+    errorCode: null,
+    attempt: 1,
+    responseCode: null,
+    startedAt: 1700000000,
+    finishedAt: 1700000060,
+    durationMs: 60000,
     ...overrides,
   }
 }

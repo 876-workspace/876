@@ -44,6 +44,31 @@ export const PROJECT_FIELDS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
   { label: 'Required', cell: 'badge', width: '110px' },
 ]
 
+export const WORKFLOWS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
+  { label: 'From', width: '150px' },
+  { label: 'To', width: '150px' },
+  { label: 'Transition' },
+  { label: 'Permission', width: '170px' },
+  { label: 'Comment', cell: 'badge', width: '110px' },
+]
+
+export const AUTOMATION_RULES_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
+  { label: 'Rule' },
+  { label: 'Trigger', width: '200px' },
+  { label: 'Status', cell: 'badge', width: '110px' },
+  { label: 'Actions', width: '110px' },
+  { label: 'Updated', width: '130px' },
+]
+
+export const AUTOMATION_RUNS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
+  { label: 'Rule', width: '150px' },
+  { label: 'Status', cell: 'badge', width: '110px' },
+  { label: 'Error', width: '170px' },
+  { label: 'Attempt', width: '90px' },
+  { label: 'Started', width: '150px' },
+  { label: 'Finished', width: '150px' },
+]
+
 export const CALENDAR_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
   { label: 'Date', width: '130px' },
   { label: 'Title' },
