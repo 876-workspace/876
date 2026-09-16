@@ -29,6 +29,9 @@ model Tenant {
   projectEvents ProjectEvent[]
   eventAttendees EventAttendee[]
   reminders Reminder[]
+  timeEntries TimeEntry[]
+  timesheets Timesheet[]
+  timesheetEvents TimesheetEvent[]
 
   @@map("projects_tenants")
 }

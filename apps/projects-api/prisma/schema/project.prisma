@@ -27,6 +27,7 @@ model Project {
   cycles Cycle[]
   baselines ProjectBaseline[]
   projectEvents ProjectEvent[]
+  timeEntries TimeEntry[]
 
   @@unique([tenantId, key])
   @@unique([tenantId, slug])
