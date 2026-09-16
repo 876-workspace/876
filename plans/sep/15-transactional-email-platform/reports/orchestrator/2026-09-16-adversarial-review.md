@@ -119,3 +119,54 @@ Nothing in the branch had ever been compiled, installed, or migrated.
   so DKIM/SPF can be published programmatically once the domain is created in
   Resend with a full-access key.
 - Until both are done, `managed` sending is configured but unverified end to end.
+
+## Live provider verification (not only documentation)
+
+`external-docs.md` says a mocked test is not evidence of a wire contract, so the
+error path was probed against the live Resend API with a deliberately invalid
+payload — no email was sent:
+
+```
+POST https://api.resend.com/emails   →  HTTP 422
+{"statusCode":422,"name":"validation_error","message":"Invalid `to` field. …"}
+```
+
+Three things confirmed against the running service rather than the docs:
+
+1. The send-only key **does** authenticate for `/emails` (422, not 401).
+2. The error body is exactly `{ statusCode, name, message }`, which is the shape
+   `resendErrorBodySchema` now parses — so the preserved `providerCode` is real.
+3. `Idempotency-Key` is accepted as a request header without complaint.
+
+`validation_error` is correctly absent from the retryable set, so an unverified
+`from` domain classifies as terminal rather than being retried forever.
+
+## Research findings resolved
+
+The Zoho/Resend research delegate raised eight findings against the provider
+layer. Resolution:
+
+| #   | Finding                                                                                                  | Outcome                                                                                                                                                                                      |
+| --- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `'failure'` never matches Resend's documented `failed`, so a failed domain reported `pending` forever    | **Fixed.** Documented enum mapped; an existing test had locked the bug in.                                                                                                                   |
+| 2   | `not_started`, `partially_verified`, `partially_failed` collapsed into `pending`                         | **Fixed.** All six documented statuses now distinct — `not-started` means act, `pending` means wait.                                                                                         |
+| 3   | Each DNS record's `record` purpose (SPF/DKIM/Tracking) silently stripped by Zod                          | **Fixed.** Carried through as `purpose`; it is the only field that distinguishes rows sharing a name.                                                                                        |
+| 4   | Provider error body discarded, losing machine-readable `name`                                            | **Fixed**, and verified live above.                                                                                                                                                          |
+| 5   | 429 classified non-retryable although it is the documented rate-limit response                           | **Fixed.** `retryable` now set from the error code, so a rate limit retries and an exhausted quota — same status code — does not.                                                            |
+| 6   | No pre-send check against domain verification state                                                      | **Not changed.** Sender resolution already rejects an inactive sender and an unverified domain server-side before the provider is reached; the provider layer is not the right place for it. |
+| 7   | Idempotency key bounds and 24-hour replay semantics unexpressed                                          | **Fixed.** Bound to 1–256 and documented, including that a changed body under the same key is rejected — so a corrected resend must derive a new key.                                        |
+| 8a  | Bounce/failure payload fields untyped, so a consumer cannot tell a permanent bounce from a temporary one | **Deferred.** Needed only when bounce suppression is built; recorded rather than typed speculatively.                                                                                        |
+| 8b  | Possible missing webhook dedup on `svix-id` — delegate flagged as unconfirmed                            | **Confirmed correct, no defect.** Dedup is on `svix-id` with a `@unique` column and a `duplicate` response flag. The delegate was right to flag rather than assert.                          |
+
+Orchestrator finding 9 (combined recipient cap) was also fixed: `to`/`cc`/`bcc`
+were capped at 50 **each**, and Resend counts every address separately against
+the quota, so one send could be billed as 150 emails against a documented
+maximum of 50.
+
+### Commercially significant research result
+
+The Resend **free plan allows 3 domains** and 100 emails/day. Per-organization
+custom domains therefore exhaust the plan at three organizations. That is a
+strong independent argument for the `managed` shared-domain default being the
+primary path rather than a convenience, and it means custom-domain
+authentication is gated on a paid plan.
