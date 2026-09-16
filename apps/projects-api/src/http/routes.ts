@@ -7,6 +7,7 @@ import { createTimeRouter } from '../modules/time/time.routes.js'
 import { createIssuesRouter } from '../modules/issues/issues.routes.js'
 import { createLabelsRouter } from '../modules/labels/labels.routes.js'
 import { createAutomationRouter } from '../modules/automation/automation.routes.js'
+import { createCustomModulesRouter } from '../modules/custom-modules/index.js'
 import { createLayoutsRouter } from '../modules/layouts/layouts.routes.js'
 import { createProjectsRouter } from '../modules/projects/projects.routes.js'
 import { createTenantsRouter } from '../modules/tenants/tenants.routes.js'
@@ -44,6 +45,7 @@ export function buildRoutes() {
   router.use('/v1/organizations/:organizationId', createWorkStructureRouter())
   router.use('/v1/organizations/:organizationId', createProjectCustomFieldsRouter())
   router.use('/v1/organizations/:organizationId', createLayoutsRouter())
+  router.use('/v1/organizations/:organizationId', createCustomModulesRouter())
   router.use(
     '/v1/organizations/:organizationId/projects',
     createProjectCustomFieldValuesRouter()

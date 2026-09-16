@@ -72,7 +72,7 @@ export async function appendOutboxEvent(
   input: {
     tenantId: string
     type: AutomationTrigger
-    subjectType: 'work-item' | 'phase' | 'time-entry' | 'budget'
+    subjectType: 'work-item' | 'phase' | 'time-entry' | 'budget' | 'custom-record'
     subjectId: string
     payload: Record<string, unknown>
     causationDepth?: number

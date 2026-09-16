@@ -1,0 +1,156 @@
+model CustomModule {
+  id                  String   @id
+  tenantId            String   @map("tenant_id")
+  scope               String   // org|project
+  projectId           String?  @map("project_id")
+  key                 String
+  singularName        String   @map("singular_name")
+  pluralName          String   @map("plural_name")
+  icon                String?
+  version             Int      @default(1)
+  restrictedToRoleKeys String[] @default([]) @map("restricted_to_role_keys")
+  deletedAt           BigInt?  @map("deleted_at")
+  deletedBy           String?  @map("deleted_by")
+  createdAt           BigInt   @map("created_at")
+  updatedAt           BigInt   @map("updated_at")
+
+  tenant  Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fields  CustomModuleField[]
+  statuses CustomModuleStatus[]
+  records CustomModuleRecord[]
+  widgets DashboardWidget[]
+
+  @@unique([tenantId, key], map: "projects_cmod_tenant_key_uidx")
+  @@index([tenantId, scope], map: "projects_cmod_tenant_scope_idx")
+  @@map("projects_custom_modules")
+}
+
+model CustomModuleField {
+  id        String  @id
+  tenantId  String  @map("tenant_id")
+  moduleId  String  @map("module_id")
+  key       String
+  label     String
+  fieldType String  @map("field_type")
+  options   Json?
+  required  Boolean @default(false)
+  position  Int     @default(0)
+  createdAt BigInt  @map("created_at")
+  updatedAt BigInt  @map("updated_at")
+
+  tenant Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  module CustomModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  values CustomModuleRecordValue[]
+
+  @@unique([moduleId, key], map: "projects_cmodf_module_key_uidx")
+  @@index([moduleId, position], map: "projects_cmodf_module_pos_idx")
+  @@map("projects_custom_module_fields")
+}
+
+model CustomModuleStatus {
+  id        String  @id
+  tenantId  String  @map("tenant_id")
+  moduleId  String  @map("module_id")
+  key       String
+  label     String
+  category  String  // open|in-progress|done
+  position  Int     @default(0)
+  isDefault Boolean @default(false) @map("is_default")
+  createdAt BigInt  @map("created_at")
+  updatedAt BigInt  @map("updated_at")
+
+  tenant Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  module CustomModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([moduleId, key], map: "projects_cmods_module_key_uidx")
+  @@index([moduleId, position], map: "projects_cmods_module_pos_idx")
+  @@map("projects_custom_module_statuses")
+}
+
+model CustomModuleRecord {
+  id        String  @id
+  tenantId  String  @map("tenant_id")
+  moduleId  String  @map("module_id")
+  projectId String? @map("project_id")
+  title     String
+  statusKey String  @map("status_key")
+  createdBy String? @map("created_by")
+  updatedBy String? @map("updated_by")
+  deletedAt BigInt? @map("deleted_at")
+  deletedBy String? @map("deleted_by")
+  createdAt BigInt  @map("created_at")
+  updatedAt BigInt  @map("updated_at")
+
+  tenant Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  module CustomModule            @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  values CustomModuleRecordValue[]
+  sourceLinks CustomModuleLink[] @relation("LinkSource")
+
+  @@index([tenantId, moduleId], map: "projects_cmodr_tenant_module_idx")
+  @@index([tenantId, moduleId, statusKey], map: "projects_cmodr_module_status_idx")
+  @@index([tenantId, projectId], map: "projects_cmodr_tenant_project_idx")
+  @@map("projects_custom_module_records")
+}
+
+model CustomModuleRecordValue {
+  id           String   @id
+  tenantId     String   @map("tenant_id")
+  recordId     String   @map("record_id")
+  fieldId      String   @map("field_id")
+  stringValue  String?  @map("string_value")
+  integerValue Int?     @map("integer_value")
+  decimalValue Decimal? @db.Decimal(20, 6) @map("decimal_value")
+  booleanValue Boolean? @map("boolean_value")
+  dateValue    BigInt?  @map("date_value")
+  selectKey    String?  @map("select_key")
+  selectKeys   String[] @map("select_keys")
+  updatedBy    String?  @map("updated_by")
+  createdAt    BigInt   @map("created_at")
+  updatedAt    BigInt   @map("updated_at")
+
+  tenant Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  record CustomModuleRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  field  CustomModuleField  @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([recordId, fieldId], map: "projects_cmodrv_record_field_uidx")
+  @@index([tenantId, fieldId], map: "projects_cmodrv_tenant_field_idx")
+  @@map("projects_custom_module_record_values")
+}
+
+model CustomModuleLink {
+  id             String @id
+  tenantId       String @map("tenant_id")
+  sourceRecordId String @map("source_record_id")
+  targetType     String @map("target_type") // record|work-item|project|phase
+  targetId       String @map("target_id")
+  relation       String
+  createdBy      String? @map("created_by")
+  createdAt      BigInt @map("created_at")
+
+  tenant Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  source CustomModuleRecord @relation("LinkSource", fields: [sourceRecordId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceRecordId, targetType, targetId, relation], map: "projects_cmodl_pair_relation_uidx")
+  @@index([tenantId, sourceRecordId], map: "projects_cmodl_tenant_source_idx")
+  @@index([tenantId, targetType, targetId], map: "projects_cmodl_tenant_target_idx")
+  @@map("projects_custom_module_links")
+}
+
+model DashboardWidget {
+  id        String  @id
+  tenantId  String  @map("tenant_id")
+  userId    String? @map("user_id")
+  kind      String  // record-count|status-breakdown|recent-records
+  moduleId  String  @map("module_id")
+  config    Json    @default("{}")
+  position  Int     @default(0)
+  createdAt BigInt  @map("created_at")
+  updatedAt BigInt  @map("updated_at")
+
+  tenant Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  module CustomModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, moduleId], map: "projects_dshw_tenant_module_idx")
+  @@index([tenantId, userId], map: "projects_dshw_tenant_user_idx")
+  @@map("projects_dashboard_widgets")
+}

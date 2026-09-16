@@ -24,6 +24,9 @@ export const automationTriggerSchema = z.enum([
   'due-date.approaching',
   'time-entry.submitted',
   'budget.threshold-reached',
+  'custom-record.created',
+  'custom-record.updated',
+  'custom-record.status-changed',
 ])
 
 export const automationSubjectTypeSchema = z.enum([
@@ -31,6 +34,7 @@ export const automationSubjectTypeSchema = z.enum([
   'phase',
   'time-entry',
   'budget',
+  'custom-record',
 ])
 
 export const setFieldActionSchema = z.strictObject({

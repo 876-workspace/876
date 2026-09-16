@@ -53,7 +53,7 @@ export type LayoutRule = {
   then: LayoutEffect[]
 }
 
-export type LayoutEntity = 'project' | 'phase' | 'work-item'
+export type LayoutEntity = 'project' | 'phase' | 'work-item' | `custom-module:${string}`
 
 export type Layout = {
   object: 'projects.layout'

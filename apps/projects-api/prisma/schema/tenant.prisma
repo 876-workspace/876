@@ -55,6 +55,13 @@ model Tenant {
   wikiRevisions WikiRevision[]
   clientGrants ClientGrant[]
   attachmentLinks AttachmentLink[]
+  customModules CustomModule[]
+  customModuleFields CustomModuleField[]
+  customModuleStatuses CustomModuleStatus[]
+  customModuleRecords CustomModuleRecord[]
+  customModuleRecordValues CustomModuleRecordValue[]
+  customModuleLinks CustomModuleLink[]
+  dashboardWidgets DashboardWidget[]
 
   @@map("projects_tenants")
 }

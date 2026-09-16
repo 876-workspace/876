@@ -332,8 +332,29 @@ export type ProjectCustomFieldValue = z.infer<
   typeof projectCustomFieldValueSchema
 >
 
-export const layoutEntitySchema = z.enum(['project', 'phase', 'work-item'])
-export type LayoutEntity = z.infer<typeof layoutEntitySchema>
+const baseLayoutEntitySchema = z.enum(['project', 'phase', 'work-item'])
+const customModuleLayoutEntitySchema = z
+  .string()
+  .regex(/^custom-module:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)
+export type LayoutEntity =
+  | 'project'
+  | 'phase'
+  | 'work-item'
+  | `custom-module:${string}`
+export const layoutEntitySchema = z.union([
+  baseLayoutEntitySchema,
+  customModuleLayoutEntitySchema,
+]) as z.ZodType<LayoutEntity>
+
+export function isCustomModuleLayoutEntity(entity: string): boolean {
+  return entity.startsWith('custom-module:')
+}
+
+export function customModuleKeyFromLayoutEntity(entity: string): string | null {
+  if (!isCustomModuleLayoutEntity(entity)) return null
+  const key = entity.slice('custom-module:'.length)
+  return key.length > 0 ? key : null
+}
 
 export const layoutFieldSchema = z.object({
   fieldKey: z.string(),
@@ -800,6 +821,9 @@ export const automationTriggerSchema = z.enum([
   'due-date.approaching',
   'time-entry.submitted',
   'budget.threshold-reached',
+  'custom-record.created',
+  'custom-record.updated',
+  'custom-record.status-changed',
 ])
 export type AutomationTrigger = z.infer<typeof automationTriggerSchema>
 
@@ -2812,4 +2836,259 @@ export interface PortalListQuery {
 export interface PortalActivityQuery {
   limit?: number
   cursor?: string
+}
+
+export const customModuleScopeSchema = z.enum(['org', 'project'])
+export type CustomModuleScope = z.infer<typeof customModuleScopeSchema>
+
+export const customModuleSchema = z.object({
+  object: z.literal('projects.custom-module'),
+  id: z.string(),
+  scope: customModuleScopeSchema,
+  projectId: z.string().nullable(),
+  key: z.string(),
+  singularName: z.string(),
+  pluralName: z.string(),
+  icon: z.string().nullable(),
+  version: z.number(),
+  restrictedToRoleKeys: z.array(z.string()),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type CustomModule = z.infer<typeof customModuleSchema>
+export const customModuleListSchema = createListSchema(customModuleSchema)
+export type CustomModuleList = z.infer<typeof customModuleListSchema>
+
+export const customModuleFieldSchema = z.object({
+  object: z.literal('projects.custom-module-field'),
+  id: z.string(),
+  moduleId: z.string(),
+  key: z.string(),
+  label: z.string(),
+  fieldType: z.string(),
+  options: z.unknown(),
+  required: z.boolean(),
+  position: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type CustomModuleField = z.infer<typeof customModuleFieldSchema>
+export const customModuleFieldListSchema = createListSchema(customModuleFieldSchema)
+export type CustomModuleFieldList = z.infer<typeof customModuleFieldListSchema>
+
+export const customModuleStatusSchema = z.object({
+  object: z.literal('projects.custom-module-status'),
+  id: z.string(),
+  moduleId: z.string(),
+  key: z.string(),
+  label: z.string(),
+  category: z.enum(['open', 'in-progress', 'done']),
+  position: z.number(),
+  isDefault: z.boolean(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type CustomModuleStatus = z.infer<typeof customModuleStatusSchema>
+export const customModuleStatusListSchema = createListSchema(customModuleStatusSchema)
+export type CustomModuleStatusList = z.infer<typeof customModuleStatusListSchema>
+
+export const customRecordSchema = z.object({
+  object: z.literal('projects.custom-record'),
+  id: z.string(),
+  moduleId: z.string(),
+  moduleKey: z.string(),
+  projectId: z.string().nullable(),
+  title: z.string(),
+  statusKey: z.string(),
+  fields: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string()), z.null()])),
+  createdBy: z.string().nullable(),
+  updatedBy: z.string().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type CustomRecord = z.infer<typeof customRecordSchema>
+export const customRecordListSchema = createListSchema(customRecordSchema)
+export type CustomRecordList = z.infer<typeof customRecordListSchema>
+
+export const customModuleLinkSchema = z.object({
+  object: z.literal('projects.custom-module-link'),
+  id: z.string(),
+  sourceRecordId: z.string(),
+  targetType: z.enum(['record', 'work-item', 'project', 'phase']),
+  targetId: z.string(),
+  relation: z.string(),
+  createdBy: z.string().nullable(),
+  createdAt: z.number(),
+})
+export type CustomModuleLink = z.infer<typeof customModuleLinkSchema>
+export const customModuleLinkListSchema = createListSchema(customModuleLinkSchema)
+export type CustomModuleLinkList = z.infer<typeof customModuleLinkListSchema>
+
+export const customModuleCountRowSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  count: z.number(),
+})
+export type CustomModuleCountRow = z.infer<typeof customModuleCountRowSchema>
+
+export const customModuleStatusReportSchema = z.object({
+  object: z.literal('projects.custom-module-status-report'),
+  moduleId: z.string(),
+  moduleKey: z.string(),
+  total: z.number(),
+  byStatus: z.array(customModuleCountRowSchema),
+})
+export type CustomModuleStatusReport = z.infer<typeof customModuleStatusReportSchema>
+
+export const customModuleFieldReportSchema = z.object({
+  object: z.literal('projects.custom-module-field-report'),
+  moduleId: z.string(),
+  moduleKey: z.string(),
+  fieldKey: z.string(),
+  total: z.number(),
+  byValue: z.array(customModuleCountRowSchema),
+})
+export type CustomModuleFieldReport = z.infer<typeof customModuleFieldReportSchema>
+
+export const customModuleCreatedReportSchema = z.object({
+  object: z.literal('projects.custom-module-created-report'),
+  moduleId: z.string(),
+  moduleKey: z.string(),
+  from: z.number(),
+  to: z.number(),
+  total: z.number(),
+  perDay: z.array(z.object({ day: z.string(), count: z.number() })),
+})
+export type CustomModuleCreatedReport = z.infer<typeof customModuleCreatedReportSchema>
+
+export const dashboardWidgetSchema = z.object({
+  object: z.literal('projects.dashboard-widget'),
+  id: z.string(),
+  userId: z.string().nullable(),
+  kind: z.enum(['record-count', 'status-breakdown', 'recent-records']),
+  moduleId: z.string(),
+  config: z.unknown(),
+  position: z.number(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type DashboardWidget = z.infer<typeof dashboardWidgetSchema>
+export const dashboardWidgetListSchema = createListSchema(dashboardWidgetSchema)
+export type DashboardWidgetList = z.infer<typeof dashboardWidgetListSchema>
+
+export interface CreateCustomModuleInput {
+  scope: 'org' | 'project'
+  projectId?: string | null
+  key: string
+  singularName: string
+  pluralName: string
+  icon?: string | null
+  restrictedToRoleKeys?: string[]
+}
+
+export interface UpdateCustomModuleInput {
+  scope?: 'org' | 'project'
+  projectId?: string | null
+  singularName?: string
+  pluralName?: string
+  icon?: string | null
+  restrictedToRoleKeys?: string[] | null
+}
+
+export interface CreateCustomModuleFieldInput {
+  key: string
+  label: string
+  fieldType: string
+  options?: Array<{ key: string; label: string }>
+  required?: boolean
+  position?: number
+}
+
+export interface UpdateCustomModuleFieldInput {
+  label?: string
+  fieldType?: string
+  options?: Array<{ key: string; label: string }>
+  required?: boolean
+  position?: number
+}
+
+export interface CreateCustomModuleStatusInput {
+  key: string
+  label: string
+  category: 'open' | 'in-progress' | 'done'
+  position?: number
+  isDefault?: boolean
+}
+
+export interface UpdateCustomModuleStatusInput {
+  label?: string
+  category?: 'open' | 'in-progress' | 'done'
+  position?: number
+  isDefault?: boolean
+}
+
+export interface CustomRecordFieldInput {
+  key: string
+  value: string | number | boolean | string[] | null
+}
+
+export interface CreateCustomRecordInput {
+  projectId?: string | null
+  title: string
+  statusKey?: string
+  fields?: CustomRecordFieldInput[]
+  createdBy?: string | null
+}
+
+export interface UpdateCustomRecordInput {
+  projectId?: string | null
+  title?: string
+  statusKey?: string
+  fields?: CustomRecordFieldInput[]
+  updatedBy?: string | null
+}
+
+export interface ListCustomRecordsQuery {
+  limit?: number
+  startingAfter?: string
+  endingBefore?: string
+  status?: string
+  projectId?: string
+  q?: string
+  fieldKey?: string
+  fieldValue?: string
+}
+
+export interface CreateCustomModuleLinkInput {
+  targetType: 'record' | 'work-item' | 'project' | 'phase'
+  targetId: string
+  relation: string
+  createdBy?: string | null
+}
+
+export interface GetCustomModuleReportQuery {
+  from?: number
+  to?: number
+  fieldKey?: string
+  format?: 'json' | 'csv'
+}
+
+export interface CreateDashboardWidgetInput {
+  kind: 'record-count' | 'status-breakdown' | 'recent-records'
+  moduleId: string
+  userId?: string | null
+  config?: Record<string, unknown>
+  position?: number
+}
+
+export interface UpdateDashboardWidgetInput {
+  kind?: 'record-count' | 'status-breakdown' | 'recent-records'
+  userId?: string | null
+  config?: Record<string, unknown>
+  position?: number
+}
+
+export interface ListDashboardWidgetsQuery {
+  moduleId?: string
+  userId?: string
 }

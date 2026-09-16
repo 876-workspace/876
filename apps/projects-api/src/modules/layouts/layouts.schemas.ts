@@ -1,6 +1,28 @@
 import { z } from 'zod'
 
-export const layoutEntitySchema = z.enum(['project', 'phase', 'work-item'])
+const baseLayoutEntitySchema = z.enum(['project', 'phase', 'work-item'])
+const customModuleEntitySchema = z
+  .string()
+  .regex(/^custom-module:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)
+export type LayoutEntity =
+  | 'project'
+  | 'phase'
+  | 'work-item'
+  | `custom-module:${string}`
+export const layoutEntitySchema = z.union([
+  baseLayoutEntitySchema,
+  customModuleEntitySchema,
+]) as z.ZodType<LayoutEntity>
+
+export function isCustomModuleEntity(entity: string): boolean {
+  return entity.startsWith('custom-module:')
+}
+
+export function customModuleKeyFromEntity(entity: string): string | null {
+  if (!isCustomModuleEntity(entity)) return null
+  const key = entity.slice('custom-module:'.length)
+  return key.length > 0 ? key : null
+}
 
 const kebabKeySchema = z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)
 const nonEmptyUpdate = (data: Record<string, unknown>) =>
@@ -130,7 +152,6 @@ export const updateLayoutBodySchema = z
   })
   .refine(nonEmptyUpdate)
 
-export type LayoutEntity = z.infer<typeof layoutEntitySchema>
 export type LayoutField = z.infer<typeof layoutFieldSchema>
 export type LayoutSection = z.infer<typeof layoutSectionSchema>
 export type LayoutCondition = z.infer<typeof layoutConditionSchema>
