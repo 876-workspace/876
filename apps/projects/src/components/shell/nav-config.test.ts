@@ -85,6 +85,7 @@ describe('Projects navigation access binding', () => {
       '/calendar',
       '/my-work',
       '/time',
+      '/reports',
       '/issues',
       '/board',
       '/labels',

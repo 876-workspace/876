@@ -71,6 +71,7 @@ describe('settings navigation registry', () => {
       '/settings/custom-fields',
       '/settings/phase-fields',
       '/settings/users',
+      '/settings/capacity',
     ])
   })
 
