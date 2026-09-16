@@ -63,8 +63,12 @@ export async function updateProviderState(input: {
   verifiedAt: bigint | null
   lastCheckedAt: bigint
 }) {
-  return prisma.emailDomain.update({
-    where: { id: input.id },
+  const updated = await prisma.emailDomain.updateMany({
+    where: {
+      id: input.id,
+      organizationId: input.organizationId,
+      deletedAt: null,
+    },
     data: {
       status: input.status,
       records: input.records,
@@ -74,6 +78,10 @@ export async function updateProviderState(input: {
       updatedAt: input.lastCheckedAt,
     },
   })
+  if (updated.count !== 1)
+    throw new Error('Sending domain disappeared during provider state update.')
+
+  return prisma.emailDomain.findUniqueOrThrow({ where: { id: input.id } })
 }
 
 export async function softDelete(input: {
@@ -83,8 +91,12 @@ export async function softDelete(input: {
   deletionReason: string | null
   now: bigint
 }) {
-  return prisma.emailDomain.update({
-    where: { id: input.id },
+  const updated = await prisma.emailDomain.updateMany({
+    where: {
+      id: input.id,
+      organizationId: input.organizationId,
+      deletedAt: null,
+    },
     data: {
       deletedAt: input.now,
       deletedBy: input.deletedBy,
@@ -92,4 +104,8 @@ export async function softDelete(input: {
       updatedAt: input.now,
     },
   })
+  if (updated.count !== 1)
+    throw new Error('Sending domain disappeared during deletion.')
+
+  return prisma.emailDomain.findUniqueOrThrow({ where: { id: input.id } })
 }
