@@ -19,6 +19,7 @@ import {
   workItemTypesClient,
   workflowStatesClient,
 } from './projects'
+import { clientGrantsClient, discussionsClient, followsClient, visibilityClient, wikiClient } from './collaboration'
 import { onboarding } from './onboarding'
 import { remindersClient } from './reminders'
 import { workflowsClient } from './workflows'
@@ -49,6 +50,11 @@ export const client = {
   events: eventsClient,
   finance: financeClient,
   reminders: remindersClient,
+  follows: followsClient,
+  discussions: discussionsClient,
+  wiki: wikiClient,
+  clientGrants: clientGrantsClient,
+  visibility: visibilityClient,
   templates: templatesClient,
 }
 
@@ -59,6 +65,13 @@ export { eventsClient } from './events'
 export { financeClient } from './finance'
 export { onboarding } from './onboarding'
 export { remindersClient } from './reminders'
+export {
+  clientGrantsClient,
+  discussionsClient,
+  followsClient,
+  visibilityClient,
+  wikiClient,
+} from './collaboration'
 export { taskListsClient } from './task-lists'
 export { templatesClient } from './templates'
 export { phaseCustomFieldsClient } from './phase-custom-fields'

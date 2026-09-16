@@ -32,6 +32,7 @@ export default async function IssueDetailPage({ params }: Props) {
           orgId={orgId}
           userId={userId}
           canEdit={canAccess(access, 'issues.edit')}
+          canToggleVisibility={canAccess(access, 'projects.edit')}
           params={params}
         />
       </Suspense>
@@ -43,11 +44,13 @@ async function IssueDetailDataFromParams({
   orgId,
   userId,
   canEdit,
+  canToggleVisibility,
   params,
 }: {
   orgId: string
   userId: string
   canEdit: boolean
+  canToggleVisibility: boolean
   params: Props['params']
 }) {
   const { issueRef } = await params
@@ -56,6 +59,7 @@ async function IssueDetailDataFromParams({
       orgId={orgId}
       userId={userId}
       canEdit={canEdit}
+      canToggleVisibility={canToggleVisibility}
       issueRef={issueRef}
     />
   )
