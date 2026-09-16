@@ -44,6 +44,17 @@ GitHub Actions jobs fail in 2–4 s (billing block) and Cloudflare Workers Build
 | 15 | Custom modules | — | — | pending |
 | 16 | Public API, webhooks, imports, MCP, observability | — | — | pending |
 
+## UI review is the orchestrator's own job
+
+User, 2026-09-16: _"ensure you review the UI as you are in charge of that."_ No delegate in this run has opened a browser — every UI claim so far rests on jsdom tests. Before the deploy, Claude must look at the real thing:
+
+1. Run the Projects app and its API locally (`pnpm --filter @876/projects-app dev`, `pnpm --filter @876/projects-api dev`) against the migrated database.
+2. Walk every surface this rollout added, per phase: issue list/board filters and grouping, work-item detail (relations, dependencies, blocked badge, planned dates), phases list/detail/clone, task lists + work breakdown on project detail, cycles list/detail, the gantt (collapse, zoom, drag, connectors, critical marking), baselines + comparison, calendar/events/reminders, My Work.
+3. Capture a screenshot of each with the Browserbase `browse` CLI (`browse open <url> --local && browse screenshot --path …`) and review it against `.claude/rules/app-layout.md` (toolbar, status-filter heading, table tiers, page containers, bare-verb buttons, no green buttons) and `CLAUDE.md` UI Copy (no explanatory paragraphs under headings).
+4. Fix layout/copy defects myself — they are design decisions, not delegate work — and record each screenshot review in `plans/2026-09-15-projects-rollout/reports/orchestrator/ui-review.md`.
+
+A phase is not "done" on a green test suite alone; it is done when its screens have been looked at.
+
 ## Final quality review (before deploy)
 
 User, 2026-09-16: _"in the end do a final code quality review as cheap models write shit code."_ After the last phase merges and before any deploy, run a full review of everything the rollout added:
