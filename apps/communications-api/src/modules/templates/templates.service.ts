@@ -7,7 +7,7 @@ import {
 } from '../../platform/timestamps.js'
 import type {
   CreateEmailTemplateInput,
-  EmailTemplateObject,
+  EmailTemplate,
   RenderEmailTemplateInput,
   UpdateEmailTemplateInput,
 } from '../../types/communications.js'
@@ -17,7 +17,7 @@ import { renderEmailTemplate } from './templates.renderer.js'
 
 type TemplateRow = NonNullable<Awaited<ReturnType<typeof repository.retrieve>>>
 
-function toObject(row: TemplateRow): EmailTemplateObject {
+function toObject(row: TemplateRow): EmailTemplate {
   return {
     object: 'email_template',
     id: row.id,
@@ -51,7 +51,7 @@ async function validateSender(
 
 export async function listTemplates(
   organizationId: string
-): Promise<ServiceResult<EmailTemplateObject[]>> {
+): Promise<ServiceResult<EmailTemplate[]>> {
   const rows = await repository.list(organizationId)
   return ok(rows.map(toObject))
 }
@@ -59,7 +59,7 @@ export async function listTemplates(
 export async function retrieveTemplate(
   organizationId: string,
   id: string
-): Promise<ServiceResult<EmailTemplateObject>> {
+): Promise<ServiceResult<EmailTemplate>> {
   const row = await repository.retrieve(organizationId, id)
   if (!row) return err('communications/template-not-found')
   return ok(toObject(row))
@@ -69,7 +69,7 @@ export async function resolveTemplate(
   organizationId: string,
   category: string,
   templateId?: string
-): Promise<ServiceResult<EmailTemplateObject>> {
+): Promise<ServiceResult<EmailTemplate>> {
   const row = templateId
     ? await repository.retrieve(organizationId, templateId)
     : await repository.retrieveDefault(organizationId, category)
@@ -80,7 +80,7 @@ export async function resolveTemplate(
 export async function createTemplate(
   organizationId: string,
   input: CreateEmailTemplateInput
-): Promise<ServiceResult<EmailTemplateObject>> {
+): Promise<ServiceResult<EmailTemplate>> {
   const existing = await repository.retrieveByKey(organizationId, input.key)
   if (existing) return err('communications/invalid-request')
 
@@ -109,7 +109,7 @@ export async function updateTemplate(
   organizationId: string,
   id: string,
   input: UpdateEmailTemplateInput
-): Promise<ServiceResult<EmailTemplateObject>> {
+): Promise<ServiceResult<EmailTemplate>> {
   const current = await repository.retrieveOwned(organizationId, id)
   if (!current) return err('communications/template-not-found')
 

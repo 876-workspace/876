@@ -1,5 +1,6 @@
-import { Router } from 'express'
+import { Router, type Request } from 'express'
 
+import type { OrganizationScopedParams } from '../../http/organization-params.js'
 import { sendError, sendList, sendResult } from '../../http/result.js'
 import { createEmailDeliverySchema } from '../../types/communications.js'
 import {
@@ -11,7 +12,7 @@ import {
 export function buildDeliveryRoutes() {
   const router = Router({ mergeParams: true })
 
-  router.get('/', async (req, res) => {
+  router.get('/', async (req: Request<OrganizationScopedParams>, res) => {
     const organizationId = req.params.organizationId
     if (!organizationId) return sendError(res, 'communications/invalid-request')
 
@@ -24,7 +25,7 @@ export function buildDeliveryRoutes() {
     )
   })
 
-  router.post('/', async (req, res) => {
+  router.post('/', async (req: Request<OrganizationScopedParams>, res) => {
     const organizationId = req.params.organizationId
     if (!organizationId) return sendError(res, 'communications/invalid-request')
 
@@ -40,13 +41,19 @@ export function buildDeliveryRoutes() {
     )
   })
 
-  router.get('/:deliveryId', async (req, res) => {
-    const { organizationId, deliveryId } = req.params
-    if (!organizationId || !deliveryId)
-      return sendError(res, 'communications/invalid-request')
+  router.get(
+    '/:deliveryId',
+    async (
+      req: Request<OrganizationScopedParams & { deliveryId: string }>,
+      res
+    ) => {
+      const { organizationId, deliveryId } = req.params
+      if (!organizationId || !deliveryId)
+        return sendError(res, 'communications/invalid-request')
 
-    return sendResult(res, await retrieveDelivery(organizationId, deliveryId))
-  })
+      return sendResult(res, await retrieveDelivery(organizationId, deliveryId))
+    }
+  )
 
   return router
 }

@@ -12,7 +12,7 @@ import {
   emailDeliveryStatusSchema,
   emailRecipientSchema,
   type CreateEmailDeliveryInput,
-  type EmailDeliveryObject,
+  type EmailDelivery,
   type EmailRecipient,
 } from '../../types/communications.js'
 import { retrieveDomain } from '../domains/domains.service.js'
@@ -26,7 +26,7 @@ function parseRecipients(value: unknown): EmailRecipient[] {
   return emailRecipientSchema.array().parse(value)
 }
 
-function toObject(row: DeliveryRow): EmailDeliveryObject {
+function toObject(row: DeliveryRow): EmailDelivery {
   if (row.provider !== 'resend')
     throw new Error(`Unsupported email provider: ${row.provider}`)
 
@@ -125,7 +125,7 @@ async function sendQueuedDelivery(
   organizationId: string,
   row: DeliveryRow,
   provider: EmailProvider
-): Promise<ServiceResult<EmailDeliveryObject>> {
+): Promise<ServiceResult<EmailDelivery>> {
   const now = toDbUnixSeconds(nowUnixSeconds())
   const providerInput = {
     from: formatAddress(row.fromName, row.fromEmail),
@@ -167,10 +167,20 @@ async function sendQueuedDelivery(
   }
 }
 
+
+function resolveProvider(provided?: EmailProvider): ServiceResult<EmailProvider> {
+  if (provided) return ok(provided)
+  try {
+    return ok(getEmailProvider())
+  } catch (error) {
+    return { data: null, error: providerErrorToAppError(error) }
+  }
+}
+
 export async function listDeliveries(
   organizationId: string,
   limit?: number
-): Promise<ServiceResult<EmailDeliveryObject[]>> {
+): Promise<ServiceResult<EmailDelivery[]>> {
   const rows = await repository.list(organizationId, limit)
   return ok(rows.map(toObject))
 }
@@ -178,7 +188,7 @@ export async function listDeliveries(
 export async function retrieveDelivery(
   organizationId: string,
   id: string
-): Promise<ServiceResult<EmailDeliveryObject>> {
+): Promise<ServiceResult<EmailDelivery>> {
   const row = await repository.retrieve(organizationId, id)
   if (!row) return err('communications/delivery-not-found')
   return ok(toObject(row))
@@ -188,8 +198,12 @@ export async function createDelivery(
   organizationId: string,
   input: CreateEmailDeliveryInput,
   actorId: string | null,
-  provider: EmailProvider = getEmailProvider()
-): Promise<ServiceResult<EmailDeliveryObject>> {
+  provider?: EmailProvider
+): Promise<ServiceResult<EmailDelivery>> {
+  const activeProvider = resolveProvider(provider)
+  if (activeProvider.error) return { data: null, error: activeProvider.error }
+  const emailProvider = activeProvider.data
+
   const senderResult = await validateSenderForDelivery(
     organizationId,
     input.senderId
@@ -219,7 +233,7 @@ export async function createDelivery(
       id: delivery.id,
       now: toDbUnixSeconds(nowUnixSeconds()),
     })
-    return sendQueuedDelivery(organizationId, delivery, provider)
+    return sendQueuedDelivery(organizationId, delivery, emailProvider)
   }
 
   const now = toDbUnixSeconds(nowUnixSeconds())
@@ -231,7 +245,7 @@ export async function createDelivery(
       resourceId: input.resourceId ?? null,
       templateId: input.templateId ?? null,
       senderId: sender.id,
-      provider: provider.name,
+      provider: emailProvider.name,
       idempotencyKey: input.idempotencyKey,
       fromName: sender.name,
       fromEmail: sender.email,
@@ -257,5 +271,5 @@ export async function createDelivery(
   if (delivery.providerMessageId || !['queued', 'failed'].includes(delivery.status))
     return ok(toObject(delivery))
 
-  return sendQueuedDelivery(organizationId, delivery, provider)
+  return sendQueuedDelivery(organizationId, delivery, emailProvider)
 }

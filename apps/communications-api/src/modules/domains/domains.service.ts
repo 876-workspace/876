@@ -12,7 +12,7 @@ import {
   emailDomainRecordSchema,
   emailDomainStatusSchema,
   type CreateEmailDomainInput,
-  type EmailDomainObject,
+  type EmailDomain,
 } from '../../types/communications.js'
 import * as repository from './domains.repository.js'
 
@@ -31,7 +31,7 @@ function serializeRecords(
   }))
 }
 
-function toObject(row: DomainRow): EmailDomainObject {
+function toObject(row: DomainRow): EmailDomain {
   if (row.provider !== 'resend')
     throw new Error(`Unsupported email provider: ${row.provider}`)
 
@@ -54,9 +54,19 @@ function toObject(row: DomainRow): EmailDomainObject {
   }
 }
 
+
+function resolveProvider(provided?: EmailProvider): ServiceResult<EmailProvider> {
+  if (provided) return ok(provided)
+  try {
+    return ok(getEmailProvider())
+  } catch (error) {
+    return { data: null, error: providerErrorToAppError(error) }
+  }
+}
+
 export async function listDomains(
   organizationId: string
-): Promise<ServiceResult<EmailDomainObject[]>> {
+): Promise<ServiceResult<EmailDomain[]>> {
   const rows = await repository.list(organizationId)
   return ok(rows.map((row) => toObject(row)))
 }
@@ -64,7 +74,7 @@ export async function listDomains(
 export async function retrieveDomain(
   organizationId: string,
   id: string
-): Promise<ServiceResult<EmailDomainObject>> {
+): Promise<ServiceResult<EmailDomain>> {
   const row = await repository.retrieve(organizationId, id)
   if (!row) return err('communications/domain-not-found')
   return ok(toObject(row))
@@ -73,14 +83,18 @@ export async function retrieveDomain(
 export async function createDomain(
   organizationId: string,
   input: CreateEmailDomainInput,
-  provider: EmailProvider = getEmailProvider()
-): Promise<ServiceResult<EmailDomainObject>> {
+  provider?: EmailProvider
+): Promise<ServiceResult<EmailDomain>> {
+  const activeProvider = resolveProvider(provider)
+  if (activeProvider.error) return { data: null, error: activeProvider.error }
+  const emailProvider = activeProvider.data
+
   const existing = await repository.retrieveByName(organizationId, input.name)
   if (existing) return err('communications/domain-already-exists')
 
   let remote
   try {
-    remote = await provider.createDomain(input)
+    remote = await emailProvider.createDomain(input)
   } catch (error) {
     return { data: null, error: providerErrorToAppError(error) }
   }
@@ -89,7 +103,7 @@ export async function createDomain(
   const row = await repository.create({
     id: generateId('domain'),
     organizationId,
-    provider: provider.name,
+    provider: emailProvider.name,
     providerDomainId: remote.providerDomainId,
     name: remote.name,
     region: remote.region,
@@ -106,15 +120,19 @@ export async function createDomain(
 export async function verifyDomain(
   organizationId: string,
   id: string,
-  provider: EmailProvider = getEmailProvider()
-): Promise<ServiceResult<EmailDomainObject>> {
+  provider?: EmailProvider
+): Promise<ServiceResult<EmailDomain>> {
+  const activeProvider = resolveProvider(provider)
+  if (activeProvider.error) return { data: null, error: activeProvider.error }
+  const emailProvider = activeProvider.data
+
   const row = await repository.retrieve(organizationId, id)
   if (!row) return err('communications/domain-not-found')
 
   let remote
   try {
-    await provider.verifyDomain(row.providerDomainId)
-    remote = await provider.retrieveDomain(row.providerDomainId)
+    await emailProvider.verifyDomain(row.providerDomainId)
+    remote = await emailProvider.retrieveDomain(row.providerDomainId)
   } catch (error) {
     return { data: null, error: providerErrorToAppError(error) }
   }
@@ -139,14 +157,18 @@ export async function verifyDomain(
 export async function refreshDomain(
   organizationId: string,
   id: string,
-  provider: EmailProvider = getEmailProvider()
-): Promise<ServiceResult<EmailDomainObject>> {
+  provider?: EmailProvider
+): Promise<ServiceResult<EmailDomain>> {
+  const activeProvider = resolveProvider(provider)
+  if (activeProvider.error) return { data: null, error: activeProvider.error }
+  const emailProvider = activeProvider.data
+
   const row = await repository.retrieve(organizationId, id)
   if (!row) return err('communications/domain-not-found')
 
   let remote
   try {
-    remote = await provider.retrieveDomain(row.providerDomainId)
+    remote = await emailProvider.retrieveDomain(row.providerDomainId)
   } catch (error) {
     return { data: null, error: providerErrorToAppError(error) }
   }
@@ -171,13 +193,17 @@ export async function deleteDomain(
   organizationId: string,
   id: string,
   actorId: string | null,
-  provider: EmailProvider = getEmailProvider()
+  provider?: EmailProvider
 ) {
+  const activeProvider = resolveProvider(provider)
+  if (activeProvider.error) return { data: null, error: activeProvider.error }
+  const emailProvider = activeProvider.data
+
   const row = await repository.retrieve(organizationId, id)
   if (!row) return err('communications/domain-not-found')
 
   try {
-    await provider.deleteDomain(row.providerDomainId)
+    await emailProvider.deleteDomain(row.providerDomainId)
   } catch (error) {
     return { data: null, error: providerErrorToAppError(error) }
   }

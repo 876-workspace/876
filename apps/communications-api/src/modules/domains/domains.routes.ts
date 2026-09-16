@@ -1,5 +1,6 @@
-import { Router } from 'express'
+import { Router, type Request } from 'express'
 
+import type { OrganizationScopedParams } from '../../http/organization-params.js'
 import { sendError, sendList, sendResult } from '../../http/result.js'
 import { createEmailDomainSchema } from '../../types/communications.js'
 import {
@@ -14,7 +15,7 @@ import {
 export function buildDomainRoutes() {
   const router = Router({ mergeParams: true })
 
-  router.get('/', async (req, res) => {
+  router.get('/', async (req: Request<OrganizationScopedParams>, res) => {
     const organizationId = req.params.organizationId
     if (!organizationId) return sendError(res, 'communications/invalid-request')
 
@@ -22,7 +23,7 @@ export function buildDomainRoutes() {
     return sendList(res, result, req.originalUrl)
   })
 
-  router.post('/', async (req, res) => {
+  router.post('/', async (req: Request<OrganizationScopedParams>, res) => {
     const organizationId = req.params.organizationId
     if (!organizationId) return sendError(res, 'communications/invalid-request')
 
@@ -34,38 +35,62 @@ export function buildDomainRoutes() {
     return sendResult(res, result, 201)
   })
 
-  router.get('/:domainId', async (req, res) => {
-    const { organizationId, domainId } = req.params
-    if (!organizationId || !domainId)
-      return sendError(res, 'communications/invalid-request')
+  router.get(
+    '/:domainId',
+    async (
+      req: Request<OrganizationScopedParams & { domainId: string }>,
+      res
+    ) => {
+      const { organizationId, domainId } = req.params
+      if (!organizationId || !domainId)
+        return sendError(res, 'communications/invalid-request')
 
-    return sendResult(res, await retrieveDomain(organizationId, domainId))
-  })
+      return sendResult(res, await retrieveDomain(organizationId, domainId))
+    }
+  )
 
-  router.post('/:domainId/verify', async (req, res) => {
-    const { organizationId, domainId } = req.params
-    if (!organizationId || !domainId)
-      return sendError(res, 'communications/invalid-request')
+  router.post(
+    '/:domainId/verify',
+    async (
+      req: Request<OrganizationScopedParams & { domainId: string }>,
+      res
+    ) => {
+      const { organizationId, domainId } = req.params
+      if (!organizationId || !domainId)
+        return sendError(res, 'communications/invalid-request')
 
-    return sendResult(res, await verifyDomain(organizationId, domainId))
-  })
+      return sendResult(res, await verifyDomain(organizationId, domainId))
+    }
+  )
 
-  router.post('/:domainId/refresh', async (req, res) => {
-    const { organizationId, domainId } = req.params
-    if (!organizationId || !domainId)
-      return sendError(res, 'communications/invalid-request')
+  router.post(
+    '/:domainId/refresh',
+    async (
+      req: Request<OrganizationScopedParams & { domainId: string }>,
+      res
+    ) => {
+      const { organizationId, domainId } = req.params
+      if (!organizationId || !domainId)
+        return sendError(res, 'communications/invalid-request')
 
-    return sendResult(res, await refreshDomain(organizationId, domainId))
-  })
+      return sendResult(res, await refreshDomain(organizationId, domainId))
+    }
+  )
 
-  router.delete('/:domainId', async (req, res) => {
-    const { organizationId, domainId } = req.params
-    if (!organizationId || !domainId)
-      return sendError(res, 'communications/invalid-request')
+  router.delete(
+    '/:domainId',
+    async (
+      req: Request<OrganizationScopedParams & { domainId: string }>,
+      res
+    ) => {
+      const { organizationId, domainId } = req.params
+      if (!organizationId || !domainId)
+        return sendError(res, 'communications/invalid-request')
 
-    const actorId = req.header('x-actor-id')?.trim() || null
-    return sendResult(res, await deleteDomain(organizationId, domainId, actorId))
-  })
+      const actorId = req.header('x-actor-id')?.trim() || null
+      return sendResult(res, await deleteDomain(organizationId, domainId, actorId))
+    }
+  )
 
   return router
 }

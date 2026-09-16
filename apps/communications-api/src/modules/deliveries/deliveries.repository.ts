@@ -1,3 +1,4 @@
+import type { Prisma } from '../../db/generated/prisma/client.js'
 import { prisma } from '../../db/index.js'
 
 export async function list(organizationId: string, limit = 50) {
@@ -152,7 +153,7 @@ export async function recordProviderEvent(input: {
   provider: string
   type: string
   occurredAt: bigint
-  metadata: Record<string, unknown>
+  metadata: Prisma.InputJsonValue
   status?: string
   timestampField?:
     | 'sentAt'

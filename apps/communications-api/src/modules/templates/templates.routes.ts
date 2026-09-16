@@ -1,6 +1,7 @@
-import { Router } from 'express'
+import { Router, type Request } from 'express'
 import { z } from 'zod'
 
+import type { OrganizationScopedParams } from '../../http/organization-params.js'
 import { sendError, sendList, sendResult } from '../../http/result.js'
 import {
   createEmailTemplateSchema,
@@ -25,13 +26,13 @@ const resolveQuerySchema = z.object({
 export function buildTemplateRoutes() {
   const router = Router({ mergeParams: true })
 
-  router.get('/', async (req, res) => {
+  router.get('/', async (req: Request<OrganizationScopedParams>, res) => {
     const organizationId = req.params.organizationId
     if (!organizationId) return sendError(res, 'communications/invalid-request')
     return sendList(res, await listTemplates(organizationId), req.originalUrl)
   })
 
-  router.post('/', async (req, res) => {
+  router.post('/', async (req: Request<OrganizationScopedParams>, res) => {
     const organizationId = req.params.organizationId
     if (!organizationId) return sendError(res, 'communications/invalid-request')
 
@@ -43,7 +44,7 @@ export function buildTemplateRoutes() {
   })
 
   // Registered before /:templateId so "resolve" cannot be consumed as an id.
-  router.get('/resolve', async (req, res) => {
+  router.get('/resolve', async (req: Request<OrganizationScopedParams>, res) => {
     const organizationId = req.params.organizationId
     const parsed = resolveQuerySchema.safeParse(req.query)
     if (!organizationId || !parsed.success)
@@ -59,54 +60,78 @@ export function buildTemplateRoutes() {
     )
   })
 
-  router.get('/:templateId', async (req, res) => {
-    const { organizationId, templateId } = req.params
-    if (!organizationId || !templateId)
-      return sendError(res, 'communications/invalid-request')
-    return sendResult(res, await retrieveTemplate(organizationId, templateId))
-  })
+  router.get(
+    '/:templateId',
+    async (
+      req: Request<OrganizationScopedParams & { templateId: string }>,
+      res
+    ) => {
+      const { organizationId, templateId } = req.params
+      if (!organizationId || !templateId)
+        return sendError(res, 'communications/invalid-request')
+      return sendResult(res, await retrieveTemplate(organizationId, templateId))
+    }
+  )
 
-  router.patch('/:templateId', async (req, res) => {
-    const { organizationId, templateId } = req.params
-    if (!organizationId || !templateId)
-      return sendError(res, 'communications/invalid-request')
+  router.patch(
+    '/:templateId',
+    async (
+      req: Request<OrganizationScopedParams & { templateId: string }>,
+      res
+    ) => {
+      const { organizationId, templateId } = req.params
+      if (!organizationId || !templateId)
+        return sendError(res, 'communications/invalid-request')
 
-    const parsed = updateEmailTemplateSchema.safeParse(req.body)
-    if (!parsed.success)
-      return sendError(res, 'communications/invalid-request')
+      const parsed = updateEmailTemplateSchema.safeParse(req.body)
+      if (!parsed.success)
+        return sendError(res, 'communications/invalid-request')
 
-    return sendResult(
-      res,
-      await updateTemplate(organizationId, templateId, parsed.data)
-    )
-  })
+      return sendResult(
+        res,
+        await updateTemplate(organizationId, templateId, parsed.data)
+      )
+    }
+  )
 
-  router.post('/:templateId/render', async (req, res) => {
-    const { organizationId, templateId } = req.params
-    if (!organizationId || !templateId)
-      return sendError(res, 'communications/invalid-request')
+  router.post(
+    '/:templateId/render',
+    async (
+      req: Request<OrganizationScopedParams & { templateId: string }>,
+      res
+    ) => {
+      const { organizationId, templateId } = req.params
+      if (!organizationId || !templateId)
+        return sendError(res, 'communications/invalid-request')
 
-    const parsed = renderEmailTemplateSchema.safeParse(req.body)
-    if (!parsed.success)
-      return sendError(res, 'communications/invalid-request')
+      const parsed = renderEmailTemplateSchema.safeParse(req.body)
+      if (!parsed.success)
+        return sendError(res, 'communications/invalid-request')
 
-    return sendResult(
-      res,
-      await renderTemplate(organizationId, templateId, parsed.data)
-    )
-  })
+      return sendResult(
+        res,
+        await renderTemplate(organizationId, templateId, parsed.data)
+      )
+    }
+  )
 
-  router.delete('/:templateId', async (req, res) => {
-    const { organizationId, templateId } = req.params
-    if (!organizationId || !templateId)
-      return sendError(res, 'communications/invalid-request')
+  router.delete(
+    '/:templateId',
+    async (
+      req: Request<OrganizationScopedParams & { templateId: string }>,
+      res
+    ) => {
+      const { organizationId, templateId } = req.params
+      if (!organizationId || !templateId)
+        return sendError(res, 'communications/invalid-request')
 
-    const actorId = req.header('x-actor-id')?.trim() || null
-    return sendResult(
-      res,
-      await deleteTemplate(organizationId, templateId, actorId)
-    )
-  })
+      const actorId = req.header('x-actor-id')?.trim() || null
+      return sendResult(
+        res,
+        await deleteTemplate(organizationId, templateId, actorId)
+      )
+    }
+  )
 
   return router
 }
