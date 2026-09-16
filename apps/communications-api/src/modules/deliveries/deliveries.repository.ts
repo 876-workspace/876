@@ -146,8 +146,9 @@ export async function markFailed(input: {
 }
 
 export async function recordProviderEvent(input: {
+  id: string
   deliveryId: string
-  eventId: string
+  providerEventId: string
   provider: string
   type: string
   occurredAt: bigint
@@ -165,16 +166,16 @@ export async function recordProviderEvent(input: {
 }) {
   return prisma.$transaction(async (tx) => {
     const existing = await tx.emailDeliveryEvent.findUnique({
-      where: { providerEventId: input.eventId },
+      where: { providerEventId: input.providerEventId },
     })
     if (existing) return { inserted: false as const }
 
     await tx.emailDeliveryEvent.create({
       data: {
-        id: input.eventId,
+        id: input.id,
         deliveryId: input.deliveryId,
         provider: input.provider,
-        providerEventId: input.eventId,
+        providerEventId: input.providerEventId,
         type: input.type,
         occurredAt: input.occurredAt,
         metadata: input.metadata,
