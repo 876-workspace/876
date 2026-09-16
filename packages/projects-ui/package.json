@@ -47,6 +47,10 @@
       "types": "./src/issue-board.tsx",
       "default": "./src/issue-board.tsx"
     },
+    "./project-gantt": {
+      "types": "./src/project-gantt.tsx",
+      "default": "./src/project-gantt.tsx"
+    },
     "./issue-grouping": {
       "types": "./src/issue-grouping.ts",
       "default": "./src/issue-grouping.ts"
