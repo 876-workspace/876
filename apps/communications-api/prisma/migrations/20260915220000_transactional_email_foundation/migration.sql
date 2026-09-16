@@ -150,3 +150,30 @@ ALTER TABLE "email_deliveries"
 ALTER TABLE "email_delivery_events"
   ADD CONSTRAINT "email_delivery_events_delivery_id_fkey"
   FOREIGN KEY ("delivery_id") REFERENCES "email_deliveries"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- System defaults are deliberately organization-neutral. Organization-owned
+-- defaults override them through templates.retrieveDefault(), while sender
+-- selection remains organization-owned and must be configured separately.
+INSERT INTO "email_templates" (
+  "id", "organization_id", "key", "name", "category", "subject", "html",
+  "text", "sender_id", "is_default", "is_system", "is_active",
+  "created_at", "updated_at"
+) VALUES
+(
+  'etpl_system_invoice_default', NULL, 'billing.invoice.default',
+  'Default invoice email', 'invoice',
+  'Invoice {{documentNumber}} from {{organizationName}}',
+  '<p>Hello {{customerName}},</p><p>Your invoice <strong>{{documentNumber}}</strong> from {{organizationName}} is ready.</p><p>Total: {{currency}} {{documentTotal}}</p><p>Due: {{dueDate}}</p>',
+  'Hello {{customerName}},\n\nYour invoice {{documentNumber}} from {{organizationName}} is ready.\nTotal: {{currency}} {{documentTotal}}\nDue: {{dueDate}}',
+  NULL, true, true, true,
+  EXTRACT(EPOCH FROM NOW())::BIGINT, EXTRACT(EPOCH FROM NOW())::BIGINT
+),
+(
+  'etpl_system_quote_default', NULL, 'billing.quote.default',
+  'Default quote email', 'quote',
+  'Quote {{documentNumber}} from {{organizationName}}',
+  '<p>Hello {{customerName}},</p><p>Your quote <strong>{{documentNumber}}</strong> from {{organizationName}} is ready.</p><p>Total: {{currency}} {{documentTotal}}</p><p>Valid until: {{expiryDate}}</p>',
+  'Hello {{customerName}},\n\nYour quote {{documentNumber}} from {{organizationName}} is ready.\nTotal: {{currency}} {{documentTotal}}\nValid until: {{expiryDate}}',
+  NULL, true, true, true,
+  EXTRACT(EPOCH FROM NOW())::BIGINT, EXTRACT(EPOCH FROM NOW())::BIGINT
+);
