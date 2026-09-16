@@ -5,6 +5,7 @@ import { apps } from './apps'
 import { billing } from './billing'
 import { billingIntegrations } from './billing-integrations'
 import { devices } from './devices'
+import { emailDomains } from './email'
 import { features } from './features'
 import {
   appAssignments,
@@ -44,6 +45,7 @@ export const client = {
   billing,
   billingIntegrations,
   devices,
+  emailDomains,
   features,
   organizations,
   members,
@@ -79,6 +81,7 @@ export { applicationProvisioningProfiles } from './application-provisioning-prof
 export { apps } from './apps'
 export { billing } from './billing'
 export { billingIntegrations } from './billing-integrations'
+export { emailDomains } from './email'
 export { features } from './features'
 export {
   appAssignments,
