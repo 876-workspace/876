@@ -6,8 +6,8 @@ import { AppError } from '@876/ui/app-error'
 
 import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
+import type { ReportPeriod } from '@/lib/period'
 import { projects } from '@/lib/services/projects'
-import type { FinancePeriod } from '../period'
 import { InvoiceDraftAction } from './invoice-draft-action'
 
 export async function FinanceData({
@@ -15,7 +15,7 @@ export async function FinanceData({
   period,
 }: {
   projectId: string
-  period: FinancePeriod
+  period: ReportPeriod
 }) {
   const { orgId, userId } = await requireProjectsContext()
   const decoded = decodeURIComponent(projectId)
@@ -53,7 +53,7 @@ export async function FinanceData({
 
   return (
     <div className="space-y-4">
-      {summaryResult.error ?? budgetsResult.error ?? ratesResult.error ? (
+      {(summaryResult.error ?? budgetsResult.error ?? ratesResult.error) ? (
         <AppError
           title="Some finance data could not be loaded"
           error={

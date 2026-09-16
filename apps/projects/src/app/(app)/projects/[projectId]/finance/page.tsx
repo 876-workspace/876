@@ -5,7 +5,7 @@ import { Suspense } from 'react'
 
 import { PageBreadcrumb } from '@/components/page-breadcrumb'
 import { FinanceData } from '@/features/finance/components/finance-data'
-import { resolvePeriod } from '@/features/finance/period'
+import { resolvePeriod } from '@/lib/period'
 import {
   requireAppAccess,
   requireProjectsContext,
