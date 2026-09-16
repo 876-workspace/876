@@ -246,6 +246,27 @@ export async function updateMilestone(
   return prisma.milestone.update({ where: { id }, data })
 }
 
+export type MilestoneTransaction = {
+  client: WorkStructureTransaction
+  updateMilestone: (
+    id: string,
+    data: Parameters<typeof prisma.milestone.update>[0]['data']
+  ) => Promise<Awaited<ReturnType<typeof prisma.milestone.update>>>
+}
+
+export async function transaction<T>(
+  callback: (tx: MilestoneTransaction) => Promise<T>
+): Promise<T> {
+  return prisma.$transaction(async (txPrisma) => {
+    const client = txPrisma as WorkStructureTransaction
+    return callback({
+      client,
+      updateMilestone: (id, data) =>
+        txPrisma.milestone.update({ where: { id }, data }),
+    })
+  })
+}
+
 export async function deleteMilestone(
   tenantId: string,
   id: string,

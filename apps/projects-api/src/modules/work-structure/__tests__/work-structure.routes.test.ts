@@ -14,6 +14,7 @@ const {
   milestoneListRepo,
   taskListsRepo,
   cyclesRepo,
+  automation,
 } = vi.hoisted(() => ({
   layoutsRepo: {
     listLayouts: vi.fn(),
@@ -74,7 +75,9 @@ const {
     clearCustomFieldValue: vi.fn(),
     seedMissing: vi.fn(),
     seedPreset: vi.fn(),
+    transaction: vi.fn(),
   },
+  automation: { appendOutboxEvent: vi.fn() },
   tenants: { resolveTenant: vi.fn(), setPresetKey: vi.fn() },
   projects: { resolveProject: vi.fn() },
   issues: { resolveIssue: vi.fn() },
@@ -128,6 +131,7 @@ const {
 }))
 
 vi.mock('../work-structure.repository.js', () => repository)
+vi.mock('../../automation/index.js', () => automation)
 vi.mock('../../tenants/index.js', () => tenants)
 vi.mock('../../projects/index.js', () => projects)
 vi.mock('../../issues/index.js', () => issues)
@@ -318,6 +322,22 @@ beforeEach(() => {
     ...milestoneRow,
     ...patch,
   }))
+  repository.transaction.mockImplementation(
+    async (callback: (tx: unknown) => Promise<unknown>) =>
+      callback({
+        client: {
+          milestone: {
+            update: async (args: { where: { id: string }; data: unknown }) =>
+              repository.updateMilestone(
+                'prjten_mock',
+                args.where.id,
+                args.data
+              ),
+          },
+        },
+        updateMilestone: repository.updateMilestone,
+      })
+  )
   repository.listCustomFields.mockResolvedValue([])
   repository.retrieveCustomField.mockResolvedValue(null)
   repository.retrieveCustomFieldByKey.mockResolvedValue(null)

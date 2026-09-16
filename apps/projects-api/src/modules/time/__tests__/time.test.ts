@@ -22,6 +22,7 @@ const {
   baselinesRepo,
   calendarRepo,
   timeRepo,
+  automation,
 } = vi.hoisted(() => ({
   layoutsRepo: {
     listLayouts: vi.fn(),
@@ -197,7 +198,9 @@ const {
     retrieveMilestoneTargetDate: vi.fn(),
     retrieveEventStart: vi.fn(),
   },
+  automation: { appendOutboxEvent: vi.fn() },
   timeRepo: {
+    transaction: vi.fn(),
     createTimeEntry: vi.fn(),
     listTimeEntries: vi.fn(),
     retrieveTimeEntry: vi.fn(),
@@ -243,6 +246,7 @@ vi.mock('../../projects/gantt.repository.js', () => ganttRepo)
 vi.mock('../../projects/baselines.repository.js', () => baselinesRepo)
 vi.mock('../../calendar/calendar.repository.js', () => calendarRepo)
 vi.mock('../time.repository.js', () => timeRepo)
+vi.mock('../../automation/index.js', () => automation)
 
 vi.mock('../../layouts/layouts.repository.js', () => layoutsRepo)
 vi.mock(
@@ -390,6 +394,10 @@ beforeEach(() => {
   projectsRepo.retrieve.mockResolvedValue(project)
   projectsRepo.retrieveByKey.mockResolvedValue(null)
   timeRepo.createTimeEntry.mockImplementation(async (params: Record<string, unknown>) => entryRow({ ...params }))
+  timeRepo.transaction.mockImplementation(
+    async (callback: (tx: unknown) => Promise<unknown>) =>
+      callback({ client: {}, createTimeEntry: timeRepo.createTimeEntry })
+  )
   timeRepo.listTimeEntries.mockResolvedValue([])
   timeRepo.retrieveTimeEntry.mockResolvedValue(null)
   timeRepo.retrieveRunningEntry.mockResolvedValue(null)

@@ -125,7 +125,20 @@ function matchesCondition(
 }
 
 function ruleApplies(rule: LayoutRule, values: LayoutValues): boolean {
-  return rule.when.every((condition) => matchesCondition(condition, values))
+  return matchesConditions(rule.when, values)
+}
+
+/**
+ * Matches one AND-group of layout conditions against field values.
+ *
+ * Exported so automation rules reuse the exact condition vocabulary as layout
+ * rules instead of growing a second matcher.
+ */
+export function matchesConditions(
+  when: LayoutCondition[],
+  values: LayoutValues
+): boolean {
+  return when.every((condition) => matchesCondition(condition, values))
 }
 
 /**

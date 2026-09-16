@@ -18,6 +18,8 @@ const {
   txMock,
   ganttRepo,
   baselinesRepo,
+  automation,
+  workflows,
 } = vi.hoisted(() => {
   const transactionClient = { transaction: 'projects-test-transaction' }
   const tx = {
@@ -163,6 +165,8 @@ const {
       listDependenciesForIssues: vi.fn(),
       listIssueStatuses: vi.fn(),
     },
+    automation: { appendOutboxEvent: vi.fn() },
+    workflows: { checkTransition: vi.fn() },
     txMock: tx,
     ganttRepo: {
       listGanttMilestones: vi.fn(),
@@ -203,6 +207,8 @@ vi.mock('../../work-structure/task-lists.repository.js', () => taskListsRepo)
 vi.mock('../../work-structure/cycles.repository.js', () => cyclesRepo)
 vi.mock('../issues.repository.js', () => repository)
 vi.mock('../issue-links.repository.js', () => issueLinksRepo)
+vi.mock('../../automation/index.js', () => automation)
+vi.mock('../../workflows/index.js', () => workflows)
 
 vi.mock('../../projects/gantt.repository.js', () => ganttRepo)
 vi.mock('../../projects/baselines.repository.js', () => baselinesRepo)
@@ -371,6 +377,7 @@ beforeEach(() => {
   projectCustomFieldsRepo.listProjectCustomFieldValues.mockResolvedValue([])
   projectCustomFieldsRepo.listProjectCustomFieldValuesForProjects.mockResolvedValue([])
   vi.clearAllMocks()
+  workflows.checkTransition.mockResolvedValue({ data: null, error: null })
   delete process.env.DELETION_MODE
   process.env.PROJECTS_INTERNAL_KEY = 'test-internal-key'
   issueLinksRepo.listRelations.mockResolvedValue([])

@@ -308,6 +308,26 @@ export const PROJECTS_ERRORS = {
     message: 'The report period is invalid. The end must be after the start.',
     httpStatus: 422 as HttpStatusCode,
   },
+  'projects/transition-not-allowed': {
+    message: 'This state change is not allowed by the workflow blueprint.',
+    httpStatus: 422 as HttpStatusCode,
+  },
+  'projects/transition-requirements-unmet': {
+    message: 'This transition requires additional fields, a comment, or a permission.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/automation-rule-not-found': {
+    message: 'The automation rule could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/automation-subject-not-found': {
+    message: 'The automation subject could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/notification-not-found': {
+    message: 'The notification could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
   'projects/not-found': {
     message: 'Not found.',
     httpStatus: 404 as HttpStatusCode,

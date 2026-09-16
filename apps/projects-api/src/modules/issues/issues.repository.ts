@@ -392,6 +392,36 @@ export async function getBatchEnrichment(issueIds: string[]): Promise<
   return map
 }
 
+export type DueIssueRow = {
+  id: string
+  tenantId: string
+  projectId: string
+  status: string
+  dueDate: bigint | null
+}
+
+export async function listIssuesDueBetween(
+  tenantId: string,
+  from: bigint,
+  to: bigint
+): Promise<DueIssueRow[]> {
+  return prisma.issue.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      dueDate: { gte: from, lte: to },
+    },
+    select: {
+      id: true,
+      tenantId: true,
+      projectId: true,
+      status: true,
+      dueDate: true,
+    },
+    orderBy: [{ dueDate: 'asc' }, { id: 'asc' }],
+  })
+}
+
 export async function transaction<T>(
   callback: (tx: TransactionRepo) => Promise<T>
 ): Promise<T> {

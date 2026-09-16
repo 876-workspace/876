@@ -29,7 +29,10 @@ import { createPresetsResource } from './resources/presets'
 import { createProjectsResource } from './resources/projects'
 import { createProjectTemplatesResource } from './resources/project-templates'
 import { createTenantsResource } from './resources/tenants'
+import { createAutomationRulesResource } from './resources/automation-rules'
+import { createNotificationsResource } from './resources/notifications'
 import { createWorkflowStatesResource } from './resources/workflow-states'
+import { createWorkflowsResource } from './resources/workflows'
 import { createWorkItemTypesResource } from './resources/work-item-types'
 import { buildRuntime } from './runtime'
 import type { ClientOptions } from './types'
@@ -49,6 +52,9 @@ export function create876ProjectsClient(options: ClientOptions = {}) {
     comments: createCommentsResource(runtime),
     workItemTypes: createWorkItemTypesResource(runtime),
     workflowStates: createWorkflowStatesResource(runtime),
+    workflows: createWorkflowsResource(runtime),
+    automationRules: createAutomationRulesResource(runtime),
+    notifications: createNotificationsResource(runtime),
     milestones: createMilestonesResource(runtime),
     taskLists: createTaskListsResource(runtime),
     cycles: createCyclesResource(runtime),

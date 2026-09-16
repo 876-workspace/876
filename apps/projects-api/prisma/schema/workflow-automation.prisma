@@ -1,0 +1,103 @@
+model WorkflowTransition {
+  id                 String   @id
+  tenantId           String   @map("tenant_id")
+  workItemTypeId     String?  @map("work_item_type_id")
+  fromStateKey       String?  @map("from_state_key")
+  toStateKey         String   @map("to_state_key")
+  name               String
+  requiredPermission String?  @map("required_permission")
+  requiredFieldKeys  String[] @default([]) @map("required_field_keys")
+  requiresComment    Boolean  @default(false) @map("requires_comment")
+  createdAt          BigInt   @map("created_at")
+  updatedAt          BigInt   @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workItemTypeId], map: "projects_wf_trans_tenant_type_idx")
+  @@map("projects_workflow_transitions")
+}
+
+model AutomationRule {
+  id            String   @id
+  tenantId      String   @map("tenant_id")
+  projectId     String?  @map("project_id")
+  name          String
+  enabled       Boolean  @default(true)
+  trigger       String
+  conditions    Json     @default("[]")
+  actions       Json     @default("[]")
+  webhookSecret Json?    @map("webhook_secret")
+  deletedAt     BigInt?  @map("deleted_at")
+  createdAt     BigInt   @map("created_at")
+  updatedAt     BigInt   @map("updated_at")
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  runs   AutomationRun[]
+
+  @@index([tenantId, trigger], map: "projects_arules_tenant_trigger_idx")
+  @@index([tenantId, projectId], map: "projects_arules_tenant_project_idx")
+  @@map("projects_automation_rules")
+}
+
+model AutomationEvent {
+  id             String  @id
+  tenantId       String  @map("tenant_id")
+  type           String
+  subjectType    String  @map("subject_type")
+  subjectId      String  @map("subject_id")
+  payload        Json    @default("{}")
+  causationDepth Int     @default(0) @map("causation_depth")
+  attempts       Int     @default(0)
+  claimedAt      BigInt? @map("claimed_at")
+  processedAt    BigInt? @map("processed_at")
+  nextAttemptAt  BigInt? @map("next_attempt_at")
+  createdAt      BigInt  @map("created_at")
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  runs   AutomationRun[]
+
+  @@index([tenantId, processedAt], map: "projects_aevents_tenant_processed_idx")
+  @@index([tenantId, type, subjectType, subjectId], map: "projects_aevents_subject_idx")
+  @@map("projects_automation_events")
+}
+
+model AutomationRun {
+  id           String  @id
+  tenantId     String  @map("tenant_id")
+  ruleId       String  @map("rule_id")
+  eventId      String  @map("event_id")
+  status       String
+  errorCode    String? @map("error_code")
+  attempt      Int     @default(1)
+  responseCode Int?    @map("response_code")
+  startedAt    BigInt  @map("started_at")
+  finishedAt   BigInt  @map("finished_at")
+  durationMs   Int     @map("duration_ms")
+  createdAt    BigInt  @map("created_at")
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rule   AutomationRule  @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  event  AutomationEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([ruleId, eventId], map: "projects_aruns_rule_event_uidx")
+  @@index([tenantId, eventId], map: "projects_aruns_tenant_event_idx")
+  @@index([tenantId, ruleId], map: "projects_aruns_tenant_rule_idx")
+  @@map("projects_automation_runs")
+}
+
+model Notification {
+  id          String  @id
+  tenantId    String  @map("tenant_id")
+  userId      String  @map("user_id")
+  kind        String
+  title       String
+  subjectType String? @map("subject_type")
+  subjectId   String? @map("subject_id")
+  readAt      BigInt? @map("read_at")
+  createdAt   BigInt  @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, userId], map: "projects_notifications_tenant_user_idx")
+  @@map("projects_notifications")
+}

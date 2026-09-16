@@ -440,7 +440,8 @@ export async function retrieveMilestone(
 export async function updateMilestone(
   organizationId: string,
   id: string,
-  body: UpdateMilestoneBody
+  body: UpdateMilestoneBody,
+  options?: { client?: repository.WorkStructureTransaction }
 ): Promise<ServiceResult<SerializedMilestone>> {
   const resolved = await resolveTenant(organizationId)
   if (resolved.error) return { data: null, error: resolved.error }
@@ -448,7 +449,7 @@ export async function updateMilestone(
   if (!existing)
     return { data: null, error: getError('projects/milestone-not-found') }
   const timestamp = now()
-  const row = await repository.updateMilestone(resolved.tenant.id, id, {
+  const updateData = {
     ...body,
     startDate:
       body.startDate === undefined
@@ -465,7 +466,10 @@ export async function updateMilestone(
           ? null
           : undefined,
     updatedAt: timestamp,
-  })
+  }
+  const row = options?.client
+    ? await options.client.milestone.update({ where: { id }, data: updateData })
+    : await repository.updateMilestone(resolved.tenant.id, id, updateData)
   return { data: serializeMilestone(row), error: null }
 }
 
