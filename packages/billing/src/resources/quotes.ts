@@ -51,6 +51,10 @@ function lifecyclePath(quoteId: string, action: string) {
   return `${resourcePath(quoteId)}/${action}`
 }
 
+function emailQuery(params: DocumentEmailPrepareParams) {
+  return { senderId: params.senderId, templateId: params.templateId }
+}
+
 /** `$876.billing.quotes.*` — tenant-scoped shared finance quote operations. */
 export function createQuotesResource(runtime: Runtime) {
   const transition = (
@@ -160,7 +164,7 @@ export function createQuotesResource(runtime: Runtime) {
         {
           method: 'GET',
           path: `${resourcePath(quoteId)}/email`,
-          query: params,
+          query: emailQuery(params),
           signal: options?.signal,
         },
         DocumentEmailCompositionSchema
