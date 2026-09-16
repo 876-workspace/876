@@ -11,7 +11,7 @@ import { Input } from '@876/ui/input'
 import { NativeSelect } from '@876/ui/native-select'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { issuesClient } from '@/lib/client'
 import { issueLinksClient } from '@/lib/client/issue-links'
@@ -48,9 +48,10 @@ type ScheduleSuggestionView = {
 type Props = {
   issueRef: string
   issueId: string
+  /** The project the work item belongs to, which the pickers search first. */
+  projectId: string | null
   relations: readonly RelationLink[]
   dependencies: readonly DependencyLink[]
-  candidates: readonly WorkItemOption[]
   plannedStartDate: number | null
   plannedFinishDate: number | null
   plannedDurationMinutes: number | null
@@ -67,7 +68,18 @@ const DEPENDENCY_TYPE_OPTIONS: readonly IssueDependencyType[] = [
   'finish-to-finish',
   'start-to-finish',
 ]
-const PICKER_LIMIT = 50
+/** How long the box waits after the last keystroke before searching. */
+const SEARCH_DEBOUNCE_MS = 300
+
+/** What a picker can say about the query it is showing. */
+type WorkItemSearchStatus = 'idle' | 'searching' | 'ready' | 'failed'
+
+type WorkItemSearch = {
+  options: readonly WorkItemOption[]
+  status: WorkItemSearchStatus
+}
+
+const NO_SEARCH: WorkItemSearch = { options: [], status: 'idle' }
 
 function relationLabel(link: RelationLink): string {
   if (link.type === 'blocks')
@@ -97,19 +109,68 @@ function dateTimestamp(value: string): number | null {
   return Number.isNaN(parsed) ? null : Math.floor(parsed / 1000)
 }
 
-function filterWorkItems(
-  items: readonly WorkItemOption[],
+/**
+ * Searches work items on the server as the box is typed in.
+ *
+ * A picker has to reach every work item of the tenant, so it cannot hold a
+ * preloaded window: whatever fell outside that window was unlinkable. Typing is
+ * debounced so a burst of keystrokes is one request, and a query the user has
+ * typed past is aborted on the wire so a slow older answer cannot overwrite a
+ * newer one. An empty box searches nothing — the picker offers no list on
+ * focus.
+ */
+function useWorkItemSearch(input: {
   query: string
-): WorkItemOption[] {
-  const needle = query.trim().toLowerCase()
-  if (!needle) return items.slice(0, PICKER_LIMIT)
-  return items
-    .filter(
-      (item) =>
-        item.identifier.toLowerCase().includes(needle) ||
-        item.title.toLowerCase().includes(needle)
-    )
-    .slice(0, PICKER_LIMIT)
+  projectId: string | null
+  allProjects: boolean
+}): WorkItemSearch {
+  const { query, projectId, allProjects } = input
+  const [search, setSearch] = useState<WorkItemSearch>(NO_SEARCH)
+  const trimmed = query.trim()
+
+  useEffect(() => {
+    if (!trimmed) return
+
+    const controller = new AbortController()
+    const timer = setTimeout(() => {
+      setSearch({ options: [], status: 'searching' })
+      void issuesClient
+        .search(
+          { q: trimmed, ...(projectId && !allProjects ? { projectId } : {}) },
+          controller.signal
+        )
+        .then((result) => {
+          if (controller.signal.aborted) return
+          if (result.error) {
+            setSearch({ options: [], status: 'failed' })
+            return
+          }
+
+          setSearch({
+            options: (result.data ?? []).map((issue) => ({
+              id: issue.id,
+              identifier: issue.identifier,
+              title: issue.title,
+            })),
+            status: 'ready',
+          })
+        })
+    }, SEARCH_DEBOUNCE_MS)
+
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
+  }, [trimmed, projectId, allProjects])
+
+  // An empty box searches nothing, so the picker offers no list on focus.
+  return trimmed ? search : NO_SEARCH
+}
+
+function pickerPlaceholder(status: WorkItemSearchStatus): string {
+  if (status === 'searching') return 'Searching…'
+  if (status === 'failed') return 'Search failed — try again'
+  return 'Select a work item'
 }
 
 /**
@@ -123,9 +184,9 @@ function filterWorkItems(
 export function IssueLinksPanel({
   issueRef,
   issueId,
+  projectId,
   relations,
   dependencies,
-  candidates,
   plannedStartDate,
   plannedFinishDate,
   plannedDurationMinutes,
@@ -148,6 +209,7 @@ export function IssueLinksPanel({
   const [dependencyType, setDependencyType] =
     useState<IssueDependencyType>('finish-to-start')
   const [dependencyLag, setDependencyLag] = useState('0')
+  const [allProjects, setAllProjects] = useState(false)
   const [plannedStart, setPlannedStart] = useState(
     dateInputValue(plannedStartDate)
   )
@@ -158,14 +220,16 @@ export function IssueLinksPanel({
     plannedDurationMinutes === null ? '' : String(plannedDurationMinutes)
   )
 
-  const relationOptions = useMemo(
-    () => filterWorkItems(candidates, relationQuery),
-    [candidates, relationQuery]
-  )
-  const dependencyOptions = useMemo(
-    () => filterWorkItems(candidates, dependencyQuery),
-    [candidates, dependencyQuery]
-  )
+  const relationSearch = useWorkItemSearch({
+    query: relationQuery,
+    projectId,
+    allProjects,
+  })
+  const dependencySearch = useWorkItemSearch({
+    query: dependencyQuery,
+    projectId,
+    allProjects,
+  })
   const predecessors = dependencies.filter(
     (link) => link.role === 'predecessor'
   )
@@ -375,6 +439,16 @@ export function IssueLinksPanel({
               placeholder="Identifier or title"
             />
           </FormRow>
+          {projectId ? (
+            <FormRow label="All projects" htmlFor="relationship-all-projects">
+              <input
+                id="relationship-all-projects"
+                type="checkbox"
+                checked={allProjects}
+                onChange={(event) => setAllProjects(event.target.checked)}
+              />
+            </FormRow>
+          ) : null}
           <FormRow label="Related work item" htmlFor="relationship-target">
             <NativeSelect
               id="relationship-target"
@@ -382,8 +456,10 @@ export function IssueLinksPanel({
               onChange={(event) => setRelationTargetId(event.target.value)}
               className="w-full"
             >
-              <option value="">Select a work item</option>
-              {relationOptions.map((item) => (
+              <option value="">
+                {pickerPlaceholder(relationSearch.status)}
+              </option>
+              {relationSearch.options.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.identifier} · {item.title}
                 </option>
@@ -481,8 +557,10 @@ export function IssueLinksPanel({
               onChange={(event) => setDependencyTargetId(event.target.value)}
               className="w-full"
             >
-              <option value="">Select a work item</option>
-              {dependencyOptions.map((item) => (
+              <option value="">
+                {pickerPlaceholder(dependencySearch.status)}
+              </option>
+              {dependencySearch.options.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.identifier} · {item.title}
                 </option>

@@ -8,8 +8,6 @@ import {
 } from '@/features/projects/components/issue-links-panel'
 import { projects } from '@/lib/services/projects'
 
-const CANDIDATE_LIMIT = 200
-
 function unavailableWorkItem(issueId: string): WorkItemOption {
   return { id: issueId, identifier: issueId, title: 'Work item unavailable' }
 }
@@ -17,10 +15,9 @@ function unavailableWorkItem(issueId: string): WorkItemOption {
 /**
  * Resolves the work item at the other end of every link.
  *
- * A link row stores only ids, and the picker's candidate list is a window on
- * the tenant — a cross-project link can easily point outside it — so each end
- * is read back by id. A read that fails (a soft-deleted target, a stale link)
- * still yields a row: the link is real even when its other end no longer is.
+ * A link row stores only ids, so each end is read back by id. A read that fails
+ * (a soft-deleted target, a stale link) still yields a row: the link is real
+ * even when its other end no longer is.
  */
 async function loadWorkItemOptions(
   orgId: string,
@@ -55,19 +52,14 @@ export async function IssueLinksData({
   orgId: string
   issueRef: string
 }) {
-  const [issueResult, relationsResult, dependenciesResult, candidatesResult] =
-    await Promise.all([
-      projects.issues.retrieve(orgId, issueRef),
-      projects.issueRelations.list(orgId, issueRef),
-      projects.issueDependencies.list(orgId, issueRef),
-      projects.issues.list(orgId, { limit: CANDIDATE_LIMIT }),
-    ])
+  const [issueResult, relationsResult, dependenciesResult] = await Promise.all([
+    projects.issues.retrieve(orgId, issueRef),
+    projects.issueRelations.list(orgId, issueRef),
+    projects.issueDependencies.list(orgId, issueRef),
+  ])
 
   const error =
-    issueResult.error ??
-    relationsResult.error ??
-    dependenciesResult.error ??
-    candidatesResult.error
+    issueResult.error ?? relationsResult.error ?? dependenciesResult.error
   if (error || !issueResult.data)
     return (
       <AppError
@@ -131,21 +123,13 @@ export async function IssueLinksData({
     })),
   ]
 
-  const candidates: WorkItemOption[] = (candidatesResult.data?.data ?? [])
-    .filter((candidate) => candidate.id !== issue.id)
-    .map((candidate) => ({
-      id: candidate.id,
-      identifier: candidate.identifier,
-      title: candidate.title,
-    }))
-
   return (
     <IssueLinksPanel
       issueRef={issue.identifier}
       issueId={issue.id}
+      projectId={issue.projectId}
       relations={relationLinks}
       dependencies={dependencyLinks}
-      candidates={candidates}
       plannedStartDate={issue.plannedStartDate}
       plannedFinishDate={issue.plannedFinishDate}
       plannedDurationMinutes={issue.plannedDurationMinutes}

@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 import '@testing-library/jest-dom/vitest'
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -17,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   removeDependency: vi.fn(),
   suggestSchedule: vi.fn(),
   updateIssue: vi.fn(),
+  searchIssues: vi.fn(),
   refresh: vi.fn(),
 }))
 
@@ -35,7 +37,7 @@ vi.mock('@/lib/client/issue-links', () => ({
   },
 }))
 vi.mock('@/lib/client', () => ({
-  issuesClient: { update: mocks.updateIssue },
+  issuesClient: { update: mocks.updateIssue, search: mocks.searchIssues },
 }))
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: mocks.refresh }),
@@ -63,7 +65,6 @@ const unrelated: WorkItemOption = {
   identifier: 'CONSOLE-9',
   title: 'Unrelated work',
 }
-
 const relations: RelationLink[] = [
   { id: 'isr_1', type: 'relates-to', direction: 'outgoing', item: release },
 ]
@@ -95,15 +96,39 @@ function renderPanel(
     <IssueLinksPanel
       issueRef="CONSOLE-2"
       issueId="iss_2"
+      projectId="prj_1"
       relations={relations}
       dependencies={dependencies}
-      candidates={[release, migration, unrelated]}
       plannedStartDate={null}
       plannedFinishDate={null}
       plannedDurationMinutes={null}
       {...overrides}
     />
   )
+}
+
+/**
+ * Types a query, waits out the debounce, and picks the item the search returned.
+ * Mirrors what a user does: the picker holds only what the server answered.
+ */
+async function pickWorkItem(input: {
+  queryLabel: string
+  targetLabel: string
+  query: string
+  option: WorkItemOption
+}) {
+  mocks.searchIssues.mockResolvedValue({ data: [input.option], error: null })
+
+  fireEvent.change(screen.getByLabelText(input.queryLabel), {
+    target: { value: input.query },
+  })
+
+  await screen.findByRole('option', {
+    name: `${input.option.identifier} · ${input.option.title}`,
+  })
+  fireEvent.change(screen.getByLabelText(input.targetLabel), {
+    target: { value: input.option.id },
+  })
 }
 
 beforeEach(() => {
@@ -114,6 +139,7 @@ beforeEach(() => {
   mocks.updateDependency.mockResolvedValue({ data: null, error: null })
   mocks.removeDependency.mockResolvedValue({ data: null, error: null })
   mocks.updateIssue.mockResolvedValue({ data: null, error: null })
+  mocks.searchIssues.mockResolvedValue({ data: [], error: null })
 })
 
 describe('IssueLinksPanel', () => {
@@ -211,8 +237,11 @@ describe('IssueLinksPanel', () => {
     fireEvent.change(screen.getByLabelText('Relationship type'), {
       target: { value: 'blocks' },
     })
-    fireEvent.change(screen.getByLabelText('Related work item'), {
-      target: { value: 'iss_1' },
+    await pickWorkItem({
+      queryLabel: 'Search work items',
+      targetLabel: 'Related work item',
+      query: 'release',
+      option: release,
     })
     fireEvent.click(screen.getByRole('button', { name: 'Add relationship' }))
 
@@ -222,33 +251,17 @@ describe('IssueLinksPanel', () => {
         type: 'blocks',
       })
     )
-  })
-
-  it('filters the picker by identifier or title', () => {
-    renderPanel()
-
-    fireEvent.change(screen.getByLabelText('Search work items'), {
-      target: { value: 'migration' },
-    })
-
-    const picker = screen.getByLabelText('Related work item')
-    expect(
-      within(picker).getByRole('option', {
-        name: 'CONSOLE-3 · Write the migration',
-      })
-    ).toBeInTheDocument()
-    expect(
-      within(picker).queryByRole('option', {
-        name: 'CONSOLE-9 · Unrelated work',
-      })
-    ).not.toBeInTheDocument()
+    expect(mocks.createRelation).toHaveBeenCalledTimes(1)
   })
 
   it('adds a predecessor dependency that waits on the linked work item', async () => {
     renderPanel()
 
-    fireEvent.change(screen.getByLabelText('Dependency work item'), {
-      target: { value: 'iss_3' },
+    await pickWorkItem({
+      queryLabel: 'Search dependencies',
+      targetLabel: 'Dependency work item',
+      query: 'migration',
+      option: migration,
     })
     fireEvent.change(screen.getByLabelText('Dependency type'), {
       target: { value: 'finish-to-finish' },
@@ -274,8 +287,11 @@ describe('IssueLinksPanel', () => {
     fireEvent.change(screen.getByLabelText('Dependency role'), {
       target: { value: 'successor' },
     })
-    fireEvent.change(screen.getByLabelText('Dependency work item'), {
-      target: { value: 'iss_1' },
+    await pickWorkItem({
+      queryLabel: 'Search dependencies',
+      targetLabel: 'Dependency work item',
+      query: 'release',
+      option: release,
     })
     fireEvent.click(screen.getByRole('button', { name: 'Add dependency' }))
 
@@ -407,5 +423,153 @@ describe('IssueLinksPanel', () => {
     expect(screen.getByLabelText('Planned start')).toHaveValue('2026-09-06')
     expect(screen.getByLabelText('Planned finish')).toHaveValue('2026-09-10')
     expect(screen.getByLabelText('Planned duration (minutes)')).toHaveValue(240)
+  })
+  describe('IssueLinksPanel work item search', () => {
+    // The picker searches on the server, so what these assert is the timing of
+    // the request and what the server answered — never a preloaded window.
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    async function settleDebounce() {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(300)
+      })
+    }
+
+    it('searches nothing until something is typed', async () => {
+      renderPanel()
+
+      await settleDebounce()
+
+      expect(mocks.searchIssues).not.toHaveBeenCalled()
+    })
+
+    it('waits for the typing to settle before searching', async () => {
+      renderPanel()
+
+      fireEvent.change(screen.getByLabelText('Search work items'), {
+        target: { value: 'mig' },
+      })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(299)
+      })
+
+      expect(mocks.searchIssues).not.toHaveBeenCalled()
+
+      await settleDebounce()
+
+      expect(mocks.searchIssues).toHaveBeenCalledTimes(1)
+      expect(mocks.searchIssues.mock.calls[0][0]).toEqual({
+        q: 'mig',
+        projectId: 'prj_1',
+      })
+    })
+
+    it('debounces a burst of keystrokes into one search', async () => {
+      renderPanel()
+
+      const box = screen.getByLabelText('Search work items')
+      fireEvent.change(box, { target: { value: 'mi' } })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(200)
+      })
+      fireEvent.change(box, { target: { value: 'mig' } })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(200)
+      })
+      fireEvent.change(box, { target: { value: 'migr' } })
+      await settleDebounce()
+
+      expect(mocks.searchIssues).toHaveBeenCalledTimes(1)
+      expect(mocks.searchIssues.mock.calls[0][0]).toEqual({
+        q: 'migr',
+        projectId: 'prj_1',
+      })
+    })
+
+    it('renders the work items the search returned', async () => {
+      mocks.searchIssues.mockResolvedValue({ data: [migration], error: null })
+
+      renderPanel()
+
+      fireEvent.change(screen.getByLabelText('Search work items'), {
+        target: { value: 'migration' },
+      })
+      await settleDebounce()
+
+      expect(
+        within(screen.getByLabelText('Related work item')).getByRole('option', {
+          name: 'CONSOLE-3 · Write the migration',
+        })
+      ).toBeInTheDocument()
+    })
+
+    it('searches every project once the All projects toggle is on', async () => {
+      mocks.searchIssues.mockResolvedValue({ data: [unrelated], error: null })
+
+      renderPanel()
+
+      fireEvent.click(screen.getByLabelText('All projects'))
+      fireEvent.change(screen.getByLabelText('Search work items'), {
+        target: { value: 'unrelated' },
+      })
+      await settleDebounce()
+
+      expect(mocks.searchIssues.mock.calls[0][0]).toEqual({ q: 'unrelated' })
+      expect(
+        within(screen.getByLabelText('Related work item')).getByRole('option', {
+          name: 'CONSOLE-9 · Unrelated work',
+        })
+      ).toBeInTheDocument()
+    })
+
+    it('says so instead of offering a stale list when the search fails', async () => {
+      mocks.searchIssues.mockResolvedValue({
+        data: null,
+        error: {
+          code: 'projects/search-unavailable',
+          message: 'The search could not be run.',
+        },
+      })
+
+      renderPanel()
+
+      fireEvent.change(screen.getByLabelText('Search work items'), {
+        target: { value: 'migration' },
+      })
+      await settleDebounce()
+
+      expect(
+        within(screen.getByLabelText('Related work item')).getByRole('option', {
+          name: 'Search failed — try again',
+        })
+      ).toBeInTheDocument()
+    })
+
+    it('links the searched work item once when it is picked', async () => {
+      mocks.searchIssues.mockResolvedValue({ data: [migration], error: null })
+
+      renderPanel()
+
+      fireEvent.change(screen.getByLabelText('Search work items'), {
+        target: { value: 'migration' },
+      })
+      await settleDebounce()
+      fireEvent.change(screen.getByLabelText('Related work item'), {
+        target: { value: 'iss_3' },
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Add relationship' }))
+
+      expect(mocks.createRelation).toHaveBeenCalledTimes(1)
+      expect(mocks.createRelation).toHaveBeenCalledWith('CONSOLE-2', {
+        targetIssueId: 'iss_3',
+        type: 'relates-to',
+      })
+    })
   })
 })
