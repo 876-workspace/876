@@ -433,6 +433,110 @@ export const scheduleSuggestionSchema = z.object({
 })
 export type ScheduleSuggestion = z.infer<typeof scheduleSuggestionSchema>
 
+export const GANTT_ZOOMS = ['day', 'week', 'month'] as const
+export const ganttZoomSchema = z.enum(GANTT_ZOOMS)
+export type GanttZoom = z.infer<typeof ganttZoomSchema>
+
+export const GANTT_ROW_KINDS = [
+  'phase',
+  'task-list',
+  'work-item',
+  'sub-item',
+] as const
+export const ganttRowKindSchema = z.enum(GANTT_ROW_KINDS)
+export type GanttRowKind = z.infer<typeof ganttRowKindSchema>
+
+export const ganttRowSchema = z.object({
+  object: z.literal('gantt-row'),
+  id: z.string(),
+  kind: ganttRowKindSchema,
+  parentRowId: z.string().nullable(),
+  issueId: z.string().nullable(),
+  name: z.string(),
+  plannedStart: z.number().nullable(),
+  plannedFinish: z.number().nullable(),
+  actualStart: z.number().nullable(),
+  actualFinish: z.number().nullable(),
+  percentComplete: z.number(),
+  isCritical: z.boolean(),
+})
+export type GanttRow = z.infer<typeof ganttRowSchema>
+
+export const ganttEdgeSchema = z.object({
+  object: z.literal('gantt-edge'),
+  id: z.string(),
+  predecessorIssueId: z.string(),
+  successorIssueId: z.string(),
+  type: issueDependencyTypeSchema,
+  lagMinutes: z.number(),
+})
+export type GanttEdge = z.infer<typeof ganttEdgeSchema>
+
+export const ganttSchema = z.object({
+  object: z.literal('gantt'),
+  rows: z.array(ganttRowSchema),
+  edges: z.array(ganttEdgeSchema),
+  criticalIssueIds: z.array(z.string()),
+  range: z.object({
+    start: z.number().nullable(),
+    end: z.number().nullable(),
+  }),
+})
+export type Gantt = z.infer<typeof ganttSchema>
+
+export const baselineSchema = z.object({
+  object: z.literal('projects.baseline'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  name: z.string(),
+  capturedBy: z.string().nullable(),
+  capturedAt: z.number(),
+  note: z.string().nullable(),
+  itemCount: z.number(),
+})
+export type Baseline = z.infer<typeof baselineSchema>
+
+export const baselineItemSchema = z.object({
+  object: z.literal('projects.baseline-item'),
+  id: z.string(),
+  baselineId: z.string(),
+  issueId: z.string(),
+  plannedStartDate: z.number().nullable(),
+  plannedFinishDate: z.number().nullable(),
+  plannedDurationMinutes: z.number().nullable(),
+  status: z.string(),
+})
+export type BaselineItem = z.infer<typeof baselineItemSchema>
+
+export const baselineDetailSchema = baselineSchema.extend({
+  items: z.array(baselineItemSchema),
+})
+export type BaselineDetail = z.infer<typeof baselineDetailSchema>
+
+export const baselineComparisonItemSchema = z.object({
+  object: z.literal('baseline-comparison-item'),
+  issueId: z.string(),
+  identifier: z.string(),
+  baselineStart: z.number().nullable(),
+  baselineFinish: z.number().nullable(),
+  currentStart: z.number().nullable(),
+  currentFinish: z.number().nullable(),
+  startVarianceMinutes: z.number().nullable(),
+  finishVarianceMinutes: z.number().nullable(),
+})
+export type BaselineComparisonItem = z.infer<
+  typeof baselineComparisonItemSchema
+>
+
+export const baselineComparisonSchema = z.object({
+  object: z.literal('baseline-comparison'),
+  baselineId: z.string(),
+  projectId: z.string(),
+  items: z.array(baselineComparisonItemSchema),
+})
+export type BaselineComparison = z.infer<typeof baselineComparisonSchema>
+
 export const commentSchema = z.object({
   object: z.literal('projects.comment'),
   id: z.string(),
@@ -551,6 +655,9 @@ export const customFieldValueListSchema = createListSchema(
   customFieldValueSchema
 )
 export type CustomFieldValueList = z.infer<typeof customFieldValueListSchema>
+
+export const baselineListSchema = createListSchema(baselineSchema)
+export type BaselineList = z.infer<typeof baselineListSchema>
 
 export const presetListSchema = z.array(presetSchema)
 export type PresetList = z.infer<typeof presetListSchema>
@@ -887,4 +994,15 @@ export interface SetCustomFieldValueInput {
 
 export interface ApplyPresetInput {
   key: 'software-development' | 'business-operations' | 'general'
+}
+
+export interface GetGanttQuery {
+  zoom?: GanttZoom
+  includeSubItems?: boolean
+}
+
+export interface CreateBaselineInput {
+  name: string
+  note?: string | null
+  capturedBy?: string | null
 }
