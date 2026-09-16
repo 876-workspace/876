@@ -48,6 +48,23 @@ export function createTemplatesResource(runtime: Runtime) {
         emailTemplateSchema
       )
     },
+    resolve(
+      organizationId: string,
+      category: string,
+      options: RequestOptions & { templateId?: string } = {}
+    ) {
+      const query = new URLSearchParams({ category })
+      if (options.templateId) query.set('templateId', options.templateId)
+      return request(
+        runtime,
+        {
+          method: 'GET',
+          path: `${root(organizationId)}/resolve?${query.toString()}`,
+          signal: options.signal,
+        },
+        emailTemplateSchema
+      )
+    },
     retrieve(
       organizationId: string,
       templateId: string,
