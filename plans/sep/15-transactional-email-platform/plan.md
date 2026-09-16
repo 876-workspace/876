@@ -5,7 +5,7 @@
 - **Original base:** `main` @ `a407efd6599a7d26569091b020dfa0d578f11ea1`
 - **Current synced base:** `main` @ `94a7005064d77333441ba92aec6771b70a30daf3`
 - **Main sync commit:** `6f39b6f0ef9e6f7c4513428be2af9febdc4fd709` via PR #608
-- **Status:** IN_PROGRESS
+- **Status:** IN_PROGRESS — backend complete and verified; organization and Console UI in progress
 - **Primary provider:** Resend
 - **Primary consumers in this run:** Billing service, 876 Billing, 876 Invoice
 
@@ -432,3 +432,100 @@ Not ready. Backend implementation is substantially advanced, but local
 verification has not executed, the lockfile importer for the new workspace is
 not generated, route-level email integration coverage still needs confirmation,
 and the Billing/Invoice shared UI remains outstanding.
+
+---
+
+# Orchestrator continuation — 2026-09-16 (Claude)
+
+GPT web's architecture was accepted unchanged. See
+`reports/orchestrator/2026-09-16-adversarial-review.md` for the full verdict,
+every defect execution found, the live provider probe, and the disposition of all
+eight research findings.
+
+## Backend: complete and verified
+
+Nothing on the branch had ever been installed, compiled or migrated. It now is.
+
+| Package                   | Typecheck | Tests          | Other                    |
+| ------------------------- | --------- | -------------- | ------------------------ |
+| `@876/communications-api` | 0 errors  | 133            | boundaries clean, builds |
+| `@876/communications`     | 0 errors  | 23             | —                        |
+| `@876/billing-api`        | 0 errors  | 1166           | boundaries clean         |
+| `@876/couriers-api`       | 0 errors  | 38 in packages | boundaries clean         |
+| `@876/billing-ui`         | 0 errors  | 699            | —                        |
+
+Repo gates: `check-app-structure`, `check:rsc-boundaries`, `check:transpile`,
+`check:error-contract`, `check:env` (communications-api and the couriers
+additions clean) all pass.
+
+Known pre-existing failures on `main`, **not** caused by this branch and
+deliberately not fixed here:
+
+- `apps/couriers-api` tenants OpenAPI snapshot — a `tenantId` path parameter
+  drifted out of the `me-addresses-*` operations. This branch makes no committed
+  change to `apps/couriers-api` relative to main, and neither `me.routes.ts` nor
+  the snapshot differs from main.
+- `apps/billing` and `apps/invoice` each report 8 `RouteContext` errors in
+  unrelated CRM request routes — stale Next generated types needing `next typegen`.
+- `apps/billing-api` `typecheck` does not run `prisma generate`, so a stale client
+  produces 16 phantom errors until `db:generate` is run. Worth aligning with
+  `communications-api`, which generates first.
+
+## Decisions taken in this pass
+
+1. **Free `managed` sender for every organization** — the Zoho default. One
+   platform-verified domain, per-organization local part derived server-side from
+   the durable slug, reply-to the organization's own address. Research supplied an
+   independent commercial reason: the Resend free plan allows only **3 domains**,
+   so per-organization custom domains break at three customers.
+2. **`linked-mailbox` (Gmail / Microsoft 365) recorded, not built.** It is a
+   provider adapter behind the existing boundary when it arrives; no tables,
+   routes, SDK namespaces or settings were scaffolded for it.
+3. **No `session` tier in Communications.** GPT web deferred the settings UI until
+   one existed; that was unnecessary. A host app's own route handler authorizes the
+   session and calls `service` server-side — the host route is the session
+   boundary (`app-api-routing.md`).
+4. **`operator` entrypoint added** so Console's imports state their authority,
+   documented as intent-only since the backend has one internal-key tier.
+5. **Frozen FastAPI contract gained a declared-additions list** rather than being
+   loosened: removals and shape changes still fail, and each of the 8 additive
+   email operations is enumerated and reviewed.
+6. **Two rules written**, mirrored byte-identical into `.agents/rules/`:
+   `email.md` and `external-docs.md`.
+
+## Infrastructure provisioned
+
+| Item                  | Value                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------- |
+| Neon project          | `876-communications` (`tiny-moon-24025044`), aws-us-east-1, pg 17                                  |
+| Migrations applied    | `20260915220000_transactional_email_foundation`, `20260916050000_courier_shipment_email_templates` |
+| Vercel project        | `876-communications-api`                                                                           |
+| Vercel env            | database URLs, minted internal key, `ENVIRONMENT`, `RESEND_API_KEY`                                |
+| `876-billing-api` env | `COMMUNICATIONS_API_URL`, `COMMUNICATIONS_INTERNAL_KEY`                                            |
+| Local                 | `apps/communications-api/.env`, couriers and billing API `.env` (all gitignored)                   |
+
+## Blocked on the account owner
+
+1. **The Resend key is send-only** (`restricted_api_key`), verified live. It cannot
+   call the domains endpoints, so organization custom-domain setup and
+   verification cannot function. A **full-access** key is required.
+2. **`mail.87six.dev` is not registered with Resend and has no DNS records.**
+   `87six.dev` is registered with DNS on Cloudflare, so DKIM/SPF can be published
+   programmatically once the domain exists in Resend — which needs (1).
+3. **No webhook endpoint registered**, so delivery status never advances past
+   `sent`. Needs (1) plus a deployed URL, and `RESEND_WEBHOOK_SECRET` set.
+
+Until (1) and (2) are done, `managed` sending is configured but unproven
+end to end, and only the documented/live error contract has been verified.
+
+## Remaining work
+
+- Organization email settings UI: `packages/communications-ui` panels + the
+  Billing `settings/email` host. Brief dispatched.
+- Console operator email surface. Brief written at
+  `briefs/codex/2026-09-16-console-operator-email.md`, ready to dispatch.
+- Bounce and complaint handling — suppression on a permanent bounce. Requires
+  typing the provider's `bounce`/`failed` payload fields (research finding 8a,
+  deliberately deferred rather than typed speculatively).
+- Scheduled reminders (Phase 7), still untouched and still requiring a durable
+  worker rather than any in-process timer.
