@@ -74,8 +74,12 @@ describe('frozen v1 route authentication matrix', () => {
     // default selection, resolved rendering, and branding read/update were
     // added to both tenant and organization-integration surfaces; the frozen
     // manifest also includes five previously uncounted protected operations.
-    expect(operations).toHaveLength(403)
-    expect(protectedPublicOperations()).toHaveLength(402)
+    // 403 -> 411: transactional document email — prepare (side-effect free) and
+    // send-email for invoices and quotes, on both the tenant and the
+    // organization-integration surface. All eight are protected; the legacy
+    // record-only `/send` command is unchanged.
+    expect(operations).toHaveLength(411)
+    expect(protectedPublicOperations()).toHaveLength(410)
     expect(callback).toBeDefined()
     expect(callback?.operation.security ?? []).toEqual([])
   })

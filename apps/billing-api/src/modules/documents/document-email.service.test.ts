@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   templateList: vi.fn(),
   templateRender: vi.fn(),
   senderList: vi.fn(),
+  senderEnsureManaged: vi.fn(),
   deliveryCreate: vi.fn(),
   sendInvoiceWorkflow: vi.fn(),
   transitionQuoteWorkflow: vi.fn(),
@@ -28,7 +29,10 @@ vi.mock('@/lib/services/communications', () => ({
       list: mocks.templateList,
       render: mocks.templateRender,
     },
-    senders: { list: mocks.senderList },
+    senders: {
+      list: mocks.senderList,
+      ensureManaged: mocks.senderEnsureManaged,
+    },
     deliveries: { create: mocks.deliveryCreate },
   }),
 }))
@@ -156,6 +160,7 @@ beforeEach(() => {
     tenantId,
     organizationId,
     name: 'Acme Logistics',
+    slug: 'acme-logistics',
   })
   mocks.enabledCurrencyDecimalPlaces.mockResolvedValue(2)
   mocks.invoiceRetrieve.mockResolvedValue(invoice())
@@ -331,7 +336,7 @@ describe('prepareDocumentEmail', () => {
     expect(mocks.templateResolve).not.toHaveBeenCalled()
   })
 
-  it('rejects preparation when no active sender can be selected', async () => {
+  function noSenders() {
     mocks.senderList.mockResolvedValue({
       data: {
         object: 'list',
@@ -342,10 +347,63 @@ describe('prepareDocumentEmail', () => {
       },
       error: null,
     })
+  }
+
+  it('provisions the free managed sender when the organization has none', async () => {
+    noSenders()
+    mocks.senderEnsureManaged.mockResolvedValue({
+      data: {
+        object: 'email_sender',
+        id: 'sender_managed',
+        organizationId: 'org_1',
+        domainId: null,
+        name: 'Acme Freight',
+        email: 'acme-freight@mail.87six.dev',
+        replyTo: null,
+        kind: 'managed',
+        isDefault: true,
+        isActive: true,
+        createdAt: 1_700_000_000,
+        updatedAt: 1_700_000_000,
+      },
+      error: null,
+    })
+
+    const result = await prepareDocumentEmail(tenantId, 'invoice', 'inv_1', {})
+
+    expect(result.sender.id).toBe('sender_managed')
+    expect(result.sender.email).toBe('acme-freight@mail.87six.dev')
+    expect(mocks.senderEnsureManaged).toHaveBeenCalledTimes(1)
+    expect(mocks.senderEnsureManaged).toHaveBeenCalledWith(organizationId, {
+      organizationName: 'Acme Logistics',
+      organizationSlug: 'acme-logistics',
+    })
+  })
+
+  it('does not substitute the managed sender for a requested sender that does not exist', async () => {
+    noSenders()
+
+    await expect(
+      prepareDocumentEmail(tenantId, 'invoice', 'inv_1', {
+        senderId: 'sender_does_not_exist',
+      })
+    ).rejects.toMatchObject({ code: 'billing/email-sender-required' })
+    expect(mocks.senderEnsureManaged).not.toHaveBeenCalled()
+  })
+
+  it('surfaces a provisioning failure as a Billing email error', async () => {
+    noSenders()
+    mocks.senderEnsureManaged.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'communications/sender-already-exists',
+        message: 'taken',
+      },
+    })
 
     await expect(
       prepareDocumentEmail(tenantId, 'invoice', 'inv_1', {})
-    ).rejects.toMatchObject({ code: 'billing/email-sender-required' })
+    ).rejects.toMatchObject({ code: expect.stringContaining('billing/') })
   })
 
   it('maps unavailable templates to the Billing email contract', async () => {
@@ -368,7 +426,10 @@ describe('prepareDocumentEmail', () => {
       category: 'quote',
       key: 'billing.quote.default',
     }
-    mocks.templateResolve.mockResolvedValue({ data: quoteTemplate, error: null })
+    mocks.templateResolve.mockResolvedValue({
+      data: quoteTemplate,
+      error: null,
+    })
     mocks.templateList.mockResolvedValue({
       data: {
         object: 'list',
