@@ -1,7 +1,7 @@
 'use client'
 
 import { LayoutEditor } from '@876/projects-ui/layouts/layout-editor'
-import type { Layout } from '@876/projects/contracts'
+import type { Layout, LayoutEntity } from '@876/projects/contracts'
 import { AppError, type AppErrorValue } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { FormRow } from '@876/ui/form-row'
@@ -13,6 +13,10 @@ import { useState, type FormEvent } from 'react'
 import { layoutsClient } from '@/lib/client'
 
 type EntityOption = 'project' | 'phase' | 'work-item'
+
+function isBuiltInEntity(entity: LayoutEntity): entity is EntityOption {
+  return entity === 'project' || entity === 'phase' || entity === 'work-item'
+}
 
 type TypeOption = { id: string; key: string; name: string }
 
@@ -33,7 +37,7 @@ type Props = {
 export function LayoutForm({ mode, layout, workItemTypes, availableByEntity }: Props) {
   const router = useRouter()
   const [name, setName] = useState(layout.name)
-  const [entity, setEntity] = useState<EntityOption>(layout.entity)
+  const [entity, setEntity] = useState<LayoutEntity>(layout.entity)
   const [workItemTypeId, setWorkItemTypeId] = useState(
     layout.workItemTypeId ?? ''
   )
@@ -43,7 +47,11 @@ export function LayoutForm({ mode, layout, workItemTypes, availableByEntity }: P
   const editing = mode === 'edit'
   const showType = entity === 'work-item'
 
-  const availableFields = [...availableByEntity[entity]]
+  // Custom-module layouts are edited from their module's settings, which
+  // supply that module's fields; this form only knows the built-in entities.
+  const availableFields = isBuiltInEntity(entity)
+    ? [...availableByEntity[entity]]
+    : []
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -117,7 +125,7 @@ export function LayoutForm({ mode, layout, workItemTypes, availableByEntity }: P
               name="layout-entity"
               value={entity}
               onChange={(event) => {
-                setEntity(event.target.value as EntityOption)
+                setEntity(event.target.value as LayoutEntity)
                 setWorkItemTypeId('')
               }}
               className="w-full"
