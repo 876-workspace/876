@@ -28,20 +28,34 @@ export const DocumentEmailSendSchema = z.strictObject({
   text: z.string().nullable().optional(),
 })
 
+const DocumentEmailSenderSchema = z.strictObject({
+  id: z.string(),
+  name: z.string(),
+  email: z.email(),
+  replyTo: z.email().nullable(),
+})
+
 export const DocumentEmailCompositionResponseSchema = z.strictObject({
   object: z.literal('document_email_composition'),
   resourceType: z.enum(['invoice', 'quote']),
   resourceId: z.string(),
-  sender: z.strictObject({
-    id: z.string(),
-    name: z.string(),
-    email: z.email(),
-    replyTo: z.email().nullable(),
-  }),
+  sender: DocumentEmailSenderSchema,
+  senderOptions: z.array(
+    DocumentEmailSenderSchema.extend({ isDefault: z.boolean() })
+  ),
   to: z.array(DocumentEmailRecipientSchema),
   cc: z.array(DocumentEmailRecipientSchema),
   bcc: z.array(DocumentEmailRecipientSchema),
   templateId: z.string().nullable(),
+  templateOptions: z.array(
+    z.strictObject({
+      id: z.string(),
+      name: z.string(),
+      isDefault: z.boolean(),
+      isSystem: z.boolean(),
+      senderId: z.string().nullable(),
+    })
+  ),
   subject: z.string(),
   html: z.string(),
   text: z.string().nullable(),
