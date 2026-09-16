@@ -7,6 +7,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { navConfig } from './nav-config'
+import { NAV_ICONS } from './nav-icons'
 import { MobileNav } from './mobile-nav'
 
 vi.mock('next/navigation', () => ({
@@ -81,6 +82,8 @@ describe('Projects navigation access binding', () => {
       '/projects',
       '/phases',
       '/cycles',
+      '/calendar',
+      '/my-work',
       '/issues',
       '/board',
       '/labels',
@@ -114,7 +117,36 @@ describe('Projects navigation access binding', () => {
     expect(hrefs).not.toContain('/projects')
     expect(hrefs).not.toContain('/phases')
     expect(hrefs).not.toContain('/cycles')
+    expect(hrefs).not.toContain('/calendar')
+    expect(hrefs).not.toContain('/my-work')
     expect(hrefs).toContain('/issues')
+  })
+
+  it('places Calendar and My Work directly after Cycles', () => {
+    const hrefs = navConfig.flatMap((group) =>
+      group.entries.map(({ href }) => href)
+    )
+
+    expect(hrefs.indexOf('/calendar')).toBe(hrefs.indexOf('/cycles') + 1)
+    expect(hrefs.indexOf('/my-work')).toBe(hrefs.indexOf('/calendar') + 1)
+  })
+
+  it('gates Calendar and My Work on the projects module and its view permission', () => {
+    const entries = navConfig
+      .flatMap((group) => group.entries)
+      .filter(({ href }) => href === '/calendar' || href === '/my-work')
+
+    expect(entries.map(({ title }) => title)).toEqual(['Calendar', 'My Work'])
+    for (const entry of entries)
+      expect(entry.requires).toEqual({
+        module: 'projects',
+        permission: 'projects.view',
+      })
+  })
+
+  it('resolves every navigation icon key to an icon the rail can draw', () => {
+    for (const entry of navConfig.flatMap((group) => group.entries))
+      expect(Object.keys(NAV_ICONS)).toContain(entry.icon)
   })
 
   it('removes Issues, Board, and Labels when the issues module is not entitled', () => {
