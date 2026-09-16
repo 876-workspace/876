@@ -163,8 +163,8 @@ INSERT INTO "email_templates" (
   'etpl_system_invoice_default', NULL, 'billing.invoice.default',
   'Default invoice email', 'invoice',
   'Invoice {{documentNumber}} from {{organizationName}}',
-  '<p>Hello {{customerName}},</p><p>Your invoice <strong>{{documentNumber}}</strong> from {{organizationName}} is ready.</p><p>Total: {{currency}} {{documentTotal}}</p><p>Due: {{dueDate}}</p>',
-  'Hello {{customerName}},\n\nYour invoice {{documentNumber}} from {{organizationName}} is ready.\nTotal: {{currency}} {{documentTotal}}\nDue: {{dueDate}}',
+  '<p>Hello {{customerName}},</p><p>Your invoice <strong>{{documentNumber}}</strong> from {{organizationName}} is ready.</p><p>Due: {{dueDate}}</p>',
+  'Hello {{customerName}},\n\nYour invoice {{documentNumber}} from {{organizationName}} is ready.\nDue: {{dueDate}}',
   NULL, true, true, true,
   EXTRACT(EPOCH FROM NOW())::BIGINT, EXTRACT(EPOCH FROM NOW())::BIGINT
 ),
@@ -172,8 +172,8 @@ INSERT INTO "email_templates" (
   'etpl_system_quote_default', NULL, 'billing.quote.default',
   'Default quote email', 'quote',
   'Quote {{documentNumber}} from {{organizationName}}',
-  '<p>Hello {{customerName}},</p><p>Your quote <strong>{{documentNumber}}</strong> from {{organizationName}} is ready.</p><p>Total: {{currency}} {{documentTotal}}</p><p>Valid until: {{expiryDate}}</p>',
-  'Hello {{customerName}},\n\nYour quote {{documentNumber}} from {{organizationName}} is ready.\nTotal: {{currency}} {{documentTotal}}\nValid until: {{expiryDate}}',
+  '<p>Hello {{customerName}},</p><p>Your quote <strong>{{documentNumber}}</strong> from {{organizationName}} is ready.</p><p>Valid until: {{expiryDate}}</p>',
+  'Hello {{customerName}},\n\nYour quote {{documentNumber}} from {{organizationName}} is ready.\nValid until: {{expiryDate}}',
   NULL, true, true, true,
   EXTRACT(EPOCH FROM NOW())::BIGINT, EXTRACT(EPOCH FROM NOW())::BIGINT
 );
