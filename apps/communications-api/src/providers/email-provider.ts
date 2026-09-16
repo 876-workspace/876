@@ -1,15 +1,23 @@
 export type EmailProviderName = 'resend'
 
 export type ProviderDomainStatus =
+  | 'not-started'
   | 'pending'
+  | 'partially-verified'
+  | 'partially-failed'
   | 'verified'
   | 'failed'
-  | 'temporary-failure'
 
 export type ProviderDomainRecord = {
   name: string
   type: string
   value: string
+  /**
+   * What the record is *for* (SPF, DKIM, tracking), as distinct from `type`,
+   * which is only the DNS record kind. Without it a setup screen can only print
+   * undifferentiated rows — several records share the same name or type.
+   */
+  purpose?: string
   status?: string
   ttl?: string
   priority?: number
@@ -59,7 +67,19 @@ export class EmailProviderError extends Error {
   constructor(
     readonly kind: 'unavailable' | 'rejected' | 'invalid-response',
     message: string,
-    readonly status?: number
+    readonly status?: number,
+    /**
+     * The provider's own machine-readable error code, preserved so callers can
+     * tell a misconfigured credential from an unverified domain from an
+     * exhausted quota. These have different remedies and the status code alone
+     * does not distinguish them.
+     */
+    readonly providerCode?: string,
+    /**
+     * Whether retrying the identical request could succeed. A rate limit is
+     * retryable; an exhausted daily quota shares its status code and is not.
+     */
+    readonly retryable: boolean = false
   ) {
     super(message)
     this.name = 'EmailProviderError'

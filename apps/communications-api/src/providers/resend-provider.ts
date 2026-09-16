@@ -12,8 +12,13 @@ import {
 
 const resendDomainRecordSchema = z.object({
   name: z.string(),
+  // The DNS record kind (MX | TXT | CNAME | CAA).
   type: z.string(),
   value: z.string(),
+  // Resend's `record` is the record's *purpose* (SPF | DKIM | Receiving |
+  // Tracking | TrackingCAA), which is what a setup screen needs in order to
+  // label rows — `type` alone cannot distinguish them.
+  record: z.string().optional(),
   status: z.string().optional(),
   ttl: z.union([z.string(), z.number()]).optional(),
   priority: z.number().optional(),
@@ -31,18 +36,45 @@ const resendSendSchema = z.object({ id: z.string() })
 
 type FetchLike = typeof fetch
 
-function mapDomainStatus(status: string): ProviderDomainStatus {
-  switch (status) {
-    case 'verified':
-      return 'verified'
-    case 'failure':
-      return 'failed'
-    case 'temporary_failure':
-      return 'temporary-failure'
-    default:
-      return 'pending'
-  }
+/**
+ * Resend's documented domain-status values, verified against its OpenAPI
+ * document on 2026-09-16:
+ * `not_started | pending | verified | partially_verified | partially_failed | failed`.
+ *
+ * An unrecognized value maps to `pending` only as a last resort. Never map a
+ * terminal failure to `pending` — that turns an actionable configuration error
+ * into an indistinguishable "still working" state and makes any polling loop
+ * keyed on a non-terminal status run forever.
+ */
+const DOMAIN_STATUSES: Record<string, ProviderDomainStatus> = {
+  not_started: 'not-started',
+  pending: 'pending',
+  verified: 'verified',
+  partially_verified: 'partially-verified',
+  partially_failed: 'partially-failed',
+  failed: 'failed',
 }
+
+function mapDomainStatus(status: string): ProviderDomainStatus {
+  return DOMAIN_STATUSES[status.trim().toLowerCase()] ?? 'pending'
+}
+
+const resendErrorBodySchema = z.object({
+  name: z.string().optional(),
+  message: z.string().optional(),
+  statusCode: z.number().optional(),
+})
+
+/**
+ * 429 covers both a transient rate limit and an exhausted quota. Only the
+ * provider's error `name` distinguishes them, and retrying an exhausted quota is
+ * pointless until its window resets.
+ */
+const RETRYABLE_PROVIDER_CODES = new Set([
+  'rate_limit_exceeded',
+  'concurrent_idempotent_requests',
+  'internal_server_error',
+])
 
 function normalizeDomain(value: z.infer<typeof resendDomainSchema>): ProviderDomain {
   return {
@@ -54,6 +86,7 @@ function normalizeDomain(value: z.infer<typeof resendDomainSchema>): ProviderDom
       name: record.name,
       type: record.type,
       value: record.value,
+      ...(record.record ? { purpose: record.record } : {}),
       ...(record.status ? { status: record.status } : {}),
       ...(record.ttl !== undefined ? { ttl: String(record.ttl) } : {}),
       ...(record.priority !== undefined ? { priority: record.priority } : {}),
@@ -146,10 +179,22 @@ export class ResendEmailProvider implements EmailProvider {
     }
 
     if (!response.ok) {
+      // The body is already in memory, so preserving the provider's machine code
+      // costs nothing and is the only thing that distinguishes a misconfigured
+      // credential from an unverified domain from an exhausted quota.
+      const parsedError = resendErrorBodySchema.safeParse(body)
+      const providerCode = parsedError.success ? parsedError.data.name : undefined
+      const retryable =
+        response.status >= 500 ||
+        (providerCode !== undefined &&
+          RETRYABLE_PROVIDER_CODES.has(providerCode))
+
       throw new EmailProviderError(
         response.status >= 500 ? 'unavailable' : 'rejected',
         `Resend request failed with HTTP ${response.status}.`,
-        response.status
+        response.status,
+        providerCode,
+        retryable
       )
     }
 

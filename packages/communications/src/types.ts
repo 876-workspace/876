@@ -6,8 +6,7 @@ export interface ClientError {
 }
 
 export type Result<T> =
-  | { data: T; error: null }
-  | { data: null; error: ClientError }
+  { data: T; error: null } | { data: null; error: ClientError }
 
 export interface ClientOptions {
   baseUrl?: string
@@ -22,11 +21,23 @@ export interface RequestOptions {
   actorId?: string
 }
 
+/**
+ * Mirrors Resend's documented domain-status set, in 876 kebab-case. Verified
+ * against the Resend OpenAPI domain-status enum
+ * (not_started | pending | verified | partially_verified | partially_failed |
+ * failed) on 2026-09-16. Only `verified` may send.
+ *
+ * `not-started` and `pending` are deliberately distinct: the first means the
+ * organization has not asked for verification yet and must act, the second means
+ * verification is genuinely in flight and it should wait.
+ */
 export const emailDomainStatusSchema = z.enum([
+  'not-started',
   'pending',
+  'partially-verified',
+  'partially-failed',
   'verified',
   'failed',
-  'temporary-failure',
 ])
 export type EmailDomainStatus = z.infer<typeof emailDomainStatusSchema>
 
@@ -49,6 +60,10 @@ export const emailDomainRecordSchema = z.object({
   name: z.string(),
   type: z.string(),
   value: z.string(),
+  // What the record is for (SPF, DKIM, tracking), as opposed to `type`, which is
+  // only the DNS record kind. Several records share a name or a type, so without
+  // this a setup screen cannot label or group them.
+  purpose: z.string().optional(),
   status: z.string().optional(),
   ttl: z.string().optional(),
   priority: z.number().optional(),
