@@ -294,19 +294,64 @@ export const renderEmailTemplateSchema = z.object({
 })
 export type RenderEmailTemplateInput = z.infer<typeof renderEmailTemplateSchema>
 
-export const createEmailDeliverySchema = z.object({
-  senderId: z.string().trim().min(1),
-  to: z.array(emailRecipientSchema).min(1).max(50),
-  cc: z.array(emailRecipientSchema).max(50).optional().default([]),
-  bcc: z.array(emailRecipientSchema).max(50).optional().default([]),
-  subject: headerTextSchema.max(998),
-  html: z.string().min(1),
-  text: z.string().optional(),
-  resourceType: z.string().trim().min(1).max(80).optional(),
-  resourceId: z.string().trim().min(1).max(200).optional(),
-  templateId: z.string().trim().min(1).optional(),
-  idempotencyKey: z.string().trim().min(1).max(256),
-})
+/**
+ * Resend documents a maximum of 50 `to` recipients per send, and counts every
+ * `to`, `cc` and `bcc` address separately against the sending quota. Verified
+ * 2026-09-16. Capping the combined total at 50 therefore keeps one send within
+ * the documented bound instead of allowing 150 addresses — which the provider
+ * would bill as 150 emails.
+ */
+const MAX_RECIPIENTS_PER_SEND = 50
+
+/** Subject line bound from RFC 5322's 998-octet line limit. */
+const MAX_SUBJECT_LENGTH = 998
+
+/**
+ * Resend rejects an idempotency key outside 1–256 characters with
+ * `invalid_idempotency_key`. Keys are retained for 24 hours, and replaying one
+ * with a *different* body is rejected rather than sent — so a "resend with a
+ * correction" path must derive a new key rather than reuse the stored one.
+ */
+const MAX_IDEMPOTENCY_KEY_LENGTH = 256
+
+/**
+ * An HTML body has no documented provider maximum, but an unbounded field is not
+ * acceptable in a contract: the only thing otherwise limiting it is the HTTP body
+ * limit, which is incidental rather than intentional.
+ */
+const MAX_HTML_LENGTH = 512_000
+
+export const createEmailDeliverySchema = z
+  .object({
+    senderId: z.string().trim().min(1),
+    to: z.array(emailRecipientSchema).min(1).max(MAX_RECIPIENTS_PER_SEND),
+    cc: z
+      .array(emailRecipientSchema)
+      .max(MAX_RECIPIENTS_PER_SEND)
+      .optional()
+      .default([]),
+    bcc: z
+      .array(emailRecipientSchema)
+      .max(MAX_RECIPIENTS_PER_SEND)
+      .optional()
+      .default([]),
+    subject: headerTextSchema.max(MAX_SUBJECT_LENGTH),
+    html: z.string().min(1).max(MAX_HTML_LENGTH),
+    text: z.string().max(MAX_HTML_LENGTH).optional(),
+    resourceType: z.string().trim().min(1).max(80).optional(),
+    resourceId: z.string().trim().min(1).max(200).optional(),
+    templateId: z.string().trim().min(1).optional(),
+    idempotencyKey: z.string().trim().min(1).max(MAX_IDEMPOTENCY_KEY_LENGTH),
+  })
+  .refine(
+    (value) =>
+      value.to.length + (value.cc?.length ?? 0) + (value.bcc?.length ?? 0) <=
+      MAX_RECIPIENTS_PER_SEND,
+    {
+      message: `A single send may address at most ${MAX_RECIPIENTS_PER_SEND} recipients across to, cc and bcc.`,
+      path: ['to'],
+    }
+  )
 export type CreateEmailDeliveryInput = z.input<typeof createEmailDeliverySchema>
 /** Post-validation shape, with schema defaults applied. What a service receives. */
 export type CreateEmailDeliveryValues = z.output<

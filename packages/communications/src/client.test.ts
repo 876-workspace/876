@@ -5,6 +5,7 @@ vi.mock('server-only', () => ({}))
 import { create876CommunicationsClient } from './client'
 import { buildRuntime } from './runtime'
 import { create876CommunicationsServiceClient } from './service'
+import { createEmailDeliverySchema } from './types'
 
 const domain = {
   object: 'email_domain',
@@ -168,14 +169,12 @@ describe('@876/communications client', () => {
   })
 
   it('allows a per-request actor id to override the client default', async () => {
-    const fetch = vi
-      .fn<typeof globalThis.fetch>()
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { object: 'email_domain', id: 'edom_1', deleted: true },
-          error: null,
-        })
-      )
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValueOnce(
+      jsonResponse({
+        data: { object: 'email_domain', id: 'edom_1', deleted: true },
+        error: null,
+      })
+    )
     const client = create876CommunicationsClient({
       baseUrl: 'https://communications.test',
       internalKey: 'service-key',
@@ -193,20 +192,18 @@ describe('@876/communications client', () => {
   })
 
   it('propagates registered service errors as values', async () => {
-    const fetch = vi
-      .fn<typeof globalThis.fetch>()
-      .mockResolvedValueOnce(
-        jsonResponse(
-          {
-            data: null,
-            error: {
-              code: 'communications/domain-not-found',
-              message: 'The sending domain could not be found.',
-            },
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValueOnce(
+      jsonResponse(
+        {
+          data: null,
+          error: {
+            code: 'communications/domain-not-found',
+            message: 'The sending domain could not be found.',
           },
-          404
-        )
+        },
+        404
       )
+    )
     const client = create876CommunicationsClient({
       baseUrl: 'https://communications.test',
       internalKey: 'service-key',
@@ -240,7 +237,9 @@ describe('@876/communications client', () => {
   it('returns communications/invalid-response when success data violates the contract', async () => {
     const fetch = vi
       .fn<typeof globalThis.fetch>()
-      .mockResolvedValueOnce(jsonResponse({ data: { object: 'wrong' }, error: null }))
+      .mockResolvedValueOnce(
+        jsonResponse({ data: { object: 'wrong' }, error: null })
+      )
     const client = create876CommunicationsClient({
       baseUrl: 'https://communications.test',
       internalKey: 'service-key',
@@ -373,5 +372,92 @@ describe('@876/communications client', () => {
       'senders',
       'templates',
     ])
+  })
+})
+
+describe('createEmailDeliverySchema recipient bounds', () => {
+  function recipients(count: number) {
+    return Array.from({ length: count }, (_, index) => ({
+      email: `customer${index}@example.com`,
+    }))
+  }
+
+  const base = {
+    senderId: 'esnd_1',
+    subject: 'Invoice INV-1042',
+    html: '<p>Invoice</p>',
+    idempotencyKey: 'key_1',
+  }
+
+  it('accepts a send at exactly the documented recipient maximum', () => {
+    const result = createEmailDeliverySchema.safeParse({
+      ...base,
+      to: recipients(50),
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects more recipients across to, cc and bcc than one send may address', () => {
+    // Resend counts every to/cc/bcc address separately against the quota, so 150
+    // addresses would be billed as 150 emails and exceed the documented bound.
+    const result = createEmailDeliverySchema.safeParse({
+      ...base,
+      to: recipients(50),
+      cc: recipients(50),
+      bcc: recipients(50),
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects a combined total over the maximum even when each list is legal', () => {
+    const result = createEmailDeliverySchema.safeParse({
+      ...base,
+      to: recipients(30),
+      cc: recipients(21),
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts a combined total at the maximum split across lists', () => {
+    const result = createEmailDeliverySchema.safeParse({
+      ...base,
+      to: recipients(30),
+      cc: recipients(15),
+      bcc: recipients(5),
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('requires at least one recipient', () => {
+    const result = createEmailDeliverySchema.safeParse({ ...base, to: [] })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects an idempotency key longer than the provider accepts', () => {
+    const result = createEmailDeliverySchema.safeParse({
+      ...base,
+      to: recipients(1),
+      idempotencyKey: 'k'.repeat(257),
+    })
+
+    expect(result.success).toBe(false)
+  })
+
+  it('defaults cc and bcc to empty arrays so a caller may omit them', () => {
+    const result = createEmailDeliverySchema.safeParse({
+      ...base,
+      to: recipients(1),
+    })
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.cc).toEqual([])
+      expect(result.data.bcc).toEqual([])
+    }
   })
 })
