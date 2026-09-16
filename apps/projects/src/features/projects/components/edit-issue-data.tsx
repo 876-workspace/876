@@ -52,6 +52,13 @@ export async function EditIssueData({ issueRef }: { issueRef: string }) {
     )
 
   const projectItems = projectList.data?.data ?? []
+  const editingTypeId = (types.data?.data ?? []).find(
+    (type) => type.key === issueResult.data.typeKey
+  )?.id
+  const layoutResult = await projects.layouts.resolve(orgId, {
+    entity: 'work-item',
+    ...(editingTypeId ? { workItemTypeId: editingTypeId } : {}),
+  })
   const milestoneResults = await listProjectMilestones(orgId, projectItems)
   const taskListResults = await listProjectTaskLists(orgId, projectItems)
   const loadError = [
@@ -94,6 +101,7 @@ export async function EditIssueData({ issueRef }: { issueRef: string }) {
   return (
     <EditIssueForm
       issue={issueResult.data}
+      layout={layoutResult.data ?? null}
       workItemTypes={types.data?.data ?? []}
       workflowStates={states.data?.data ?? []}
       projects={projectItems}

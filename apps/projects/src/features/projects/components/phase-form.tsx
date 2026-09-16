@@ -1,6 +1,13 @@
 'use client'
 
-import type { MilestoneDetail, Project } from '@876/projects/contracts'
+import { LayoutRenderer } from '@876/projects-ui/layouts/layout-renderer'
+import type { Layout, LayoutValues } from '@876/projects/layout-rules'
+import type {
+  MilestoneCustomField,
+  MilestoneCustomFieldValue,
+  MilestoneDetail,
+  Project,
+} from '@876/projects/contracts'
 import { AppError, type AppErrorValue } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { FormRow } from '@876/ui/form-row'
@@ -11,22 +18,42 @@ import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
 import { phasesClient } from '@/lib/client'
+import {
+  customFieldInputValue,
+  descriptorLabel,
+  isLayoutRuleError,
+  layoutDateTimestamp,
+  layoutRuleErrorTitle,
+  layoutText,
+  layoutTextOrNull,
+  missingLayoutFields,
+  phaseLayoutDescriptors,
+  phaseToLayoutValues,
+  readLayoutFormValues,
+} from './layout-form-helpers'
 
 export type PhaseMemberOption = { userId: string; label: string }
 
+type LayoutProps = {
+  /** Server-resolved layout; when present the fields render through it. */
+  layout?: Layout | null
+  customFields?: readonly MilestoneCustomField[]
+  customValues?: readonly MilestoneCustomFieldValue[]
+}
+
 type Props =
-  | {
+  | ({
       mode: 'create'
       projects: readonly Project[]
       members: readonly PhaseMemberOption[]
       phase?: never
-    }
-  | {
+    } & LayoutProps)
+  | ({
       mode: 'edit'
       projects: readonly Project[]
       members: readonly PhaseMemberOption[]
       phase: MilestoneDetail
-    }
+    } & LayoutProps)
 
 function keyFromName(value: string) {
   return value
@@ -63,11 +90,157 @@ export function PhaseForm(props: Props) {
   const [position, setPosition] = useState(String(phase?.position ?? 0))
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<AppErrorValue | null>(null)
+  const [ruleFields, setRuleFields] = useState<string[]>([])
+
+  const layout = props.layout ?? null
+  const useLayout = layout !== null
+  const layoutFields = props.customFields ?? []
+  const layoutDescriptors = phaseLayoutDescriptors(layoutFields, props.members)
+  const layoutSeed: LayoutValues = {
+    ...(phase
+      ? phaseToLayoutValues({
+          ...phase,
+          customFields: (props.customValues ?? []).map((entry) => ({
+            fieldKey: entry.fieldKey,
+            fieldType: entry.fieldType,
+            value: entry.value,
+          })),
+        })
+      : {}),
+    ...(phase ? {} : { state: 'open' }),
+  }
 
   const resolvedKey = editing ? key : keyFromName(key || name)
 
+  function layoutCustomWrites(formValues: LayoutValues) {
+    const fieldByKey = new Map(
+      layoutFields.map((field) => [`cf:${field.key}`, field])
+    )
+    return [...fieldByKey.entries()].flatMap(([fieldKey, field]) => {
+      const raw = formValues[fieldKey]
+      if (
+        !editing &&
+        (raw === undefined || raw === null || raw === '' ||
+          (Array.isArray(raw) && raw.length === 0))
+      )
+        return []
+      return [
+        {
+          fieldId: field.id,
+          value: customFieldInputValue(field.fieldType, raw),
+        },
+      ]
+    })
+  }
+
+  function reportPhaseRuleError(
+    code: string | undefined,
+    message: string,
+    formValues: LayoutValues
+  ) {
+    const missing = missingLayoutFields(layout as Layout, formValues)
+    setRuleFields(missing)
+    setError({
+      code: code ?? 'projects/layout-required-fields',
+      message: `${layoutRuleErrorTitle(code)}${missing.length > 0 ? ` Missing: ${missing.map((field) => descriptorLabel(layoutDescriptors, field)).join(', ')}` : ''} ${message}`.trim(),
+    })
+  }
+
+  async function onLayoutSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (pending || !layout) return
+    const formValues = readLayoutFormValues(event.currentTarget, layout)
+
+    const formName = layoutText(formValues.title)
+    if (!formName || (!editing && !projectId)) {
+      const missing = [
+        ...(!formName ? ['title' as string] : []),
+        ...(!editing && !projectId ? ['project' as string] : []),
+      ]
+      setRuleFields(missing)
+      setError({
+        code: 'projects/layout-required-fields',
+        message: `${layoutRuleErrorTitle('projects/layout-required-fields')} Missing: ${missing.map((field) => descriptorLabel(layoutDescriptors, field)).join(', ')}`,
+      })
+      return
+    }
+    const missing = missingLayoutFields(layout, formValues)
+    if (missing.length > 0) {
+      setRuleFields(missing)
+      setError({
+        code: 'projects/layout-required-fields',
+        message: `${layoutRuleErrorTitle('projects/layout-required-fields')} Missing: ${missing.map((field) => descriptorLabel(layoutDescriptors, field)).join(', ')}`,
+      })
+      return
+    }
+
+    setPending(true)
+    setError(null)
+    setRuleFields([])
+
+    const statusValue = layoutText(formValues.state) || 'open'
+    const common = {
+      name: formName,
+      description: layoutTextOrNull(formValues.description),
+      status: statusValue as 'open' | 'completed' | 'canceled',
+      ownerUserId: layoutTextOrNull(formValues.assignee),
+      startDate: layoutDateTimestamp(
+        typeof formValues.startDate === 'string' ? formValues.startDate : null
+      ),
+      targetDate: layoutDateTimestamp(
+        typeof formValues.dueDate === 'string' ? formValues.dueDate : null
+      ),
+      position: Number.parseInt(position || '0', 10) || 0,
+    }
+
+    const result =
+      props.mode === 'edit'
+        ? await phasesClient.update(props.phase.id, common)
+        : await phasesClient.create({
+            ...common,
+            projectId,
+            key: keyFromName(key || formName),
+          })
+
+    if (result.error || !result.data) {
+      setPending(false)
+      if (isLayoutRuleError(result.error?.code))
+        reportPhaseRuleError(
+          result.error?.code,
+          result.error?.message ?? '',
+          formValues
+        )
+      else
+        setError(
+          result.error ?? {
+            code: 'projects/phase-save-failed',
+            message: 'The phase could not be saved.',
+          }
+        )
+      return
+    }
+
+    const writes = layoutCustomWrites(formValues)
+    if (writes.length > 0) {
+      const valuesResult = await phasesClient.customFields.set(
+        result.data.id,
+        writes
+      )
+      if (valuesResult.error) {
+        setPending(false)
+        setError(valuesResult.error)
+        return
+      }
+    }
+
+    setPending(false)
+    router.push(`/phases/${encodeURIComponent(result.data.id)}`)
+    router.refresh()
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (useLayout) return onLayoutSubmit(event)
     if (!name.trim() || !resolvedKey || (!editing && !projectId) || pending)
       return
 
@@ -106,6 +279,83 @@ export function PhaseForm(props: Props) {
 
     router.push(`/phases/${encodeURIComponent(result.data.id)}`)
     router.refresh()
+  }
+
+  if (useLayout && layout) {
+    return (
+      <form onSubmit={onSubmit} className="max-w-3xl space-y-5">
+        {error ? (
+          <AppError title="Phase not saved" error={error} variant="banner" />
+        ) : null}
+        {ruleFields.length > 0 ? (
+          <ul aria-label="Fields to complete" className="text-sm">
+            {ruleFields.map((fieldKey) => (
+              <li key={fieldKey}>{descriptorLabel(layoutDescriptors, fieldKey)}</li>
+            ))}
+          </ul>
+        ) : null}
+
+        {!editing ? (
+          <FormRow label="Project" htmlFor="phase-project" required>
+            <NativeSelect
+              id="phase-project"
+              value={projectId}
+              onChange={(event) => setProjectId(event.target.value)}
+              className="w-full"
+            >
+              {props.projects.length === 0 ? (
+                <option value="">No projects available</option>
+              ) : null}
+              {props.projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </NativeSelect>
+          </FormRow>
+        ) : null}
+
+        {!editing ? (
+          <FormRow label="Key" htmlFor="phase-key" required>
+            <Input
+              id="phase-key"
+              value={key}
+              onChange={(event) => setKey(event.target.value)}
+              placeholder={keyFromName(layoutText(layoutSeed.title) || '') || 'launch-readiness'}
+            />
+          </FormRow>
+        ) : null}
+
+        <LayoutRenderer
+          layout={layout}
+          fields={layoutDescriptors}
+          values={layoutSeed}
+        />
+
+        <FormRow label="Order" htmlFor="phase-position">
+          <Input
+            id="phase-position"
+            type="number"
+            value={position}
+            onChange={(event) => setPosition(event.target.value)}
+          />
+        </FormRow>
+
+        <div className="flex justify-end gap-2 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={pending}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" variant="info" disabled={pending}>
+            {pending ? 'Saving…' : editing ? 'Save changes' : 'Create phase'}
+          </Button>
+        </div>
+      </form>
+    )
   }
 
   return (
