@@ -61,8 +61,6 @@ function communicationsError(error: { code: string; message: string }): never {
   switch (error.code) {
     case 'communications/not-configured':
       throw appError('billing/email-not-configured')
-    case 'communications/idempotency-conflict':
-      throw appError('billing/idempotency-conflict')
     case 'communications/sender-not-found':
     case 'communications/sender-domain-not-verified':
     case 'communications/domain-not-verified':
@@ -73,6 +71,8 @@ function communicationsError(error: { code: string; message: string }): never {
     case 'communications/recipient-required':
     case 'communications/recipient-invalid':
       throw appError('billing/email-recipient-required')
+    case 'communications/idempotency-conflict':
+      throw appError('billing/idempotency-conflict')
     case 'communications/provider-rejected':
       throw appError('billing/email-delivery-failed')
     case 'communications/provider-unavailable':
@@ -183,15 +183,14 @@ async function resolveSender(
   const result = await communicationsService().senders.list(organizationId)
   if (result.error) communicationsError(result.error)
 
+  const activeSenders = result.data.data.filter((candidate) => candidate.isActive)
   const requestedId = senderId ?? templateSenderId ?? undefined
   const sender = requestedId
-    ? result.data.data.find((candidate) => candidate.id === requestedId)
-    : result.data.data.find(
-        (candidate) => candidate.isDefault && candidate.isActive
-      )
+    ? activeSenders.find((candidate) => candidate.id === requestedId)
+    : activeSenders.find((candidate) => candidate.isDefault)
 
-  if (!sender || !sender.isActive) throw appError('billing/email-sender-required')
-  return sender
+  if (!sender) throw appError('billing/email-sender-required')
+  return { sender, activeSenders }
 }
 
 export async function prepareDocumentEmail(
@@ -206,14 +205,18 @@ export async function prepareDocumentEmail(
     contextFor(tenantId, resourceType, resourceId, sourceAppId),
   ])
   const communications = communicationsService()
-  const templateResult = await communications.templates.resolve(
-    organization.organizationId,
-    resourceType,
-    query.templateId ? { templateId: query.templateId } : {}
-  )
+  const [templateResult, templateListResult] = await Promise.all([
+    communications.templates.resolve(
+      organization.organizationId,
+      resourceType,
+      query.templateId ? { templateId: query.templateId } : {}
+    ),
+    communications.templates.list(organization.organizationId),
+  ])
   if (templateResult.error) communicationsError(templateResult.error)
+  if (templateListResult.error) communicationsError(templateListResult.error)
 
-  const sender = await resolveSender(
+  const { sender, activeSenders } = await resolveSender(
     organization.organizationId,
     query.senderId,
     templateResult.data.senderId
@@ -237,10 +240,28 @@ export async function prepareDocumentEmail(
       email: sender.email,
       replyTo: sender.replyTo,
     },
+    senderOptions: activeSenders.map((candidate) => ({
+      id: candidate.id,
+      name: candidate.name,
+      email: candidate.email,
+      replyTo: candidate.replyTo,
+      isDefault: candidate.isDefault,
+    })),
     to: [{ email: document.customerEmail, name: document.customerName }],
     cc: [],
     bcc: [],
     templateId: templateResult.data.id,
+    templateOptions: templateListResult.data.data
+      .filter(
+        (candidate) => candidate.isActive && candidate.category === resourceType
+      )
+      .map((candidate) => ({
+        id: candidate.id,
+        name: candidate.name,
+        isDefault: candidate.isDefault,
+        isSystem: candidate.isSystem,
+        senderId: candidate.senderId,
+      })),
     subject: rendered.data.subject,
     html: rendered.data.html,
     text: rendered.data.text,
