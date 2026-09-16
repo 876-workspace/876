@@ -20,6 +20,27 @@ export async function tenantAuthorizationByOrganizationId(
   return tenant ? { id: tenant.id, active: tenant.status === 'ACTIVE' } : null
 }
 
+/**
+ * Resolves a Billing workspace back to the opaque Core organization that owns it.
+ * Shared services use the organization id as their cross-context key; no
+ * cross-database join or foreign key is introduced.
+ */
+export async function tenantOrganization(tenantId: string) {
+  const tenant = await findTenantRow(tenantId)
+  if (!tenant || !tenant.organizationId)
+    throw new AppHttpError({
+      code: 'billing/workspace-not-found',
+      message: 'The Billing workspace is not linked to an organization.',
+      httpStatus: 404,
+    })
+
+  return {
+    tenantId: tenant.id,
+    organizationId: tenant.organizationId,
+    name: tenant.name,
+  }
+}
+
 export function listTenantsByOrganizationIds(organizationIds: string[]) {
   return listTenantRowsByOrganizationIds([...new Set(organizationIds)])
 }
