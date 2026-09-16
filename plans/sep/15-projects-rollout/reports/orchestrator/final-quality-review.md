@@ -1,6 +1,6 @@
 # Final code-quality review — Projects rollout
 
-Status: IN PROGRESS (findings collected during phases 10–16; fixes on `fix/projects-rollout-review`).
+Status: COMPLETE for items 1–4 (branch fix/projects-rollout-review); items 5 remain tracked debt (findings collected during phases 10–16; fixes on `fix/projects-rollout-review`).
 
 ## Findings already fixed in-phase
 | Phase | Finding | Fix |
