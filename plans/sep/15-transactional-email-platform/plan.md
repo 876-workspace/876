@@ -5,7 +5,7 @@
 - **Original base:** `main` @ `a407efd6599a7d26569091b020dfa0d578f11ea1`
 - **Current synced base:** `main` @ `94a7005064d77333441ba92aec6771b70a30daf3`
 - **Main sync commit:** `6f39b6f0ef9e6f7c4513428be2af9febdc4fd709` via PR #608
-- **Status:** IN_PROGRESS — backend complete and verified; organization and Console UI in progress
+- **Status:** PR OPEN — [#609](https://github.com/876-workspace/876/pull/609), mergeable; backend, organization settings UI and Console operator surface all complete and verified
 - **Primary provider:** Resend
 - **Primary consumers in this run:** Billing service, 876 Billing, 876 Invoice
 
@@ -529,3 +529,19 @@ end to end, and only the documented/live error contract has been verified.
   deliberately deferred rather than typed speculatively).
 - Scheduled reminders (Phase 7), still untouched and still requiring a durable
   worker rather than any in-process timer.
+
+## Pull request
+
+**[#609](https://github.com/876-workspace/876/pull/609)** — 222 files,
++20,394 / −231, `mergeable: MERGEABLE`. Description at
+`reports/orchestrator/pr-body.md`.
+
+`mergeStateStatus` is `UNSTABLE` because GitHub Actions is billing-blocked and
+the retired Cloudflare Workers checks still report; both are ignored per
+`deployment.md`, which makes local verification the merge gate. Every local gate
+passes: app-structure, rsc-boundaries, transpile, error-contract,
+**service-bundle**, and env parity for the touched services.
+
+Still blocked on the account owner before the custom-domain half can work: a
+**full-access Resend API key**, registering `mail.87six.dev` in Resend with its
+DKIM/SPF published to Cloudflare, and registering the webhook endpoint.
