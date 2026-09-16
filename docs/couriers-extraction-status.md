@@ -175,9 +175,9 @@ opening it; green phase PRs do not prove the merged result is green.
 Every delegated chunk has a committed brief under `plans/` — the record
 of what was asked and why:
 
-- `plans/2026-08-09-couriers-api-and-sdk/briefs/codex/2026-08-09-couriers-stack-continuation.md`
-- `plans/2026-08-09-couriers-api-and-sdk/briefs/codex/2026-08-09-couriers-sdk-admin-warehouses-customers-packages.md`
-- `plans/2026-08-09-couriers-api-and-sdk/briefs/codex/2026-08-09-couriers-api-modules-review-fixes.md`
+- `plans/aug/09-couriers-api-and-sdk/briefs/codex/2026-08-09-couriers-stack-continuation.md`
+- `plans/aug/09-couriers-api-and-sdk/briefs/codex/2026-08-09-couriers-sdk-admin-warehouses-customers-packages.md`
+- `plans/aug/09-couriers-api-and-sdk/briefs/codex/2026-08-09-couriers-api-modules-review-fixes.md`
 - `codex/2026-08-09-couriers-api-service-review-fixes.md`
 - `muse/2026-08-09-couriers-sdk-admin-team-settings.md`
 - `muse/2026-08-09-couriers-api-mailboxes-review-fixes.md`

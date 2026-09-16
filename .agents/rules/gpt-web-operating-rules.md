@@ -7,7 +7,7 @@ given by hand each time.**
 The one line a human needs to send you to bootstrap a run:
 
 > Read `.agents/rules/gpt-web-operating-rules.md` on branch `<branch>`, then
-> execute `plans/<run>/briefs/gpt-web/<brief>.md`.
+> execute `plans/<month>/<run>/briefs/gpt-web/<brief>.md`.
 
 Everything below is standing policy. The brief supplies the task.
 
@@ -152,7 +152,7 @@ No AI attribution, ever. See `.agents/rules/git.md`.
 
 ## 11. Your report is the deliverable
 
-Write it to `plans/<run>/reports/gpt-web/<date>-<slug>.md` and commit it with
+Write it to `plans/<month>/<run>/reports/gpt-web/<date>-<slug>.md` and commit it with
 the work. It must contain:
 
 - a per-phase status table with the **counted** number of `it()` cases added;

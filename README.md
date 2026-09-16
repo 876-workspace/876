@@ -239,7 +239,7 @@ agent rules live in `.claude/rules/` and are mirrored in `.agents/rules/` and
 
 All feature implementation plans, delegation briefs, execution reports, and multi-session
 trackers live in dedicated implementation directories under `plans/<date>-<feature-slug>/`
-(e.g. `plans/2026-09-02-billing-and-invoice-list-detail-split/`). See `.claude/rules/implementation-tracker.md`.
+(e.g. `plans/sep/02-billing-and-invoice-list-detail-split/`). See `.claude/rules/implementation-tracker.md`.
 
 ---
 

@@ -6,7 +6,7 @@ import { appPermissionCatalogs } from '@876/core/access/catalogs'
  * plus the small set of actions that exist only for 876 itself.
  *
  * `.claude/rules/access-control.md` and the console workspace/sidebar plan
- * (`plans/2026-09-03-console-workspace-and-sidebar/plan.md` §6) both require
+ * (`plans/sep/03-console-workspace-and-sidebar/plan.md` §6) both require
  * the same thing: a Console operator acting inside a product (CRM, Couriers, …)
  * is projected that product's own `<module>.<action>` vocabulary, under a
  * namespace that cannot collide with another product's — `crm/requests.view`,

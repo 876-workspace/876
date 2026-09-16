@@ -15,7 +15,7 @@ otherwise"_). The orchestrator:
 
 1. explores just enough to write precise briefs (file paths, the reference
    implementation to copy, exact scope, verification commands);
-2. writes each brief to `plans/<run>/briefs/<tool>/…` and dispatches it to the
+2. writes each brief to `plans/<month>/<run>/briefs/<tool>/…` and dispatches it to the
    **cheapest tool that can do the job** (routing table below);
 3. monitors the runs, reads every report and diff, runs verification itself;
 4. fixes small defects directly, splits the work into focused PRs, merges, deploys.
@@ -160,7 +160,7 @@ reviews, and fix passes.
 
 ```bash
 codex exec -p muse --dangerously-bypass-approvals-and-sandbox \
-  "$(cat plans/<run>/briefs/codex/<brief>.md)" < /dev/null > /dev/null 2>&1
+  "$(cat plans/<month>/<run>/briefs/codex/<brief>.md)" < /dev/null > /dev/null 2>&1
 ```
 
 - `-p muse` selects the profile; do not also pass `-m`, which overrides it.
@@ -178,7 +178,7 @@ beside the Cline/opencode free pools for cheap work.
 
 ```bash
 codex exec -p openrouter -m <vendor/model:free> --dangerously-bypass-approvals-and-sandbox \
-  "$(cat plans/<run>/briefs/codex/<brief>.md)" < /dev/null > /dev/null 2>&1
+  "$(cat plans/<month>/<run>/briefs/codex/<brief>.md)" < /dev/null > /dev/null 2>&1
 ```
 
 - `OPENROUTER_API_KEY` must be exported (root `.env`, `~/.bashrc`/`~/.zshrc`);
@@ -268,7 +268,7 @@ agy --model=gemini-3.1-pro-high \
     --print-timeout 50m \
     --output-format stream-json \
     --dangerously-skip-permissions \
-    --print "$(cat plans/<run>/briefs/agy/<brief>.md)"
+    --print "$(cat plans/<month>/<run>/briefs/agy/<brief>.md)"
 ```
 
 **`--print-timeout` defaults to `5m0s`. Always set it.** Anything longer than a
@@ -322,7 +322,7 @@ Muse is a genuine option for a **well-specified module port**: a bounded chunk
 of implementation with an existing reference module to copy, a written contract
 to follow, and a mechanical way to check the result. Evaluated 2026-08-07 on the
 `mobile-numbers` port (8 routes, ~2,000 lines including tests) against the brief
-at `plans/2026-08-07-express-modules-migration/briefs/muse/2026-08-07-mobile-numbers-module-port.md`. It finished
+at `plans/aug/07-express-modules-migration/briefs/muse/2026-08-07-mobile-numbers-module-port.md`. It finished
 in about five minutes.
 
 **What it got right, unprompted:** the module/layer split, `AppHttpError` with
@@ -363,7 +363,7 @@ draft that has never been executed, and read them as carefully as the module.
 cd apps/api && muse exec \
   --trust-workspace \
   --reasoning-effort high \
-  --prompt-file /workspaces/876/plans/<run>/briefs/muse/<brief>.md
+  --prompt-file /workspaces/876/plans/<month>/<run>/briefs/muse/<brief>.md
 ```
 
 - **`--trust-workspace` is required.** Without it Muse reports
@@ -395,7 +395,7 @@ anything needing a database, a migration, a live service, or a fast loop.
 ### The loop
 
 ```
-you: write plans/<run>/briefs/gpt-web/<date>-<slug>.md, commit it, push the branch
+you: write plans/<month>/<run>/briefs/gpt-web/<date>-<slug>.md, commit it, push the branch
 user: pastes the brief into ChatGPT web
 gpt web: edits files → commits to the SAME branch → writes its report
 you: pull → verify → fix what it could not → commit → write the next brief
@@ -471,7 +471,7 @@ Beyond the normal briefing format, a GPT web brief needs:
 
 ### Its report is the deliverable you actually read
 
-Require a report at `plans/<run>/reports/gpt-web/<date>-<slug>.md`, committed with
+Require a report at `plans/<month>/<run>/reports/gpt-web/<date>-<slug>.md`, committed with
 the work, containing: a per-phase status table with the **counted** number of
 `it()` cases added in that pass; every file changed with a reason; any migration
 in full; decisions the brief did not settle; **things it could not verify**;
@@ -552,7 +552,7 @@ whole subtree. For the free tier the brief must do the reading for it:
 
 ```bash
 cline -c /root/projects/876 -m <model> --thinking xhigh -t 3600 \
-  "$(cat plans/<run>/briefs/cline/<brief>.md)" < /dev/null > /dev/null 2>&1
+  "$(cat plans/<month>/<run>/briefs/cline/<brief>.md)" < /dev/null > /dev/null 2>&1
 ```
 
 - **Always `--thinking xhigh`** (the maximum; verified 2026-09-14). If a model rejects
@@ -586,7 +586,7 @@ read `run_result.finishReason` / `text`. A limit shows as an error result.
 
 ```bash
 opencode run -m opencode/<model> --variant max --auto \
-  "$(cat plans/<run>/briefs/opencode/<brief>.md)" < /dev/null > /dev/null 2>&1
+  "$(cat plans/<month>/<run>/briefs/opencode/<brief>.md)" < /dev/null > /dev/null 2>&1
 ```
 
 Free models (2026-09-14): `opencode/muse-spark-1.3-contributor-free`,
@@ -604,7 +604,7 @@ List live: `opencode models | grep -i free`.
 
 ```bash
 command-code -p --yolo --skip-onboarding -m deepseek/deepseek-v4.1-flash \
-  --effort max --max-turns 150 "$(cat plans/<run>/briefs/command-code/<brief>.md)" < /dev/null > /dev/null 2>&1
+  --effort max --max-turns 150 "$(cat plans/<month>/<run>/briefs/command-code/<brief>.md)" < /dev/null > /dev/null 2>&1
 ```
 
 - The user pays $1/month for **extremely generous DeepSeek V4.1 Flash** usage.
@@ -626,7 +626,7 @@ command-code -p --yolo --skip-onboarding -m deepseek/deepseek-v4.1-flash \
 **Do not do this:**
 
 ```bash
-codex exec -m gpt-5.6-terra "$(cat brief.md)" > plans/<run>/reports/codex/phase2-run.log 2>&1 &
+codex exec -m gpt-5.6-terra "$(cat brief.md)" > plans/<month>/<run>/reports/codex/phase2-run.log 2>&1 &
 ```
 
 A single Codex or `agy` run emits roughly **20,000 lines** — it echoes the brief,
@@ -737,23 +737,23 @@ exec`), for CI polling, and for a long-lived dev server — things that are not
   (`pnpm --filter <pkg> typecheck/test`) and an explicit file scope — never
   a vague "go improve X."
 
-## Implementation runs live in `plans/<run>/`, tracked in git
+## Implementation runs live in `plans/<month>/<run>/`, tracked in git
 
 Every implementation run, feature pass, PR, or delegated multi-agent orchestration
-**must be saved under its own dedicated directory in `plans/<date>-<feature-slug>/`**
+**must be saved under its own dedicated directory in `plans/<month>/<date>-<feature-slug>/`**
 — never dumped flat across disparate tool silos, never composed only inline in a shell
 command, and never left solely in conversation history.
 
 ```text
-plans/<date>-<feature-slug>/
+plans/<month>/<date>-<feature-slug>/
 ├── plan.md                 # Primary implementation plan, architecture decisions, task checklist, handoff state
 ├── briefs/                 # Dispatched briefs (subdirectories per tool: codex/, agy/, muse/, gpt-web/, sub-agent/)
 └── reports/                # Returned reports (subdirectories per tool: codex/, agy/, muse/, gpt-web/, orchestrator/)
 ```
 
 - **Per-implementation folder:** Name each folder using ISO date and kebab-case descriptor,
-  e.g. `plans/2026-09-02-billing-and-invoice-list-detail-split/` or
-  `plans/2026-08-30-bounded-service-clients/`.
+  e.g. `plans/sep/02-billing-and-invoice-list-detail-split/` or
+  `plans/aug/30-bounded-service-clients/`.
 - **Standard `plan.md` in every run:** Maintain a single source of truth for the
   feature's scope, decisions, task checklist (`[ ]` / `[x]`), verification commands,
   and multi-session handoff state. See `.claude/rules/implementation-tracker.md`.
@@ -769,4 +769,4 @@ plans/<date>-<feature-slug>/
   files, implementation runs are the durable audit trail of architectural intent, delegated tasks,
   and verification reports. Commit the implementation folder alongside the code changes it produced.
 - **Write briefs to disk before invoking:** Write the brief file first, then pass its path
-  or content into the CLI or sub-agent invocation (`cat plans/<run>/briefs/...`).
+  or content into the CLI or sub-agent invocation (`cat plans/<month>/<run>/briefs/...`).
