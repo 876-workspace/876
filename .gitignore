@@ -106,6 +106,7 @@ apps/api/data.db
 # Generated Prisma clients. Rebuilt by `prisma generate` in CI and the image build.
 apps/api/src/db/generated/
 apps/billing-api/src/db/generated/
+apps/communications-api/src/db/generated/
 apps/crm-api/src/db/generated/
 apps/projects-api/src/db/generated/
 apps/work-api/src/db/generated/
