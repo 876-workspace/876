@@ -7,6 +7,8 @@ import { createIssuesResource } from './resources/issues'
 import { createIssueDependenciesResource } from './resources/issue-dependencies'
 import { createIssueRelationsResource } from './resources/issue-relations'
 import { createLabelsResource } from './resources/labels'
+import { createLayoutsResource } from './resources/layouts'
+import { createProjectCustomFieldsResource } from './resources/project-custom-fields'
 import { createBaselinesResource } from './resources/baselines'
 import { createBudgetsResource } from './resources/budgets'
 import { createCapacityResource } from './resources/capacity'
@@ -42,6 +44,8 @@ export function create876ProjectsClient(options: ClientOptions = {}) {
     issueRelations: createIssueRelationsResource(runtime),
     issueDependencies: createIssueDependenciesResource(runtime),
     labels: createLabelsResource(runtime),
+    layouts: createLayoutsResource(runtime),
+    projectCustomFields: createProjectCustomFieldsResource(runtime),
     comments: createCommentsResource(runtime),
     workItemTypes: createWorkItemTypesResource(runtime),
     workflowStates: createWorkflowStatesResource(runtime),

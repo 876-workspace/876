@@ -6,6 +6,7 @@ import {
   toDbUnixSeconds,
 } from '../../platform/timestamps.js'
 import * as labels from '../labels/index.js'
+import * as layouts from '../layouts/index.js'
 import * as projects from '../projects/index.js'
 import * as tenants from '../tenants/index.js'
 import * as workStructure from '../work-structure/index.js'
@@ -38,6 +39,50 @@ class IssueMutationError extends Error {
   constructor(readonly projectsError: ProjectsError) {
     super(projectsError.message)
   }
+}
+
+function issueLayoutIncoming(
+  body: CreateIssueBody | UpdateIssueBody
+): layouts.LayoutFieldInput {
+  const incoming: layouts.LayoutFieldInput = {}
+  if (body.title !== undefined) incoming.title = body.title
+  if (body.description !== undefined)
+    incoming.description = body.description
+  if (body.status !== undefined) incoming.state = body.status
+  if (body.priority !== undefined) incoming.priority = body.priority
+  if (body.assigneeUserId !== undefined)
+    incoming.assignee = body.assigneeUserId
+  if (body.dueDate !== undefined) incoming.dueDate = body.dueDate
+  if (body.plannedStartDate !== undefined)
+    incoming.startDate = body.plannedStartDate
+  if (body.estimate !== undefined) incoming.estimate = body.estimate
+  if (body.labelIds !== undefined) incoming.labels = body.labelIds
+  if (body.milestoneId !== undefined) incoming.phase = body.milestoneId
+  if (body.taskListId !== undefined) incoming.taskList = body.taskListId
+  return incoming
+}
+
+function unixOrNull(value: bigint | number | null | undefined): number | null {
+  return value === null || value === undefined ? null : Number(value)
+}
+
+async function issueCustomFieldLayoutValues(
+  organizationId: string,
+  inputs: Array<{ fieldId: string; value: unknown }>
+): Promise<
+  | { values: layouts.LayoutFieldInput; error: null }
+  | { values: null; error: ProjectsError }
+> {
+  if (inputs.length === 0) return { values: {}, error: null }
+  const fields = await workStructure.listCustomFields(organizationId)
+  if (fields.error) return { values: null, error: fields.error }
+  const byId = new Map(fields.data.map((field) => [field.id, field.key]))
+  const values: layouts.LayoutFieldInput = {}
+  for (const input of inputs) {
+    const key = byId.get(input.fieldId)
+    if (key) values[`cf:${key}`] = input.value
+  }
+  return { values, error: null }
 }
 
 export async function resolveIssue(
@@ -292,6 +337,25 @@ export async function create(
   if (customFieldValidation.error)
     return { data: null, error: customFieldValidation.error }
 
+  const createFieldValues = await issueCustomFieldLayoutValues(
+    organizationId,
+    body.customFields ?? []
+  )
+  if (createFieldValues.error)
+    return { data: null, error: createFieldValues.error }
+  const createLayoutCheck = await layouts.enforceLayoutRules({
+    organizationId,
+    entity: 'work-item',
+    workItemTypeId: workItemType.id,
+    existing: {},
+    incoming: {
+      ...issueLayoutIncoming(body),
+      ...createFieldValues.values,
+    },
+  })
+  if (createLayoutCheck.error)
+    return { data: null, error: createLayoutCheck.error }
+
   const priority = body.priority ?? 'none'
   const timestamp = toDbUnixSeconds(nowUnixSeconds())
   let startedAt: bigint | null = null
@@ -537,6 +601,48 @@ export async function update(
     )
     if (validation.error) return { data: null, error: validation.error }
   }
+
+  const updateFieldValues = await issueCustomFieldLayoutValues(
+    organizationId,
+    body.customFields ?? []
+  )
+  if (updateFieldValues.error)
+    return { data: null, error: updateFieldValues.error }
+  const layoutEnrichment = await repository.getBatchEnrichment([existing.id])
+  const storedValues = await workStructure.listCustomFieldValuesForTenant(
+    tenant.id,
+    existing.id
+  )
+  const storedCustomFields: layouts.LayoutFieldInput = {}
+  for (const value of storedValues)
+    storedCustomFields[`cf:${value.fieldKey}`] = value.value
+  const updateLayoutCheck = await layouts.enforceLayoutRules({
+    organizationId,
+    entity: 'work-item',
+    workItemTypeId: effectiveType.id,
+    existing: {
+      title: existing.title,
+      description: existing.description,
+      state: existing.status,
+      priority: existing.priority,
+      assignee: existing.assigneeUserId,
+      dueDate: unixOrNull(existing.dueDate),
+      startDate: unixOrNull(existing.plannedStartDate),
+      estimate: existing.estimate,
+      labels:
+        layoutEnrichment.get(existing.id)?.labels?.map((label) => label.id) ??
+        [],
+      phase: existing.milestoneId,
+      taskList: existing.taskListId ?? null,
+      ...storedCustomFields,
+    },
+    incoming: {
+      ...issueLayoutIncoming(body),
+      ...updateFieldValues.values,
+    },
+  })
+  if (updateLayoutCheck.error)
+    return { data: null, error: updateLayoutCheck.error }
 
   const timestamp = toDbUnixSeconds(nowUnixSeconds())
   let startedAt: bigint | null | undefined

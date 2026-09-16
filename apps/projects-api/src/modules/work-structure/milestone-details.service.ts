@@ -1,6 +1,11 @@
 import { getError, type ProjectsError } from '../../http/errors.js'
 import { generateId } from '../../platform/ids.js'
 import { nowUnixSeconds, toDbUnixSeconds } from '../../platform/timestamps.js'
+import {
+  buildCustomFieldValueData,
+  customFieldOptionKeys,
+  missingRequiredFieldKey,
+} from '../custom-fields/field-values.js'
 import * as tenants from '../tenants/index.js'
 import * as details from './milestone-details.repository.js'
 import {
@@ -21,8 +26,8 @@ import type {
   UpdateMilestoneCustomFieldBody,
   UpdateMilestoneWithActorBody,
 } from './milestone-details.schemas.js'
+import * as layouts from '../layouts/index.js'
 import * as core from './work-structure.service.js'
-import type { CustomFieldValueInput } from './work-structure.schemas.js'
 
 export type ServiceResult<T> =
   | { data: T; error: null }
@@ -66,11 +71,32 @@ async function addEvent(
   })
 }
 
+function milestoneLayoutIncoming(
+  body: CreateMilestoneWithActorBody | UpdateMilestoneWithActorBody
+): layouts.LayoutFieldInput {
+  const incoming: layouts.LayoutFieldInput = {}
+  if (body.name !== undefined) incoming.title = body.name
+  if (body.description !== undefined)
+    incoming.description = body.description
+  if (body.status !== undefined) incoming.state = body.status
+  if (body.ownerUserId !== undefined) incoming.assignee = body.ownerUserId
+  if (body.startDate !== undefined) incoming.startDate = body.startDate
+  if (body.targetDate !== undefined) incoming.dueDate = body.targetDate
+  return incoming
+}
+
 export async function createMilestone(
   organizationId: string,
   body: CreateMilestoneWithActorBody
 ) {
   const { actorUserId, ...input } = body
+  const layoutCheck = await layouts.enforceLayoutRules({
+    organizationId,
+    entity: 'phase',
+    existing: {},
+    incoming: milestoneLayoutIncoming(body),
+  })
+  if (layoutCheck.error) return { data: null, error: layoutCheck.error }
   const created = await core.createMilestone(organizationId, input)
   if (created.error || !created.data) return created
 
@@ -104,6 +130,26 @@ export async function updateMilestone(
     return { data: null, error: before.error ?? getError('projects/milestone-not-found') }
 
   const { actorUserId, ...input } = body
+  const storedValues = await listCustomFieldValues(organizationId, id)
+  if (storedValues.error) return { data: null, error: storedValues.error }
+  const storedCustomFields: layouts.LayoutFieldInput = {}
+  for (const value of storedValues.data)
+    storedCustomFields[`cf:${value.fieldKey}`] = value.value
+  const layoutCheck = await layouts.enforceLayoutRules({
+    organizationId,
+    entity: 'phase',
+    existing: {
+      title: before.milestone.name,
+      description: before.milestone.description,
+      state: before.milestone.status,
+      assignee: before.milestone.ownerUserId,
+      startDate: before.milestone.startDate,
+      dueDate: before.milestone.targetDate,
+      ...storedCustomFields,
+    },
+    incoming: milestoneLayoutIncoming(body),
+  })
+  if (layoutCheck.error) return { data: null, error: layoutCheck.error }
   const updated = await core.updateMilestone(organizationId, id, input)
   if (updated.error || !updated.data) return updated
 
@@ -305,7 +351,7 @@ export async function updateCustomField(
   const nextType = body.fieldType ?? existing.fieldType
   const nextOptions = body.options ?? existing.options
   const isOptionType = nextType === 'select' || nextType === 'multi-select'
-  if (isOptionType && optionKeys(nextOptions).length === 0)
+  if (isOptionType && customFieldOptionKeys(nextOptions).length === 0)
     return { data: null, error: getError('projects/invalid-request') }
   if (!isOptionType && body.options !== undefined)
     return { data: null, error: getError('projects/invalid-request') }
@@ -333,71 +379,6 @@ export async function deleteCustomField(
     data: { object: 'projects.milestone-custom-field' as const, id: fieldId, deleted: true as const },
     error: null,
   }
-}
-
-function optionKeys(options: unknown): string[] {
-  if (!Array.isArray(options)) return []
-  return options.flatMap((option) =>
-    typeof option === 'object' &&
-    option !== null &&
-    'key' in option &&
-    typeof option.key === 'string'
-      ? [option.key]
-      : []
-  )
-}
-
-function isEmpty(value: CustomFieldValueInput['value']) {
-  return value === null || value === '' || (Array.isArray(value) && value.length === 0)
-}
-
-function valueData(
-  field: { fieldType: string; options: unknown },
-  value: CustomFieldValueInput['value']
-): ServiceResult<{
-  stringValue: string | null
-  integerValue: number | null
-  decimalValue: string | null
-  booleanValue: boolean | null
-  dateValue: bigint | null
-  selectKey: string | null
-  selectKeys: string[]
-} | null> {
-  const empty = {
-    stringValue: null,
-    integerValue: null,
-    decimalValue: null,
-    booleanValue: null,
-    dateValue: null,
-    selectKey: null,
-    selectKeys: [] as string[],
-  }
-  if (isEmpty(value)) return { data: null, error: null }
-  if (
-    ['text', 'textarea', 'user', 'url'].includes(field.fieldType) &&
-    typeof value === 'string'
-  )
-    return { data: { ...empty, stringValue: value }, error: null }
-  if (field.fieldType === 'number' && typeof value === 'number' && Number.isInteger(value))
-    return { data: { ...empty, integerValue: value }, error: null }
-  if (field.fieldType === 'decimal' && typeof value === 'string' && /^-?\d+(?:\.\d{1,6})?$/.test(value))
-    return { data: { ...empty, decimalValue: value }, error: null }
-  if (field.fieldType === 'boolean' && typeof value === 'boolean')
-    return { data: { ...empty, booleanValue: value }, error: null }
-  if (field.fieldType === 'date' && typeof value === 'number' && Number.isInteger(value))
-    return { data: { ...empty, dateValue: BigInt(value) }, error: null }
-  const keys = optionKeys(field.options)
-  if (field.fieldType === 'select' && typeof value === 'string')
-    return keys.includes(value)
-      ? { data: { ...empty, selectKey: value }, error: null }
-      : { data: null, error: getError('projects/custom-field-option-invalid') }
-  if (
-    field.fieldType === 'multi-select' &&
-    Array.isArray(value) &&
-    value.every((key) => keys.includes(key))
-  )
-    return { data: { ...empty, selectKeys: value }, error: null }
-  return { data: null, error: getError('projects/custom-field-value-invalid') }
 }
 
 export async function listCustomFieldValues(
@@ -435,26 +416,27 @@ export async function setCustomFieldValues(
     const field = byId.get(input.fieldId)
     if (!field)
       return { data: null, error: getError('projects/custom-field-not-found') }
-    const parsed = valueData(field, input.value)
+    const parsed = buildCustomFieldValueData(field, input.value)
     if (parsed.error) return parsed
   }
-  for (const field of fields) {
-    if (!field.required) continue
-    const input = body.customFields.find((item) => item.fieldId === field.id)
-    if (!input || isEmpty(input.value))
-      return {
-        data: null,
-        error: getError('projects/required-custom-field-missing', {
-          param: field.key,
-        }),
-      }
-  }
+  const missingKey = missingRequiredFieldKey(
+    fields,
+    body.customFields,
+    new Set<string>()
+  )
+  if (missingKey)
+    return {
+      data: null,
+      error: getError('projects/required-custom-field-missing', {
+        param: missingKey,
+      }),
+    }
 
   const timestamp = now()
   for (const input of body.customFields) {
     const field = byId.get(input.fieldId)
     if (!field) continue
-    const parsed = valueData(field, input.value)
+    const parsed = buildCustomFieldValueData(field, input.value)
     if (parsed.error) return parsed
     if (!parsed.data) {
       await details.clearMilestoneCustomFieldValue(

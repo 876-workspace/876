@@ -2,6 +2,7 @@ import {
   fromDbUnixSeconds,
   nullableFromDbUnixSeconds,
 } from '../../platform/timestamps.js'
+import type { SerializedProjectCustomFieldValue } from '../custom-fields/index.js'
 
 export type ProjectRow = {
   id: string
@@ -56,6 +57,7 @@ export type SerializedProject = {
   createdAt: number
   updatedAt: number
   memberCount: number
+  customFields: SerializedProjectCustomFieldValue[]
 }
 
 export type SerializedProjectTombstone = {
@@ -81,7 +83,8 @@ export type SerializedProjectMemberTombstone = {
 
 export function serializeProject(
   row: ProjectRow,
-  memberCount?: number
+  memberCount?: number,
+  customFields: SerializedProjectCustomFieldValue[] = []
 ): SerializedProject {
   const count =
     memberCount !== undefined ? memberCount : (row._count?.members ?? 0)
@@ -107,6 +110,7 @@ export function serializeProject(
     createdAt: fromDbUnixSeconds(row.createdAt),
     updatedAt: fromDbUnixSeconds(row.updatedAt),
     memberCount: count,
+    customFields,
   }
 }
 

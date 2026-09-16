@@ -22,6 +22,10 @@
     "./operator": {
       "types": "./src/operator.ts",
       "default": "./src/operator.ts"
+    },
+    "./layout-rules": {
+      "types": "./src/layout-rules.ts",
+      "default": "./src/layout-rules.ts"
     }
   },
   "scripts": {

@@ -6,9 +6,14 @@ import { createReportsRouter } from '../modules/reports/reports.routes.js'
 import { createTimeRouter } from '../modules/time/time.routes.js'
 import { createIssuesRouter } from '../modules/issues/issues.routes.js'
 import { createLabelsRouter } from '../modules/labels/labels.routes.js'
+import { createLayoutsRouter } from '../modules/layouts/layouts.routes.js'
 import { createProjectsRouter } from '../modules/projects/projects.routes.js'
 import { createTenantsRouter } from '../modules/tenants/tenants.routes.js'
 import { createWorkStructureRouter } from '../modules/work-structure/work-structure.routes.js'
+import {
+  createProjectCustomFieldsRouter,
+  createProjectCustomFieldValuesRouter,
+} from '../modules/custom-fields/index.js'
 import { createTemplatesRouter } from '../modules/templates/templates.routes.js'
 
 export function buildRoutes() {
@@ -25,6 +30,12 @@ export function buildRoutes() {
   router.use('/v1/organizations/:organizationId', createFinanceRouter())
   router.use('/v1/organizations/:organizationId', createReportsRouter())
   router.use('/v1/organizations/:organizationId', createWorkStructureRouter())
+  router.use('/v1/organizations/:organizationId', createProjectCustomFieldsRouter())
+  router.use('/v1/organizations/:organizationId', createLayoutsRouter())
+  router.use(
+    '/v1/organizations/:organizationId/projects',
+    createProjectCustomFieldValuesRouter()
+  )
   router.use('/v1/organizations/:organizationId', createTemplatesRouter())
 
   return router

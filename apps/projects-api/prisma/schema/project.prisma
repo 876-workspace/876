@@ -22,6 +22,7 @@ model Project {
   defaultWorkItemType WorkItemType? @relation("ProjectDefaultWorkItemType", fields: [defaultWorkItemTypeId], references: [id], onDelete: SetNull)
   members ProjectMember[]
   issues  Issue[]
+  customFieldValues ProjectCustomFieldValue[]
   milestones Milestone[]
   taskLists TaskList[]
   cycles Cycle[]

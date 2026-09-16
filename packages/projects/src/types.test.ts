@@ -312,6 +312,7 @@ describe('other schemas', () => {
       createdAt: 1680000000,
       updatedAt: 1685000000,
       memberCount: 5,
+      customFields: [],
     }
     const result = projectSchema.safeParse(project)
     expect(result.success).toBe(true)

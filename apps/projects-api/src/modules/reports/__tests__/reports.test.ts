@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const {
+  layoutsRepo,
+  projectCustomFieldsRepo,
   tenantsRepo,
   projectsRepo,
   repository,
@@ -20,6 +22,26 @@ const {
   timeRepo,
   financeRepo,
 } = vi.hoisted(() => ({
+  layoutsRepo: {
+    listLayouts: vi.fn(),
+    retrieveLayout: vi.fn(),
+    createLayout: vi.fn(),
+    updateLayout: vi.fn(),
+    softDeleteLayout: vi.fn(),
+    clearDefaultInScope: vi.fn(),
+  },
+  projectCustomFieldsRepo: {
+    listProjectCustomFields: vi.fn(),
+    retrieveProjectCustomField: vi.fn(),
+    retrieveProjectCustomFieldByKey: vi.fn(),
+    createProjectCustomField: vi.fn(),
+    updateProjectCustomField: vi.fn(),
+    archiveProjectCustomField: vi.fn(),
+    listProjectCustomFieldValues: vi.fn(),
+    listProjectCustomFieldValuesForProjects: vi.fn(),
+    upsertProjectCustomFieldValue: vi.fn(),
+    clearProjectCustomFieldValue: vi.fn(),
+  },
   tenantsRepo: { retrieveByOrganization: vi.fn() },
   projectsRepo: {
     list: vi.fn(),
@@ -256,6 +278,11 @@ vi.mock('../../finance/finance.repository.js', () => financeRepo)
 vi.mock('../reports.repository.js', () => repository)
 vi.mock('@876/billing/service', () => ({ create876BillingServiceClient: vi.fn() }))
 
+vi.mock('../../layouts/layouts.repository.js', () => layoutsRepo)
+vi.mock(
+  '../../custom-fields/project-custom-fields.repository.js',
+  () => projectCustomFieldsRepo
+)
 const service = await import('../reports.service.js')
 
 const NOW = 1788000000
@@ -361,6 +388,10 @@ function capacityRow(overrides: Record<string, unknown> = {}) {
 }
 
 beforeEach(() => {
+  layoutsRepo.listLayouts.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFields.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValues.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValuesForProjects.mockResolvedValue([])
   vi.clearAllMocks()
   issueSequence = 0
   entrySequence = 0

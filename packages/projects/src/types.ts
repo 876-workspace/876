@@ -292,6 +292,98 @@ export const customFieldValueSchema = z.object({
 })
 export type CustomFieldValue = z.infer<typeof customFieldValueSchema>
 
+export const projectCustomFieldSchema = z.object({
+  object: z.literal('projects.project-custom-field'),
+  id: z.string(),
+  tenantId: z.string(),
+  key: z.string(),
+  label: z.string(),
+  fieldType: z.string(),
+  options: z.unknown(),
+  required: z.boolean(),
+  description: z.string().nullable(),
+  position: z.number(),
+  archivedAt: z.number().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type ProjectCustomField = z.infer<typeof projectCustomFieldSchema>
+
+export const projectCustomFieldValueSchema = z.object({
+  object: z.literal('projects.project-custom-field-value'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  fieldId: z.string(),
+  fieldKey: z.string(),
+  fieldType: z.string(),
+  value: z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.array(z.string()),
+    z.null(),
+  ]),
+  updatedBy: z.string().nullable(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type ProjectCustomFieldValue = z.infer<
+  typeof projectCustomFieldValueSchema
+>
+
+export const layoutEntitySchema = z.enum(['project', 'phase', 'work-item'])
+export type LayoutEntity = z.infer<typeof layoutEntitySchema>
+
+export const layoutFieldSchema = z.object({
+  fieldKey: z.string(),
+  width: z.union([z.literal(1), z.literal(2)]),
+  visible: z.boolean(),
+})
+export type LayoutField = z.infer<typeof layoutFieldSchema>
+
+export const layoutSectionSchema = z.object({
+  key: z.string(),
+  title: z.string(),
+  columns: z.union([z.literal(1), z.literal(2)]),
+  fields: z.array(layoutFieldSchema),
+})
+export type LayoutSection = z.infer<typeof layoutSectionSchema>
+
+export const layoutConditionSchema = z.object({
+  fieldKey: z.string(),
+  op: z.enum(['equals', 'not-equals', 'in', 'is-empty', 'is-not-empty']),
+  value: z.union([z.string(), z.array(z.string())]).optional(),
+})
+export type LayoutCondition = z.infer<typeof layoutConditionSchema>
+
+export const layoutEffectSchema = z.object({
+  fieldKey: z.string(),
+  effect: z.enum(['show', 'hide', 'require', 'disable']),
+})
+export type LayoutEffect = z.infer<typeof layoutEffectSchema>
+
+export const layoutRuleSchema = z.object({
+  key: z.string(),
+  when: z.array(layoutConditionSchema),
+  then: z.array(layoutEffectSchema),
+})
+export type LayoutRule = z.infer<typeof layoutRuleSchema>
+
+export const layoutSchema = z.object({
+  object: z.literal('projects.layout'),
+  id: z.string().nullable(),
+  entity: layoutEntitySchema,
+  workItemTypeId: z.string().nullable(),
+  name: z.string(),
+  version: z.number(),
+  isDefault: z.boolean(),
+  builtIn: z.boolean(),
+  sections: z.array(layoutSectionSchema),
+  rules: z.array(layoutRuleSchema),
+})
+export type Layout = z.infer<typeof layoutSchema>
+
 export const projectSchema = z.object({
   object: z.literal('projects.project'),
   id: z.string(),
@@ -313,6 +405,7 @@ export const projectSchema = z.object({
   createdAt: z.number(),
   updatedAt: z.number(),
   memberCount: z.number(),
+  customFields: z.array(projectCustomFieldValueSchema),
 })
 export type Project = z.infer<typeof projectSchema>
 
@@ -656,6 +749,23 @@ export const customFieldValueListSchema = createListSchema(
 )
 export type CustomFieldValueList = z.infer<typeof customFieldValueListSchema>
 
+export const projectCustomFieldListSchema = createListSchema(
+  projectCustomFieldSchema
+)
+export type ProjectCustomFieldList = z.infer<
+  typeof projectCustomFieldListSchema
+>
+
+export const projectCustomFieldValueListSchema = createListSchema(
+  projectCustomFieldValueSchema
+)
+export type ProjectCustomFieldValueList = z.infer<
+  typeof projectCustomFieldValueListSchema
+>
+
+export const layoutListSchema = createListSchema(layoutSchema)
+export type LayoutList = z.infer<typeof layoutListSchema>
+
 export const baselineListSchema = createListSchema(baselineSchema)
 export type BaselineList = z.infer<typeof baselineListSchema>
 
@@ -990,6 +1100,97 @@ export interface UpdateCustomFieldInput {
 export interface SetCustomFieldValueInput {
   fieldId: string
   value: string | number | boolean | string[] | null
+}
+
+export type CustomFieldType =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'decimal'
+  | 'boolean'
+  | 'date'
+  | 'select'
+  | 'multi-select'
+  | 'user'
+  | 'url'
+
+export interface CreateProjectCustomFieldInput {
+  key: string
+  label: string
+  fieldType: CustomFieldType
+  options?: CustomFieldOption[]
+  required?: boolean
+  description?: string | null
+  position?: number
+}
+
+export interface UpdateProjectCustomFieldInput {
+  label?: string
+  fieldType?: CustomFieldType
+  options?: CustomFieldOption[]
+  required?: boolean
+  description?: string | null
+  position?: number
+}
+
+export interface SetProjectCustomFieldValuesInput {
+  customFields: SetCustomFieldValueInput[]
+  updatedBy?: string | null
+}
+
+export interface LayoutFieldInput {
+  fieldKey: string
+  width: 1 | 2
+  visible: boolean
+}
+
+export interface LayoutSectionInput {
+  key: string
+  title: string
+  columns: 1 | 2
+  fields: LayoutFieldInput[]
+}
+
+export interface LayoutConditionInput {
+  fieldKey: string
+  op: 'equals' | 'not-equals' | 'in' | 'is-empty' | 'is-not-empty'
+  value?: string | string[]
+}
+
+export interface LayoutEffectInput {
+  fieldKey: string
+  effect: 'show' | 'hide' | 'require' | 'disable'
+}
+
+export interface LayoutRuleInput {
+  key: string
+  when: LayoutConditionInput[]
+  then: LayoutEffectInput[]
+}
+
+export interface CreateLayoutInput {
+  entity: LayoutEntity
+  workItemTypeId?: string | null
+  name: string
+  sections: LayoutSectionInput[]
+  rules?: LayoutRuleInput[]
+  isDefault?: boolean
+}
+
+export interface UpdateLayoutInput {
+  name?: string
+  sections?: LayoutSectionInput[]
+  rules?: LayoutRuleInput[]
+}
+
+export interface ListLayoutsQuery {
+  entity?: LayoutEntity
+  workItemTypeId?: string
+}
+
+export interface ResolveLayoutQuery {
+  entity: LayoutEntity
+  workItemTypeId?: string
 }
 
 export interface ApplyPresetInput {

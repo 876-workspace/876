@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { errorHandler } from '../../../http/error-handler.js'
 
 const {
+  layoutsRepo,
+  projectCustomFieldsRepo,
   tenantsRepo,
   projectsRepo,
   workStructureRepo,
@@ -20,6 +22,26 @@ const {
   baselinesRepo,
   calendarRepo,
 } = vi.hoisted(() => ({
+  layoutsRepo: {
+    listLayouts: vi.fn(),
+    retrieveLayout: vi.fn(),
+    createLayout: vi.fn(),
+    updateLayout: vi.fn(),
+    softDeleteLayout: vi.fn(),
+    clearDefaultInScope: vi.fn(),
+  },
+  projectCustomFieldsRepo: {
+    listProjectCustomFields: vi.fn(),
+    retrieveProjectCustomField: vi.fn(),
+    retrieveProjectCustomFieldByKey: vi.fn(),
+    createProjectCustomField: vi.fn(),
+    updateProjectCustomField: vi.fn(),
+    archiveProjectCustomField: vi.fn(),
+    listProjectCustomFieldValues: vi.fn(),
+    listProjectCustomFieldValuesForProjects: vi.fn(),
+    upsertProjectCustomFieldValue: vi.fn(),
+    clearProjectCustomFieldValue: vi.fn(),
+  },
   tenantsRepo: { retrieveByOrganization: vi.fn() },
   projectsRepo: {
     list: vi.fn(),
@@ -201,6 +223,11 @@ vi.mock('../../projects/gantt.repository.js', () => ganttRepo)
 vi.mock('../../projects/baselines.repository.js', () => baselinesRepo)
 vi.mock('../calendar.repository.js', () => calendarRepo)
 
+vi.mock('../../layouts/layouts.repository.js', () => layoutsRepo)
+vi.mock(
+  '../../custom-fields/project-custom-fields.repository.js',
+  () => projectCustomFieldsRepo
+)
 const { createCalendarRouter } = await import('../calendar.routes.js')
 
 const tenant = {
@@ -324,6 +351,10 @@ async function requestJson(method: string, path: string, body?: unknown) {
 }
 
 beforeEach(() => {
+  layoutsRepo.listLayouts.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFields.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValues.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValuesForProjects.mockResolvedValue([])
   vi.clearAllMocks()
   process.env.PROJECTS_INTERNAL_KEY = 'test-internal-key'
   tenantsRepo.retrieveByOrganization.mockResolvedValue(tenant)

@@ -109,6 +109,18 @@ export const PROJECTS_ERRORS = {
     message: 'Complete all required custom fields.',
     httpStatus: 400 as HttpStatusCode,
   },
+  'projects/layout-not-found': {
+    message: 'The layout could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/layout-required-fields': {
+    message: 'The active layout requires additional fields.',
+    httpStatus: 400 as HttpStatusCode,
+  },
+  'projects/layout-field-disabled': {
+    message: 'The active layout does not allow changing this field.',
+    httpStatus: 400 as HttpStatusCode,
+  },
   'projects/template-not-found': {
     message: 'The project template could not be found.',
     httpStatus: 404 as HttpStatusCode,

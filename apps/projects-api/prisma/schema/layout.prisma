@@ -1,0 +1,66 @@
+model ProjectCustomField {
+  id          String  @id
+  tenantId    String  @map("tenant_id")
+  key         String
+  label       String
+  fieldType   String  @map("field_type")
+  options     Json?
+  required    Boolean @default(false)
+  description String?
+  position    Int     @default(0)
+  archivedAt  BigInt? @map("archived_at")
+  createdAt   BigInt  @map("created_at")
+  updatedAt   BigInt  @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  values ProjectCustomFieldValue[]
+
+  @@unique([tenantId, key], map: "projects_project_cf_tenant_key_uidx")
+  @@index([tenantId, position], map: "projects_project_cf_tenant_pos_idx")
+  @@map("projects_project_custom_fields")
+}
+
+model ProjectCustomFieldValue {
+  id           String   @id
+  tenantId     String   @map("tenant_id")
+  projectId    String   @map("project_id")
+  fieldId      String   @map("field_id")
+  stringValue  String?  @map("string_value")
+  integerValue Int?     @map("integer_value")
+  decimalValue Decimal? @db.Decimal(20, 6) @map("decimal_value")
+  booleanValue Boolean? @map("boolean_value")
+  dateValue    BigInt?  @map("date_value")
+  selectKey    String?  @map("select_key")
+  selectKeys   String[] @map("select_keys")
+  updatedBy    String?  @map("updated_by")
+  createdAt    BigInt   @map("created_at")
+  updatedAt    BigInt   @map("updated_at")
+
+  tenant  Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  project Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  field   ProjectCustomField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, fieldId], map: "projects_project_cfv_proj_field_uidx")
+  @@index([tenantId, fieldId], map: "projects_project_cfv_tenant_field_idx")
+  @@map("projects_project_custom_field_values")
+}
+
+model Layout {
+  id             String  @id
+  tenantId       String  @map("tenant_id")
+  entity         String  // project|phase|work-item
+  workItemTypeId String? @map("work_item_type_id")
+  name           String
+  definition     Json
+  version        Int     @default(1)
+  isDefault      Boolean @default(false) @map("is_default")
+  deletedAt      BigInt? @map("deleted_at")
+  createdAt      BigInt  @map("created_at")
+  updatedAt      BigInt  @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, entity], map: "projects_layouts_tenant_entity_idx")
+  @@index([tenantId, entity, workItemTypeId], map: "projects_layouts_scope_idx")
+  @@map("projects_layouts")
+}
