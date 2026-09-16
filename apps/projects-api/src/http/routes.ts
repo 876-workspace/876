@@ -1,5 +1,6 @@
 import { Router } from 'express'
 
+import { createCalendarRouter } from '../modules/calendar/calendar.routes.js'
 import { createIssuesRouter } from '../modules/issues/issues.routes.js'
 import { createLabelsRouter } from '../modules/labels/labels.routes.js'
 import { createProjectsRouter } from '../modules/projects/projects.routes.js'
@@ -15,6 +16,7 @@ export function buildRoutes() {
   )
   router.use('/v1/organizations/:organizationId/issues', createIssuesRouter())
   router.use('/v1/organizations/:organizationId/labels', createLabelsRouter())
+  router.use('/v1/organizations/:organizationId', createCalendarRouter())
   router.use('/v1/organizations/:organizationId', createWorkStructureRouter())
 
   return router

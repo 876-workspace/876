@@ -8,6 +8,10 @@ import { createIssueDependenciesResource } from './resources/issue-dependencies'
 import { createIssueRelationsResource } from './resources/issue-relations'
 import { createLabelsResource } from './resources/labels'
 import { createBaselinesResource } from './resources/baselines'
+import { createCalendarResource } from './resources/calendar'
+import { createEventsResource } from './resources/events'
+import { createMyWorkResource } from './resources/my-work'
+import { createRemindersResource } from './resources/reminders'
 import { createCyclesResource } from './resources/cycles'
 import { createGanttResource } from './resources/gantt'
 import { createMilestonesResource } from './resources/milestones'
@@ -40,6 +44,10 @@ export function create876ProjectsClient(options: ClientOptions = {}) {
     presets: createPresetsResource(runtime),
     gantt: createGanttResource(runtime),
     baselines: createBaselinesResource(runtime),
+    events: createEventsResource(runtime),
+    reminders: createRemindersResource(runtime),
+    calendar: createCalendarResource(runtime),
+    myWork: createMyWorkResource(runtime),
   }
 }
 

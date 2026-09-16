@@ -1006,3 +1006,234 @@ export interface CreateBaselineInput {
   note?: string | null
   capturedBy?: string | null
 }
+
+export const EVENT_KINDS = ['event', 'meeting'] as const
+export const eventKindSchema = z.enum(EVENT_KINDS)
+export type EventKind = z.infer<typeof eventKindSchema>
+
+export const ATTENDEE_RESPONSES = [
+  'invited',
+  'accepted',
+  'declined',
+  'tentative',
+] as const
+export const attendeeResponseSchema = z.enum(ATTENDEE_RESPONSES)
+export type AttendeeResponse = z.infer<typeof attendeeResponseSchema>
+
+export const RECURRENCE_FREQUENCIES = [
+  'daily',
+  'weekly',
+  'monthly',
+  'yearly',
+] as const
+export const recurrenceFrequencySchema = z.enum(RECURRENCE_FREQUENCIES)
+export type RecurrenceFrequency = z.infer<typeof recurrenceFrequencySchema>
+
+export const recurrenceRuleSchema = z.object({
+  freq: recurrenceFrequencySchema,
+  interval: z.number(),
+  byWeekday: z.array(z.number()),
+  until: z.number().nullable(),
+  count: z.number().nullable(),
+})
+export type RecurrenceRule = z.infer<typeof recurrenceRuleSchema>
+
+export const eventAttendeeSchema = z.object({
+  object: z.literal('projects.event-attendee'),
+  id: z.string(),
+  eventId: z.string(),
+  userId: z.string(),
+  response: z.string(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type EventAttendee = z.infer<typeof eventAttendeeSchema>
+
+export const projectEventSchema = z.object({
+  object: z.literal('projects.event'),
+  id: z.string(),
+  tenantId: z.string(),
+  projectId: z.string(),
+  milestoneId: z.string().nullable(),
+  issueId: z.string().nullable(),
+  kind: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  startsAt: z.number(),
+  endsAt: z.number().nullable(),
+  allDay: z.boolean(),
+  location: z.string().nullable(),
+  meetingUrl: z.string().nullable(),
+  createdBy: z.string().nullable(),
+  recurrence: recurrenceRuleSchema.nullable(),
+  attendees: z.array(eventAttendeeSchema),
+})
+export type ProjectEvent = z.infer<typeof projectEventSchema>
+
+export const reminderSchema = z.object({
+  object: z.literal('projects.reminder'),
+  id: z.string(),
+  tenantId: z.string(),
+  issueId: z.string().nullable(),
+  milestoneId: z.string().nullable(),
+  eventId: z.string().nullable(),
+  remindAt: z.number().nullable(),
+  offsetMinutesBeforeDue: z.number().nullable(),
+  recurrence: recurrenceRuleSchema.nullable(),
+  channel: z.string(),
+  createdBy: z.string(),
+  active: z.boolean(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type Reminder = z.infer<typeof reminderSchema>
+
+export const dueReminderSchema = reminderSchema.extend({
+  dueAt: z.number(),
+})
+export type DueReminder = z.infer<typeof dueReminderSchema>
+
+export const CALENDAR_ENTRY_KINDS = [
+  'project',
+  'phase',
+  'work-item',
+  'event',
+  'meeting',
+] as const
+export const calendarEntryKindSchema = z.enum(CALENDAR_ENTRY_KINDS)
+export type CalendarEntryKind = z.infer<typeof calendarEntryKindSchema>
+
+export const calendarEntrySchema = z.object({
+  object: z.literal('calendar-entry'),
+  kind: calendarEntryKindSchema,
+  id: z.string(),
+  occurrenceStart: z.number(),
+  occurrenceEnd: z.number().nullable(),
+  allDay: z.boolean(),
+  title: z.string(),
+  projectId: z.string(),
+  issueIdentifier: z.string().optional(),
+})
+export type CalendarEntry = z.infer<typeof calendarEntrySchema>
+
+export const calendarSchema = z.object({
+  object: z.literal('calendar'),
+  entries: z.array(calendarEntrySchema),
+})
+export type Calendar = z.infer<typeof calendarSchema>
+
+export const myWorkIssueSchema = z.object({
+  object: z.literal('projects.my-work-issue'),
+  id: z.string(),
+  projectId: z.string(),
+  identifier: z.string(),
+  title: z.string(),
+  status: z.string(),
+  dueDate: z.number().nullable(),
+  plannedStartDate: z.number().nullable(),
+  plannedFinishDate: z.number().nullable(),
+})
+export type MyWorkIssue = z.infer<typeof myWorkIssueSchema>
+
+export const myWorkSchema = z.object({
+  object: z.literal('my-work'),
+  userId: z.string(),
+  assignedIssues: z.array(myWorkIssueSchema),
+  upcomingEvents: z.array(projectEventSchema),
+  dueReminders: z.array(dueReminderSchema),
+})
+export type MyWork = z.infer<typeof myWorkSchema>
+
+export const eventListSchema = createListSchema(projectEventSchema)
+export type EventList = z.infer<typeof eventListSchema>
+
+export const reminderListSchema = createListSchema(reminderSchema)
+export type ReminderList = z.infer<typeof reminderListSchema>
+
+export const dueReminderListSchema = createListSchema(dueReminderSchema)
+export type DueReminderList = z.infer<typeof dueReminderListSchema>
+
+export interface RecurrenceInput {
+  freq: RecurrenceFrequency
+  interval?: number
+  byWeekday?: number[]
+  until?: number
+  count?: number
+}
+
+export interface ListEventsQuery {
+  projectId?: string
+}
+
+export interface CreateEventInput {
+  projectId: string
+  milestoneId?: string | null
+  issueId?: string | null
+  kind?: EventKind
+  title: string
+  description?: string | null
+  startsAt: number
+  endsAt?: number | null
+  allDay?: boolean
+  location?: string | null
+  meetingUrl?: string | null
+  createdBy?: string | null
+  recurrence?: RecurrenceInput | null
+}
+
+export interface UpdateEventInput {
+  milestoneId?: string | null
+  issueId?: string | null
+  kind?: EventKind
+  title?: string
+  description?: string | null
+  startsAt?: number
+  endsAt?: number | null
+  allDay?: boolean
+  location?: string | null
+  meetingUrl?: string | null
+  recurrence?: RecurrenceInput | null
+}
+
+export interface AddEventAttendeeInput {
+  userId: string
+  response?: AttendeeResponse
+}
+
+export interface RespondEventAttendeeInput {
+  response: AttendeeResponse
+}
+
+export interface CreateReminderInput {
+  issueId?: string | null
+  milestoneId?: string | null
+  eventId?: string | null
+  remindAt?: number | null
+  offsetMinutesBeforeDue?: number | null
+  recurrence?: RecurrenceInput | null
+  channel?: 'in-app'
+  createdBy: string
+  active?: boolean
+}
+
+export interface UpdateReminderInput {
+  issueId?: string | null
+  milestoneId?: string | null
+  eventId?: string | null
+  remindAt?: number | null
+  offsetMinutesBeforeDue?: number | null
+  recurrence?: RecurrenceInput | null
+  active?: boolean
+}
+
+export interface ListDueRemindersQuery {
+  at?: number
+  createdBy?: string
+}
+
+export interface GetCalendarQuery {
+  from: number
+  to: number
+  projectId?: string
+  kinds?: CalendarEntryKind[]
+}

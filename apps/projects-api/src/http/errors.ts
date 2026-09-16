@@ -169,6 +169,26 @@ export const PROJECTS_ERRORS = {
     message: 'Something went wrong. Please try again.',
     httpStatus: 500 as HttpStatusCode,
   },
+  'projects/event-not-found': {
+    message: 'The event could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/attendee-not-found': {
+    message: 'That person is not attending this event.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/attendee-exists': {
+    message: 'That person is already attending this event.',
+    httpStatus: 409 as HttpStatusCode,
+  },
+  'projects/reminder-not-found': {
+    message: 'The reminder could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/reminder-forbidden': {
+    message: 'You can only view or change your own reminders.',
+    httpStatus: 403 as HttpStatusCode,
+  },
   'projects/not-found': {
     message: 'Not found.',
     httpStatus: 404 as HttpStatusCode,

@@ -26,6 +26,9 @@ model Tenant {
   milestoneCustomFieldValues MilestoneCustomFieldValue[]
   baselines ProjectBaseline[]
   baselineItems ProjectBaselineItem[]
+  projectEvents ProjectEvent[]
+  eventAttendees EventAttendee[]
+  reminders Reminder[]
 
   @@map("projects_tenants")
 }
