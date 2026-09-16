@@ -6,6 +6,17 @@ import {
   QuoteListSchema,
   QuoteSchema,
 } from '../schemas'
+import type {
+  DocumentEmailComposition,
+  DocumentEmailPrepareParams,
+  DocumentEmailSendOptions,
+  DocumentEmailSendParams,
+  DocumentEmailDelivery,
+} from '../types/document-email'
+import {
+  DocumentEmailCompositionSchema,
+  DocumentEmailDeliverySchema,
+} from '../types/document-email.schema'
 import { QuotePreferenceSchema } from '../types/quote-preference.schema'
 import { SalesOrderSchema } from '../types/sales-order.schema'
 import { SalesReceiptSchema } from '../types/sales-receipt.schema'
@@ -136,6 +147,43 @@ export function createQuotesResource(runtime: Runtime) {
 
     send(quoteId: string, options?: RequestOptions) {
       return transition(quoteId, 'send', options)
+    },
+
+    /** Resolves the default recipient, sender, and rendered template without sending. */
+    prepareEmail(
+      quoteId: string,
+      params: DocumentEmailPrepareParams = {},
+      options?: RequestOptions
+    ) {
+      return Request<DocumentEmailComposition>(
+        runtime,
+        {
+          method: 'GET',
+          path: `${resourcePath(quoteId)}/email`,
+          query: params,
+          signal: options?.signal,
+        },
+        DocumentEmailCompositionSchema
+      )
+    },
+
+    /** Sends a quote email through the shared Communications service. */
+    sendEmail(
+      quoteId: string,
+      params: DocumentEmailSendParams,
+      options: DocumentEmailSendOptions
+    ) {
+      return Request<DocumentEmailDelivery>(
+        runtime,
+        {
+          method: 'POST',
+          path: `${resourcePath(quoteId)}/send-email`,
+          body: params,
+          headers: { 'Idempotency-Key': options.idempotencyKey },
+          signal: options.signal,
+        },
+        DocumentEmailDeliverySchema
+      )
     },
 
     accept(quoteId: string, options?: RequestOptions) {
