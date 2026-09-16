@@ -17,6 +17,12 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
         href: '/settings/workflow-states',
       },
       {
+        label: 'Workflows',
+        icon: 'statuses',
+        availability: 'available',
+        href: '/settings/workflows',
+      },
+      {
         label: 'Custom fields',
         icon: 'preferences',
         availability: 'available',
@@ -74,7 +80,8 @@ export const SETTINGS_GROUPS: SettingsHubGroup[] = [
       {
         label: 'Automation rules',
         icon: 'automation',
-        availability: 'planned',
+        availability: 'available',
+        href: '/settings/automation',
       },
       {
         label: 'Email intake',

@@ -26,6 +26,8 @@ export const WORKSPACE_ICON_COLORS: Record<WorkspaceIconKey, string> = {
   time: 'text-teal-500 dark:text-teal-400',
   templates: 'text-indigo-500 dark:text-indigo-400',
   layouts: 'text-indigo-500 dark:text-indigo-400',
+  workflows: 'text-slate-500 dark:text-slate-400',
+  automation: 'text-sky-500 dark:text-sky-400',
   settings: 'text-slate-500 dark:text-slate-400',
   billing: 'text-emerald-500 dark:text-emerald-400',
   packages: 'text-orange-500 dark:text-orange-400',

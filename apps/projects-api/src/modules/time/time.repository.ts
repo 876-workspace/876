@@ -106,6 +106,31 @@ export type CreateTimesheetEventParams = {
   createdAt: bigint
 }
 
+export type TimeTransactionClient = Omit<
+  typeof prisma,
+  '$connect' | '$disconnect' | '$extends' | '$on' | '$transaction' | '$use'
+>
+
+export type TimeTransaction = {
+  client: TimeTransactionClient
+  createTimeEntry: (params: CreateTimeEntryParams) => Promise<TimeEntryRow>
+}
+
+export async function transaction<T>(
+  callback: (tx: TimeTransaction) => Promise<T>
+): Promise<T> {
+  return prisma.$transaction(async (txPrisma) => {
+    const client = txPrisma as TimeTransactionClient
+    return callback({
+      client,
+      createTimeEntry: async (params: CreateTimeEntryParams) => {
+        const row = await txPrisma.timeEntry.create({ data: params })
+        return row as unknown as TimeEntryRow
+      },
+    })
+  })
+}
+
 const liveEntryWhere = { deletedAt: null } as const
 
 export async function createTimeEntry(

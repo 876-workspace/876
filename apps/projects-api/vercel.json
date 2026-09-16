@@ -1,4 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/internal/automation/drain",
+      "schedule": "*/10 * * * *"
+    }
+  ],
   "ignoreCommand": "node ../../scripts/vercel-ignore-build.mjs @876/projects-api"
 }

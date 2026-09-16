@@ -5,10 +5,12 @@ import {
   nullableToDbUnixSeconds,
   toDbUnixSeconds,
 } from '../../platform/timestamps.js'
+import * as automation from '../automation/index.js'
 import * as labels from '../labels/index.js'
 import * as layouts from '../layouts/index.js'
 import * as projects from '../projects/index.js'
 import * as tenants from '../tenants/index.js'
+import * as workflows from '../workflows/index.js'
 import * as workStructure from '../work-structure/index.js'
 import { summarizeLinks } from './issue-links.service.js'
 import * as repository from './issues.repository.js'
@@ -33,6 +35,18 @@ export type PaginatedIssues = {
   items: SerializedIssue[]
   hasMore: boolean
   totalCount: number | null
+}
+
+export type IssueMutationContext = {
+  permissions?: string[]
+  automationRuleId?: string
+  causationDepth?: number
+}
+
+function mutationActor(context: IssueMutationContext | undefined, fallback: string | null): string | null {
+  return context?.automationRuleId
+    ? `automation:${context.automationRuleId}`
+    : fallback
 }
 
 class IssueMutationError extends Error {
@@ -265,7 +279,8 @@ export async function list(
 
 export async function create(
   organizationId: string,
-  body: CreateIssueBody
+  body: CreateIssueBody,
+  context?: IssueMutationContext
 ): Promise<ServiceResult<SerializedIssue>> {
   const tenantResolution = await resolveTenant(organizationId)
   if (tenantResolution.error !== null)
@@ -409,11 +424,26 @@ export async function create(
         id: generateId('issueEvent'),
         tenantId: tenant.id,
         issueId: issue.id,
-        actorUserId: body.creatorUserId ?? null,
+        actorUserId: mutationActor(context, body.creatorUserId ?? null),
         type: 'created',
         fromValue: null,
         toValue: identifier,
         createdAt: timestamp,
+      })
+
+      await automation.appendOutboxEvent(tx.transactionClient, {
+        tenantId: tenant.id,
+        type: 'work-item.created',
+        subjectType: 'work-item',
+        subjectId: issue.id,
+        payload: {
+          organizationId,
+          projectId: issue.projectId,
+          identifier,
+          typeKey,
+          status,
+        },
+        causationDepth: context?.causationDepth ?? 0,
       })
 
       if (resolvedLabelIds.length > 0)
@@ -498,7 +528,8 @@ export async function retrieve(
 export async function update(
   organizationId: string,
   issueRef: string,
-  body: UpdateIssueBody
+  body: UpdateIssueBody,
+  context?: IssueMutationContext
 ): Promise<ServiceResult<SerializedIssue>> {
   const tenantResolution = await resolveTenant(organizationId)
   if (tenantResolution.error !== null)
@@ -616,33 +647,51 @@ export async function update(
   const storedCustomFields: layouts.LayoutFieldInput = {}
   for (const value of storedValues)
     storedCustomFields[`cf:${value.fieldKey}`] = value.value
+  const layoutExisting: layouts.LayoutFieldInput = {
+    title: existing.title,
+    description: existing.description,
+    state: existing.status,
+    priority: existing.priority,
+    assignee: existing.assigneeUserId,
+    dueDate: unixOrNull(existing.dueDate),
+    startDate: unixOrNull(existing.plannedStartDate),
+    estimate: existing.estimate,
+    labels:
+      layoutEnrichment.get(existing.id)?.labels?.map((label) => label.id) ??
+      [],
+    phase: existing.milestoneId,
+    taskList: existing.taskListId ?? null,
+    ...storedCustomFields,
+  }
+  const layoutIncoming: layouts.LayoutFieldInput = {
+    ...issueLayoutIncoming(body),
+    ...updateFieldValues.values,
+  }
   const updateLayoutCheck = await layouts.enforceLayoutRules({
     organizationId,
     entity: 'work-item',
     workItemTypeId: effectiveType.id,
-    existing: {
-      title: existing.title,
-      description: existing.description,
-      state: existing.status,
-      priority: existing.priority,
-      assignee: existing.assigneeUserId,
-      dueDate: unixOrNull(existing.dueDate),
-      startDate: unixOrNull(existing.plannedStartDate),
-      estimate: existing.estimate,
-      labels:
-        layoutEnrichment.get(existing.id)?.labels?.map((label) => label.id) ??
-        [],
-      phase: existing.milestoneId,
-      taskList: existing.taskListId ?? null,
-      ...storedCustomFields,
-    },
-    incoming: {
-      ...issueLayoutIncoming(body),
-      ...updateFieldValues.values,
-    },
+    existing: layoutExisting,
+    incoming: layoutIncoming,
   })
   if (updateLayoutCheck.error)
     return { data: null, error: updateLayoutCheck.error }
+
+  const statusChanged =
+    body.status !== undefined && body.status !== existing.status
+  if (statusChanged) {
+    const transitionCheck = await workflows.checkTransition({
+      tenantId: tenant.id,
+      workItemTypeId: effectiveType.id,
+      fromStateKey: existing.status,
+      toStateKey: body.status as string,
+      fieldValues: { ...layoutExisting, ...layoutIncoming },
+      comment: body.comment ?? null,
+      permissions: context?.permissions,
+    })
+    if (transitionCheck.error)
+      return { data: null, error: transitionCheck.error }
+  }
 
   const timestamp = toDbUnixSeconds(nowUnixSeconds())
   let startedAt: bigint | null | undefined
@@ -845,11 +894,40 @@ export async function update(
           id: generateId('issueEvent'),
           tenantId: tenant.id,
           issueId: existing.id,
-          actorUserId: body.actorUserId ?? null,
+          actorUserId: mutationActor(context, body.actorUserId ?? null),
           type: event.type,
           fromValue: event.fromValue,
           toValue: event.toValue,
           createdAt: timestamp,
+        })
+      }
+
+      await automation.appendOutboxEvent(tx.transactionClient, {
+        tenantId: tenant.id,
+        type: 'work-item.updated',
+        subjectType: 'work-item',
+        subjectId: existing.id,
+        payload: {
+          organizationId,
+          projectId: targetProjectId,
+          updatedFields: Object.keys(body),
+        },
+        causationDepth: context?.causationDepth ?? 0,
+      })
+
+      if (statusChanged) {
+        await automation.appendOutboxEvent(tx.transactionClient, {
+          tenantId: tenant.id,
+          type: 'work-item.state-changed',
+          subjectType: 'work-item',
+          subjectId: existing.id,
+          payload: {
+            organizationId,
+            projectId: targetProjectId,
+            fromStatus: existing.status,
+            toStatus: body.status,
+          },
+          causationDepth: context?.causationDepth ?? 0,
         })
       }
 
@@ -898,6 +976,34 @@ export async function update(
       dependencyCount: linkSummary?.dependencyCount ?? 0,
       ...structure,
     }),
+    error: null,
+  }
+}
+
+export async function listDueSoon(
+  organizationId: string,
+  fromSeconds: number,
+  toSeconds: number
+): Promise<
+  ServiceResult<
+    Array<{ id: string; projectId: string; status: string; dueDate: number | null }>
+  >
+> {
+  const tenantResolution = await resolveTenant(organizationId)
+  if (tenantResolution.error !== null)
+    return { data: null, error: tenantResolution.error }
+  const rows = await repository.listIssuesDueBetween(
+    tenantResolution.tenant.id,
+    toDbUnixSeconds(fromSeconds),
+    toDbUnixSeconds(toSeconds)
+  )
+  return {
+    data: rows.map((row) => ({
+      id: row.id,
+      projectId: row.projectId,
+      status: row.status,
+      dueDate: row.dueDate === null ? null : Number(row.dueDate),
+    })),
     error: null,
   }
 }

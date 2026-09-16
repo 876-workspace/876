@@ -26,12 +26,20 @@ import type {
   UpdateMilestoneCustomFieldBody,
   UpdateMilestoneWithActorBody,
 } from './milestone-details.schemas.js'
+import * as automation from '../automation/index.js'
 import * as layouts from '../layouts/index.js'
 import * as core from './work-structure.service.js'
+import * as structureRepository from './work-structure.repository.js'
 
 export type ServiceResult<T> =
   | { data: T; error: null }
   | { data: null; error: ProjectsError }
+
+class MilestoneMutationError extends Error {
+  constructor(readonly projectsError: ProjectsError) {
+    super(projectsError.message)
+  }
+}
 
 function now() {
   return toDbUnixSeconds(nowUnixSeconds())
@@ -150,7 +158,40 @@ export async function updateMilestone(
     incoming: milestoneLayoutIncoming(body),
   })
   if (layoutCheck.error) return { data: null, error: layoutCheck.error }
-  const updated = await core.updateMilestone(organizationId, id, input)
+  let updated: Awaited<ReturnType<typeof core.updateMilestone>>
+  try {
+    updated = await structureRepository.transaction(async (tx) => {
+      const result = await core.updateMilestone(organizationId, id, input, {
+        client: tx.client,
+      })
+      if (result.error || !result.data)
+        throw new MilestoneMutationError(
+          result.error ?? getError('projects/milestone-not-found')
+        )
+      if (
+        before.milestone.status !== 'completed' &&
+        result.data.status === 'completed'
+      ) {
+        await automation.appendOutboxEvent(tx.client, {
+          tenantId: result.data.tenantId,
+          type: 'phase.completed',
+          subjectType: 'phase',
+          subjectId: result.data.id,
+          payload: {
+            organizationId,
+            projectId: result.data.projectId,
+            milestoneId: result.data.id,
+          },
+          causationDepth: 0,
+        })
+      }
+      return result
+    })
+  } catch (error) {
+    if (error instanceof MilestoneMutationError)
+      return { data: null, error: error.projectsError }
+    throw error
+  }
   if (updated.error || !updated.data) return updated
 
   const statusChanged = before.milestone.status !== updated.data.status

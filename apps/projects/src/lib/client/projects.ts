@@ -28,7 +28,9 @@ import type {
 import { request } from './request'
 
 type CreateIssueParams = Omit<CreateIssueInput, 'creatorUserId'>
-type UpdateIssueParams = Omit<UpdateIssueInput, 'creatorUserId' | 'actorUserId'>
+type UpdateIssueParams = Omit<UpdateIssueInput, 'creatorUserId' | 'actorUserId'> & {
+  comment?: string | null
+}
 type SearchIssuesParams = { q: string; projectId?: string }
 type CreatePhaseParams = CreateMilestoneInput & { ownerUserId?: string | null }
 type UpdatePhaseParams = UpdateMilestoneInput & { ownerUserId?: string | null }

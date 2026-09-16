@@ -6,6 +6,7 @@ import { createReportsRouter } from '../modules/reports/reports.routes.js'
 import { createTimeRouter } from '../modules/time/time.routes.js'
 import { createIssuesRouter } from '../modules/issues/issues.routes.js'
 import { createLabelsRouter } from '../modules/labels/labels.routes.js'
+import { createAutomationRouter } from '../modules/automation/automation.routes.js'
 import { createLayoutsRouter } from '../modules/layouts/layouts.routes.js'
 import { createProjectsRouter } from '../modules/projects/projects.routes.js'
 import { createTenantsRouter } from '../modules/tenants/tenants.routes.js'
@@ -15,6 +16,8 @@ import {
   createProjectCustomFieldValuesRouter,
 } from '../modules/custom-fields/index.js'
 import { createTemplatesRouter } from '../modules/templates/templates.routes.js'
+import { createAutomationInternalRouter } from '../modules/automation/automation.internal-routes.js'
+import { createWorkflowsRouter } from '../modules/workflows/workflows.routes.js'
 
 export function buildRoutes() {
   const router = Router()
@@ -37,6 +40,9 @@ export function buildRoutes() {
     createProjectCustomFieldValuesRouter()
   )
   router.use('/v1/organizations/:organizationId', createTemplatesRouter())
+  router.use('/v1/organizations/:organizationId', createAutomationRouter())
+  router.use('/v1/organizations/:organizationId', createWorkflowsRouter())
+  router.use('/internal', createAutomationInternalRouter())
 
   return router
 }

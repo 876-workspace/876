@@ -28,6 +28,7 @@ describe('client / runtime', () => {
       internalKey: 'key_1',
     })
     expect(Object.keys(client).sort()).toEqual([
+      'automationRules',
       'baselines',
       'budgets',
       'calendar',
@@ -45,6 +46,7 @@ describe('client / runtime', () => {
       'layouts',
       'milestones',
       'myWork',
+      'notifications',
       'presets',
       'projectBilling',
       'projectCustomFields',
@@ -59,6 +61,31 @@ describe('client / runtime', () => {
       'timesheets',
       'workItemTypes',
       'workflowStates',
+      'workflows',
+    ])
+  })
+
+  it('exposes the workflow automation namespaces', () => {
+    const client = create876ProjectsClient({
+      baseUrl: 'http://test.api',
+      internalKey: 'key_1',
+    })
+    expect(Object.keys(client.workflows).sort()).toEqual([
+      'getBlueprint',
+      'putBlueprint',
+    ])
+    expect(Object.keys(client.automationRules).sort()).toEqual([
+      'create',
+      'list',
+      'listRuns',
+      'remove',
+      'retrieve',
+      'test',
+      'update',
+    ])
+    expect(Object.keys(client.notifications).sort()).toEqual([
+      'list',
+      'markRead',
     ])
   })
 
@@ -145,6 +172,7 @@ describe('client / runtime', () => {
     })
 
     expect(Object.keys(operatorClient).sort()).toEqual([
+      'automationRules',
       'baselines',
       'budgets',
       'calendar',
@@ -162,6 +190,7 @@ describe('client / runtime', () => {
       'layouts',
       'milestones',
       'myWork',
+      'notifications',
       'presets',
       'projectBilling',
       'projectCustomFields',
@@ -176,8 +205,10 @@ describe('client / runtime', () => {
       'timesheets',
       'workItemTypes',
       'workflowStates',
+      'workflows',
     ])
     expect(Object.keys(serviceClient).sort()).toEqual([
+      'automationRules',
       'baselines',
       'budgets',
       'calendar',
@@ -195,6 +226,7 @@ describe('client / runtime', () => {
       'layouts',
       'milestones',
       'myWork',
+      'notifications',
       'presets',
       'projectBilling',
       'projectCustomFields',
@@ -209,6 +241,7 @@ describe('client / runtime', () => {
       'timesheets',
       'workItemTypes',
       'workflowStates',
+      'workflows',
     ])
   })
 

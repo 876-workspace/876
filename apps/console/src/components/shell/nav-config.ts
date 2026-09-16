@@ -133,6 +133,20 @@ export const navConfig = defineNavigation([
             requires: { permission: 'projects/dashboard.view' },
           },
           {
+            key: 'projects-workflows',
+            title: 'Workflows',
+            href: '/projects/workflows',
+            icon: 'workflows',
+            requires: { permission: 'projects/dashboard.view' },
+          },
+          {
+            key: 'projects-automation',
+            title: 'Automation',
+            href: '/projects/automation',
+            icon: 'automation',
+            requires: { permission: 'projects/dashboard.view' },
+          },
+          {
             key: 'projects-project-fields',
             title: 'Project Fields',
             href: '/projects/project-fields',

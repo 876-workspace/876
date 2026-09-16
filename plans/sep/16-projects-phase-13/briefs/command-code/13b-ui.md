@@ -30,3 +30,5 @@ pnpm --filter @876/projects-ui test
 
 ## Report
 `plans/sep/16-projects-phase-13/reports/command-code/13b-ui.md`.
+
+Report path override: write the report to `plans/sep/16-projects-phase-13/reports/opencode/13b-ui.md`.

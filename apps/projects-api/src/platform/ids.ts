@@ -36,6 +36,11 @@ export const ENTITY_PREFIXES = {
   projectTemplate: 'prjtpl_',
   projectTemplateVersion: 'prjtplv_',
   projectTemplateInstantiation: 'prjtpli_',
+  workflowTransition: 'wft_',
+  automationRule: 'arl_',
+  automationEvent: 'aev_',
+  automationRun: 'arn_',
+  notification: 'ntf_',
 } as const
 
 export type EntityType = keyof typeof ENTITY_PREFIXES

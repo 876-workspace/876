@@ -98,6 +98,7 @@ export const updateIssueBodySchema = z
     customFields: z.array(customFieldValueInputSchema).optional(),
     position: z.number().int().optional(),
     actorUserId: z.string().trim().nullable().optional(),
+    comment: z.string().trim().max(10000).nullable().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one field must be provided for update',

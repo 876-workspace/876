@@ -94,6 +94,8 @@ export const NAV_ICONS: Record<string, IconComponent> = {
   banking: BuildingLibraryIcon,
   branches: MapPin,
   warehouses: ArchiveBoxIcon,
+  workflows: WrenchScrewdriverIcon,
+  automation: Waves,
 }
 
 /**
@@ -155,6 +157,8 @@ export const NAV_ICON_COLORS: Record<string, string> = {
   packages: 'text-orange-500 dark:text-orange-400',
   warehouses: 'text-orange-500 dark:text-orange-400',
   branches: 'text-lime-600 dark:text-lime-400',
+  workflows: 'text-slate-500 dark:text-slate-400',
+  automation: 'text-sky-500 dark:text-sky-400',
 }
 
 /** The fallback colour for an entry whose icon key declares none. */

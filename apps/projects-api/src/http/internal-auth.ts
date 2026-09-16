@@ -32,3 +32,23 @@ export function requireInternalKey(
 }
 
 export const requireInternal = requireInternalKey
+
+/**
+ * Vercel Cron calls with `Authorization: Bearer $CRON_SECRET` and cannot set
+ * custom headers, so scheduled internal routes accept that secret as well as
+ * the internal key. An unset secret never matches.
+ */
+export function requireInternalKeyOrCron(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const cronSecret = process.env.CRON_SECRET
+  const authorization = req.header('authorization') ?? ''
+  const bearer = authorization.startsWith('Bearer ')
+    ? authorization.slice('Bearer '.length).trim()
+    : ''
+  if (cronSecret && bearer && secretsMatch(bearer, cronSecret)) return next()
+
+  return requireInternalKey(req, res, next)
+}

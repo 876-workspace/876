@@ -47,6 +47,7 @@ const updateIssueSchema = z
     labelIds: z.array(z.string().trim().min(1)).optional(),
     customFields: z.array(customFieldValueSchema).optional(),
     position: z.number().int().optional(),
+    comment: z.string().trim().max(10000).nullable().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one field is required.',

@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 
 import { AttachmentsData } from '@/features/projects/components/attachments-data'
 import { IssueCommentsLoader } from '@/features/projects/components/issue-comments-loader'
+import { IssueStatusSelect } from '@/features/projects/components/issue-status-select'
 import { IssueLinksData } from '@/features/projects/components/issue-links-data'
 import { RemindersData } from '@/features/projects/components/reminders-data'
 import { loadMemberLabels } from '@/features/projects/member-labels'
@@ -26,6 +27,7 @@ export async function IssueDetailData({
   const eventsPromise = projects.issues.events.list(orgId, decodedIssueRef)
   const fieldsPromise = projects.customFields.list(orgId)
   const membersPromise = loadMemberLabels(orgId)
+  const statesPromise = projects.workflowStates.list(orgId)
 
   const issueResult = await issuePromise
   if (issueResult.error?.code === 'projects/issue-not-found') notFound()
@@ -56,23 +58,35 @@ export async function IssueDetailData({
     membersResult,
     subIssuesResult,
     parentResult,
+    statesResult,
   ] = await Promise.all([
     eventsPromise,
     fieldsPromise,
     membersPromise,
     subIssuesPromise,
     parentPromise,
+    statesPromise,
   ])
   const enrichmentError =
     eventsResult.error ??
     fieldsResult.error ??
     membersResult.error ??
     subIssuesResult.error ??
-    parentResult.error
+    parentResult.error ??
+    statesResult.error
 
   return (
     <>
       <div className="space-y-4">
+        <IssueStatusSelect
+          issueRef={issueResult.data.identifier}
+          currentStatus={issueResult.data.status}
+          statuses={(statesResult.data?.data ?? []).map((state) => ({
+            key: state.key,
+            label: state.name,
+          }))}
+          canEdit={canEdit}
+        />
         {enrichmentError ? (
           <AppError
             title="Some issue details could not be loaded"

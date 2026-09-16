@@ -19,6 +19,7 @@ import type { ProjectsUiFeatures } from '@/types/features'
 import type { NavGroupDefinition } from '@876/core/access'
 
 import { Sidebar } from './sidebar'
+import { NotificationBell } from './notification-bell'
 import { GlobalAdd, FloatingGlobalAdd } from './global-add'
 import { MobileNav } from './mobile-nav'
 import { TabBar } from './tab-bar'
@@ -34,6 +35,7 @@ export async function Shell({
   apps,
   uiFeatures,
   navigation,
+  notificationCount = 0,
 }: {
   children: ReactNode
   user: SidebarUserMenuUser
@@ -42,6 +44,7 @@ export async function Shell({
   apps: AppSwitcherApp[]
   uiFeatures: ProjectsUiFeatures
   navigation: NavGroupDefinition[]
+  notificationCount?: number
 }) {
   const sidebarCookie = (await cookies()).get('sidebar_state')
   const defaultSidebarOpen = sidebarCookie
@@ -93,6 +96,7 @@ export async function Shell({
             ) : null}
 
             <div className="flex items-center gap-1.5">
+              <NotificationBell count={notificationCount} />
               {/* Sits where a help button would: raising a bug or a piece of
                   feedback should not require leaving the page you are on. */}
               {uiFeatures.globalAdd && <GlobalAdd />}

@@ -6,6 +6,7 @@ import {
   nowUnixSeconds,
   toDbUnixSeconds,
 } from '../../platform/timestamps.js'
+import * as automation from '../automation/index.js'
 import * as projects from '../projects/index.js'
 import * as tenants from '../tenants/index.js'
 import * as repository from './time.repository.js'
@@ -100,9 +101,15 @@ export async function listTimeEntries(
   return { data: liveEntries(rows).map(serializeTimeEntry), error: null }
 }
 
+export type TimeEntryMutationContext = {
+  automationRuleId?: string
+  causationDepth?: number
+}
+
 export async function createTimeEntry(
   organizationId: string,
-  body: CreateTimeEntryBody
+  body: CreateTimeEntryBody,
+  context?: TimeEntryMutationContext
 ): Promise<ServiceResult<SerializedTimeEntry>> {
   const resolved = await resolveTenant(organizationId)
   if (resolved.error || !resolved.tenant)
@@ -122,26 +129,42 @@ export async function createTimeEntry(
       }),
     }
   const now = toDbUnixSeconds(nowUnixSeconds())
-  const row = await repository.createTimeEntry({
-    id: generateId('timeEntry'),
-    tenantId: resolved.tenant.id,
-    projectId: project.id,
-    issueId: body.issueId ?? null,
-    milestoneId: body.milestoneId ?? null,
-    taskListId: body.taskListId ?? null,
-    userId: body.userId,
-    startedAt: toDbUnixSeconds(body.startedAt),
-    endedAt: toDbUnixSeconds(body.endedAt),
-    durationMinutes:
-      body.durationMinutes ??
-      durationMinutesBetween(body.startedAt, body.endedAt),
-    billable: body.billable ?? false,
-    note: body.note ?? null,
-    approvalStatus: 'draft',
-    timesheetId: null,
-    createdBy: body.createdBy ?? body.userId,
-    createdAt: now,
-    updatedAt: now,
+  const row = await repository.transaction(async (tx) => {
+    const created = await tx.createTimeEntry({
+      id: generateId('timeEntry'),
+      tenantId: resolved.tenant.id,
+      projectId: project.id,
+      issueId: body.issueId ?? null,
+      milestoneId: body.milestoneId ?? null,
+      taskListId: body.taskListId ?? null,
+      userId: body.userId,
+      startedAt: toDbUnixSeconds(body.startedAt),
+      endedAt: toDbUnixSeconds(body.endedAt),
+      durationMinutes:
+        body.durationMinutes ??
+        durationMinutesBetween(body.startedAt, body.endedAt),
+      billable: body.billable ?? false,
+      note: body.note ?? null,
+      approvalStatus: 'draft',
+      timesheetId: null,
+      createdBy: body.createdBy ?? body.userId,
+      createdAt: now,
+      updatedAt: now,
+    })
+    await automation.appendOutboxEvent(tx.client, {
+      tenantId: resolved.tenant.id,
+      type: 'time-entry.submitted',
+      subjectType: 'time-entry',
+      subjectId: created.id,
+      payload: {
+        organizationId,
+        projectId: project.id,
+        issueId: body.issueId ?? null,
+        userId: body.userId,
+      },
+      causationDepth: context?.causationDepth ?? 0,
+    })
+    return created
   })
   return { data: serializeTimeEntry(row), error: null }
 }

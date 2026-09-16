@@ -769,6 +769,149 @@ export type LayoutList = z.infer<typeof layoutListSchema>
 export const baselineListSchema = createListSchema(baselineSchema)
 export type BaselineList = z.infer<typeof baselineListSchema>
 
+export const workflowTransitionSchema = z.object({
+  object: z.literal('projects.workflow-transition'),
+  id: z.string(),
+  workItemTypeId: z.string().nullable(),
+  fromStateKey: z.string().nullable(),
+  toStateKey: z.string(),
+  name: z.string(),
+  requiredPermission: z.string().nullable(),
+  requiredFieldKeys: z.array(z.string()),
+  requiresComment: z.boolean(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type WorkflowTransition = z.infer<typeof workflowTransitionSchema>
+
+export const workflowBlueprintSchema = z.object({
+  object: z.literal('projects.workflow-blueprint'),
+  workItemTypeId: z.string(),
+  updatedAt: z.number().nullable(),
+  transitions: z.array(workflowTransitionSchema),
+})
+export type WorkflowBlueprint = z.infer<typeof workflowBlueprintSchema>
+
+export const automationTriggerSchema = z.enum([
+  'work-item.created',
+  'work-item.updated',
+  'work-item.state-changed',
+  'phase.completed',
+  'due-date.approaching',
+  'time-entry.submitted',
+  'budget.threshold-reached',
+])
+export type AutomationTrigger = z.infer<typeof automationTriggerSchema>
+
+export const automationActionSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('set-field'),
+    fieldKey: z.string(),
+    value: z.union([
+      z.string(),
+      z.array(z.string()),
+      z.number(),
+      z.boolean(),
+      z.null(),
+    ]),
+  }),
+  z.object({ type: z.literal('assign'), userId: z.string() }),
+  z.object({ type: z.literal('add-label'), label: z.string() }),
+  z.object({ type: z.literal('remove-label'), label: z.string() }),
+  z.object({
+    type: z.literal('create-reminder'),
+    title: z.string().optional(),
+    remindAt: z.number().optional(),
+    offsetMinutesBeforeDue: z.number().optional(),
+  }),
+  z.object({
+    type: z.literal('create-event'),
+    title: z.string(),
+    description: z.string().nullable().optional(),
+    startsAt: z.number(),
+    endsAt: z.number().nullable().optional(),
+  }),
+  z.object({
+    type: z.literal('notify'),
+    userId: z.string(),
+    kind: z.string().optional(),
+    title: z.string(),
+  }),
+  z.object({ type: z.literal('call-webhook'), url: z.string() }),
+  z.object({
+    type: z.literal('create-sub-item'),
+    title: z.string(),
+    typeKey: z.string().optional(),
+    assigneeUserId: z.string().nullable().optional(),
+  }),
+])
+export type AutomationAction = z.infer<typeof automationActionSchema>
+
+export const automationRuleSchema = z.object({
+  object: z.literal('projects.automation-rule'),
+  id: z.string(),
+  projectId: z.string().nullable(),
+  name: z.string(),
+  enabled: z.boolean(),
+  trigger: automationTriggerSchema,
+  conditions: z.array(layoutConditionSchema),
+  actions: z.array(automationActionSchema),
+  hasWebhookSecret: z.boolean(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+export type AutomationRule = z.infer<typeof automationRuleSchema>
+
+export const automationRuleListSchema = createListSchema(automationRuleSchema)
+export type AutomationRuleList = z.infer<typeof automationRuleListSchema>
+
+export const automationRunSchema = z.object({
+  object: z.literal('projects.automation-run'),
+  id: z.string(),
+  ruleId: z.string(),
+  eventId: z.string(),
+  status: z.enum(['succeeded', 'failed', 'skipped']),
+  errorCode: z.string().nullable(),
+  attempt: z.number(),
+  responseCode: z.number().nullable(),
+  startedAt: z.number(),
+  finishedAt: z.number(),
+  durationMs: z.number(),
+})
+export type AutomationRun = z.infer<typeof automationRunSchema>
+
+export const automationRunListSchema = createListSchema(automationRunSchema)
+export type AutomationRunList = z.infer<typeof automationRunListSchema>
+
+export const automationTestSchema = z.object({
+  object: z.literal('projects.automation-test'),
+  ruleId: z.string(),
+  subjectType: z.string(),
+  subjectId: z.string(),
+  matched: z.boolean(),
+  conditions: z.array(
+    z.object({ fieldKey: z.string(), op: z.string(), matched: z.boolean() })
+  ),
+  plannedActions: z.array(z.object({ type: z.string() })),
+})
+export type AutomationTest = z.infer<typeof automationTestSchema>
+
+export const notificationSchema = z.object({
+  object: z.literal('projects.notification'),
+  id: z.string(),
+  userId: z.string(),
+  kind: z.string(),
+  title: z.string(),
+  subjectType: z.string().nullable(),
+  subjectId: z.string().nullable(),
+  readAt: z.number().nullable(),
+  createdAt: z.number(),
+})
+export type Notification = z.infer<typeof notificationSchema>
+
+export const notificationListSchema = createListSchema(notificationSchema)
+export type NotificationList = z.infer<typeof notificationListSchema>
+
 export const presetListSchema = z.array(presetSchema)
 export type PresetList = z.infer<typeof presetListSchema>
 

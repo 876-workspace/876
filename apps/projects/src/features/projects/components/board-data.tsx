@@ -5,6 +5,7 @@ import {
 } from '@876/projects-ui/issue-board'
 import { AppError } from '@876/ui/app-error'
 
+import { BoardDragBoard } from '@/features/projects/components/board-drag-board'
 import { IssueFilterBar } from '@/features/projects/components/issue-filter-bar'
 import type { IssueSearchParams } from '@/features/projects/issue-filters'
 import { loadMemberLabels } from '@/features/projects/member-labels'
@@ -57,12 +58,24 @@ export async function BoardData({
           variant="banner"
         />
       ) : null}
-      <IssueBoard
-        issues={result.data?.data ?? []}
-        issuesHref="/issues"
-        groupBy={groupBy}
-        userLabels={members.labels}
-      />
+      {groupBy === 'status' ? (
+        <BoardDragBoard
+          issues={result.data?.data ?? []}
+          states={(states.data?.data ?? []).map((state) => ({
+            key: state.key,
+            label: state.name,
+          }))}
+          issuesHref="/issues"
+          userLabels={members.labels}
+        />
+      ) : (
+        <IssueBoard
+          issues={result.data?.data ?? []}
+          issuesHref="/issues"
+          groupBy={groupBy}
+          userLabels={members.labels}
+        />
+      )}
     </div>
   )
 }
