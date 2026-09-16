@@ -29,6 +29,10 @@ export const COMMUNICATIONS_ERRORS = {
     message: 'The sender requires a verified sending domain.',
     httpStatus: 409 as HttpStatusCode,
   },
+  'communications/default-sender-required': {
+    message: 'Set another active sender as default before changing this sender.',
+    httpStatus: 409 as HttpStatusCode,
+  },
   'communications/template-not-found': {
     message: 'The email template could not be found.',
     httpStatus: 404 as HttpStatusCode,
