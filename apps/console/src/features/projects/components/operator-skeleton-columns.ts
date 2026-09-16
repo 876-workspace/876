@@ -101,3 +101,18 @@ export const ATTACHMENTS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
   { label: 'Type', width: '200px' },
   { label: 'Added by', width: '150px' },
 ]
+
+export const CUSTOM_MODULES_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
+  { label: 'Module' },
+  { label: 'Scope', cell: 'badge', width: '130px' },
+  { label: 'Fields', width: '110px' },
+  { label: 'Records', width: '110px' },
+  { label: 'Updated', width: '130px' },
+]
+
+export const CUSTOM_MODULE_RECORDS_SKELETON_COLUMNS: DataTableSkeletonColumn[] =
+  [
+    { label: 'Title' },
+    { label: 'Status', cell: 'badge', width: '130px' },
+    { label: 'Updated', width: '130px' },
+  ]
