@@ -13,6 +13,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
+    "pretest": "node scripts/prisma-generate.mjs",
     "test": "vitest run",
     "lint": "eslint src",
     "boundaries": "depcruise src --config .dependency-cruiser.cjs",
