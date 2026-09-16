@@ -24,6 +24,7 @@ describe('Projects platform navigation children', () => {
       '/projects/task-lists',
       '/projects/calendar',
       '/projects/time',
+      '/projects/templates',
     ])
   })
 

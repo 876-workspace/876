@@ -21,6 +21,14 @@ export const TASK_LISTS_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
   { label: 'Target', width: '130px' },
 ]
 
+export const TEMPLATES_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
+  { label: 'Template' },
+  { label: 'Key', width: '180px' },
+  { label: 'Version', width: '110px' },
+  { label: 'Counts' },
+  { label: 'Updated', width: '130px' },
+]
+
 export const CALENDAR_SKELETON_COLUMNS: DataTableSkeletonColumn[] = [
   { label: 'Date', width: '130px' },
   { label: 'Title' },

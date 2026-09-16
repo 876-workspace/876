@@ -23,7 +23,10 @@ import type {
   MilestoneSummary,
   Project,
   ProjectEvent,
+  ProjectTemplate,
+  ProjectTemplateVersion,
   TaskList,
+  TemplatePreview,
   TimeEntry,
   Timesheet,
   TimesheetDetail,
@@ -610,6 +613,50 @@ export function makeDependency(
     lagMinutes: 0,
     createdBy: 'user_lead',
     createdAt: 1700000000,
+    ...overrides,
+  }
+}
+
+export function makeProjectTemplate(
+  overrides: Partial<ProjectTemplate> = {}
+): ProjectTemplate {
+  return {
+    object: 'projects.project-template',
+    id: 'ptpl_test',
+    key: 'web-launch',
+    name: 'Web Launch',
+    description: 'Standard launch plan',
+    currentVersion: 3,
+    sourceProjectId: null,
+    counts: { phases: 2, taskLists: 1, workItems: 4, dependencies: 1 },
+    createdAt: 1720000000,
+    updatedAt: 1720604800,
+    ...overrides,
+  }
+}
+
+export function makeProjectTemplateVersion(
+  overrides: Partial<ProjectTemplateVersion> = {}
+): ProjectTemplateVersion {
+  return {
+    object: 'projects.project-template-version',
+    id: 'ptplv_test',
+    templateId: 'ptpl_test',
+    version: 3,
+    createdAt: 1720604800,
+    ...overrides,
+  }
+}
+
+export function makeTemplatePreview(
+  overrides: Partial<TemplatePreview> = {}
+): TemplatePreview {
+  return {
+    object: 'projects.template-preview',
+    startDate: 1720000000,
+    phases: [{ ref: 'phase-discover', name: 'Discover', start: 1720000000, end: 1720604800 }],
+    workItems: [{ ref: 'item-kickoff', title: 'Kickoff', start: 1720000000, due: 1720086400 }],
+    missing: { workItemTypes: [], workflowStates: [], labels: [] },
     ...overrides,
   }
 }
