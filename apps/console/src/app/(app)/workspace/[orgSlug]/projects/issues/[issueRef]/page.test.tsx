@@ -8,6 +8,10 @@ const mocks = vi.hoisted(() => ({
   retrieveIssue: vi.fn(),
   listComments: vi.fn(),
   listEvents: vi.fn(),
+  listRelations: vi.fn(),
+  listDependencies: vi.fn(),
+  listTimeEntries: vi.fn(),
+  listLinks: vi.fn(),
   resolveOrg: vi.fn(),
 }))
 
@@ -29,7 +33,31 @@ vi.mock('@/lib/services/projects', () => ({
     comments: {
       list: mocks.listComments,
     },
+    issueRelations: {
+      list: mocks.listRelations,
+    },
+    issueDependencies: {
+      list: mocks.listDependencies,
+    },
+    timeEntries: {
+      list: mocks.listTimeEntries,
+    },
   },
+}))
+
+vi.mock('@/lib/services/storage', () => ({
+  storage: {
+    resourceLinks: {
+      list: mocks.listLinks,
+    },
+    files: {
+      retrieve: vi.fn().mockResolvedValue({ data: null, error: null }),
+    },
+  },
+}))
+
+vi.mock('@/features/projects/components/attachments-data', () => ({
+  AttachmentsData: () => <div data-testid="issue-attachments" />,
 }))
 
 vi.mock('@/features/orgs/org-data', () => ({
@@ -71,6 +99,8 @@ const mockIssue: Issue = {
   type: sampleType,
   state: null,
   milestone: null,
+  taskListId: null,
+  cycleId: null,
   customFields: [],
   priority: 'urgent',
   assigneeUserId: 'user_flight_dir',
@@ -78,6 +108,12 @@ const mockIssue: Issue = {
   parentIssueId: null,
   estimate: 5,
   dueDate: 1725000000,
+  plannedStartDate: null,
+  plannedFinishDate: null,
+  plannedDurationMinutes: null,
+  blocked: false,
+  relationCount: 0,
+  dependencyCount: 0,
   position: 1,
   labels: [
     {
@@ -153,6 +189,22 @@ describe('OrganizationIssueDetailPage', () => {
       data: { object: 'list', data: mockEvents, hasMore: false, totalCount: 1 },
       error: null,
     })
+    mocks.listRelations.mockResolvedValue({
+      data: { object: 'list', data: [], hasMore: false, totalCount: 0 },
+      error: null,
+    })
+    mocks.listDependencies.mockResolvedValue({
+      data: { predecessors: [], successors: [] },
+      error: null,
+    })
+    mocks.listTimeEntries.mockResolvedValue({
+      data: { object: 'list', data: [], hasMore: false, totalCount: 0 },
+      error: null,
+    })
+    mocks.listLinks.mockResolvedValue({
+      data: { object: 'list', data: [] },
+      error: null,
+    })
   })
 
   it('renders issue detail keyed by identifier with description, comments, and activity', async () => {
@@ -160,6 +212,7 @@ describe('OrganizationIssueDetailPage', () => {
       organizationId: 'org_123',
       base: '/workspace/test-org/projects',
       issueRef: 'APO-99',
+      actorUserId: null,
     })
 
     render(element)
@@ -190,7 +243,7 @@ describe('OrganizationIssueDetailPage', () => {
         'Re-routing secondary valving to stabilize manifold pressure.'
       )
     ).toBeInTheDocument()
-    expect(screen.getByText('status_changed')).toBeInTheDocument()
+    expect(screen.getByText('Status Changed')).toBeInTheDocument()
   })
 
   it('renders AppError notice when issue retrieve fails', async () => {
@@ -206,6 +259,7 @@ describe('OrganizationIssueDetailPage', () => {
       organizationId: 'org_123',
       base: '/workspace/test-org/projects',
       issueRef: 'APO-99',
+      actorUserId: null,
     })
 
     render(element)

@@ -64,6 +64,8 @@ const mockIssues: Issue[] = [
     type: sampleType,
     state: null,
     milestone: null,
+    taskListId: null,
+    cycleId: null,
     customFields: [],
     priority: 'low',
     assigneeUserId: null,
@@ -71,6 +73,12 @@ const mockIssues: Issue[] = [
     parentIssueId: null,
     estimate: null,
     dueDate: null,
+    plannedStartDate: null,
+    plannedFinishDate: null,
+    plannedDurationMinutes: null,
+    blocked: false,
+    relationCount: 0,
+    dependencyCount: 0,
     position: 1,
     labels: [],
     commentCount: 0,
@@ -96,6 +104,8 @@ const mockIssues: Issue[] = [
     type: sampleType,
     state: null,
     milestone: null,
+    taskListId: null,
+    cycleId: null,
     customFields: [],
     priority: 'high',
     assigneeUserId: 'user_dev',
@@ -103,6 +113,12 @@ const mockIssues: Issue[] = [
     parentIssueId: null,
     estimate: 2,
     dueDate: null,
+    plannedStartDate: null,
+    plannedFinishDate: null,
+    plannedDurationMinutes: null,
+    blocked: false,
+    relationCount: 0,
+    dependencyCount: 0,
     position: 2,
     labels: [],
     commentCount: 1,
@@ -150,17 +166,23 @@ describe('OrganizationIssueBoardPage', () => {
     render(element)
 
     expect(mocks.listIssues).toHaveBeenCalledWith('org_123')
-    expect(screen.getByText('Backlog')).toBeInTheDocument()
-    expect(screen.getByText('Todo')).toBeInTheDocument()
-    expect(screen.getByText('In Progress')).toBeInTheDocument()
-    expect(screen.getByText('In Review')).toBeInTheDocument()
-    expect(screen.getByText('Done')).toBeInTheDocument()
-    expect(screen.getByText('Canceled')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Backlog' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Todo' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'In Progress' })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'In Review' })
+    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Done' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Canceled' })
+    ).toBeInTheDocument()
 
-    expect(screen.getByText('APO-1')).toBeInTheDocument()
-    expect(screen.getByText('Backlog issue on board')).toBeInTheDocument()
-    expect(screen.getByText('APO-2')).toBeInTheDocument()
-    expect(screen.getByText('Done issue on board')).toBeInTheDocument()
+    expect(screen.getAllByText('APO-1').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Backlog issue on board')).toHaveLength(2)
+    expect(screen.getAllByText('APO-2').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Done issue on board')).toHaveLength(2)
   })
 
   it('renders AppError notice when board issues fail to load', async () => {
