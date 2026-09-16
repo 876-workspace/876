@@ -31,6 +31,10 @@ function resourcePath(organizationId: string, invoiceId: string): string {
   return `${collectionPath(organizationId)}/${encodeURIComponent(invoiceId)}`
 }
 
+function emailQuery(params: DocumentEmailPrepareParams) {
+  return { senderId: params.senderId, templateId: params.templateId }
+}
+
 /** `$876.billing.invoices.*` — shared finance invoice integrations. */
 export function createIntegrationInvoicesResource(runtime: IntegrationRuntime) {
   return {
@@ -125,7 +129,7 @@ export function createIntegrationInvoicesResource(runtime: IntegrationRuntime) {
         {
           method: 'GET',
           path: `${resourcePath(organizationId, invoiceId)}/email`,
-          query: params,
+          query: emailQuery(params),
         },
         DocumentEmailCompositionSchema
       )
