@@ -29,6 +29,7 @@ describe('client / runtime', () => {
     })
     expect(Object.keys(client).sort()).toEqual([
       'baselines',
+      'budgets',
       'calendar',
       'comments',
       'customFieldValues',
@@ -43,7 +44,9 @@ describe('client / runtime', () => {
       'milestones',
       'myWork',
       'presets',
+      'projectBilling',
       'projects',
+      'rates',
       'reminders',
       'taskLists',
       'tenants',
@@ -138,6 +141,7 @@ describe('client / runtime', () => {
 
     expect(Object.keys(operatorClient).sort()).toEqual([
       'baselines',
+      'budgets',
       'calendar',
       'comments',
       'customFieldValues',
@@ -152,7 +156,9 @@ describe('client / runtime', () => {
       'milestones',
       'myWork',
       'presets',
+      'projectBilling',
       'projects',
+      'rates',
       'reminders',
       'taskLists',
       'tenants',
@@ -163,6 +169,7 @@ describe('client / runtime', () => {
     ])
     expect(Object.keys(serviceClient).sort()).toEqual([
       'baselines',
+      'budgets',
       'calendar',
       'comments',
       'customFieldValues',
@@ -177,7 +184,9 @@ describe('client / runtime', () => {
       'milestones',
       'myWork',
       'presets',
+      'projectBilling',
       'projects',
+      'rates',
       'reminders',
       'taskLists',
       'tenants',
