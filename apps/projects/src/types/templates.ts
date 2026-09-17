@@ -1,5 +1,11 @@
 import { z } from 'zod'
 
+/**
+ * The three inclusion flags every template read/write body may carry.
+ *
+ * Absent means "include it": a template exists to carry its contents, so the
+ * caller opts out rather than in — the same default the service applies.
+ */
 export const templateIncludeSchema = {
   includeWorkItems: z.boolean().optional(),
   includeDependencies: z.boolean().optional(),
