@@ -306,6 +306,10 @@ export const PROJECTS_ERRORS = {
     message: 'Something went wrong. Please try again.',
     httpStatus: 500 as HttpStatusCode,
   },
+  'projects/identity-unavailable': {
+    message: 'Access could not be verified. Try again shortly.',
+    httpStatus: 503 as HttpStatusCode,
+  },
   'projects/event-not-found': {
     message: 'The event could not be found.',
     httpStatus: 404 as HttpStatusCode,
@@ -413,7 +417,8 @@ export const PROJECTS_ERRORS = {
     httpStatus: 422 as HttpStatusCode,
   },
   'projects/transition-requirements-unmet': {
-    message: 'This transition requires additional fields, a comment, or a permission.',
+    message:
+      'This transition requires additional fields, a comment, or a permission.',
     httpStatus: 400 as HttpStatusCode,
   },
   'projects/automation-rule-not-found': {
