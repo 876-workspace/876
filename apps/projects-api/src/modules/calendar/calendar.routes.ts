@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import { requireInternalKey } from '../../http/internal-auth.js'
+import { requireInternalKeyOrSession } from '../../http/session-auth.js'
 import * as controller from './calendar.controller.js'
 
 export function createCalendarRouter(): Router {
@@ -40,7 +41,7 @@ export function createCalendarRouter(): Router {
     controller.removeReminder
   )
   router.get('/calendar', requireInternalKey, controller.getCalendar)
-  router.get('/my-work', requireInternalKey, controller.getMyWork)
+  router.get('/my-work', requireInternalKeyOrSession({ module: 'issues', permission: 'issues.view' }), controller.getMyWork)
 
   return router
 }

@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import { requireInternalKey } from '../../http/internal-auth.js'
+import { requireInternalKeyOrSession } from '../../http/session-auth.js'
 import * as baselinesController from './baselines.controller.js'
 import * as ganttController from './gantt.controller.js'
 import * as controller from './projects.controller.js'
@@ -8,7 +9,7 @@ import * as controller from './projects.controller.js'
 export function createProjectsRouter(): Router {
   const router = Router({ mergeParams: true })
 
-  router.get('/', requireInternalKey, controller.list)
+  router.get('/', requireInternalKeyOrSession({ module: 'projects', permission: 'projects.view' }), controller.list)
   router.post('/', requireInternalKey, controller.create)
   router.get(
     '/baselines/:baselineId',
@@ -20,7 +21,7 @@ export function createProjectsRouter(): Router {
     requireInternalKey,
     baselinesController.removeBaseline
   )
-  router.get('/:projectId', requireInternalKey, controller.retrieve)
+  router.get('/:projectId', requireInternalKeyOrSession({ module: 'projects', permission: 'projects.view' }), controller.retrieve)
   router.patch('/:projectId', requireInternalKey, controller.update)
   router.delete('/:projectId', requireInternalKey, controller.remove)
   router.get('/:projectId/members', requireInternalKey, controller.listMembers)

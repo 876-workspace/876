@@ -1,6 +1,11 @@
 import type { Request, Response } from 'express'
 
-import { sendProjectsList, sendProjectsResult } from '../../http/result.js'
+import {
+  sendProjectsError,
+  sendProjectsList,
+  sendProjectsResult,
+} from '../../http/result.js'
+import { getSessionUserId } from '../../http/session-auth.js'
 import * as service from './calendar.service.js'
 import {
   addAttendeeBodySchema,
@@ -187,6 +192,9 @@ export async function getCalendar(req: Request, res: Response) {
 export async function getMyWork(req: Request, res: Response) {
   const params = organizationParamsSchema.parse(req.params)
   const query = myWorkQuerySchema.parse(req.query)
+  const sessionUserId = getSessionUserId(res)
+  if (sessionUserId && query.userId !== sessionUserId)
+    return sendProjectsError(res, 'projects/forbidden')
   return sendProjectsResult(
     res,
     await service.getMyWork(params.organizationId, query.userId)

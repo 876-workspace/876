@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import { requireInternalKey } from '../../http/internal-auth.js'
+import { requireInternalKeyOrSession } from '../../http/session-auth.js'
 import { createCommentsRouter } from '../comments/comments.routes.js'
 import { createCustomFieldValuesRouter } from '../work-structure/work-structure.routes.js'
 import * as issueLinksController from './issue-links.controller.js'
@@ -12,10 +13,10 @@ export function createIssuesRouter(): Router {
   router.use('/:issueRef/comments', createCommentsRouter())
   router.use('/:issueRef/custom-field-values', createCustomFieldValuesRouter())
 
-  router.get('/', requireInternalKey, controller.list)
-  router.post('/', requireInternalKey, controller.create)
-  router.get('/:issueRef', requireInternalKey, controller.retrieve)
-  router.patch('/:issueRef', requireInternalKey, controller.update)
+  router.get('/', requireInternalKeyOrSession({ module: 'issues', permission: 'issues.view' }), controller.list)
+  router.post('/', requireInternalKeyOrSession({ module: 'issues', permission: 'issues.create' }), controller.create)
+  router.get('/:issueRef', requireInternalKeyOrSession({ module: 'issues', permission: 'issues.view' }), controller.retrieve)
+  router.patch('/:issueRef', requireInternalKeyOrSession({ module: 'issues', permission: 'issues.edit' }), controller.update)
   router.delete('/:issueRef', requireInternalKey, controller.remove)
   router.patch(
     '/:issueRef/client-visibility',

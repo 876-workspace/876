@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express'
 
 import { sendProjectsList, sendProjectsResult } from '../../http/result.js'
+import { getSessionUserId } from '../../http/session-auth.js'
 import {
   commentParamsSchema,
   commentVisibilityBodySchema,
@@ -41,10 +42,11 @@ export async function retrieve(req: Request, res: Response) {
 export async function create(req: Request, res: Response) {
   const params = issueParamsSchema.parse(req.params)
   const body = createCommentBodySchema.parse(req.body)
+  const sessionUserId = getSessionUserId(res)
   const result = await service.create(
     params.organizationId,
     params.issueRef,
-    body
+    sessionUserId ? { ...body, authorUserId: sessionUserId } : body
   )
   return sendProjectsResult(res, result, 201)
 }
