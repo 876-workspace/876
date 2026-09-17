@@ -1,7 +1,7 @@
 # Implementation Plan: 876 Projects Mobile
 
 - **Run ID:** `2026-09-16-projects-mobile`
-- **Status:** `IN_PROGRESS` — planning foundation complete; implementation has not started
+- **Status:** `IN_PROGRESS` — planning foundation complete; session tier, Expo scaffold + v1 screens, authorize proxy, and native client seed implemented on the single branch (uncommitted)
 - **Integration branch:** `feature/projects-mobile`
 - **Base:** `main` @ `8304130e0318d72aff50c2f0d222ae7f47c488d3`
 - **Primary execution mode after approval:** local Muse Spark 1.3 Contributor through Codex (`-p muse`)
@@ -862,7 +862,7 @@ No implementation briefs have been dispatched yet.
 
 | Brief | Tool | Status |
 | --- | --- | --- |
-| None | — | Planning only |
+| `reports/codex-2026-09-17-mobile-implementation.md` | Codex | Done — session tier verified, scaffold + screens + proxy + seed, all gates green |
 
 Future briefs belong under `./briefs/codex/` and must be linked here before execution.
 
