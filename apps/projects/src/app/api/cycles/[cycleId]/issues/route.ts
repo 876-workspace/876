@@ -3,8 +3,9 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -31,19 +32,19 @@ export async function POST(request: Request, { params }: Context) {
   if (!parsed.success)
     return apiJson(
       { error: 'Select at least one work item to add.' },
-      { status: 422 },
+      { status: 422 }
     )
 
   const { cycleId } = await params
   const result = await projects.cycles.assignIssues(
     auth.orgId,
     decodeURIComponent(cycleId),
-    { issueIds: parsed.data.issueIds, actorUserId: auth.userId },
+    { issueIds: parsed.data.issueIds, actorUserId: auth.userId }
   )
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: errorStatus(result.error.code) },
+      { status: errorStatus(result.error.code) }
     )
 
   return apiJson({ data: result.data })

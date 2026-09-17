@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import type { DirectoryMember } from '../types'
+import type { DirectoryMember } from '@/types/directory'
 
 import { MemberPicker } from './member-picker'
 

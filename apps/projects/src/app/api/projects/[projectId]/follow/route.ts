@@ -1,7 +1,8 @@
 import 'server-only'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { handleFollow } from '@/app/api/_lib/follow-route'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 

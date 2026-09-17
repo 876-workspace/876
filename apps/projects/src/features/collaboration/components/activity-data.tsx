@@ -3,8 +3,9 @@ import { AppError } from '@876/ui/app-error'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { projects } from '@/lib/services/projects'
 
-import { mapActivityItem, type UiActivityItem } from '../mappers'
+import { mapActivityItem } from '../mappers'
 import { ActivityFeed } from './activity-feed'
+import type { UiActivityItem } from '@/types/collaboration'
 
 const PAGE_LIMIT = 25
 

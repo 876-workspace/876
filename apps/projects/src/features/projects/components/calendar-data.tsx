@@ -20,9 +20,8 @@ import {
   calendarDayNumber,
   calendarDays,
   calendarHref,
-  type CalendarView,
-  type ResolvedCalendarWindow,
 } from '@/features/projects/calendar-range'
+import type { CalendarView, ResolvedCalendarWindow } from '@/types/calendar'
 import { projects } from '@/lib/services/projects'
 
 const WEEK_LENGTH = 7

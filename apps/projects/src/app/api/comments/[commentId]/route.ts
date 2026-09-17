@@ -4,12 +4,10 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
-import {
-  requireApiPermission,
-  type ApiContext,
-} from '@/lib/auth/api-permission'
+import { requireApiPermission } from '@/lib/auth/api-permission'
 import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 

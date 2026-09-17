@@ -3,9 +3,10 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { createImportJobInputSchema } from '@/lib/integration-inputs'
+import { requireApiAccess } from '@/lib/auth/api-permission'
+import { createImportJobInputSchema } from '@/types/integrations'
 import { integration } from '@/lib/services/integration'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -44,19 +45,28 @@ export async function POST(request: NextRequest) {
   const parsed = createImportJobInputSchema.safeParse(body)
   if (!parsed.success)
     return apiJson(
-      { error: 'Enter a valid import source and file content (5 MB or smaller).' },
+      {
+        error:
+          'Enter a valid import source and file content (5 MB or smaller).',
+      },
       { status: 422 }
     )
 
   const result = await integration.createImportJob(auth.orgId, {
     source: parsed.data.source,
-    ...(parsed.data.projectId !== undefined ? { projectId: parsed.data.projectId } : {}),
-    ...(parsed.data.filename !== undefined ? { filename: parsed.data.filename } : {}),
+    ...(parsed.data.projectId !== undefined
+      ? { projectId: parsed.data.projectId }
+      : {}),
+    ...(parsed.data.filename !== undefined
+      ? { filename: parsed.data.filename }
+      : {}),
     content: parsed.data.content,
   })
   if (result.error || !result.data)
     return apiJson(
-      { error: result.error?.message ?? 'The import job could not be created.' },
+      {
+        error: result.error?.message ?? 'The import job could not be created.',
+      },
       { status: errorStatus(result.error?.code ?? '') }
     )
 

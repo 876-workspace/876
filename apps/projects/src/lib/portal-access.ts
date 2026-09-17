@@ -9,10 +9,7 @@ import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { getPlatformClient } from '@/lib/services/platform'
 import { getPortalClient } from '@/lib/services/portal'
 
-export type PortalAccess = {
-  orgId: string
-  userId: string
-}
+import type { PortalAccess } from '@/types/access'
 
 type PortalProbeClient = Pick<ProjectsPortalClient, 'listIssues'>
 

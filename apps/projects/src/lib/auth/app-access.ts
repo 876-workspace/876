@@ -2,6 +2,8 @@ import 'server-only'
 
 import { cache } from 'react'
 
+import type { CrmAccessOutcome, CrmAccessViewer } from '@/types/access'
+
 import { getWorkspace } from '@/lib/services/workspace'
 
 /**
@@ -17,14 +19,6 @@ export const APP_ASSIGN_PERMISSION = 'apps:assign'
 /** The organization permission that authorizes reading the member roster. */
 export const MEMBERS_READ_PERMISSION = 'members:read'
 
-export type CrmAccessViewer = {
-  membershipId: string
-  userId: string
-  permissions: string[]
-  canReadMembers: boolean
-  canManageAppAccess: boolean
-}
-
 /**
  * The result of resolving the acting member.
  *
@@ -34,9 +28,6 @@ export type CrmAccessViewer = {
  * into `null` left every caller with `notFound()`, which is wrong for both —
  * see `.claude/rules/error-handling.md`.
  */
-export type CrmAccessOutcome =
-  | { status: 'ok'; viewer: CrmAccessViewer }
-  | { status: 'unavailable'; code: string }
 
 /**
  * Resolves the acting member's effective organization permissions.

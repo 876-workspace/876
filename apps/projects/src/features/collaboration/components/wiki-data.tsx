@@ -7,11 +7,12 @@ import { loadMemberLabels } from '@/features/projects/member-labels'
 import { projects } from '@/lib/services/projects'
 
 import { mapWikiPage, mapWikiRevision } from '../mappers'
-import type { MentionMember } from './mention-input'
+
 import { WikiPageForm } from './wiki-forms'
 import { WikiPageView } from './wiki-page-view'
 import { WikiRevisionList } from './wiki-revision-list'
 import { WikiTree } from './wiki-tree'
+import type { MentionMember } from '@/types/collaboration'
 
 async function loadMembers(orgId: string): Promise<readonly MentionMember[]> {
   const members = await loadMemberLabels(orgId)

@@ -1,8 +1,9 @@
 import Link from 'next/link'
 
-import type { ReportPeriod } from '@/lib/period'
+import type { ReportPeriod, ReportKey } from '@/types/reporting'
 
-import { REPORT_LINKS, reportHref, type ReportKey } from '../report-query'
+import { reportHref } from '../report-query'
+import { REPORT_LINKS } from '@/types/reporting'
 
 /**
  * Links between the report pages. The page being read renders as text with

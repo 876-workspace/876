@@ -17,7 +17,7 @@ import {
   parseHoursToMinutes,
 } from '../capacity-input'
 
-export type CapacityMemberOption = { id: string; label: string }
+import type { CapacityMemberOption } from '@/types/reporting'
 
 type Props =
   | { mode: 'create'; members: CapacityMemberOption[]; capacity?: never }

@@ -1,18 +1,10 @@
-import type {
-  Label,
-  Project,
-  WorkflowState,
-} from '@876/projects/contracts'
+import type { Label, Project, WorkflowState } from '@876/projects/contracts'
 import { buttonVariants, Button } from '@876/ui/button'
 import { Input } from '@876/ui/input'
 import { NativeSelect } from '@876/ui/native-select'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-
-import type {
-  IssueGroupBy,
-  IssueSearchParams,
-} from '@/features/projects/issue-filters'
+import type { IssueGroupBy, IssueSearchParams } from '@/types/issues'
 
 type MemberOption = { userId: string; label: string }
 
@@ -58,7 +50,9 @@ export function IssueFilterBar({
       className="876-card mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8"
     >
       <label className="space-y-1 xl:col-span-2">
-        <span className="text-muted-foreground text-xs font-medium">Search</span>
+        <span className="text-muted-foreground text-xs font-medium">
+          Search
+        </span>
         <Input
           name="q"
           defaultValue={values.q ?? ''}

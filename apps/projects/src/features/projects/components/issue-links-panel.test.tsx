@@ -43,12 +43,12 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: mocks.refresh }),
 }))
 
-import {
-  IssueLinksPanel,
-  type DependencyLink,
-  type RelationLink,
-  type WorkItemOption,
-} from './issue-links-panel'
+import { IssueLinksPanel } from './issue-links-panel'
+import type {
+  DependencyLink,
+  RelationLink,
+  WorkItemOption,
+} from '@/types/issues'
 
 const release: WorkItemOption = {
   id: 'iss_1',

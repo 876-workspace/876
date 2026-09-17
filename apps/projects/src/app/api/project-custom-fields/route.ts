@@ -3,9 +3,10 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { projectCustomFieldInputSchema } from '@/lib/project-custom-field-inputs'
+import { requireApiAccess } from '@/lib/auth/api-permission'
+import { projectCustomFieldInputSchema } from '@/types/work-structure'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -44,7 +45,10 @@ export async function POST(request: NextRequest) {
   )
   if (result.error || !result.data)
     return apiJson(
-      { error: result.error?.message ?? 'The project field could not be created.' },
+      {
+        error:
+          result.error?.message ?? 'The project field could not be created.',
+      },
       { status: 400 }
     )
 

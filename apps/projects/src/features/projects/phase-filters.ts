@@ -1,9 +1,4 @@
-export type PhaseStatus = 'open' | 'completed' | 'canceled'
-
-export type PhaseSearchParams = {
-  project?: string | string[]
-  status?: string | string[]
-}
+import type { PhaseSearchParams, PhaseStatus } from '@/types/planning'
 
 const PHASE_STATUSES = new Set<PhaseStatus>(['open', 'completed', 'canceled'])
 

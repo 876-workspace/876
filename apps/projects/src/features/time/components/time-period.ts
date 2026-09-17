@@ -1,7 +1,7 @@
 const DAY_SECONDS = 86_400
 const WEEK_DAYS = 7
 
-export type TimePeriod = { from: number; to: number }
+import type { TimePeriod } from '@/types/time'
 
 /** Monday 00:00 UTC of the week the timestamp falls in. */
 function weekStart(timestamp: number): number {

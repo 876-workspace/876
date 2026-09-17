@@ -2,8 +2,9 @@ import 'server-only'
 
 import { apiJson } from '@876/core/api'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { deleteAttachmentLink } from '@/lib/attachment-links'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -31,11 +32,16 @@ export async function DELETE(_request: Request, { params }: Context) {
   if (result.error || !result.data)
     return apiJson(
       {
-        error:
-          result.error?.message ?? 'The attachment could not be deleted.',
+        error: result.error?.message ?? 'The attachment could not be deleted.',
       },
       { status }
     )
 
-  return apiJson({ data: { object: 'projects.attachment-link', id: decodeURIComponent(attachmentId), deleted: true } })
+  return apiJson({
+    data: {
+      object: 'projects.attachment-link',
+      id: decodeURIComponent(attachmentId),
+      deleted: true,
+    },
+  })
 }

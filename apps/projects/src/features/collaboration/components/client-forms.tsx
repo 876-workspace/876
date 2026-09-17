@@ -7,8 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 import { clientGrantsClient } from '@/lib/client/collaboration'
-
-import type { MentionMember } from './mention-input'
+import type { MentionMember } from '@/types/collaboration'
 
 const GRANT_FLAGS = [
   { key: 'allowComments', label: 'Comments' },
@@ -155,7 +154,7 @@ export function GrantInviteForm({ projectId }: { projectId: string }) {
                   <li key={option.userId} role="option" aria-selected={false}>
                     <button
                       type="button"
-                      className="w-full rounded px-2 py-1 text-left text-sm hover:bg-accent"
+                      className="hover:bg-accent w-full rounded px-2 py-1 text-left text-sm"
                       onClick={() => {
                         setSelected(option)
                         setOptions([])

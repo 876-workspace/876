@@ -1,3 +1,9 @@
+import type {
+  CustomModule,
+  CustomModuleField,
+  CustomModuleStatus,
+  Layout,
+} from '@876/projects/contracts'
 import { z } from 'zod'
 
 const keySchema = z
@@ -5,7 +11,10 @@ const keySchema = z
   .trim()
   .min(1)
   .max(80)
-  .regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/, 'Use kebab-case, starting with a letter.')
+  .regex(
+    /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/,
+    'Use kebab-case, starting with a letter.'
+  )
 
 const nameSchema = z.string().trim().min(1).max(120)
 
@@ -16,7 +25,10 @@ export const createCustomModuleInputSchema = z.strictObject({
   singularName: nameSchema,
   pluralName: nameSchema,
   icon: z.string().trim().min(1).max(60).nullable().optional(),
-  restrictedToRoleKeys: z.array(z.string().trim().min(1).max(120)).max(50).optional(),
+  restrictedToRoleKeys: z
+    .array(z.string().trim().min(1).max(120))
+    .max(50)
+    .optional(),
 })
 
 export const updateCustomModuleInputSchema = z
@@ -24,7 +36,11 @@ export const updateCustomModuleInputSchema = z
     singularName: nameSchema.optional(),
     pluralName: nameSchema.optional(),
     icon: z.string().trim().min(1).max(60).nullable().optional(),
-    restrictedToRoleKeys: z.array(z.string().trim().min(1).max(120)).max(50).nullable().optional(),
+    restrictedToRoleKeys: z
+      .array(z.string().trim().min(1).max(120))
+      .max(50)
+      .nullable()
+      .optional(),
   })
   .refine((input) => Object.keys(input).length > 0)
 
@@ -172,16 +188,56 @@ export const createDashboardWidgetInputSchema = z.strictObject({
 
 export const updateDashboardWidgetInputSchema = z
   .strictObject({
-    kind: z.enum(['record-count', 'status-breakdown', 'recent-records']).optional(),
+    kind: z
+      .enum(['record-count', 'status-breakdown', 'recent-records'])
+      .optional(),
     userId: z.string().trim().min(1).max(120).nullable().optional(),
     config: z.record(z.string(), z.unknown()).optional(),
     position: z.number().int().min(0).max(10000).optional(),
   })
   .refine((input) => Object.keys(input).length > 0)
 
-export type CreateCustomModuleBody = z.infer<typeof createCustomModuleInputSchema>
-export type UpdateCustomModuleBody = z.infer<typeof updateCustomModuleInputSchema>
-export type CreateCustomModuleFieldBody = z.infer<typeof createCustomModuleFieldInputSchema>
-export type CreateCustomRecordBody = z.infer<typeof createCustomRecordInputSchema>
-export type UpdateCustomRecordBody = z.infer<typeof updateCustomRecordInputSchema>
-export type CreateDashboardWidgetBody = z.infer<typeof createDashboardWidgetInputSchema>
+export type CreateCustomModuleBody = z.infer<
+  typeof createCustomModuleInputSchema
+>
+export type UpdateCustomModuleBody = z.infer<
+  typeof updateCustomModuleInputSchema
+>
+export type CreateCustomModuleFieldBody = z.infer<
+  typeof createCustomModuleFieldInputSchema
+>
+export type CreateCustomRecordBody = z.infer<
+  typeof createCustomRecordInputSchema
+>
+export type UpdateCustomRecordBody = z.infer<
+  typeof updateCustomRecordInputSchema
+>
+export type CreateDashboardWidgetBody = z.infer<
+  typeof createDashboardWidgetInputSchema
+>
+
+export type LayoutFieldControlKind =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'date'
+  | 'select'
+  | 'multi-select'
+  | 'boolean'
+
+export type RecordFormField = {
+  fieldKey: string
+  label: string
+  control: {
+    kind: LayoutFieldControlKind
+    options?: { value: string; label: string }[]
+  }
+}
+
+export type ModuleBundle = {
+  module: CustomModule
+  fields: CustomModuleField[]
+  statuses: CustomModuleStatus[]
+  layout: Layout | null
+  loadError: { code: string; message: string } | null
+}

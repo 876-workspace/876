@@ -1,7 +1,7 @@
 import { WorkloadTable } from '@876/projects-ui/reports/workload-table'
 import { AppError } from '@876/ui/app-error'
 
-import type { ReportPeriod } from '@/lib/period'
+import type { ReportPeriod } from '@/types/reporting'
 import { projects } from '@/lib/services/projects'
 
 export async function WorkloadReportData({

@@ -4,13 +4,11 @@ import { IssuesTable } from '@876/projects-ui/issue-list'
 import { AppError } from '@876/ui/app-error'
 
 import { IssueFilterBar } from '@/features/projects/components/issue-filter-bar'
-import type {
-  IssueGroupBy,
-  IssueSearchParams,
-} from '@/features/projects/issue-filters'
+
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
 import { projects } from '@/lib/services/projects'
+import type { IssueGroupBy, IssueSearchParams } from '@/types/issues'
 
 export async function IssuesData({
   query,
@@ -36,14 +34,14 @@ export async function IssuesData({
     states.error ??
     labels.error ??
     members.error
-  const memberOptions = Object.entries(members.labels).map(([userId, label]) => ({
-    userId,
-    label,
-  }))
+  const memberOptions = Object.entries(members.labels).map(
+    ([userId, label]) => ({
+      userId,
+      label,
+    })
+  )
   const groups =
-    groupBy === 'none'
-      ? []
-      : createIssueGroups(rows, groupBy, members.labels)
+    groupBy === 'none' ? [] : createIssueGroups(rows, groupBy, members.labels)
 
   return (
     <div className="space-y-4">

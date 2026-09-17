@@ -3,8 +3,9 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -44,12 +45,12 @@ export async function PATCH(request: Request, { params }: Context) {
   const result = await projects.cycles.update(
     auth.orgId,
     decodeURIComponent(cycleId),
-    { ...parsed.data, actorUserId: auth.userId },
+    { ...parsed.data, actorUserId: auth.userId }
   )
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: errorStatus(result.error.code) },
+      { status: errorStatus(result.error.code) }
     )
 
   return apiJson({ data: result.data })
@@ -65,12 +66,12 @@ export async function DELETE(_request: Request, { params }: Context) {
   const { cycleId } = await params
   const result = await projects.cycles.delete(
     auth.orgId,
-    decodeURIComponent(cycleId),
+    decodeURIComponent(cycleId)
   )
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: errorStatus(result.error.code) },
+      { status: errorStatus(result.error.code) }
     )
 
   return apiJson({ data: result.data })

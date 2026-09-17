@@ -3,11 +3,9 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import {
-  setRecordVisibility,
-  type VisibilitySubject,
-} from '@/lib/visibility'
+import { setRecordVisibility } from '@/lib/visibility'
 import { projects } from '@/lib/services/projects'
+import type { VisibilitySubject } from '@/types/visibility'
 
 const visibilitySchema = z.strictObject({ clientVisible: z.boolean() })
 
@@ -48,7 +46,10 @@ export async function handleVisibility(
 ): Promise<Response> {
   const parsed = visibilitySchema.safeParse(coerceBody(await readBody(request)))
   if (!parsed.success)
-    return apiJson({ error: 'Enter a valid visibility update.' }, { status: 422 })
+    return apiJson(
+      { error: 'Enter a valid visibility update.' },
+      { status: 422 }
+    )
 
   if (input.subject.kind === 'discussion') {
     const result = await projects.discussions.setClientVisibility(
@@ -59,7 +60,10 @@ export async function handleVisibility(
     )
     if (result.error || !result.data)
       return apiJson(
-        { error: result.error?.message ?? 'The visibility could not be updated.' },
+        {
+          error:
+            result.error?.message ?? 'The visibility could not be updated.',
+        },
         { status: 400 }
       )
     return apiJson({ data: result.data })
@@ -73,8 +77,7 @@ export async function handleVisibility(
   if (result.error || !result.data)
     return apiJson(
       {
-        error:
-          result.error?.message ?? 'The visibility could not be updated.',
+        error: result.error?.message ?? 'The visibility could not be updated.',
       },
       { status: result.error?.status ?? 400 }
     )

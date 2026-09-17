@@ -118,3 +118,140 @@ const blueprintTransitionInputSchema = z.strictObject({
 export const putBlueprintInputSchema = z.strictObject({
   transitions: z.array(blueprintTransitionInputSchema).max(200),
 })
+
+export type AutomationTriggerInput =
+  | 'work-item.created'
+  | 'work-item.updated'
+  | 'work-item.state-changed'
+  | 'phase.completed'
+  | 'due-date.approaching'
+  | 'time-entry.submitted'
+  | 'budget.threshold-reached'
+
+export type AutomationConditionOp =
+  'equals' | 'not-equals' | 'in' | 'is-empty' | 'is-not-empty'
+
+export interface AutomationConditionInput {
+  fieldKey: string
+  op: AutomationConditionOp
+  value?: string | string[]
+}
+
+export interface ServiceAutomationRule {
+  object: string
+  id: string
+  projectId: string | null
+  name: string
+  enabled: boolean
+  trigger: string
+  conditions: Array<{ fieldKey: string; op: string; value?: string | string[] }>
+  actions: AutomationActionInput[]
+  hasWebhookSecret: boolean
+  createdAt: number
+  updatedAt: number
+}
+
+export interface ServiceAutomationTest {
+  object: string
+  ruleId: string
+  subjectType: string
+  subjectId: string
+  matched: boolean
+  conditions: Array<{ fieldKey: string; op: string; matched: boolean }>
+  plannedActions: Array<{ type: string }>
+}
+
+export interface ServiceBlueprintTransition {
+  id: string
+  workItemTypeId: string | null
+  fromStateKey: string | null
+  toStateKey: string
+  name: string
+  requiredPermission: string | null
+  requiredFieldKeys: string[]
+  requiresComment: boolean
+}
+
+export interface ServiceBlueprint {
+  object: string
+  workItemTypeId: string
+  updatedAt: number | null
+  transitions: ServiceBlueprintTransition[]
+}
+
+export interface ServiceBlueprintInput {
+  transitions: Array<{
+    fromStateKey?: string | null
+    toStateKey: string
+    name: string
+    requiredPermission?: string | null
+    requiredFieldKeys?: string[]
+    requiresComment?: boolean
+  }>
+}
+
+export interface ServiceRuleInput {
+  projectId?: string | null
+  name: string
+  enabled?: boolean
+  trigger: AutomationTriggerInput
+  conditions?: AutomationConditionInput[]
+  actions: AutomationActionInput[]
+  webhookSecret?: string | null
+}
+
+export interface ServiceAutomationRuleDto {
+  object: string
+  id: string
+  projectId: string | null
+  name: string
+  enabled: boolean
+  trigger: AutomationTriggerInput
+  conditions: AutomationConditionInput[]
+  actions: AutomationActionInput[]
+  hasWebhookSecret: boolean
+  createdAt: number
+  updatedAt: number
+}
+
+export interface ServiceAutomationRunDto {
+  object: string
+  id: string
+  ruleId: string
+  eventId: string
+  status: 'succeeded' | 'failed' | 'skipped'
+  errorCode: string | null
+  attempt: number
+  startedAt: number
+  finishedAt: number
+}
+
+export interface AutomationRuleListDto {
+  object: string
+  data: ServiceAutomationRuleDto[]
+}
+
+export interface AutomationRunListDto {
+  object: string
+  data: ServiceAutomationRunDto[]
+}
+
+export interface CreateAutomationRuleParams {
+  projectId?: string | null
+  name: string
+  enabled?: boolean
+  trigger: AutomationTriggerInput
+  conditions?: AutomationConditionInput[]
+  actions: AutomationActionInput[]
+  webhookSecret?: string | null
+}
+
+export interface UpdateAutomationRuleParams {
+  projectId?: string | null
+  name?: string
+  enabled?: boolean
+  trigger?: AutomationTriggerInput
+  conditions?: AutomationConditionInput[]
+  actions?: AutomationActionInput[]
+  webhookSecret?: string | null
+}

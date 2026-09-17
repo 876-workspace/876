@@ -1,4 +1,4 @@
-import type { CapacityMemberOption } from './components/capacity-form'
+import type { CapacityMemberOption } from '@/types/reporting'
 
 /** The member picker's options, ordered so the select reads alphabetically. */
 export function toMemberOptions(

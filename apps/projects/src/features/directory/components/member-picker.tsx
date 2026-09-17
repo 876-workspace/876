@@ -13,7 +13,7 @@ import {
 import { CustomerAvatar } from '@876/ui/customer-avatar'
 import { UserIcon } from '@876/ui/icons'
 
-import type { DirectoryMember } from '../types'
+import type { DirectoryMember } from '@/types/directory'
 
 type Props = {
   members: DirectoryMember[]

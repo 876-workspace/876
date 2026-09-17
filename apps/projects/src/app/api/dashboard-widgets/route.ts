@@ -3,11 +3,12 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { requireApiPermission, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiPermission } from '@/lib/auth/api-permission'
 import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { resolveCallerRoleKeys } from '@/lib/custom-modules/api-access'
-import { createDashboardWidgetInputSchema } from '@/lib/custom-modules/custom-module-inputs'
+import { createDashboardWidgetInputSchema } from '@/types/custom-modules'
 import { serviceWithRoleKeys } from '@/lib/custom-modules/service-with-roles'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -17,13 +18,19 @@ export async function GET(request: NextRequest) {
 
   const params = Object.fromEntries(new URL(request.url).searchParams.entries())
   const roleKeys = await resolveCallerRoleKeys(auth.userId, auth.orgId)
-  const result = await serviceWithRoleKeys(roleKeys).customModules.listWidgets(auth.orgId, {
-    ...(params.moduleId ? { moduleId: params.moduleId } : {}),
-    ...(params.userId ? { userId: params.userId } : {}),
-  })
+  const result = await serviceWithRoleKeys(roleKeys).customModules.listWidgets(
+    auth.orgId,
+    {
+      ...(params.moduleId ? { moduleId: params.moduleId } : {}),
+      ...(params.userId ? { userId: params.userId } : {}),
+    }
+  )
   if (result.error || !result.data)
     return apiJson(
-      { error: result.error?.message ?? 'Dashboard widgets could not be loaded.' },
+      {
+        error:
+          result.error?.message ?? 'Dashboard widgets could not be loaded.',
+      },
       { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
@@ -37,7 +44,10 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null)
   const parsed = createDashboardWidgetInputSchema.safeParse(body)
   if (!parsed.success)
-    return apiJson({ error: 'Enter a valid dashboard widget.' }, { status: 422 })
+    return apiJson(
+      { error: 'Enter a valid dashboard widget.' },
+      { status: 422 }
+    )
 
   const roleKeys = await resolveCallerRoleKeys(auth.userId, auth.orgId)
   const result = await serviceWithRoleKeys(roleKeys).customModules.createWidget(

@@ -4,10 +4,8 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 import type { z } from 'zod'
 
-import {
-  requireApiPermission,
-  type ApiContext,
-} from '@/lib/auth/api-permission'
+import { requireApiPermission } from '@/lib/auth/api-permission'
+import type { ApiContext } from '@/types/access'
 
 type Context = { params: Promise<{ id: string }> }
 type ServiceResult<T> =

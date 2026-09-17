@@ -4,13 +4,15 @@ import { notFound } from 'next/navigation'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { projects } from '@/lib/services/projects'
 
+import { mapDiscussion, mapDiscussionPost } from '../mappers'
 import {
-  mapDiscussion,
-  mapDiscussionPost,
-} from '../mappers'
-import { DiscussionControls, DiscussionReplyForm, DiscussionThreadView, NewDiscussionForm } from './discussion-forms'
+  DiscussionControls,
+  DiscussionReplyForm,
+  DiscussionThreadView,
+  NewDiscussionForm,
+} from './discussion-forms'
 import { DiscussionList } from './discussion-list'
-import type { MentionMember } from './mention-input'
+import type { MentionMember } from '@/types/collaboration'
 
 async function loadMembers(orgId: string): Promise<readonly MentionMember[]> {
   const members = await loadMemberLabels(orgId)

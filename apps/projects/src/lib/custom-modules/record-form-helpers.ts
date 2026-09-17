@@ -3,28 +3,18 @@ import type {
   CustomRecord,
   DashboardWidget,
 } from '@876/projects/contracts'
-import type { CustomModuleWidget, WidgetData } from '@876/projects-ui/custom-modules/types'
+import type {
+  CustomModuleWidget,
+  WidgetData,
+} from '@876/projects-ui/custom-modules/types'
 import type { Layout, LayoutEntity } from '@876/projects/contracts'
 
 import { customModuleLayoutEntity } from './module-access'
 
-export type LayoutFieldControlKind =
-  | 'text'
-  | 'textarea'
-  | 'number'
-  | 'date'
-  | 'select'
-  | 'multi-select'
-  | 'boolean'
-
-export type RecordFormField = {
-  fieldKey: string
-  label: string
-  control: {
-    kind: LayoutFieldControlKind
-    options?: { value: string; label: string }[]
-  }
-}
+import type {
+  LayoutFieldControlKind,
+  RecordFormField,
+} from '@/types/custom-modules'
 
 function controlKindFor(fieldType: string): LayoutFieldControlKind {
   switch (fieldType) {
@@ -46,7 +36,9 @@ function controlKindFor(fieldType: string): LayoutFieldControlKind {
   }
 }
 
-function selectOptions(field: CustomModuleField): { value: string; label: string }[] {
+function selectOptions(
+  field: CustomModuleField
+): { value: string; label: string }[] {
   const options = field.options
   if (!Array.isArray(options)) return []
   return options
@@ -86,7 +78,10 @@ export function toLayoutFieldDescriptors(
 }
 
 /** A fallback single-section layout when no stored layout exists yet. */
-export function fallbackRecordLayout(moduleKey: string, fieldKeys: readonly string[]): Layout {
+export function fallbackRecordLayout(
+  moduleKey: string,
+  fieldKeys: readonly string[]
+): Layout {
   return {
     object: 'projects.layout',
     id: null,
@@ -112,7 +107,9 @@ export function fallbackRecordLayout(moduleKey: string, fieldKeys: readonly stri
   }
 }
 
-export function recordInitialValues(record: CustomRecord): Record<string, string | string[] | null> {
+export function recordInitialValues(
+  record: CustomRecord
+): Record<string, string | string[] | null> {
   const values: Record<string, string | string[] | null> = {
     title: record.title,
   }
@@ -128,7 +125,9 @@ export function recordInitialValues(record: CustomRecord): Record<string, string
 
 type FormValue = string | string[] | null | undefined
 
-function toFieldValue(value: FormValue): string | number | boolean | string[] | null {
+function toFieldValue(
+  value: FormValue
+): string | number | boolean | string[] | null {
   if (value === undefined) return null
   if (Array.isArray(value)) return value
   if (value === '') return null
@@ -145,7 +144,10 @@ export function toRecordFieldInputs(values: Record<string, FormValue>): {
 } {
   const rawTitle = values.title
   const title = Array.isArray(rawTitle) ? (rawTitle[0] ?? '') : (rawTitle ?? '')
-  const fields: { key: string; value: string | number | boolean | string[] | null }[] = []
+  const fields: {
+    key: string
+    value: string | number | boolean | string[] | null
+  }[] = []
   for (const [key, value] of Object.entries(values)) {
     if (!key.startsWith('cf:')) continue
     fields.push({ key: key.slice('cf:'.length), value: toFieldValue(value) })
@@ -155,7 +157,8 @@ export function toRecordFieldInputs(values: Record<string, FormValue>): {
 
 function widgetTitle(widget: DashboardWidget, moduleName: string): string {
   const config = widget.config as { title?: unknown } | null
-  const title = config && typeof config.title === 'string' ? config.title.trim() : ''
+  const title =
+    config && typeof config.title === 'string' ? config.title.trim() : ''
   if (title !== '') return title
   if (widget.kind === 'record-count') return `${moduleName} count`
   if (widget.kind === 'status-breakdown') return `${moduleName} by status`
@@ -167,7 +170,10 @@ export function toWidgetViews(
   widgets: readonly DashboardWidget[],
   moduleNames: ReadonlyMap<string, string> | Record<string, string>
 ): CustomModuleWidget[] {
-  const names = moduleNames instanceof Map ? moduleNames : new Map(Object.entries(moduleNames))
+  const names =
+    moduleNames instanceof Map
+      ? moduleNames
+      : new Map(Object.entries(moduleNames))
   return [...widgets]
     .sort((a, b) => a.position - b.position)
     .map((widget) => ({
@@ -185,10 +191,16 @@ export function widgetDataFor(
   report: {
     total: number
     byStatus: { statusKey: string; label: string; count: number }[]
-    recent: { id: string; title: string; statusKey: string; updatedAt: number }[]
+    recent: {
+      id: string
+      title: string
+      statusKey: string
+      updatedAt: number
+    }[]
   }
 ): WidgetData {
-  if (widget.kind === 'record-count') return { kind: 'record-count', count: report.total }
+  if (widget.kind === 'record-count')
+    return { kind: 'record-count', count: report.total }
   if (widget.kind === 'status-breakdown')
     return {
       kind: 'status-breakdown',
@@ -205,7 +217,10 @@ export function widgetDataFor(
 }
 
 /** CSV download href for a module report served by the thin API routes. */
-export function moduleReportCsvHref(moduleId: string, kind: 'by-status' | 'by-field' | 'created'): string {
+export function moduleReportCsvHref(
+  moduleId: string,
+  kind: 'by-status' | 'by-field' | 'created'
+): string {
   return `/api/custom-modules/${encodeURIComponent(moduleId)}/reports/${kind}?format=csv`
 }
 

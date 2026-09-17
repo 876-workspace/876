@@ -12,7 +12,7 @@ import {
   memberName,
   memberRoleLabel,
 } from '../../_lib/member-utils'
-import type { OrgMember } from '../../_lib/types'
+import type { OrgMember } from '@/types/users'
 
 type EmployeeProfileView = {
   employee_number: string | null

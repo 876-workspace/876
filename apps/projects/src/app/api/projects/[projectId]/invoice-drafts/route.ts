@@ -3,8 +3,9 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -29,7 +30,10 @@ export async function POST(request: Request, { params }: Context) {
   const body = await request.json().catch(() => null)
   const parsed = createInvoiceDraftSchema.safeParse(body)
   if (!parsed.success || parsed.data.to <= parsed.data.from)
-    return apiJson({ error: 'Enter a valid period with from before to.' }, { status: 422 })
+    return apiJson(
+      { error: 'Enter a valid period with from before to.' },
+      { status: 422 }
+    )
 
   const { projectId } = await params
   const result = await projects.projectBilling.createInvoiceDraft(

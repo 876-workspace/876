@@ -6,8 +6,6 @@
  * code the module grows later degrades to 400 rather than to a wrong specific.
  */
 import { apiJson } from '@876/core/api'
-import { z } from 'zod'
-
 import { projectsErrorStatus } from './error-status'
 
 /** A service failure, answering with the message the service produced. */
@@ -31,10 +29,6 @@ export function csvDownload(body: string, filename: string): Response {
     },
   })
 }
-
-export const unixSecondsSchema = z.coerce.number().int().nonnegative()
-export const reportFormatSchema = z.enum(['json', 'csv'])
-export const timeReportGroupSchema = z.enum(['project', 'user', 'issue'])
 
 /** The query string as a plain object, for route-local validation. */
 export function searchParamsOf(request: Request): Record<string, string> {

@@ -1,15 +1,13 @@
 'use client'
 
-import type {
-  CreateCapacityInput,
-  MemberCapacity,
-  UpdateCapacityInput,
-} from '@876/projects'
+import type { MemberCapacity } from '@876/projects'
 
 import { request } from './request'
 
-export type CreateCapacityParams = CreateCapacityInput
-export type UpdateCapacityParams = UpdateCapacityInput
+import type {
+  CreateCapacityParams,
+  UpdateCapacityParams,
+} from '@/types/reporting'
 
 function json(body: unknown): RequestInit {
   return {

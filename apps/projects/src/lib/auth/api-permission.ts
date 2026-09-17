@@ -10,9 +10,7 @@ import {
 } from './access-context'
 import { getProjectsApiContext } from './api-context'
 
-export type ApiContext =
-  | { response: Response; orgId?: undefined; userId?: undefined }
-  | { response: null; orgId: string; userId: string }
+import type { ApiContext } from '@/types/access'
 
 type ResolvedApiAccess =
   | {

@@ -1,29 +1,21 @@
 import 'server-only'
 
-import type {
-  CustomModule,
-  CustomModuleField,
-  CustomModuleStatus,
-  Layout,
-  LayoutEntity,
-} from '@876/projects/contracts'
+import type { LayoutEntity } from '@876/projects/contracts'
+
+import type { ModuleBundle } from '@/types/custom-modules'
 
 import { customModuleLayoutEntity, findModuleByKey } from './module-access'
 import { serviceWithRoleKeys } from './service-with-roles'
-
-export type ModuleBundle = {
-  module: CustomModule
-  fields: CustomModuleField[]
-  statuses: CustomModuleStatus[]
-  layout: Layout | null
-  loadError: { code: string; message: string } | null
-}
 
 export async function loadModuleBundle(
   orgId: string,
   roleKeys: readonly string[],
   moduleKey: string
-): Promise<{ status: 'ok'; bundle: ModuleBundle } | { status: 'not-found' } | { status: 'error'; error: { code: string; message: string } }> {
+): Promise<
+  | { status: 'ok'; bundle: ModuleBundle }
+  | { status: 'not-found' }
+  | { status: 'error'; error: { code: string; message: string } }
+> {
   const client = serviceWithRoleKeys(roleKeys)
   const listed = await client.customModules.listModules(orgId)
   if (listed.error || !listed.data)
@@ -51,7 +43,8 @@ export async function loadModuleBundle(
       module: definition,
       fields: fields.data?.data ?? [],
       statuses: statuses.data?.data ?? [],
-      layout: layouts.data?.data.find((entry) => entry.entity === entity) ?? null,
+      layout:
+        layouts.data?.data.find((entry) => entry.entity === entity) ?? null,
       loadError: fields.error ?? statuses.error ?? layouts.error ?? null,
     },
   }

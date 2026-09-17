@@ -1,33 +1,10 @@
-import type { ReportPeriod } from '@/lib/period'
+import type { ReportPeriod } from '@/types/reporting'
 
-/** The grouping dimensions the time report accepts, matching the API contract. */
-export const REPORT_GROUPS = ['project', 'user', 'issue'] as const
-
-export type ReportGroup = (typeof REPORT_GROUPS)[number]
-
-export const REPORT_SLUGS = [
-  'work',
-  'health',
-  'time',
-  'budget-variance',
-  'workload',
-] as const
-
-export type ReportSlug = (typeof REPORT_SLUGS)[number]
-
-/** The report pages the dashboard links to, in reading order. */
-export const REPORT_LINKS = [
-  { key: 'work', label: 'Work', href: '/reports/work' },
-  { key: 'time', label: 'Time', href: '/reports/time' },
-  {
-    key: 'budget-variance',
-    label: 'Budget variance',
-    href: '/reports/budget-variance',
-  },
-  { key: 'workload', label: 'Workload', href: '/reports/workload' },
-] as const
-
-export type ReportKey = (typeof REPORT_LINKS)[number]['key']
+import {
+  REPORT_GROUPS,
+  type ReportGroup,
+  type ReportSlug,
+} from '@/types/reporting'
 
 const GROUP_LABELS: Record<ReportGroup, string> = {
   project: 'Project',

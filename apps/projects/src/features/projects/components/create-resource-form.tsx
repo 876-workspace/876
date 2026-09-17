@@ -8,7 +8,7 @@ import { Textarea } from '@876/ui/textarea'
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
-import type { ClientResult } from '@/lib/client'
+import type { ClientResult } from '@/types/client'
 
 type CreatedResource = { id: string }
 

@@ -1,6 +1,5 @@
 import Link from 'next/link'
-
-import type { UiActivityItem } from '../mappers'
+import type { UiActivityItem } from '@/types/collaboration'
 
 function subjectHref(
   hrefBases: Record<UiActivityItem['subjectType'], string>,
@@ -31,7 +30,11 @@ export function ActivityFeed({
   }
 
   return (
-    <section data-slot="activity-feed" aria-label="Activity" className="space-y-4">
+    <section
+      data-slot="activity-feed"
+      aria-label="Activity"
+      className="space-y-4"
+    >
       {items.length === 0 ? (
         <p className="text-muted-foreground py-12 text-center text-sm">
           No activity yet

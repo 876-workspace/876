@@ -2,9 +2,7 @@ import { nowUnixSeconds } from '@876/core/timestamps'
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/
 
-export type EntryTimestamps =
-  | { ok: true; startedAt: number; endedAt: number }
-  | { ok: false; reason: 'incomplete' | 'range' }
+import type { EntryTimestamps } from '@/types/time'
 
 export function entryDateValue(timestamp: number | null): string {
   if (timestamp === null) return ''

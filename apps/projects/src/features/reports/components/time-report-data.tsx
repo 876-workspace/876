@@ -1,10 +1,8 @@
 import { TimeReportTable } from '@876/projects-ui/reports/time-report-table'
 import { AppError } from '@876/ui/app-error'
 
-import type { ReportPeriod } from '@/lib/period'
+import type { ReportPeriod, ReportGroup } from '@/types/reporting'
 import { projects } from '@/lib/services/projects'
-
-import type { ReportGroup } from '../report-query'
 
 export async function TimeReportData({
   orgId,

@@ -3,8 +3,9 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -12,9 +13,7 @@ type Context = { params: Promise<{ eventId: string }> }
 
 const addAttendeeSchema = z.strictObject({
   userId: z.string().trim().min(1),
-  response: z
-    .enum(['invited', 'accepted', 'declined', 'tentative'])
-    .optional(),
+  response: z.enum(['invited', 'accepted', 'declined', 'tentative']).optional(),
 })
 
 function errorStatus(code: string): 400 | 404 | 409 {

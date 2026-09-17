@@ -3,9 +3,10 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { createWebhookEndpointInputSchema } from '@/lib/integration-inputs'
+import { requireApiAccess } from '@/lib/auth/api-permission'
+import { createWebhookEndpointInputSchema } from '@/types/integrations'
 import { integration } from '@/lib/services/integration'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -26,7 +27,10 @@ export async function GET() {
   const result = await integration.listWebhookEndpoints()
   if (result.error || !result.data)
     return apiJson(
-      { error: result.error?.message ?? 'Webhook endpoints could not be loaded.' },
+      {
+        error:
+          result.error?.message ?? 'Webhook endpoints could not be loaded.',
+      },
       { status: errorStatus(result.error?.code ?? '') }
     )
 
@@ -52,7 +56,9 @@ export async function POST(request: NextRequest) {
     url: parsed.data.url,
     eventTypes: [...parsed.data.eventTypes],
     ...(parsed.data.secret !== undefined ? { secret: parsed.data.secret } : {}),
-    ...(parsed.data.enabled !== undefined ? { enabled: parsed.data.enabled } : {}),
+    ...(parsed.data.enabled !== undefined
+      ? { enabled: parsed.data.enabled }
+      : {}),
   })
   if (result.error || !result.data)
     return apiJson(

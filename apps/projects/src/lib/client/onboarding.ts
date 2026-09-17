@@ -2,11 +2,7 @@
 
 import { request } from './request'
 
-export type OnboardingCompletion = {
-  object: 'onboarding_completion'
-  organization_id: string
-  access_status: 'active'
-}
+import type { OnboardingCompletion } from '@/types/access'
 
 export const onboarding = {
   createOrganization(params: { name?: string } = {}) {

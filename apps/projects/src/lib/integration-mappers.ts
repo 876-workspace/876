@@ -35,8 +35,6 @@ export const IMPORT_SOURCE_VALUES = [
   'zoho-csv',
 ] as const
 
-export type ImportSourceValue = (typeof IMPORT_SOURCE_VALUES)[number]
-
 export function toUiIntegrationClient(
   client: ApiIntegrationClient
 ): UiIntegrationClient {
@@ -99,9 +97,7 @@ export function toUiWebhookDelivery(
   }
 }
 
-export function toUiImportJobStatus(
-  status: string
-): UiImportJob['status'] {
+export function toUiImportJobStatus(status: string): UiImportJob['status'] {
   if (status === 'committing') return 'committing'
   if (status === 'committed' || status === 'partial') return 'completed'
   return 'previewing'

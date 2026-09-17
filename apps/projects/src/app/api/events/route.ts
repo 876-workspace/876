@@ -3,9 +3,10 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { nullableRecurrenceInputSchema } from '@/app/api/_lib/calendar-schemas'
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { nullableRecurrenceInputSchema } from '@/types/calendar'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -25,7 +26,10 @@ const createEventSchema = z
     recurrence: nullableRecurrenceInputSchema.optional(),
   })
   .refine(
-    (data) => data.endsAt === undefined || data.endsAt === null || data.endsAt >= data.startsAt,
+    (data) =>
+      data.endsAt === undefined ||
+      data.endsAt === null ||
+      data.endsAt >= data.startsAt,
     { message: 'The event cannot end before it starts.', path: ['endsAt'] }
   )
 

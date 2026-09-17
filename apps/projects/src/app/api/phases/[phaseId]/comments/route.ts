@@ -3,13 +3,16 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
 type Context = { params: Promise<{ phaseId: string }> }
-const commentSchema = z.strictObject({ body: z.string().trim().min(1).max(10_000) })
+const commentSchema = z.strictObject({
+  body: z.string().trim().min(1).max(10_000),
+})
 
 export async function POST(request: Request, { params }: Context) {
   const auth: ApiContext = await requireApiAccess({

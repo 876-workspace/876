@@ -3,28 +3,13 @@ import {
   ISSUE_PRIORITIES,
   type IssueOrder,
   type IssuePriority,
-  type ListIssuesQuery,
 } from '@876/projects/contracts'
-import type { IssueBoardGroupBy } from '@876/projects-ui/issue-board'
 
-export type IssueGroupBy = 'none' | IssueBoardGroupBy
-
-export type IssueSearchParams = {
-  q?: string
-  project?: string
-  status?: string
-  priority?: string
-  assignee?: string
-  label?: string
-  order?: string
-  group?: string
-}
-
-export type ParsedIssueFilters = {
-  query: ListIssuesQuery
-  values: IssueSearchParams
-  groupBy: IssueGroupBy
-}
+import type {
+  IssueGroupBy,
+  IssueSearchParams,
+  ParsedIssueFilters,
+} from '@/types/issues'
 
 const GROUPS: readonly IssueGroupBy[] = [
   'none',
@@ -43,7 +28,8 @@ function trimmed(value?: string): string | undefined {
 
 function isPriority(value?: string): value is IssuePriority {
   return Boolean(
-    value && ISSUE_PRIORITIES.includes(value as (typeof ISSUE_PRIORITIES)[number])
+    value &&
+    ISSUE_PRIORITIES.includes(value as (typeof ISSUE_PRIORITIES)[number])
   )
 }
 

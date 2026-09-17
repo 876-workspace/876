@@ -14,13 +14,7 @@ import { formatDay } from '@876/projects-ui/finance/format-money'
 
 import { formatMinutesAsHours } from '../capacity-input'
 
-export type CapacityRow = {
-  id: string
-  member: string
-  minutesPerWeek: number
-  effectiveFrom: number
-  effectiveTo: number | null
-}
+import type { CapacityRow } from '@/types/reporting'
 
 function editHref(capacityId: string): string {
   return `/settings/capacity/${encodeURIComponent(capacityId)}/edit`

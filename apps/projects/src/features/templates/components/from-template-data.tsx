@@ -4,20 +4,12 @@ import { Suspense } from 'react'
 import { formatDateInput, todaySeconds } from '@/lib/date-input'
 import { projects } from '@/lib/services/projects'
 
-import {
-  parseTemplatePreviewQuery,
-  type TemplatePreviewQuery,
-} from '../template-preview-query'
+import { parseTemplatePreviewQuery } from '../template-preview-query'
+import type { TemplatePreviewQuery } from '@/types/templates'
 import { FromTemplateForm } from './from-template-form'
 import { TemplatePreviewData } from './template-preview-data'
 
-export type FromTemplateSearch = {
-  templateId?: string
-  start?: string
-  includeWorkItems?: string
-  includeDependencies?: string
-  includeBudgets?: string
-}
+import type { FromTemplateSearch } from '@/types/templates'
 
 export async function FromTemplateData({
   orgId,
@@ -48,7 +40,9 @@ export async function FromTemplateData({
         }))}
         initial={{
           templateId: query?.templateId ?? '',
-          start: query ? formatDateInput(query.startDate) : formatDateInput(todaySeconds()),
+          start: query
+            ? formatDateInput(query.startDate)
+            : formatDateInput(todaySeconds()),
           include: query?.include ?? {
             includeWorkItems: true,
             includeDependencies: true,

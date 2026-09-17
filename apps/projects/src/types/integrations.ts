@@ -1,3 +1,4 @@
+import type { IntegrationClient } from '@876/projects/integration'
 import { z } from 'zod'
 
 export const MAX_IMPORT_BYTES = 5 * 1024 * 1024
@@ -94,12 +95,9 @@ export const createImportJobInputSchema = z.strictObject({
   source: importSourceSchema,
   projectId: z.string().trim().min(1).nullable().optional(),
   filename: z.string().trim().max(255).nullable().optional(),
-  content: z
-    .string()
-    .min(1)
-    .refine(withinImportLimit, {
-      message: 'Import files must be 5 MB or smaller.',
-    }),
+  content: z.string().min(1).refine(withinImportLimit, {
+    message: 'Import files must be 5 MB or smaller.',
+  }),
 })
 
 export type CreateImportJobInput = z.infer<typeof createImportJobInputSchema>
@@ -117,4 +115,46 @@ export const exportTimeEntriesQuerySchema = z.strictObject({
   to: z.coerce.number().int().nonnegative().optional(),
 })
 
-export type ExportTimeEntriesQuery = z.infer<typeof exportTimeEntriesQuerySchema>
+export type ExportTimeEntriesQuery = z.infer<
+  typeof exportTimeEntriesQuerySchema
+>
+
+export type ImportSourceValue =
+  'csv' | 'jira-csv' | 'jira-json' | 'trello-json' | 'asana-csv' | 'zoho-csv'
+
+export type CreatedIntegrationClientDto = {
+  client: IntegrationClient
+  secret: string
+}
+
+export interface CreateIntegrationClientParams {
+  name: string
+  scopes: string[]
+}
+
+export interface CreateWebhookEndpointParams {
+  url: string
+  eventTypes: string[]
+  secret?: string
+  enabled?: boolean
+}
+
+export interface UpdateWebhookEndpointParams {
+  url?: string
+  eventTypes?: string[]
+  secret?: string
+  enabled?: boolean
+}
+
+export interface ListEndpointDeliveriesParams {
+  status?: 'pending' | 'delivered' | 'failed'
+  limit?: number
+}
+
+export interface CreateImportJobParams {
+  source:
+    'csv' | 'jira-csv' | 'jira-json' | 'trello-json' | 'asana-csv' | 'zoho-csv'
+  projectId?: string | null
+  filename?: string | null
+  content: string
+}

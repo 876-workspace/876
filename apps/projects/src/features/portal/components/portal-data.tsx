@@ -1,10 +1,10 @@
 import { AppError } from '@876/ui/app-error'
 import Link from 'next/link'
 
-import type { PortalAccess } from '@/lib/portal-access'
 import { getPortalClient } from '@/lib/services/portal'
 
 import { PortalReplyForm } from './portal-reply-form'
+import type { PortalAccess } from '@/types/access'
 
 function portalBase(projectId: string): string {
   return `/portal/${encodeURIComponent(projectId)}`
@@ -35,7 +35,10 @@ export async function PortalOverviewData({
     portal.listAttachments(access.orgId, projectId, { limit: 5 }),
   ])
   if (milestones.error || activity.error || issues.error || files.error)
-    return fail('Overview could not be loaded', 'The portal data was unavailable.')
+    return fail(
+      'Overview could not be loaded',
+      'The portal data was unavailable.'
+    )
 
   return (
     <div className="space-y-6">
@@ -75,7 +78,9 @@ export async function PortalOverviewData({
                 >
                   {milestone.name}
                 </Link>
-                <p className="text-muted-foreground text-xs">{milestone.status}</p>
+                <p className="text-muted-foreground text-xs">
+                  {milestone.status}
+                </p>
               </li>
             ))}
           </ul>
@@ -114,7 +119,10 @@ export async function PortalPhasesData({
     limit: 100,
   })
   if (result.error || !result.data)
-    return fail('Phases could not be loaded', 'The portal data was unavailable.')
+    return fail(
+      'Phases could not be loaded',
+      'The portal data was unavailable.'
+    )
   if (result.data.data.length === 0)
     return (
       <p className="text-muted-foreground py-12 text-center text-sm">
@@ -132,9 +140,13 @@ export async function PortalPhasesData({
             {milestone.name}
           </Link>
           {milestone.description ? (
-            <p className="text-muted-foreground mt-1 text-sm">{milestone.description}</p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {milestone.description}
+            </p>
           ) : null}
-          <p className="text-muted-foreground mt-1 text-xs">{milestone.status}</p>
+          <p className="text-muted-foreground mt-1 text-xs">
+            {milestone.status}
+          </p>
         </li>
       ))}
     </ul>
@@ -166,7 +178,9 @@ export async function PortalPhaseDetailData({
             {milestone.data.description}
           </p>
         ) : null}
-        <p className="text-muted-foreground mt-1 text-xs">{milestone.data.status}</p>
+        <p className="text-muted-foreground mt-1 text-xs">
+          {milestone.data.status}
+        </p>
       </div>
       <section aria-label="Phase comments" className="space-y-2">
         <h2 className="text-sm font-semibold">Comments</h2>
@@ -198,7 +212,9 @@ export async function PortalWorkData({
   projectId: string
 }) {
   const portal = getPortalClient(access.userId)
-  const result = await portal.listIssues(access.orgId, projectId, { limit: 100 })
+  const result = await portal.listIssues(access.orgId, projectId, {
+    limit: 100,
+  })
   if (result.error || !result.data)
     return fail('Work could not be loaded', 'The portal data was unavailable.')
   if (result.data.data.length === 0)
@@ -241,7 +257,10 @@ export async function PortalWorkDetailData({
     portal.listIssueComments(access.orgId, projectId, issueRef),
   ])
   if (issue.error || !issue.data)
-    return fail('Work item could not be loaded', 'The portal data was unavailable.')
+    return fail(
+      'Work item could not be loaded',
+      'The portal data was unavailable.'
+    )
   return (
     <div className="space-y-6">
       <div>
@@ -250,7 +269,9 @@ export async function PortalWorkDetailData({
           {issue.data.identifier} · {issue.data.status} · {issue.data.priority}
         </p>
         {issue.data.description ? (
-          <p className="mt-2 text-sm whitespace-pre-wrap">{issue.data.description}</p>
+          <p className="mt-2 text-sm whitespace-pre-wrap">
+            {issue.data.description}
+          </p>
         ) : null}
       </div>
       <section aria-label="Work comments" className="space-y-2">
@@ -324,7 +345,10 @@ export async function PortalDiscussionsData({
     limit: 100,
   })
   if (result.error || !result.data)
-    return fail('Discussions could not be loaded', 'The portal data was unavailable.')
+    return fail(
+      'Discussions could not be loaded',
+      'The portal data was unavailable.'
+    )
   if (result.data.data.length === 0)
     return (
       <p className="text-muted-foreground py-12 text-center text-sm">
@@ -372,7 +396,10 @@ export async function PortalDiscussionDetailData({
     discussionId
   )
   if (result.error || !result.data)
-    return fail('Discussion could not be loaded', 'The portal data was unavailable.')
+    return fail(
+      'Discussion could not be loaded',
+      'The portal data was unavailable.'
+    )
   const { discussion, posts } = result.data
   return (
     <div className="space-y-6">
@@ -452,7 +479,10 @@ export async function PortalInvoicesData({
   const portal = getPortalClient(access.userId)
   const result = await portal.listInvoices(access.orgId, projectId)
   if (result.error || !result.data)
-    return fail('Invoices could not be loaded', 'The portal data was unavailable.')
+    return fail(
+      'Invoices could not be loaded',
+      'The portal data was unavailable.'
+    )
   if (result.data.length === 0)
     return (
       <p className="text-muted-foreground py-12 text-center text-sm">
@@ -469,7 +499,8 @@ export async function PortalInvoicesData({
           <span className="text-sm font-medium">{invoice.invoiceId}</span>
           <span className="text-muted-foreground text-xs">
             {invoice.status} · {invoice.billedHours.toFixed(1)} hours ·{' '}
-            {invoice.entryCount} {invoice.entryCount === 1 ? 'entry' : 'entries'}
+            {invoice.entryCount}{' '}
+            {invoice.entryCount === 1 ? 'entry' : 'entries'}
           </span>
         </li>
       ))}

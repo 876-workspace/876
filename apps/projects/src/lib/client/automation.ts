@@ -1,69 +1,15 @@
 'use client'
 
 import type {
-  AutomationActionInput,
-  AutomationTriggerInput,
-  AutomationConditionInput,
+  AutomationRuleListDto,
+  AutomationRunListDto,
+  CreateAutomationRuleParams,
+  ServiceAutomationRuleDto,
   ServiceAutomationTest,
-} from '@/lib/automation-mappers'
+  UpdateAutomationRuleParams,
+} from '@/types/automations'
 
 import { request } from './request'
-
-export interface ServiceAutomationRuleDto {
-  object: string
-  id: string
-  projectId: string | null
-  name: string
-  enabled: boolean
-  trigger: AutomationTriggerInput
-  conditions: AutomationConditionInput[]
-  actions: AutomationActionInput[]
-  hasWebhookSecret: boolean
-  createdAt: number
-  updatedAt: number
-}
-
-export interface ServiceAutomationRunDto {
-  object: string
-  id: string
-  ruleId: string
-  eventId: string
-  status: 'succeeded' | 'failed' | 'skipped'
-  errorCode: string | null
-  attempt: number
-  startedAt: number
-  finishedAt: number
-}
-
-export interface AutomationRuleListDto {
-  object: string
-  data: ServiceAutomationRuleDto[]
-}
-
-export interface AutomationRunListDto {
-  object: string
-  data: ServiceAutomationRunDto[]
-}
-
-export interface CreateAutomationRuleParams {
-  projectId?: string | null
-  name: string
-  enabled?: boolean
-  trigger: AutomationTriggerInput
-  conditions?: AutomationConditionInput[]
-  actions: AutomationActionInput[]
-  webhookSecret?: string | null
-}
-
-export interface UpdateAutomationRuleParams {
-  projectId?: string | null
-  name?: string
-  enabled?: boolean
-  trigger?: AutomationTriggerInput
-  conditions?: AutomationConditionInput[]
-  actions?: AutomationActionInput[]
-  webhookSecret?: string | null
-}
 
 export const automationRulesClient = {
   list() {

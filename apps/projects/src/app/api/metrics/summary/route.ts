@@ -2,8 +2,9 @@ import 'server-only'
 
 import { apiJson } from '@876/core/api'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { integration } from '@/lib/services/integration'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 

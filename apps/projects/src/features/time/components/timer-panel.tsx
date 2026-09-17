@@ -8,8 +8,9 @@ import { useState } from 'react'
 
 import { timeClient } from '@/lib/client/time'
 
-import type { TimeEntryProjectOption } from './time-entry-form'
-import { IDLE_TIMER_LABEL, timerLabel, type TimerState } from './timer-state'
+import type { TimeEntryProjectOption } from '@/types/time'
+import { IDLE_TIMER_LABEL, timerLabel } from './timer-state'
+import type { TimerState } from '@/types/time'
 
 type Props = {
   timer: TimerState
@@ -112,7 +113,10 @@ export function TimerPanel({
 
       {fixedProjectId ? null : (
         <div className="flex items-center gap-2">
-          <label htmlFor="timer-project" className="text-muted-foreground text-sm">
+          <label
+            htmlFor="timer-project"
+            className="text-muted-foreground text-sm"
+          >
             Project
           </label>
           <NativeSelect

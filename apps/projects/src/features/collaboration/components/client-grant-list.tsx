@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { clientGrantsClient } from '@/lib/client/collaboration'
-
-import type { UiClientGrant } from '../mappers'
+import type { UiClientGrant } from '@/types/collaboration'
 
 export function ClientGrantList({
   projectId,

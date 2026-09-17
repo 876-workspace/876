@@ -5,11 +5,9 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
 import { PhaseListData } from '@/features/projects/components/phase-list-data'
-import {
-  parsePhaseFilters,
-  type PhaseSearchParams,
-} from '@/features/projects/phase-filters'
+import { parsePhaseFilters } from '@/features/projects/phase-filters'
 import { requireAppAccess } from '@/lib/auth/require-projects-context'
+import type { PhaseSearchParams } from '@/types/planning'
 
 export const metadata: Metadata = { title: 'Phases' }
 

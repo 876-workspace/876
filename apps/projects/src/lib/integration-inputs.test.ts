@@ -9,7 +9,7 @@ import {
   listWebhookDeliveriesQuerySchema,
   MAX_IMPORT_BYTES,
   updateWebhookEndpointInputSchema,
-} from './integration-inputs'
+} from '@/types/integrations'
 
 describe('createIntegrationClientInputSchema', () => {
   it('accepts a name with one scope', () => {
@@ -23,21 +23,26 @@ describe('createIntegrationClientInputSchema', () => {
 
   it('rejects an empty name', () => {
     expect(
-      createIntegrationClientInputSchema.safeParse({ name: '  ', scopes: ['projects:read'] })
-        .success
+      createIntegrationClientInputSchema.safeParse({
+        name: '  ',
+        scopes: ['projects:read'],
+      }).success
     ).toBe(false)
   })
 
   it('rejects zero scopes', () => {
     expect(
-      createIntegrationClientInputSchema.safeParse({ name: 'CI', scopes: [] }).success
+      createIntegrationClientInputSchema.safeParse({ name: 'CI', scopes: [] })
+        .success
     ).toBe(false)
   })
 
   it('rejects an unknown scope', () => {
     expect(
-      createIntegrationClientInputSchema.safeParse({ name: 'CI', scopes: ['admin:all'] })
-        .success
+      createIntegrationClientInputSchema.safeParse({
+        name: 'CI',
+        scopes: ['admin:all'],
+      }).success
     ).toBe(false)
   })
 
@@ -108,8 +113,9 @@ describe('webhook endpoint inputs', () => {
 
   it('rejects an http url on update', () => {
     expect(
-      updateWebhookEndpointInputSchema.safeParse({ url: 'http://x.example.com' })
-        .success
+      updateWebhookEndpointInputSchema.safeParse({
+        url: 'http://x.example.com',
+      }).success
     ).toBe(false)
   })
 })
@@ -127,7 +133,8 @@ describe('listWebhookDeliveriesQuerySchema', () => {
 
   it('rejects an unknown status', () => {
     expect(
-      listWebhookDeliveriesQuerySchema.safeParse({ status: 'succeeded' }).success
+      listWebhookDeliveriesQuerySchema.safeParse({ status: 'succeeded' })
+        .success
     ).toBe(false)
   })
 
@@ -147,20 +154,24 @@ describe('listWebhookDeliveriesQuerySchema', () => {
 describe('createImportJobInputSchema', () => {
   it('accepts csv content', () => {
     expect(
-      createImportJobInputSchema.safeParse({ source: 'csv', content: 'title\nShip\n' })
-        .success
+      createImportJobInputSchema.safeParse({
+        source: 'csv',
+        content: 'title\nShip\n',
+      }).success
     ).toBe(true)
   })
 
   it('rejects an unknown source', () => {
     expect(
-      createImportJobInputSchema.safeParse({ source: 'excel', content: 'x' }).success
+      createImportJobInputSchema.safeParse({ source: 'excel', content: 'x' })
+        .success
     ).toBe(false)
   })
 
   it('rejects empty content', () => {
     expect(
-      createImportJobInputSchema.safeParse({ source: 'csv', content: '' }).success
+      createImportJobInputSchema.safeParse({ source: 'csv', content: '' })
+        .success
     ).toBe(false)
   })
 
@@ -182,8 +193,8 @@ describe('export query schemas', () => {
   })
 
   it('rejects a negative time-entries from bound', () => {
-    expect(
-      exportTimeEntriesQuerySchema.safeParse({ from: -1 }).success
-    ).toBe(false)
+    expect(exportTimeEntriesQuerySchema.safeParse({ from: -1 }).success).toBe(
+      false
+    )
   })
 })

@@ -3,9 +3,10 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { updateProjectCustomFieldInputSchema } from '@/lib/project-custom-field-inputs'
+import { requireApiAccess } from '@/lib/auth/api-permission'
+import { updateProjectCustomFieldInputSchema } from '@/types/work-structure'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -41,7 +42,10 @@ export async function PATCH(request: NextRequest, { params }: Context) {
   )
   if (result.error || !result.data)
     return apiJson(
-      { error: result.error?.message ?? 'The project field could not be updated.' },
+      {
+        error:
+          result.error?.message ?? 'The project field could not be updated.',
+      },
       { status: errorStatus(result.error?.code ?? '') }
     )
 
@@ -62,7 +66,10 @@ export async function DELETE(_request: NextRequest, { params }: Context) {
   )
   if (result.error || !result.data)
     return apiJson(
-      { error: result.error?.message ?? 'The project field could not be deleted.' },
+      {
+        error:
+          result.error?.message ?? 'The project field could not be deleted.',
+      },
       { status: errorStatus(result.error?.code ?? '') }
     )
 

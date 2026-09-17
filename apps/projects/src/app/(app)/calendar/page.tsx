@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 
 import {
-  CALENDAR_VIEWS,
   calendarHref,
   calendarNavHref,
   calendarTodayUtc,
@@ -13,9 +12,8 @@ import {
   parseCalendarTimestamp,
   parseCalendarView,
   resolveCalendarWindow,
-  type CalendarSearchParams,
-  type CalendarView,
 } from '@/features/projects/calendar-range'
+import type { CalendarSearchParams, CalendarView } from '@/types/calendar'
 import {
   CalendarData,
   CalendarGridSkeleton,
@@ -25,6 +23,7 @@ import {
   requireAppAccess,
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
+import { CALENDAR_VIEWS } from '@/types/calendar'
 
 export const metadata: Metadata = { title: 'Calendar' }
 
@@ -110,7 +109,11 @@ export default async function CalendarPage({ searchParams }: Props) {
           {CALENDAR_VIEWS.map((option) => (
             <Link
               key={option}
-              href={calendarHref({ view: option, from: window.anchor, project })}
+              href={calendarHref({
+                view: option,
+                from: window.anchor,
+                project,
+              })}
               aria-current={option === view ? 'page' : undefined}
               className={buttonVariants({
                 variant: option === view ? 'default' : 'outline',

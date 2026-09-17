@@ -11,7 +11,7 @@ import { Button } from '@876/ui/button'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-import type { ClientResult } from '@/lib/client/request'
+import type { ClientResult } from '@/types/client'
 import { timeClient } from '@/lib/client/time'
 
 import { toApprovalStatus } from './time-entry-rows'
@@ -60,7 +60,10 @@ export function TimesheetCard({
 
     if (result.error || !result.data) {
       setError(
-        result.error ?? { code: 'projects/timesheet-update-failed', message: fallback }
+        result.error ?? {
+          code: 'projects/timesheet-update-failed',
+          message: fallback,
+        }
       )
       return
     }

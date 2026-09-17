@@ -1,6 +1,7 @@
 import type { CalendarEntry, CalendarEntryKind } from '@876/projects/contracts'
 
-import { DAY_SECONDS, startOfDayUtc } from './calendar-range'
+import { startOfDayUtc } from './calendar-range'
+import { DAY_SECONDS } from '@/types/calendar'
 
 export const CALENDAR_KIND_LABELS: Record<CalendarEntryKind, string> = {
   project: 'Project',

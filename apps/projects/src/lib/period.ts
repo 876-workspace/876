@@ -6,7 +6,7 @@
  * default, so a mistyped link still renders a usable page.
  */
 
-export type ReportPeriod = { from: number; to: number }
+import type { ReportPeriod } from '@/types/reporting'
 
 export function currentMonthPeriod(nowSeconds?: number): ReportPeriod {
   const now = new Date((nowSeconds ?? Date.now() / 1000) * 1000)

@@ -4,10 +4,7 @@ import type { BaselineDetail, Deleted } from '@876/projects/contracts'
 
 import { request } from './request'
 
-export type CreateBaselineParams = {
-  name: string
-  note?: string | null
-}
+import type { CreateBaselineParams } from '@/types/work-structure'
 
 function root(projectId: string) {
   return `/api/projects/${encodeURIComponent(projectId)}/baselines`

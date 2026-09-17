@@ -9,8 +9,9 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { projectsErrorStatus } from '@/app/api/_lib/error-status'
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 

@@ -1,7 +1,7 @@
 import { projects } from '@/lib/services/projects'
 
 import { FollowButton } from './follow-button'
-import type { FollowSubjectType } from '@/lib/client/collaboration'
+import type { FollowSubjectType } from '@/types/collaboration'
 
 /**
  * Loads the acting user's follow state, then renders the switch.

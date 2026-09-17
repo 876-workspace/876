@@ -3,26 +3,23 @@
 import type {
   Budget,
   BudgetList,
-  CreateBudgetInput,
   CreateInvoiceDraftInput,
-  CreateRateInput,
   FinancialSummary,
   InvoiceDraft,
   ProjectBilling,
-  PutProjectBillingInput,
   Rate,
   RateList,
-  UpdateBudgetInput,
-  UpdateRateInput,
 } from '@876/projects'
 
 import { request } from './request'
 
-export type PutBillingParams = PutProjectBillingInput
-export type CreateBudgetParams = CreateBudgetInput
-export type UpdateBudgetParams = UpdateBudgetInput
-export type CreateRateParams = CreateRateInput
-export type UpdateRateParams = UpdateRateInput
+import type {
+  CreateBudgetParams,
+  CreateRateParams,
+  PutBillingParams,
+  UpdateBudgetParams,
+  UpdateRateParams,
+} from '@/types/finance'
 
 function root(projectId: string) {
   return `/api/projects/${encodeURIComponent(projectId)}`
@@ -58,7 +55,11 @@ export const financeClient = {
   createBudget(projectId: string, params: CreateBudgetParams) {
     return request<Budget>(`${root(projectId)}/budgets`, json(params))
   },
-  updateBudget(projectId: string, budgetId: string, params: UpdateBudgetParams) {
+  updateBudget(
+    projectId: string,
+    budgetId: string,
+    params: UpdateBudgetParams
+  ) {
     return request<Budget>(
       `${root(projectId)}/budgets/${encodeURIComponent(budgetId)}`,
       { ...json(params), method: 'PATCH' }
@@ -88,10 +89,7 @@ export const financeClient = {
       { method: 'DELETE' }
     )
   },
-  createInvoiceDraft(
-    projectId: string,
-    params: CreateInvoiceDraftInput
-  ) {
+  createInvoiceDraft(projectId: string, params: CreateInvoiceDraftInput) {
     return request<InvoiceDraft>(
       `${root(projectId)}/invoice-drafts`,
       json(params)

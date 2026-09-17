@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import type { AccessAppEntry } from '@876/access-ui/types'
 
-import type { AppMembership, AppRole } from '../../_lib/types'
+import type { AppMembership, AppRole } from '@/types/users'
 import MemberAccessPage from './page'
 
 const mocks = vi.hoisted(() => ({

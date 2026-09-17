@@ -1,4 +1,5 @@
-import { timePeriodQuery, type TimePeriod } from './time-period'
+import { timePeriodQuery } from './time-period'
+import type { TimePeriod } from '@/types/time'
 
 export function projectTimeHref(projectId: string): string {
   return `/projects/${encodeURIComponent(projectId)}/time`

@@ -3,9 +3,10 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { updateWebhookEndpointInputSchema } from '@/lib/integration-inputs'
+import { requireApiAccess } from '@/lib/auth/api-permission'
+import { updateWebhookEndpointInputSchema } from '@/types/integrations'
 import { integration } from '@/lib/services/integration'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -48,10 +49,7 @@ export async function PATCH(request: NextRequest, { params }: Context) {
   const body = await request.json().catch(() => null)
   const parsed = updateWebhookEndpointInputSchema.safeParse(body)
   if (!parsed.success)
-    return apiJson(
-      { error: 'Enter a valid endpoint update.' },
-      { status: 422 }
-    )
+    return apiJson({ error: 'Enter a valid endpoint update.' }, { status: 422 })
 
   const { endpointId } = await params
   const result = await integration.updateWebhookEndpoint(
@@ -61,8 +59,12 @@ export async function PATCH(request: NextRequest, { params }: Context) {
       ...(parsed.data.eventTypes !== undefined
         ? { eventTypes: [...parsed.data.eventTypes] }
         : {}),
-      ...(parsed.data.secret !== undefined ? { secret: parsed.data.secret } : {}),
-      ...(parsed.data.enabled !== undefined ? { enabled: parsed.data.enabled } : {}),
+      ...(parsed.data.secret !== undefined
+        ? { secret: parsed.data.secret }
+        : {}),
+      ...(parsed.data.enabled !== undefined
+        ? { enabled: parsed.data.enabled }
+        : {}),
     }
   )
   if (result.error || !result.data)

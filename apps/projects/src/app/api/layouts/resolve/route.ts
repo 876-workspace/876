@@ -3,9 +3,10 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { resolveLayoutQuerySchema } from '@/lib/layout-inputs'
+import { requireApiAccess } from '@/lib/auth/api-permission'
+import { resolveLayoutQuerySchema } from '@/types/layouts'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -16,9 +17,7 @@ export async function GET(request: NextRequest) {
   })
   if (auth.response) return auth.response
 
-  const params = Object.fromEntries(
-    new URL(request.url).searchParams.entries()
-  )
+  const params = Object.fromEntries(new URL(request.url).searchParams.entries())
   const parsed = resolveLayoutQuerySchema.safeParse(params)
   if (!parsed.success)
     return apiJson({ error: 'Enter a valid layout query.' }, { status: 422 })

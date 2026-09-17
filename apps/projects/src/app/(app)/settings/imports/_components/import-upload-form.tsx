@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
 import { importJobsClient } from '@/lib/client'
-import { MAX_IMPORT_BYTES } from '@/lib/integration-inputs'
+import { MAX_IMPORT_BYTES } from '@/types/integrations'
 
 type Props = {
   sources: readonly string[]
@@ -89,7 +89,8 @@ export function ImportUploadForm({ sources }: Props) {
     if (result.error || !result.data) {
       setError({
         code: result.error?.code ?? 'projects/import-create-failed',
-        message: result.error?.message ?? 'The import job could not be created.',
+        message:
+          result.error?.message ?? 'The import job could not be created.',
       })
       return
     }
@@ -104,7 +105,11 @@ export function ImportUploadForm({ sources }: Props) {
       ) : null}
       <div>
         <Label htmlFor="import-source">Source</Label>
-        <NativeSelect id="import-source" name="source" defaultValue={sources[0] ?? 'csv'}>
+        <NativeSelect
+          id="import-source"
+          name="source"
+          defaultValue={sources[0] ?? 'csv'}
+        >
           {sources.map((source) => (
             <NativeSelectOption key={source} value={source}>
               {source}
@@ -123,7 +128,12 @@ export function ImportUploadForm({ sources }: Props) {
       </div>
       <div>
         <Label htmlFor="import-file">File (5 MB or smaller)</Label>
-        <Input id="import-file" name="file" type="file" accept=".csv,.json,text/csv,application/json" />
+        <Input
+          id="import-file"
+          name="file"
+          type="file"
+          accept=".csv,.json,text/csv,application/json"
+        />
       </div>
       <div>
         <Button type="submit" disabled={pending}>

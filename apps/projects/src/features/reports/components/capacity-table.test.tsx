@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { CapacityTable, type CapacityRow } from './capacity-table'
+import { CapacityTable } from './capacity-table'
+import type { CapacityRow } from '@/types/reporting'
 
 function row(overrides: Partial<CapacityRow> = {}): CapacityRow {
   return {

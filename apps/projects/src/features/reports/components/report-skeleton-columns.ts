@@ -1,6 +1,7 @@
 import type { DataTableSkeletonColumn } from '@876/ui/data-table-skeleton'
 
-import { reportGroupLabel, type ReportGroup } from '../report-query'
+import { reportGroupLabel } from '../report-query'
+import type { ReportGroup } from '@/types/reporting'
 
 /** Column shapes matching the report tables in `@876/projects-ui/reports`. */
 

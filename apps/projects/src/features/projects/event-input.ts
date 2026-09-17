@@ -3,6 +3,11 @@ import type {
   RecurrenceInput,
   RecurrenceRule,
 } from '@876/projects/contracts'
+import type {
+  RecurrenceDraft,
+  RecurrenceEnds,
+  StoredRecurrence,
+} from '@/types/events'
 
 export const WEEKDAY_OPTIONS: readonly { value: number; label: string }[] = [
   { value: 0, label: 'Mon' },
@@ -14,30 +19,11 @@ export const WEEKDAY_OPTIONS: readonly { value: number; label: string }[] = [
   { value: 6, label: 'Sun' },
 ]
 
-export type RecurrenceEnds = 'never' | 'on' | 'after'
-
 /**
  * A stored rule as either side of the boundary presents it: a serialized event
  * always carries every field, while an unsent input may omit the ones it does
  * not use. The section reads both.
  */
-export type StoredRecurrence = {
-  freq: RecurrenceFrequency
-  interval?: number | null
-  byWeekday?: number[] | null
-  until?: number | null
-  count?: number | null
-}
-
-export type RecurrenceDraft = {
-  enabled: boolean
-  freq: RecurrenceFrequency
-  interval: string
-  byWeekday: readonly number[]
-  ends: RecurrenceEnds
-  until: string
-  count: string
-}
 
 export const RECURRENCE_FREQUENCY_LABELS: Record<
   RecurrenceFrequency,

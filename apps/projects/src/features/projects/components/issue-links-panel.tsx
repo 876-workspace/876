@@ -16,28 +16,11 @@ import { useEffect, useState } from 'react'
 import { issuesClient } from '@/lib/client'
 import { issueLinksClient } from '@/lib/client/issue-links'
 
-/** A work item a link can point at, resolved to what a row has to show. */
-export type WorkItemOption = {
-  id: string
-  identifier: string
-  title: string
-}
-
-/** A relationship as seen from one end: `incoming` is the "blocked by" side. */
-export type RelationLink = {
-  id: string
-  type: IssueRelationType
-  direction: 'outgoing' | 'incoming'
-  item: WorkItemOption
-}
-
-export type DependencyLink = {
-  id: string
-  role: 'predecessor' | 'successor'
-  type: IssueDependencyType
-  lagMinutes: number
-  item: WorkItemOption
-}
+import type {
+  DependencyLink,
+  RelationLink,
+  WorkItemOption,
+} from '@/types/issues'
 
 type ScheduleSuggestionView = {
   earliestStart: number | null

@@ -7,8 +7,8 @@ import {
   describeRecurrence,
   EMPTY_RECURRENCE_DRAFT,
   recurrenceDraftFromRule,
-  type RecurrenceDraft,
 } from './event-input'
+import type { RecurrenceDraft } from '@/types/events'
 
 const SEPTEMBER_30_2026 = Date.UTC(2026, 8, 30) / 1000
 

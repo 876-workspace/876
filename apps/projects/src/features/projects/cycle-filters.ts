@@ -1,9 +1,4 @@
-export type CycleStatus = 'upcoming' | 'active' | 'completed'
-
-export type CycleSearchParams = {
-  project?: string | string[]
-  status?: string | string[]
-}
+import type { CycleSearchParams, CycleStatus } from '@/types/planning'
 
 const CYCLE_STATUSES = new Set<CycleStatus>(['upcoming', 'active', 'completed'])
 

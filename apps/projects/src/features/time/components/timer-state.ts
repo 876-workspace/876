@@ -1,10 +1,6 @@
 import type { TimeEntry } from '@876/projects/contracts'
 
-export type TimerState = {
-  running: boolean
-  startedAt: number | null
-  label: string
-}
+import type { TimerState } from '@/types/time'
 
 export const IDLE_TIMER_LABEL = 'No timer running'
 
@@ -20,7 +16,8 @@ export function toTimerState(
   entry: TimeEntry | null,
   projectNames: ReadonlyMap<string, string>
 ): TimerState {
-  if (!entry) return { running: false, startedAt: null, label: IDLE_TIMER_LABEL }
+  if (!entry)
+    return { running: false, startedAt: null, label: IDLE_TIMER_LABEL }
 
   return {
     running: true,

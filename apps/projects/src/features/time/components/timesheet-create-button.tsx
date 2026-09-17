@@ -7,7 +7,7 @@ import { useState } from 'react'
 
 import { timeClient } from '@/lib/client/time'
 
-import type { TimePeriod } from './time-period'
+import type { TimePeriod } from '@/types/time'
 
 /**
  * Gathers the viewer's unsubmitted entries in the shown period into a sheet.

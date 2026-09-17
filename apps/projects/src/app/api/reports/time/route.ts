@@ -5,14 +5,17 @@ import { z } from 'zod'
 
 import {
   csvDownload,
-  reportFormatSchema,
   searchParamsOf,
   serviceFailure,
+} from '@/app/api/_lib/reporting-api'
+import {
+  reportFormatSchema,
   timeReportGroupSchema,
   unixSecondsSchema,
-} from '@/app/api/_lib/reporting-api'
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+} from '@/types/reporting'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 

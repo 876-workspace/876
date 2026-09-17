@@ -5,11 +5,9 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
 import { BoardData } from '@/features/projects/components/board-data'
-import {
-  parseIssueFilters,
-  type IssueSearchParams,
-} from '@/features/projects/issue-filters'
+import { parseIssueFilters } from '@/features/projects/issue-filters'
 import { requireAppAccess } from '@/lib/auth/require-projects-context'
+import type { IssueSearchParams } from '@/types/issues'
 
 export const metadata: Metadata = { title: 'Board' }
 

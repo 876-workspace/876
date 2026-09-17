@@ -1,16 +1,6 @@
 import type { ProjectNotification as UiProjectNotification } from '@876/projects-ui/automation/types'
 
-export interface ServiceNotification {
-  object: string
-  id: string
-  userId: string
-  kind: string
-  title: string
-  subjectType: string | null
-  subjectId: string | null
-  readAt: number | null
-  createdAt: number
-}
+import type { ServiceNotification } from '@/types/notifications'
 
 export function serviceNotificationToUi(
   notification: ServiceNotification
@@ -27,7 +17,9 @@ export function serviceNotificationToUi(
   }
 }
 
-export function countUnread(notifications: readonly ServiceNotification[]): number {
+export function countUnread(
+  notifications: readonly ServiceNotification[]
+): number {
   return notifications.filter((notification) => notification.readAt === null)
     .length
 }

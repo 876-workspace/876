@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
-import type { OrgMember } from '../../_lib/types'
+import type { OrgMember } from '@/types/users'
 import { MemberOverview } from './member-overview'
 
 const member: OrgMember = {

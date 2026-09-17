@@ -1,25 +1,16 @@
-export const CALENDAR_VIEWS = ['month', 'week', 'list'] as const
-export type CalendarView = (typeof CALENDAR_VIEWS)[number]
-
-export const DAY_SECONDS = 86_400
+import {
+  CALENDAR_VIEWS,
+  DAY_SECONDS,
+  type CalendarNavDirection,
+  type CalendarView,
+  type CalendarWindow,
+  type ResolvedCalendarWindow,
+} from '@/types/calendar'
 
 const WEEK_LENGTH_DAYS = 7
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export const CALENDAR_WEEKDAY_LABELS: readonly string[] = WEEKDAY_LABELS
-
-export type CalendarSearchParams = {
-  view?: string
-  from?: string
-  to?: string
-  project?: string
-}
-
-export type CalendarWindow = { from: number; to: number }
-
-export type ResolvedCalendarWindow = CalendarWindow & { anchor: number }
-
-export type CalendarNavDirection = 'previous' | 'next' | 'today'
 
 const MONTH_LABEL = new Intl.DateTimeFormat('en-US', {
   month: 'long',
