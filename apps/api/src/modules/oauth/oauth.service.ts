@@ -5,6 +5,7 @@ import { AppHttpError } from '@/http/errors'
 import { generateId } from '@/platform/ids'
 import { signProviderJwt } from '@/platform/jwt'
 import { getLogger } from '@/platform/logger'
+import { isOAuthRedirectUriSafe } from '@/platform/oauth-redirect-uri'
 import { nowUnixSeconds } from '@/platform/timestamps'
 
 import { oauthError, OAuthErrorResponse } from './oauth.errors'
@@ -34,27 +35,6 @@ export function sha256Base64Url(value: string): string {
 
 export function generateProviderToken(prefix: string): string {
   return `${prefix}_${randomBytes(32).toString('base64url')}`
-}
-
-/**
- * A redirect target is safe only over HTTPS, or over HTTP to a loopback host.
- *
- * Plain HTTP to anywhere else would put the authorization code on the wire in
- * clear text, where the whole point of PKCE is that it cannot be replayed by
- * whoever reads it.
- */
-export function isRedirectUriSafe(uri: string): boolean {
-  try {
-    const parsed = new URL(uri)
-    if (parsed.protocol === 'https:') return true
-
-    return (
-      parsed.protocol === 'http:' &&
-      ['localhost', '127.0.0.1', '[::1]', '::1'].includes(parsed.hostname)
-    )
-  } catch {
-    return false
-  }
 }
 
 /**
@@ -136,8 +116,9 @@ export type ValidateClientOptions = {
  * The checks every authorization-endpoint request passes before anything else.
  *
  * The redirect URI is matched against the app's registered list **and**
- * re-checked for transport safety. Registration alone is not enough: a
- * registered `http://` URI on a public host would still leak the code.
+ * re-checked for transport/client safety. Registration alone is not enough: a
+ * registered `http://` URI on a public host would still leak the code, while a
+ * private-use native URI scheme is appropriate only for a public PKCE client.
  */
 export async function validateClientRequest(
   options: ValidateClientOptions
@@ -170,7 +151,7 @@ export async function validateClientRequest(
 
   if (
     !(app.allowedRedirectUris ?? []).includes(options.redirectUri) ||
-    !isRedirectUriSafe(options.redirectUri)
+    !isOAuthRedirectUriSafe(options.redirectUri, app.clientType)
   )
     throw new AppHttpError({
       code: 'provider/invalid-redirect-uri',
