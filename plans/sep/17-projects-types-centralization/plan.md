@@ -1,7 +1,7 @@
 # Implementation Plan: 876 Projects Frontend Types Centralization
 
 - **Run ID:** `17-projects-types-centralization`
-- **Branch:** `main` (191 dirty entries, uncommitted — DO NOT auto-commit per `.claude/rules/git.md`)
+- **Branch:** `refactor/projects-types-centralization` (PR #619)
 - **Status:** `COMPLETED ✅`
 - **Date:** 2026-09-17
 
@@ -69,3 +69,16 @@ git status --short | wc -l
 - (pending) ~191 changed entries: 27 `src/types/*` contracts (new/modified), 9 deleted obsolete modules, ~150 rewritten behavior/caller files.
 - Verification evidence: typecheck output + vitest `231 passed` + stale-import grep empty.
 - No commit SHA yet — awaiting explicit user approval per git rules (no AI attribution trailers).
+
+## Review follow-up (2026-09-17)
+
+PR review found ~120 symbols still re-exported from implementation files "for
+compatibility" (no compatibility contract exists in an app) and callers still
+importing contracts through those files. Dispatched
+[briefs/codex/2026-09-17-remove-compat-reexports.md](./briefs/codex/2026-09-17-remove-compat-reexports.md)
+to Codex (`-p muse`); report at
+[reports/codex/2026-09-17-remove-compat-reexports.md](./reports/codex/2026-09-17-remove-compat-reexports.md).
+Orchestrator also restored the `templateIncludeSchema` rationale comment the move dropped.
+
+Verified by the orchestrator: typecheck exit 0; lint 0 errors (4 pre-existing
+warnings); tests 231 files / 1566 passed; app-structure OK; RSC boundaries OK.

@@ -1,7 +1,7 @@
 # Verification Report: 876 Projects Types Centralization
 
 - **Date:** 2026-09-17
-- **Run:** `17-projects-types-centralization` (branch `main`, uncommitted)
+- **Run:** `17-projects-types-centralization` (branch `refactor/projects-types-centralization`, PR #619)
 
 ## Fixes applied this session
 
