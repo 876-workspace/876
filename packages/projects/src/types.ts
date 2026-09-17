@@ -11,6 +11,7 @@ export type Result<T> =
 export interface ClientOptions {
   baseUrl?: string
   internalKey?: string
+  accessToken?: string
   fetch?: typeof fetch
   requestId?: string
 }
@@ -337,10 +338,7 @@ const customModuleLayoutEntitySchema = z
   .string()
   .regex(/^custom-module:[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)
 export type LayoutEntity =
-  | 'project'
-  | 'phase'
-  | 'work-item'
-  | `custom-module:${string}`
+  'project' | 'phase' | 'work-item' | `custom-module:${string}`
 export const layoutEntitySchema = z.union([
   baseLayoutEntitySchema,
   customModuleLayoutEntitySchema,
@@ -2245,7 +2243,9 @@ export const templateDefinitionSchema = z.object({
         key: z.string(),
         label: z.string(),
         fieldType: z.string(),
-        options: z.array(z.object({ key: z.string(), label: z.string() })).optional(),
+        options: z
+          .array(z.object({ key: z.string(), label: z.string() }))
+          .optional(),
         required: z.boolean().optional(),
         description: z.string().nullable().optional(),
         typeKeys: z.array(z.string()).optional(),
@@ -2300,7 +2300,9 @@ export const projectTemplateVersionSchema = z.object({
   version: z.number(),
   createdAt: z.number(),
 })
-export type ProjectTemplateVersion = z.infer<typeof projectTemplateVersionSchema>
+export type ProjectTemplateVersion = z.infer<
+  typeof projectTemplateVersionSchema
+>
 
 export const projectTemplateVersionListSchema = createListSchema(
   projectTemplateVersionSchema
@@ -2688,7 +2690,9 @@ export const portalMilestoneCommentSchema = z.object({
   createdAt: z.number(),
   updatedAt: z.number(),
 })
-export type PortalMilestoneComment = z.infer<typeof portalMilestoneCommentSchema>
+export type PortalMilestoneComment = z.infer<
+  typeof portalMilestoneCommentSchema
+>
 export const portalMilestoneCommentListSchema = createListSchema(
   portalMilestoneCommentSchema
 )
@@ -2707,7 +2711,9 @@ export const portalDiscussionSchema = z.object({
   updatedAt: z.number(),
 })
 export type PortalDiscussion = z.infer<typeof portalDiscussionSchema>
-export const portalDiscussionListSchema = createListSchema(portalDiscussionSchema)
+export const portalDiscussionListSchema = createListSchema(
+  portalDiscussionSchema
+)
 export type PortalDiscussionList = z.infer<typeof portalDiscussionListSchema>
 
 export const portalDiscussionDetailSchema = z.object({
@@ -2724,7 +2730,9 @@ export const portalDiscussionDetailSchema = z.object({
     })
   ),
 })
-export type PortalDiscussionDetail = z.infer<typeof portalDiscussionDetailSchema>
+export type PortalDiscussionDetail = z.infer<
+  typeof portalDiscussionDetailSchema
+>
 
 export const portalWikiPageSchema = z.object({
   object: z.literal('portal.wiki-page'),
@@ -2750,7 +2758,9 @@ export const portalAttachmentSchema = z.object({
   createdAt: z.number(),
 })
 export type PortalAttachment = z.infer<typeof portalAttachmentSchema>
-export const portalAttachmentListSchema = createListSchema(portalAttachmentSchema)
+export const portalAttachmentListSchema = createListSchema(
+  portalAttachmentSchema
+)
 export type PortalAttachmentList = z.infer<typeof portalAttachmentListSchema>
 
 export const portalActivityItemSchema = z.object({
@@ -2873,7 +2883,9 @@ export const customModuleFieldSchema = z.object({
   updatedAt: z.number(),
 })
 export type CustomModuleField = z.infer<typeof customModuleFieldSchema>
-export const customModuleFieldListSchema = createListSchema(customModuleFieldSchema)
+export const customModuleFieldListSchema = createListSchema(
+  customModuleFieldSchema
+)
 export type CustomModuleFieldList = z.infer<typeof customModuleFieldListSchema>
 
 export const customModuleStatusSchema = z.object({
@@ -2889,8 +2901,12 @@ export const customModuleStatusSchema = z.object({
   updatedAt: z.number(),
 })
 export type CustomModuleStatus = z.infer<typeof customModuleStatusSchema>
-export const customModuleStatusListSchema = createListSchema(customModuleStatusSchema)
-export type CustomModuleStatusList = z.infer<typeof customModuleStatusListSchema>
+export const customModuleStatusListSchema = createListSchema(
+  customModuleStatusSchema
+)
+export type CustomModuleStatusList = z.infer<
+  typeof customModuleStatusListSchema
+>
 
 export const customRecordSchema = z.object({
   object: z.literal('projects.custom-record'),
@@ -2900,7 +2916,16 @@ export const customRecordSchema = z.object({
   projectId: z.string().nullable(),
   title: z.string(),
   statusKey: z.string(),
-  fields: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string()), z.null()])),
+  fields: z.record(
+    z.string(),
+    z.union([
+      z.string(),
+      z.number(),
+      z.boolean(),
+      z.array(z.string()),
+      z.null(),
+    ])
+  ),
   createdBy: z.string().nullable(),
   updatedBy: z.string().nullable(),
   createdAt: z.number(),
@@ -2921,7 +2946,9 @@ export const customModuleLinkSchema = z.object({
   createdAt: z.number(),
 })
 export type CustomModuleLink = z.infer<typeof customModuleLinkSchema>
-export const customModuleLinkListSchema = createListSchema(customModuleLinkSchema)
+export const customModuleLinkListSchema = createListSchema(
+  customModuleLinkSchema
+)
 export type CustomModuleLinkList = z.infer<typeof customModuleLinkListSchema>
 
 export const customModuleCountRowSchema = z.object({
@@ -2938,7 +2965,9 @@ export const customModuleStatusReportSchema = z.object({
   total: z.number(),
   byStatus: z.array(customModuleCountRowSchema),
 })
-export type CustomModuleStatusReport = z.infer<typeof customModuleStatusReportSchema>
+export type CustomModuleStatusReport = z.infer<
+  typeof customModuleStatusReportSchema
+>
 
 export const customModuleFieldReportSchema = z.object({
   object: z.literal('projects.custom-module-field-report'),
@@ -2948,7 +2977,9 @@ export const customModuleFieldReportSchema = z.object({
   total: z.number(),
   byValue: z.array(customModuleCountRowSchema),
 })
-export type CustomModuleFieldReport = z.infer<typeof customModuleFieldReportSchema>
+export type CustomModuleFieldReport = z.infer<
+  typeof customModuleFieldReportSchema
+>
 
 export const customModuleCreatedReportSchema = z.object({
   object: z.literal('projects.custom-module-created-report'),
@@ -2959,7 +2990,9 @@ export const customModuleCreatedReportSchema = z.object({
   total: z.number(),
   perDay: z.array(z.object({ day: z.string(), count: z.number() })),
 })
-export type CustomModuleCreatedReport = z.infer<typeof customModuleCreatedReportSchema>
+export type CustomModuleCreatedReport = z.infer<
+  typeof customModuleCreatedReportSchema
+>
 
 export const dashboardWidgetSchema = z.object({
   object: z.literal('projects.dashboard-widget'),

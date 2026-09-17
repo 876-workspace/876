@@ -34,6 +34,10 @@
     "./integration": {
       "types": "./src/integration.ts",
       "default": "./src/integration.ts"
+    },
+    "./session": {
+      "types": "./src/session.ts",
+      "default": "./src/session.ts"
     }
   },
   "scripts": {
