@@ -8,11 +8,9 @@ import {
 } from '@876/projects'
 import { z } from 'zod'
 
-export type AttachmentLinksError = {
-  code: string
-  message: string
-  status: 400 | 404 | 502
-}
+import type { AttachmentLinksError } from '@/types/attachments'
+
+export type { AttachmentLinksError }
 
 const envelopeSchema = z.object({
   data: z.unknown().nullable(),
@@ -120,7 +118,10 @@ async function callInternal<T>(
 export async function listAttachmentLinks(
   orgId: string,
   projectId: string
-): Promise<{ data: AttachmentLink[] | null; error: AttachmentLinksError | null }> {
+): Promise<{
+  data: AttachmentLink[] | null
+  error: AttachmentLinksError | null
+}> {
   const result = await callInternal(
     root(orgId, projectId),
     {},
@@ -134,7 +135,10 @@ export async function createAttachmentLink(
   orgId: string,
   projectId: string,
   input: { url: string; name?: string; createdBy: string }
-): Promise<{ data: AttachmentLink | null; error: AttachmentLinksError | null }> {
+): Promise<{
+  data: AttachmentLink | null
+  error: AttachmentLinksError | null
+}> {
   return callInternal(
     root(orgId, projectId),
     {
@@ -150,7 +154,10 @@ export async function deleteAttachmentLink(
   orgId: string,
   projectId: string,
   attachmentId: string
-): Promise<{ data: { deleted: boolean } | null; error: AttachmentLinksError | null }> {
+): Promise<{
+  data: { deleted: boolean } | null
+  error: AttachmentLinksError | null
+}> {
   const result = await callInternal(
     `${root(orgId, projectId)}/${encodeURIComponent(attachmentId)}`,
     { method: 'DELETE' },

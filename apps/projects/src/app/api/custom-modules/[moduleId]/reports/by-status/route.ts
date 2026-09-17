@@ -6,7 +6,7 @@ import type { NextRequest } from 'next/server'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { resolveCallerRoleKeys } from '@/lib/custom-modules/api-access'
-import { moduleReportQuerySchema } from '@/lib/custom-modules/custom-module-inputs'
+import { moduleReportQuerySchema } from '@/types/custom-modules'
 import { serviceWithRoleKeys } from '@/lib/custom-modules/service-with-roles'
 
 export const runtime = 'nodejs'
@@ -34,7 +34,9 @@ export async function GET(request: NextRequest, { params }: Props) {
       auth.orgId,
       decodedId,
       {
-        ...(parsedQuery.data.from !== undefined ? { from: parsedQuery.data.from } : {}),
+        ...(parsedQuery.data.from !== undefined
+          ? { from: parsedQuery.data.from }
+          : {}),
         format: 'csv',
       }
     )
@@ -54,7 +56,11 @@ export async function GET(request: NextRequest, { params }: Props) {
   const result = await serviceWithRoleKeys(roleKeys).customModules.statusReport(
     auth.orgId,
     decodedId,
-    { ...(parsedQuery.data.from !== undefined ? { from: parsedQuery.data.from } : {}) }
+    {
+      ...(parsedQuery.data.from !== undefined
+        ? { from: parsedQuery.data.from }
+        : {}),
+    }
   )
   if (result.error || !result.data)
     return apiJson(

@@ -5,11 +5,10 @@ import { z } from 'zod'
 
 import {
   csvDownload,
-  reportFormatSchema,
   searchParamsOf,
   serviceFailure,
-  unixSecondsSchema,
 } from '@/app/api/_lib/reporting-api'
+import { reportFormatSchema, unixSecondsSchema } from '@/types/reporting'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 

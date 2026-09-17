@@ -4,7 +4,6 @@ import type {
   Layout,
   LayoutCondition,
   LayoutEffect,
-  LayoutEntity,
   LayoutField,
   LayoutRule,
   LayoutSection,
@@ -12,25 +11,20 @@ import type {
 
 import { request } from './request'
 
-export type LayoutDefinitionInput = {
-  sections: LayoutSection[]
-  rules?: LayoutRule[]
-}
+import type {
+  CreateLayoutParams,
+  LayoutDefinitionInput,
+  UpdateLayoutParams,
+} from '@/types/layouts'
 
-export type CreateLayoutParams = {
-  entity: LayoutEntity
-  workItemTypeId?: string | null
-  name: string
-  definition: LayoutDefinitionInput
-  isDefault?: boolean
+export type { CreateLayoutParams, LayoutDefinitionInput, UpdateLayoutParams }
+export type {
+  LayoutCondition,
+  LayoutEffect,
+  LayoutField,
+  LayoutRule,
+  LayoutSection,
 }
-
-export type UpdateLayoutParams = {
-  name?: string
-  definition?: LayoutDefinitionInput
-}
-
-export type { LayoutCondition, LayoutEffect, LayoutField, LayoutRule, LayoutSection }
 
 /**
  * Layout writes go through this app's own routes, which resolve the

@@ -10,7 +10,6 @@
  * internally.
  */
 import { apiJson } from '@876/core/api'
-import { z } from 'zod'
 
 import { projectsErrorStatus } from './error-status'
 
@@ -31,8 +30,6 @@ export function templateFailure(
  * Absent means "include it": a template exists to carry its contents, so the
  * caller opts out rather than in — the same default the service applies.
  */
-export const templateIncludeSchema = {
-  includeWorkItems: z.boolean().optional(),
-  includeDependencies: z.boolean().optional(),
-  includeBudgets: z.boolean().optional(),
-}
+import { templateIncludeSchema } from '@/types/templates'
+
+export { templateIncludeSchema }

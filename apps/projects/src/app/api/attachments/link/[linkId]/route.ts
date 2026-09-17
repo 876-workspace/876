@@ -8,7 +8,8 @@ import {
   attachmentValidationResponse,
   requireAttachmentAccess,
 } from '../../_lib/attachments-api'
-import { ATTACHMENT_RELATION, attachmentCaller } from '@/lib/attachments'
+import { attachmentCaller } from '@/lib/attachments'
+import { ATTACHMENT_RELATION } from '@/types/attachments'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
 import { storage } from '@/lib/services/storage'
 

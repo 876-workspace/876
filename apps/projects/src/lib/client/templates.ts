@@ -12,10 +12,9 @@ import type {
 
 import { request } from './request'
 
-export type UpdateTemplateParams = {
-  name: string
-  description: string | null
-}
+import type { UpdateTemplateParams } from '@/types/templates'
+
+export type { UpdateTemplateParams }
 
 function json(body: unknown): RequestInit {
   return {

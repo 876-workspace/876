@@ -21,7 +21,8 @@ import { useState } from 'react'
 
 import { timeClient } from '@/lib/client/time'
 
-import { TimeEntryForm, type TimeEntryProjectOption } from './time-entry-form'
+import { TimeEntryForm } from './time-entry-form'
+import type { TimeEntryProjectOption } from '@/types/time'
 
 type Props = {
   rows: readonly TimeEntryListRow[]

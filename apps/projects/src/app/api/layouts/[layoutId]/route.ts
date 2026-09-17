@@ -4,7 +4,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { updateLayoutInputSchema } from '@/lib/layout-inputs'
+import { updateLayoutInputSchema } from '@/types/layouts'
 import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'

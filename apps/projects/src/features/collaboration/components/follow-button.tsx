@@ -4,7 +4,8 @@ import { Button } from '@876/ui/button'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-import { followsClient, type FollowSubjectType } from '@/lib/client/collaboration'
+import { followsClient } from '@/lib/client/collaboration'
+import type { FollowSubjectType } from '@/types/collaboration'
 
 type FollowButtonProps = {
   subjectType: FollowSubjectType

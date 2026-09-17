@@ -27,7 +27,13 @@ import {
   workItemTypesClient,
   workflowStatesClient,
 } from './projects'
-import { clientGrantsClient, discussionsClient, followsClient, visibilityClient, wikiClient } from './collaboration'
+import {
+  clientGrantsClient,
+  discussionsClient,
+  followsClient,
+  visibilityClient,
+  wikiClient,
+} from './collaboration'
 import { onboarding } from './onboarding'
 import { remindersClient } from './reminders'
 import { workflowsClient } from './workflows'
@@ -129,4 +135,4 @@ export {
   milestonesClient,
   customFieldsClient,
 } from './projects'
-export type { ClientResult } from './request'
+export type { ClientResult } from '@/types/client'

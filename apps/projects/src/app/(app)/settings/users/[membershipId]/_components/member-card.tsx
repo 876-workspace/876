@@ -9,7 +9,7 @@ import {
 } from '@876/ui/detail-card'
 
 import { memberInitials, memberName } from '../../_lib/member-utils'
-import type { OrgMember } from '../../_lib/types'
+import type { OrgMember } from '@/types/users'
 
 export function MemberCard({
   membershipId,

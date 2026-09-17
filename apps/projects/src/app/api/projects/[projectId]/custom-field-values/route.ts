@@ -4,7 +4,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { projectCustomFieldValuesInputSchema } from '@/lib/project-custom-field-inputs'
+import { projectCustomFieldValuesInputSchema } from '@/types/work-structure'
 import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'
@@ -60,8 +60,7 @@ export async function PUT(request: NextRequest, { params }: Context) {
     return apiJson(
       {
         error:
-          result.error?.message ??
-          'Project field values could not be saved.',
+          result.error?.message ?? 'Project field values could not be saved.',
       },
       { status: 400 }
     )

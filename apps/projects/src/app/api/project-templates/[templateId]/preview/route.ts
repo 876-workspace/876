@@ -3,10 +3,8 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import {
-  templateFailure,
-  templateIncludeSchema,
-} from '@/app/api/_lib/template-api'
+import { templateFailure } from '@/app/api/_lib/template-api'
+import { templateIncludeSchema } from '@/types/templates'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 

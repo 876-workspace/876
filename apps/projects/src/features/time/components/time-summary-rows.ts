@@ -2,7 +2,7 @@ import type { TimeEntry, Timesheet } from '@876/projects/contracts'
 import type { TimesheetSummaryEntry } from '@876/projects-ui/timesheet-summary'
 import type { DataTableSkeletonColumn } from '@876/ui/data-table-skeleton'
 
-import type { TimePeriod } from './time-period'
+import type { TimePeriod } from '@/types/time'
 
 export function toTimesheetSummaryEntries(
   entries: readonly TimeEntry[],
@@ -66,7 +66,8 @@ export function timesheetForPeriod(
   return (
     timesheets.find(
       (timesheet) =>
-        timesheet.periodStart === period.from && timesheet.periodEnd === period.to
+        timesheet.periodStart === period.from &&
+        timesheet.periodEnd === period.to
     ) ?? null
   )
 }

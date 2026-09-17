@@ -1,8 +1,9 @@
 'use client'
 
-import { requestApiResult, type ClientApiResult } from '@876/core/client'
+import { requestApiResult } from '@876/core/client'
+import type { ClientResult } from '@/types/client'
 
-export type ClientResult<T> = ClientApiResult<T>
+export type { ClientResult }
 
 export function request<T>(
   input: RequestInfo | URL,

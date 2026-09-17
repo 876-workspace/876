@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 
-import type { AttachmentResourceRef } from '@/lib/attachments'
+import type { AttachmentResourceRef } from '@/types/attachments'
 import { attachmentsClient } from '@/lib/client/attachments'
 
 /** One linked file, resolved server-side to what a row has to show. */

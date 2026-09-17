@@ -2,10 +2,9 @@ import type { TimeEntry } from '@876/projects/contracts'
 import type { TimeEntryListRow } from '@876/projects-ui/time-entry-list'
 import type { DataTableSkeletonColumn } from '@876/ui/data-table-skeleton'
 
-export type TimeEntryLookups = {
-  projectNames: ReadonlyMap<string, string>
-  issueTitles: ReadonlyMap<string, string>
-}
+import type { TimeEntryLookups } from '@/types/time'
+
+export type { TimeEntryLookups }
 
 /** The four states the table renders a badge for; anything else is still a draft. */
 export function toApprovalStatus(

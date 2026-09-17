@@ -3,7 +3,7 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { ServiceAutomationRule } from '@/lib/automation-mappers'
+import type { ServiceAutomationRule } from '@/types/automations'
 
 const mocks = vi.hoisted(() => ({
   update: vi.fn(),
@@ -23,7 +23,9 @@ vi.mock('next/navigation', () => ({
 
 const { AutomationRulesManager } = await import('./automation-rules-manager')
 
-function makeRule(overrides: Partial<ServiceAutomationRule> = {}): ServiceAutomationRule {
+function makeRule(
+  overrides: Partial<ServiceAutomationRule> = {}
+): ServiceAutomationRule {
   return {
     object: 'projects.automation-rule',
     id: 'arl_1',
@@ -54,7 +56,10 @@ afterEach(cleanup)
 describe('AutomationRulesManager', () => {
   it('lists rules with their trigger and status', () => {
     render(
-      <AutomationRulesManager initial={[makeRule()]} hrefBase="/settings/automation" />
+      <AutomationRulesManager
+        initial={[makeRule()]}
+        hrefBase="/settings/automation"
+      />
     )
 
     expect(screen.getAllByText('Notify on done').length).toBeGreaterThan(0)
@@ -65,18 +70,26 @@ describe('AutomationRulesManager', () => {
 
   it('disables an enabled rule', async () => {
     render(
-      <AutomationRulesManager initial={[makeRule()]} hrefBase="/settings/automation" />
+      <AutomationRulesManager
+        initial={[makeRule()]}
+        hrefBase="/settings/automation"
+      />
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Disable' }))
 
     expect(mocks.update).toHaveBeenCalledWith('arl_1', { enabled: false })
-    expect(await screen.findByRole('button', { name: 'Enable' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: 'Enable' })
+    ).toBeInTheDocument()
   })
 
   it('deletes a rule and removes its row', async () => {
     render(
-      <AutomationRulesManager initial={[makeRule()]} hrefBase="/settings/automation" />
+      <AutomationRulesManager
+        initial={[makeRule()]}
+        hrefBase="/settings/automation"
+      />
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }))

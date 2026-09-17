@@ -9,7 +9,7 @@ import { Label } from '@876/ui/label'
 import { useState, type FormEvent } from 'react'
 
 import { automationRulesClient } from '@/lib/client'
-import type { ServiceAutomationTest } from '@/lib/automation-mappers'
+import type { ServiceAutomationTest } from '@/types/automations'
 
 type Props = { ruleId: string }
 
@@ -38,7 +38,8 @@ export function AutomationTestPanel({ ruleId }: Props) {
     if (response.error || !response.data) {
       setError({
         code: response.error?.code ?? 'projects/automation-test-failed',
-        message: response.error?.message ?? 'The dry run could not be completed.',
+        message:
+          response.error?.message ?? 'The dry run could not be completed.',
       })
       return
     }
@@ -103,7 +104,9 @@ export function AutomationTestPanel({ ruleId }: Props) {
                       {condition.matched ? 'Matched' : 'Not matched'}
                     </Badge>
                     <span className="font-mono">{condition.fieldKey}</span>
-                    <span className="text-muted-foreground">{condition.op}</span>
+                    <span className="text-muted-foreground">
+                      {condition.op}
+                    </span>
                   </li>
                 ))}
               </ul>

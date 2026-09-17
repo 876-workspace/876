@@ -5,7 +5,7 @@ import {
   updateWorkStructureResource,
 } from '@/lib/api/work-structure'
 import { projects } from '@/lib/services/projects'
-import { updateWorkflowStateInputSchema } from '@/lib/work-structure-inputs'
+import { updateWorkflowStateInputSchema } from '@/types/work-structure'
 
 export const runtime = 'nodejs'
 type Context = { params: Promise<{ id: string }> }

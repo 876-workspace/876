@@ -11,9 +11,9 @@ import { cache } from 'react'
 import { getAccount } from '@/lib/services/account'
 import { resolvePlatformAppId } from '@/lib/services/platform-app'
 
-export type ProjectsAccessContextOutcome =
-  | { status: 'ok'; context: AccessContext }
-  | { status: 'unavailable'; code: string }
+import type { ProjectsAccessContextOutcome } from '@/types/access'
+
+export type { ProjectsAccessContextOutcome }
 
 /**
  * Resolves one app-access answer per request. Primitive arguments are

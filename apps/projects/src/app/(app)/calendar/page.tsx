@@ -13,9 +13,8 @@ import {
   parseCalendarTimestamp,
   parseCalendarView,
   resolveCalendarWindow,
-  type CalendarSearchParams,
-  type CalendarView,
 } from '@/features/projects/calendar-range'
+import type { CalendarSearchParams, CalendarView } from '@/types/calendar'
 import {
   CalendarData,
   CalendarGridSkeleton,
@@ -110,7 +109,11 @@ export default async function CalendarPage({ searchParams }: Props) {
           {CALENDAR_VIEWS.map((option) => (
             <Link
               key={option}
-              href={calendarHref({ view: option, from: window.anchor, project })}
+              href={calendarHref({
+                view: option,
+                from: window.anchor,
+                project,
+              })}
               aria-current={option === view ? 'page' : undefined}
               className={buttonVariants({
                 variant: option === view ? 'default' : 'outline',

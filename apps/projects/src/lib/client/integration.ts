@@ -14,40 +14,22 @@ import type {
 
 import { request } from './request'
 
-export type CreatedIntegrationClientDto = {
-  client: IntegrationClient
-  secret: string
-}
+import type {
+  CreatedIntegrationClientDto,
+  CreateImportJobParams,
+  CreateIntegrationClientParams,
+  CreateWebhookEndpointParams,
+  ListEndpointDeliveriesParams,
+  UpdateWebhookEndpointParams,
+} from '@/types/integrations'
 
-export interface CreateIntegrationClientParams {
-  name: string
-  scopes: string[]
-}
-
-export interface CreateWebhookEndpointParams {
-  url: string
-  eventTypes: string[]
-  secret?: string
-  enabled?: boolean
-}
-
-export interface UpdateWebhookEndpointParams {
-  url?: string
-  eventTypes?: string[]
-  secret?: string
-  enabled?: boolean
-}
-
-export interface ListEndpointDeliveriesParams {
-  status?: 'pending' | 'delivered' | 'failed'
-  limit?: number
-}
-
-export interface CreateImportJobParams {
-  source: 'csv' | 'jira-csv' | 'jira-json' | 'trello-json' | 'asana-csv' | 'zoho-csv'
-  projectId?: string | null
-  filename?: string | null
-  content: string
+export type {
+  CreatedIntegrationClientDto,
+  CreateImportJobParams,
+  CreateIntegrationClientParams,
+  CreateWebhookEndpointParams,
+  ListEndpointDeliveriesParams,
+  UpdateWebhookEndpointParams,
 }
 
 function jsonInit(method: 'POST' | 'PATCH', payload?: unknown): RequestInit {
@@ -103,7 +85,10 @@ export const webhookEndpointsClient = {
       { method: 'DELETE' }
     )
   },
-  listDeliveries(endpointId: string, params: ListEndpointDeliveriesParams = {}) {
+  listDeliveries(
+    endpointId: string,
+    params: ListEndpointDeliveriesParams = {}
+  ) {
     const search = new URLSearchParams()
     if (params.status) search.set('status', params.status)
     if (params.limit !== undefined) search.set('limit', String(params.limit))

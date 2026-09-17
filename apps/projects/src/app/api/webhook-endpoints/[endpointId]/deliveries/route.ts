@@ -4,7 +4,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { listWebhookDeliveriesQuerySchema } from '@/lib/integration-inputs'
+import { listWebhookDeliveriesQuerySchema } from '@/types/integrations'
 import { integration } from '@/lib/services/integration'
 
 export const runtime = 'nodejs'

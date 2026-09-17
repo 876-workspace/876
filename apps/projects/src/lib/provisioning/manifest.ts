@@ -14,25 +14,9 @@ import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
  * module defines and validates the contract; it does not publish a profile, and
  * no profile data ships with the app.
  */
-export interface ProjectsProvisioningManifest {
-  object: 'projects-provisioning-manifest'
-  revision: number
-  labels: Array<{
-    key: string
-    name: string
-    color: string | null
-    description: string | null
-    sortOrder: number
-  }>
-  projectTemplates: Array<{
-    key: string
-    name: string
-    projectKey: string
-    description: string | null
-    sortOrder: number
-    isDefault: boolean
-  }>
-}
+import type { ProjectsProvisioningManifest } from '@/types/provisioning'
+
+export type { ProjectsProvisioningManifest }
 
 type Properties = Map<string, PlatformProvisioningProperty>
 

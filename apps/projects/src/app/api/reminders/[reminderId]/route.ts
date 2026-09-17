@@ -3,7 +3,7 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { nullableRecurrenceInputSchema } from '@/app/api/_lib/calendar-schemas'
+import { nullableRecurrenceInputSchema } from '@/types/calendar'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 

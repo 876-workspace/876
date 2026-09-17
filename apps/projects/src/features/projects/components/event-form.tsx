@@ -1,11 +1,6 @@
 'use client'
 
-import type {
-  EventKind,
-  Milestone,
-  Project,
-  ProjectEvent,
-} from '@876/projects/contracts'
+import type { EventKind, ProjectEvent } from '@876/projects/contracts'
 import { AppError, type AppErrorValue } from '@876/ui/app-error'
 import { Button } from '@876/ui/button'
 import { FormRow } from '@876/ui/form-row'
@@ -24,24 +19,17 @@ import {
   EMPTY_RECURRENCE_DRAFT,
   recurrenceDraftFromRule,
   WEEKDAY_OPTIONS,
-  type RecurrenceDraft,
-  type RecurrenceEnds,
 } from '@/features/projects/event-input'
+import type { RecurrenceDraft, RecurrenceEnds } from '@/types/events'
 import { eventsClient } from '@/lib/client/events'
 
-export type EventMemberOption = { userId: string; name: string }
-export type EventWorkItemOption = {
-  id: string
-  identifier: string
-  title: string
-}
+import type {
+  EventFormOptions,
+  EventMemberOption,
+  EventWorkItemOption,
+} from '@/types/events'
 
-export type EventFormOptions = {
-  projects: readonly Project[]
-  phases: readonly Milestone[]
-  workItems: readonly EventWorkItemOption[]
-  members: readonly EventMemberOption[]
-}
+export type { EventFormOptions, EventMemberOption, EventWorkItemOption }
 
 type Props =
   | { mode: 'create'; options: EventFormOptions; event?: never }

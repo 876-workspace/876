@@ -5,7 +5,7 @@ import { resolveCrmAccessViewer } from '@/lib/auth/app-access'
 import { getWorkspace } from '@/lib/services/workspace'
 
 import { buildAccessEntries } from '@876/access-ui/entries'
-import type { AppMembership, AppRole } from '../../_lib/types'
+import type { AppMembership, AppRole } from '@/types/users'
 import { loadMemberAppMemberships } from '../../_data'
 import { MemberAccessPanel } from '../_components/member-access-panel'
 

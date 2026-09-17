@@ -4,7 +4,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { createAutomationRuleInputSchema } from '@/lib/automation-inputs'
+import { createAutomationRuleInputSchema } from '@/types/automations'
 import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'
@@ -24,8 +24,7 @@ export async function GET() {
   if (result.error || !result.data)
     return apiJson(
       {
-        error:
-          result.error?.message ?? 'Automation rules could not be loaded.',
+        error: result.error?.message ?? 'Automation rules could not be loaded.',
       },
       { status: errorStatus(result.error?.code ?? '') }
     )
@@ -43,15 +42,9 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null)
   const parsed = createAutomationRuleInputSchema.safeParse(body)
   if (!parsed.success)
-    return apiJson(
-      { error: 'Enter a valid automation rule.' },
-      { status: 422 }
-    )
+    return apiJson({ error: 'Enter a valid automation rule.' }, { status: 422 })
 
-  const result = await projects.automationRules.create(
-    auth.orgId,
-    parsed.data
-  )
+  const result = await projects.automationRules.create(auth.orgId, parsed.data)
   if (result.error || !result.data)
     return apiJson(
       {

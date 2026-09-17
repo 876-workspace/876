@@ -8,15 +8,14 @@ import { useState } from 'react'
 
 import { wikiClient } from '@/lib/client/collaboration'
 
-import type { UiWikiPage } from '../mappers'
-import { MentionInput, type MentionMember } from './mention-input'
+import type { UiWikiPage, UiWikiRevision } from '@/types/collaboration'
+import { MentionInput } from './mention-input'
+import type { MentionMember } from '@/types/collaboration'
 import { WikiRevisionList } from './wiki-revision-list'
-import type { UiWikiRevision } from '../mappers'
 
-export type WikiPageOption = {
-  id: string
-  title: string
-}
+import type { WikiPageOption } from '@/types/collaboration'
+
+export type { WikiPageOption }
 
 function slugify(title: string): string {
   return title
@@ -42,7 +41,9 @@ export function WikiPageForm({
   const router = useRouter()
   const [title, setTitle] = useState(page?.title ?? '')
   const [body, setBody] = useState('')
-  const [parent, setParent] = useState<string>(parentPageId ?? page?.parentId ?? '')
+  const [parent, setParent] = useState<string>(
+    parentPageId ?? page?.parentId ?? ''
+  )
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<AppErrorValue | null>(null)
 

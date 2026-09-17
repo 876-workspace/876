@@ -3,7 +3,7 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { nullableRecurrenceInputSchema } from '@/app/api/_lib/calendar-schemas'
+import { nullableRecurrenceInputSchema } from '@/types/calendar'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
 
@@ -28,11 +28,14 @@ const createReminderSchema = z
   })
   .refine(
     (data) =>
-      Boolean(data.issueId) || Boolean(data.milestoneId) || Boolean(data.eventId),
+      Boolean(data.issueId) ||
+      Boolean(data.milestoneId) ||
+      Boolean(data.eventId),
     { message: 'A reminder needs a record to sit on.' }
   )
   .refine(
-    (data) => data.remindAt !== undefined || data.offsetMinutesBeforeDue !== undefined,
+    (data) =>
+      data.remindAt !== undefined || data.offsetMinutesBeforeDue !== undefined,
     { message: 'A reminder needs a time.' }
   )
 

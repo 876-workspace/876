@@ -16,20 +16,9 @@ import { request } from './request'
  * session, and `durationMinutes` is derived by the service from the two
  * timestamps, so neither can be set from here.
  */
-export type CreateTimeEntryParams = {
-  projectId: string
-  startedAt: number
-  endedAt: number
-  billable?: boolean
-  note?: string | null
-}
+import type { CreateTimeEntryParams, UpdateTimeEntryParams } from '@/types/time'
 
-export type UpdateTimeEntryParams = {
-  startedAt: number
-  endedAt: number
-  billable: boolean
-  note: string | null
-}
+export type { CreateTimeEntryParams, UpdateTimeEntryParams }
 
 function jsonInit(method: 'POST' | 'PATCH', payload?: unknown): RequestInit {
   return {
@@ -52,16 +41,16 @@ export const timeClient = {
     return request<TimeEntry>('/api/time-entries', jsonInit('POST', params))
   },
   updateEntry(timeEntryId: string, params: UpdateTimeEntryParams) {
-    return request<TimeEntry>(
-      entryRoot(timeEntryId),
-      jsonInit('PATCH', params)
-    )
+    return request<TimeEntry>(entryRoot(timeEntryId), jsonInit('PATCH', params))
   },
   deleteEntry(timeEntryId: string) {
     return request<Deleted>(entryRoot(timeEntryId), { method: 'DELETE' })
   },
   startTimer(params: { projectId: string }) {
-    return request<TimerStartResult>('/api/timer/start', jsonInit('POST', params))
+    return request<TimerStartResult>(
+      '/api/timer/start',
+      jsonInit('POST', params)
+    )
   },
   stopTimer() {
     return request<TimeEntry>('/api/timer/stop', jsonInit('POST'))

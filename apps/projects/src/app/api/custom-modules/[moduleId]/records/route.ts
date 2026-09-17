@@ -9,7 +9,7 @@ import { resolveCallerRoleKeys } from '@/lib/custom-modules/api-access'
 import {
   createCustomRecordInputSchema,
   listCustomRecordsQuerySchema,
-} from '@/lib/custom-modules/custom-module-inputs'
+} from '@/types/custom-modules'
 import { serviceWithRoleKeys } from '@/lib/custom-modules/service-with-roles'
 
 export const runtime = 'nodejs'

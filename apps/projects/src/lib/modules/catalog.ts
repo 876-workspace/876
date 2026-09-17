@@ -9,13 +9,9 @@ import { PROJECTS_MODULES } from '@876/core/modules'
  * permission surface does not become a commercial module just because it has a
  * key (`.claude/rules/module-settings.md`).
  */
-export interface ProjectsSurface {
-  key: string
-  label: string
-  description: string
-  /** Whether the surface exists today. Planned surfaces carry no href. */
-  available: boolean
-}
+import type { ProjectsSurface } from '@/types/catalog'
+
+export type { ProjectsSurface }
 
 export const PROJECTS_SURFACES: readonly ProjectsSurface[] = [
   {

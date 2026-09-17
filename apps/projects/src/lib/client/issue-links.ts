@@ -2,29 +2,22 @@
 
 import type {
   IssueDependency,
-  IssueDependencyType,
   IssueRelation,
-  IssueRelationType,
   ScheduleSuggestion,
 } from '@876/projects/contracts'
 
 import { request } from './request'
 
-export type CreateIssueRelationParams = {
-  targetIssueId: string
-  type: IssueRelationType
-}
+import type {
+  CreateIssueDependencyParams,
+  CreateIssueRelationParams,
+  UpdateIssueDependencyParams,
+} from '@/types/attachments'
 
-export type CreateIssueDependencyParams = {
-  predecessorIssueId: string
-  successorIssueId: string
-  type?: IssueDependencyType
-  lagMinutes?: number
-}
-
-export type UpdateIssueDependencyParams = {
-  type?: IssueDependencyType
-  lagMinutes?: number
+export type {
+  CreateIssueDependencyParams,
+  CreateIssueRelationParams,
+  UpdateIssueDependencyParams,
 }
 
 type DeletedLink = { object: string; id: string; deleted: true }

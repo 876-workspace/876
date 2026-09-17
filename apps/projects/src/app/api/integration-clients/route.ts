@@ -4,7 +4,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { createIntegrationClientInputSchema } from '@/lib/integration-inputs'
+import { createIntegrationClientInputSchema } from '@/types/integrations'
 import { integration } from '@/lib/services/integration'
 
 export const runtime = 'nodejs'
@@ -26,7 +26,10 @@ export async function GET() {
   const result = await integration.listClients(auth.orgId)
   if (result.error || !result.data)
     return apiJson(
-      { error: result.error?.message ?? 'Integration clients could not be loaded.' },
+      {
+        error:
+          result.error?.message ?? 'Integration clients could not be loaded.',
+      },
       { status: errorStatus(result.error?.code ?? '') }
     )
 

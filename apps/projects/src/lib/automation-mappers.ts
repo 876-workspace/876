@@ -7,94 +7,15 @@ import type {
   Transition as UiTransition,
 } from '@876/projects-ui/automation/types'
 
-import type { AutomationActionInput } from './automation-inputs'
-
-export type { AutomationActionInput }
-
-export type AutomationTriggerInput =
-  | 'work-item.created'
-  | 'work-item.updated'
-  | 'work-item.state-changed'
-  | 'phase.completed'
-  | 'due-date.approaching'
-  | 'time-entry.submitted'
-  | 'budget.threshold-reached'
-
-export type AutomationConditionOp =
-  | 'equals'
-  | 'not-equals'
-  | 'in'
-  | 'is-empty'
-  | 'is-not-empty'
-
-export interface AutomationConditionInput {
-  fieldKey: string
-  op: AutomationConditionOp
-  value?: string | string[]
-}
-
-export interface ServiceAutomationRule {
-  object: string
-  id: string
-  projectId: string | null
-  name: string
-  enabled: boolean
-  trigger: string
-  conditions: Array<{ fieldKey: string; op: string; value?: string | string[] }>
-  actions: AutomationActionInput[]
-  hasWebhookSecret: boolean
-  createdAt: number
-  updatedAt: number
-}
-
-export interface ServiceAutomationTest {
-  object: string
-  ruleId: string
-  subjectType: string
-  subjectId: string
-  matched: boolean
-  conditions: Array<{ fieldKey: string; op: string; matched: boolean }>
-  plannedActions: Array<{ type: string }>
-}
-
-export interface ServiceBlueprintTransition {
-  id: string
-  workItemTypeId: string | null
-  fromStateKey: string | null
-  toStateKey: string
-  name: string
-  requiredPermission: string | null
-  requiredFieldKeys: string[]
-  requiresComment: boolean
-}
-
-export interface ServiceBlueprint {
-  object: string
-  workItemTypeId: string
-  updatedAt: number | null
-  transitions: ServiceBlueprintTransition[]
-}
-
-export interface ServiceBlueprintInput {
-  transitions: Array<{
-    fromStateKey?: string | null
-    toStateKey: string
-    name: string
-    requiredPermission?: string | null
-    requiredFieldKeys?: string[]
-    requiresComment?: boolean
-  }>
-}
-
-export interface ServiceRuleInput {
-  projectId?: string | null
-  name: string
-  enabled?: boolean
-  trigger: AutomationTriggerInput
-  conditions?: AutomationConditionInput[]
-  actions: AutomationActionInput[]
-  webhookSecret?: string | null
-}
+import type {
+  AutomationActionInput,
+  AutomationConditionOp,
+  AutomationTriggerInput,
+  ServiceAutomationRule,
+  ServiceBlueprint,
+  ServiceBlueprintInput,
+  ServiceRuleInput,
+} from '@/types/automations'
 
 const TRIGGER_VALUES: readonly string[] = [
   'work-item.created',
@@ -115,14 +36,12 @@ const CONDITION_OP_VALUES: readonly string[] = [
 ]
 
 export function toAutomationTrigger(value: string): AutomationTriggerInput {
-  if (TRIGGER_VALUES.includes(value))
-    return value as AutomationTriggerInput
+  if (TRIGGER_VALUES.includes(value)) return value as AutomationTriggerInput
   return 'work-item.created'
 }
 
 function toConditionOp(value: string): AutomationConditionOp {
-  if (CONDITION_OP_VALUES.includes(value))
-    return value as AutomationConditionOp
+  if (CONDITION_OP_VALUES.includes(value)) return value as AutomationConditionOp
   return 'equals'
 }
 
@@ -291,7 +210,10 @@ export function uiRuleToServiceInput(
   overrides?: { projectId?: string | null }
 ): ServiceRuleInput {
   return {
-    projectId: overrides && 'projectId' in overrides ? overrides.projectId : rule.projectId,
+    projectId:
+      overrides && 'projectId' in overrides
+        ? overrides.projectId
+        : rule.projectId,
     name: rule.name,
     enabled: rule.enabled,
     trigger: toAutomationTrigger(rule.trigger),
@@ -319,9 +241,7 @@ export function blankUiRule(): UiAutomationRule {
   }
 }
 
-export function serviceBlueprintToUi(
-  blueprint: ServiceBlueprint
-): UiBlueprint {
+export function serviceBlueprintToUi(blueprint: ServiceBlueprint): UiBlueprint {
   return {
     object: 'projects.blueprint',
     workItemTypeId: blueprint.workItemTypeId,

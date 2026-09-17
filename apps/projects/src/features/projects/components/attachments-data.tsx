@@ -6,11 +6,11 @@ import {
   type AttachmentRow,
 } from '@/features/projects/components/attachments-panel'
 import { loadMemberLabels } from '@/features/projects/member-labels'
+import { attachmentCaller } from '@/lib/attachments'
 import {
   ATTACHMENT_RELATION,
-  attachmentCaller,
   type AttachmentResourceRef,
-} from '@/lib/attachments'
+} from '@/types/attachments'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
 import { storage } from '@/lib/services/storage'
 

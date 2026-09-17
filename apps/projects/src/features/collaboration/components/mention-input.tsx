@@ -3,10 +3,9 @@
 import { Textarea } from '@876/ui/textarea'
 import { useMemo, useRef, useState } from 'react'
 
-export type MentionMember = {
-  userId: string
-  label: string
-}
+import type { MentionMember } from '@/types/collaboration'
+
+export type { MentionMember }
 
 type MentionInputProps = {
   id: string
@@ -25,7 +24,10 @@ type ActiveMention = {
   query: string
 }
 
-function findActiveMention(value: string, cursor: number): ActiveMention | null {
+function findActiveMention(
+  value: string,
+  cursor: number
+): ActiveMention | null {
   const before = value.slice(0, cursor)
   const match = /@([\p{L}\p{N}._-]*)$/u.exec(before)
   if (!match) return null
@@ -79,7 +81,9 @@ export function MentionInput({
   function insert(member: MentionMember) {
     if (!mention) return
     const textarea = textareaRef.current
-    const end = textarea ? (textarea.selectionStart ?? value.length) : value.length
+    const end = textarea
+      ? (textarea.selectionStart ?? value.length)
+      : value.length
     const token = `${toMentionToken(member)} `
     const next = `${value.slice(0, mention.start)}${token}${value.slice(end)}`
     onValueChange(next)
@@ -104,7 +108,9 @@ export function MentionInput({
         required={required}
         disabled={disabled}
         rows={minRows}
-        placeholder={placeholder ?? 'Write in Markdown. Type @ to mention a teammate.'}
+        placeholder={
+          placeholder ?? 'Write in Markdown. Type @ to mention a teammate.'
+        }
         onChange={(event) => {
           onValueChange(event.target.value)
           setCursor(event.target.selectionStart ?? event.target.value.length)
@@ -146,7 +152,11 @@ export function MentionInput({
           className="rounded-md border p-1"
         >
           {suggestions.map((member, index) => (
-            <li key={member.userId} role="option" aria-selected={index === highlight}>
+            <li
+              key={member.userId}
+              role="option"
+              aria-selected={index === highlight}
+            >
               <button
                 type="button"
                 className={`w-full rounded px-2 py-1 text-left text-sm ${index === highlight ? 'bg-accent' : ''}`}

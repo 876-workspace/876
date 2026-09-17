@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server'
 
 import { csvDownload, searchParamsOf } from '@/app/api/_lib/reporting-api'
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { exportWorkItemsQuerySchema } from '@/lib/integration-inputs'
+import { exportWorkItemsQuerySchema } from '@/types/integrations'
 import { integration } from '@/lib/services/integration'
 
 export const runtime = 'nodejs'

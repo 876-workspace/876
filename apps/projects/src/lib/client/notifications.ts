@@ -2,22 +2,12 @@
 
 import { request } from './request'
 
-export interface NotificationDto {
-  object: string
-  id: string
-  userId: string
-  kind: string
-  title: string
-  subjectType: string | null
-  subjectId: string | null
-  readAt: number | null
-  createdAt: number
-}
+import type {
+  NotificationDto,
+  NotificationListDto,
+} from '@/types/notifications'
 
-export interface NotificationListDto {
-  object: string
-  data: NotificationDto[]
-}
+export type { NotificationDto, NotificationListDto }
 
 export const notificationsClient = {
   list() {

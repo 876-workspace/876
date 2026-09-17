@@ -6,24 +6,16 @@
  * flags travel as `?templateId&start&include*`. An absent flag means "include",
  * the same default the service applies, so a hand-typed link stays meaningful.
  */
-import type { TemplateIncludeFlags } from '@876/projects/contracts'
-
 import { formatDateInput, parseDateInput } from '@/lib/date-input'
 
 export const FROM_TEMPLATE_PATH = '/projects/new/from-template'
 
-export type TemplatePreviewQuery = {
-  templateId: string
-  startDate: number
-  include: Required<TemplateIncludeFlags>
-}
+import type {
+  TemplatePreviewHrefInput,
+  TemplatePreviewQuery,
+} from '@/types/templates'
 
-export type TemplatePreviewHrefInput = {
-  templateId: string
-  /** A `type="date"` value; an unusable one is dropped from the URL. */
-  start: string
-  include: Required<TemplateIncludeFlags>
-}
+export type { TemplatePreviewHrefInput, TemplatePreviewQuery }
 
 function includeFlag(value: string | undefined): boolean {
   return value !== 'false'

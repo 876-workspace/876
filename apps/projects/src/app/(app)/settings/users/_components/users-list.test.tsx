@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
-import type { OrgMember } from '../_lib/types'
+import type { OrgMember } from '@/types/users'
 import { UsersList } from './users-list'
 
 const route = vi.hoisted(() => ({ segments: [] as string[], status: 'all' }))

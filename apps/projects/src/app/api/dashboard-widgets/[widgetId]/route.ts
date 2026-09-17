@@ -3,10 +3,13 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { requireApiPermission, type ApiContext } from '@/lib/auth/api-permission'
+import {
+  requireApiPermission,
+  type ApiContext,
+} from '@/lib/auth/api-permission'
 import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { resolveCallerRoleKeys } from '@/lib/custom-modules/api-access'
-import { updateDashboardWidgetInputSchema } from '@/lib/custom-modules/custom-module-inputs'
+import { updateDashboardWidgetInputSchema } from '@/types/custom-modules'
 import { serviceWithRoleKeys } from '@/lib/custom-modules/service-with-roles'
 
 export const runtime = 'nodejs'
@@ -20,7 +23,10 @@ export async function PATCH(request: NextRequest, { params }: Props) {
   const body = await request.json().catch(() => null)
   const parsed = updateDashboardWidgetInputSchema.safeParse(body)
   if (!parsed.success)
-    return apiJson({ error: 'Enter a valid dashboard widget.' }, { status: 422 })
+    return apiJson(
+      { error: 'Enter a valid dashboard widget.' },
+      { status: 422 }
+    )
 
   const { widgetId } = await params
   const roleKeys = await resolveCallerRoleKeys(auth.userId, auth.orgId)

@@ -6,7 +6,7 @@ import { projects } from '@/lib/services/projects'
 import { TimeEntriesPanel } from './time-entries-panel'
 import { todayEntryDate } from './time-entry-input'
 import { toTimeEntryRows } from './time-entry-rows'
-import type { TimePeriod } from './time-period'
+import type { TimePeriod } from '@/types/time'
 import {
   entriesInPeriod,
   newestTimesheetFirst,

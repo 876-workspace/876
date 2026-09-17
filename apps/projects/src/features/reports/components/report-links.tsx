@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import type { ReportPeriod } from '@/lib/period'
+import type { ReportPeriod } from '@/types/reporting'
 
 import { REPORT_LINKS, reportHref, type ReportKey } from '../report-query'
 

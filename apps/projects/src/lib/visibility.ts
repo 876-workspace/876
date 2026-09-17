@@ -8,18 +8,9 @@ import {
 import { milestoneCommentSchema } from '@876/projects/contracts'
 import { z } from 'zod'
 
-export type VisibilitySubject =
-  | { kind: 'issue'; issueRef: string }
-  | { kind: 'issue-comment'; issueRef: string; commentId: string }
-  | { kind: 'phase'; phaseId: string }
-  | { kind: 'phase-comment'; phaseId: string; commentId: string }
-  | { kind: 'attachment-link'; projectId: string; attachmentId: string }
+import type { VisibilityError, VisibilitySubject } from '@/types/visibility'
 
-export type VisibilityError = {
-  code: string
-  message: string
-  status: 400 | 404 | 502
-}
+export type { VisibilityError, VisibilitySubject }
 
 type VisibilityOutcome = {
   data: VisibilityResult | null
@@ -31,7 +22,9 @@ const envelopeSchema = z.object({
   error: z.object({ code: z.string(), message: z.string() }).nullable(),
 })
 
-const clientVisibleSchema = z.object({ clientVisible: z.boolean().optional() }).passthrough()
+const clientVisibleSchema = z
+  .object({ clientVisible: z.boolean().optional() })
+  .passthrough()
 
 function baseUrl(): string {
   return (
@@ -62,7 +55,13 @@ function subjectPath(orgId: string, subject: VisibilitySubject): string {
 }
 
 function toError(code: string, message: string): VisibilityError {
-  if (code === 'projects/issue-not-found' || code === 'projects/comment-not-found' || code === 'projects/milestone-not-found' || code === 'projects/attachment-not-found' || code === 'projects/client-grant-not-found')
+  if (
+    code === 'projects/issue-not-found' ||
+    code === 'projects/comment-not-found' ||
+    code === 'projects/milestone-not-found' ||
+    code === 'projects/attachment-not-found' ||
+    code === 'projects/client-grant-not-found'
+  )
     return { code, message, status: 404 }
   return { code, message, status: 400 }
 }
@@ -147,7 +146,9 @@ export async function setRecordVisibility(
   return { data: parsed.data, error: null }
 }
 
-const issueVisibilitySchema = z.object({ clientVisible: z.boolean().optional() }).passthrough()
+const issueVisibilitySchema = z
+  .object({ clientVisible: z.boolean().optional() })
+  .passthrough()
 const issueCommentVisibilitySchema = commentSchema.extend({
   clientVisible: z.boolean().optional(),
 })
@@ -187,7 +188,12 @@ async function getInternal<T>(
   const envelope = envelopeSchema.safeParse(
     await response.json().catch(() => null)
   )
-  if (!envelope.success || envelope.data.error || !response.ok || envelope.data.data === null)
+  if (
+    !envelope.success ||
+    envelope.data.error ||
+    !response.ok ||
+    envelope.data.data === null
+  )
     return {
       data: null,
       error: toError(
@@ -243,9 +249,11 @@ export async function listIssueCommentVisibility(
 ): Promise<Readonly<Record<string, boolean>>> {
   const result = await getInternal(
     `/v1/organizations/${encodeURIComponent(orgId)}/issues/${encodeURIComponent(issueRef)}/comments`,
-    z.object({
-      data: z.array(issueCommentVisibilitySchema),
-    }).passthrough()
+    z
+      .object({
+        data: z.array(issueCommentVisibilitySchema),
+      })
+      .passthrough()
   )
   if (!result.data) return {}
   return Object.fromEntries(
@@ -261,9 +269,11 @@ export async function listPhaseCommentVisibility(
 ): Promise<Readonly<Record<string, boolean>>> {
   const result = await getInternal(
     `/v1/organizations/${encodeURIComponent(orgId)}/milestones/${encodeURIComponent(phaseId)}/comments`,
-    z.object({
-      data: z.array(phaseCommentVisibilitySchema),
-    }).passthrough()
+    z
+      .object({
+        data: z.array(phaseCommentVisibilitySchema),
+      })
+      .passthrough()
   )
   if (!result.data) return {}
   return Object.fromEntries(

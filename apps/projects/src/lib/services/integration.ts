@@ -18,7 +18,7 @@ import type { Result } from '@876/projects'
 import type {
   ExportTimeEntriesQuery,
   ExportWorkItemsQuery,
-} from '@/lib/integration-inputs'
+} from '@/types/integrations'
 
 let integrationClient: ProjectsIntegrationClient | undefined
 
@@ -68,7 +68,10 @@ async function exportCsv(
   } catch {
     return {
       data: null,
-      error: { code: 'projects/unavailable', message: 'The export could not be loaded.' },
+      error: {
+        code: 'projects/unavailable',
+        message: 'The export could not be loaded.',
+      },
     }
   }
   if (response.ok) {
@@ -86,7 +89,9 @@ async function exportCsv(
   }
 }
 
-function exportQueryString(query: Record<string, string | number | undefined>): string {
+function exportQueryString(
+  query: Record<string, string | number | undefined>
+): string {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(query)) {
     if (value !== undefined) search.set(key, String(value))
@@ -97,9 +102,15 @@ function exportQueryString(query: Record<string, string | number | undefined>): 
 
 export const integration = {
   listClients(organizationId: string, options: IntegrationRequestOptions = {}) {
-    return getIntegrationClient().integrationClients.list(organizationId, options)
+    return getIntegrationClient().integrationClients.list(
+      organizationId,
+      options
+    )
   },
-  createClient(input: CreateIntegrationClientInput, options: IntegrationRequestOptions = {}) {
+  createClient(
+    input: CreateIntegrationClientInput,
+    options: IntegrationRequestOptions = {}
+  ) {
     return getIntegrationClient().integrationClients.create(input, options)
   },
   revokeClient(
@@ -107,7 +118,11 @@ export const integration = {
     organizationId: string,
     options: IntegrationRequestOptions = {}
   ) {
-    return getIntegrationClient().integrationClients.revoke(clientId, organizationId, options)
+    return getIntegrationClient().integrationClients.revoke(
+      clientId,
+      organizationId,
+      options
+    )
   },
   listWebhookEndpoints(options: IntegrationRequestOptions = {}) {
     return getIntegrationClient().webhookEndpoints.list(options)
@@ -118,7 +133,10 @@ export const integration = {
   ) {
     return getIntegrationClient().webhookEndpoints.create(input, options)
   },
-  retrieveWebhookEndpoint(endpointId: string, options: IntegrationRequestOptions = {}) {
+  retrieveWebhookEndpoint(
+    endpointId: string,
+    options: IntegrationRequestOptions = {}
+  ) {
     return getIntegrationClient().webhookEndpoints.retrieve(endpointId, options)
   },
   updateWebhookEndpoint(
@@ -126,9 +144,16 @@ export const integration = {
     input: UpdateWebhookEndpointInput,
     options: IntegrationRequestOptions = {}
   ) {
-    return getIntegrationClient().webhookEndpoints.update(endpointId, input, options)
+    return getIntegrationClient().webhookEndpoints.update(
+      endpointId,
+      input,
+      options
+    )
   },
-  removeWebhookEndpoint(endpointId: string, options: IntegrationRequestOptions = {}) {
+  removeWebhookEndpoint(
+    endpointId: string,
+    options: IntegrationRequestOptions = {}
+  ) {
     return getIntegrationClient().webhookEndpoints.remove(endpointId, options)
   },
   listWebhookDeliveries(
@@ -141,16 +166,27 @@ export const integration = {
     input: ReplayWebhookDeliveryInput,
     options: IntegrationRequestOptions = {}
   ) {
-    return getIntegrationClient().webhookEndpoints.replay(deliveryId, input, options)
+    return getIntegrationClient().webhookEndpoints.replay(
+      deliveryId,
+      input,
+      options
+    )
   },
   createImportJob(
     organizationId: string,
     input: CreateImportJobInput,
     options: IntegrationRequestOptions = {}
   ) {
-    return getIntegrationClient().importJobs.create(organizationId, input, options)
+    return getIntegrationClient().importJobs.create(
+      organizationId,
+      input,
+      options
+    )
   },
-  listImportJobs(organizationId: string, options: IntegrationRequestOptions = {}) {
+  listImportJobs(
+    organizationId: string,
+    options: IntegrationRequestOptions = {}
+  ) {
     return getIntegrationClient().importJobs.list(organizationId, options)
   },
   retrieveImportJob(
@@ -158,21 +194,33 @@ export const integration = {
     jobId: string,
     options: IntegrationRequestOptions = {}
   ) {
-    return getIntegrationClient().importJobs.retrieve(organizationId, jobId, options)
+    return getIntegrationClient().importJobs.retrieve(
+      organizationId,
+      jobId,
+      options
+    )
   },
   listImportJobRows(
     organizationId: string,
     jobId: string,
     options: IntegrationRequestOptions = {}
   ) {
-    return getIntegrationClient().importJobs.listRows(organizationId, jobId, options)
+    return getIntegrationClient().importJobs.listRows(
+      organizationId,
+      jobId,
+      options
+    )
   },
   commitImportJob(
     organizationId: string,
     jobId: string,
     options: IntegrationRequestOptions = {}
   ) {
-    return getIntegrationClient().importJobs.commit(organizationId, jobId, options)
+    return getIntegrationClient().importJobs.commit(
+      organizationId,
+      jobId,
+      options
+    )
   },
   getMetricsSummary(options: IntegrationRequestOptions = {}) {
     return getIntegrationClient().metrics.summary(options)

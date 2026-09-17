@@ -3,7 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 import { getWorkspace } from '@/lib/services/workspace'
 
-import type { AppMembership, OrgMember } from './_lib/types'
+import type { AppMembership, OrgMember } from '@/types/users'
 
 type ErrorValue = { code: string; message: string }
 

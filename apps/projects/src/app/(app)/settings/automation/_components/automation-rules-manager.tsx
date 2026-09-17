@@ -8,10 +8,8 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { automationRulesClient } from '@/lib/client'
-import {
-  serviceRuleToUi,
-  type ServiceAutomationRule,
-} from '@/lib/automation-mappers'
+import { serviceRuleToUi } from '@/lib/automation-mappers'
+import type { ServiceAutomationRule } from '@/types/automations'
 
 type Props = {
   initial: ServiceAutomationRule[]
@@ -80,7 +78,10 @@ export function AutomationRulesManager({ initial, hrefBase }: Props) {
         hrefBase={hrefBase}
       />
       {rules.length > 0 ? (
-        <section aria-label="Manage automation rules" className="flex flex-col gap-2">
+        <section
+          aria-label="Manage automation rules"
+          className="flex flex-col gap-2"
+        >
           {rules.map((rule) => (
             <div
               key={rule.id}

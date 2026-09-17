@@ -4,7 +4,7 @@ import {
   deleteWorkStructureResource,
   updateWorkStructureResource,
 } from '@/lib/api/work-structure'
-import { updatePhaseCustomFieldInputSchema } from '@/lib/phase-custom-field-inputs'
+import { updatePhaseCustomFieldInputSchema } from '@/types/work-structure'
 import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'

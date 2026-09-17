@@ -6,7 +6,7 @@ import { AppError } from '@876/ui/app-error'
 
 import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
-import type { ReportPeriod } from '@/lib/period'
+import type { ReportPeriod } from '@/types/reporting'
 import { projects } from '@/lib/services/projects'
 import { InvoiceDraftAction } from './invoice-draft-action'
 

@@ -11,7 +11,9 @@ import type {
 
 import { request } from './request'
 
-export type FollowSubjectType = 'project' | 'phase' | 'work-item'
+import type { FollowSubjectType } from '@/types/collaboration'
+
+export type { FollowSubjectType }
 
 function followPath(subjectType: FollowSubjectType, subjectId: string): string {
   if (subjectType === 'project')
@@ -76,7 +78,11 @@ export const discussionsClient = {
       }
     )
   },
-  setClientVisible(projectId: string, discussionId: string, clientVisible: boolean) {
+  setClientVisible(
+    projectId: string,
+    discussionId: string,
+    clientVisible: boolean
+  ) {
     return request<{ object: string; id: string; clientVisible: boolean }>(
       `/api/projects/${encodeURIComponent(projectId)}/discussions/${encodeURIComponent(discussionId)}/visibility`,
       {
@@ -91,7 +97,12 @@ export const discussionsClient = {
 export const wikiClient = {
   create(
     projectId: string,
-    params: { title: string; body: string; slug?: string; parentPageId?: string | null }
+    params: {
+      title: string
+      body: string
+      slug?: string
+      parentPageId?: string | null
+    }
   ) {
     return request<WikiPage>(
       `/api/projects/${encodeURIComponent(projectId)}/wiki`,
@@ -222,4 +233,8 @@ export const visibilityClient = {
   },
 }
 
-export type { ActivityFeed, DiscussionPost, WikiRevision }
+export type {
+  ActivityFeed,
+  DiscussionPost,
+  WikiRevision,
+} from '@/types/collaboration'

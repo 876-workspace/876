@@ -3,7 +3,8 @@ import { AppError } from '@876/ui/app-error'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { projects } from '@/lib/services/projects'
 
-import { CapacityTable, type CapacityRow } from './capacity-table'
+import { CapacityTable } from './capacity-table'
+import type { CapacityRow } from '@/types/reporting'
 
 export async function CapacityListData({ orgId }: { orgId: string }) {
   const [capacityResult, members] = await Promise.all([

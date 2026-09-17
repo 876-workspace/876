@@ -29,7 +29,7 @@ import {
   memberName,
   memberRoleLabel,
 } from '../_lib/member-utils'
-import type { OrgMember } from '../_lib/types'
+import type { OrgMember } from '@/types/users'
 
 function memberHref(id: string): string {
   return `/settings/users/${encodeURIComponent(id)}`

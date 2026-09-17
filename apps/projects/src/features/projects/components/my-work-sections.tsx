@@ -4,7 +4,6 @@ import type {
   MyWork,
   MyWorkIssue,
   ProjectEvent,
-  Result,
 } from '@876/projects/contracts'
 import { AppError, type AppErrorValue } from '@876/ui/app-error'
 import { Skeleton } from '@876/ui/skeleton'
@@ -13,7 +12,9 @@ import Link from 'next/link'
 import { formatReminderTiming } from '@/features/projects/reminder-timing'
 import { projects } from '@/lib/services/projects'
 
-export type MyWorkResult = Result<MyWork>
+import type { MyWorkResult } from '@/types/issues'
+
+export type { MyWorkResult }
 
 /**
  * One request, three boundaries: the page starts this promise and hands the same

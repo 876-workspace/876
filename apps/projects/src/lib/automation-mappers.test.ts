@@ -9,8 +9,8 @@ import {
   uiActionToService,
   uiRuleToServiceInput,
   uiTransitionsToServiceInput,
-  type ServiceAutomationRule,
 } from './automation-mappers'
+import type { ServiceAutomationRule } from '@/types/automations'
 
 const rule: ServiceAutomationRule = {
   object: 'projects.automation-rule',
@@ -56,15 +56,14 @@ describe('automation-mappers', () => {
   })
 
   it('maps a service assign action back to the editor shape', () => {
-    expect(
-      serviceActionToUi({ type: 'assign', userId: 'usr_9' })
-    ).toEqual({ type: 'assign', params: { assigneeId: 'usr_9' } })
+    expect(serviceActionToUi({ type: 'assign', userId: 'usr_9' })).toEqual({
+      type: 'assign',
+      params: { assigneeId: 'usr_9' },
+    })
   })
 
   it('falls back to work-item.created for an unknown trigger', () => {
-    expect(toAutomationTrigger('spaceship.launched')).toBe(
-      'work-item.created'
-    )
+    expect(toAutomationTrigger('spaceship.launched')).toBe('work-item.created')
     expect(serviceRuleToUi({ ...rule, trigger: 'nope' }).trigger).toBe(
       'work-item.created'
     )

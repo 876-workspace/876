@@ -18,7 +18,9 @@ import {
   entryTimestamps,
 } from './time-entry-input'
 
-export type TimeEntryProjectOption = { id: string; name: string }
+import type { TimeEntryProjectOption } from '@/types/time'
+
+export type { TimeEntryProjectOption }
 
 type Props = {
   projects: readonly TimeEntryProjectOption[]
@@ -131,7 +133,9 @@ export function TimeEntryForm({
 
       {error ? (
         <AppError
-          title={editing ? 'The entry was not saved' : 'The entry was not logged'}
+          title={
+            editing ? 'The entry was not saved' : 'The entry was not logged'
+          }
           error={error}
           variant="form"
         />

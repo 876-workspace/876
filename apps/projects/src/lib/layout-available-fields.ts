@@ -4,7 +4,9 @@ import type {
   ProjectCustomField,
 } from '@876/projects/contracts'
 
-export type AvailableLayoutField = { fieldKey: string; label: string }
+import type { AvailableLayoutField } from '@/types/layouts'
+
+export type { AvailableLayoutField }
 
 const SYSTEM_LABELS: Record<string, string> = {
   title: 'Title',
@@ -60,10 +62,7 @@ export function availableLayoutFields(args: {
   workItemFields: readonly CustomField[]
 }): Record<string, readonly AvailableLayoutField[]> {
   return {
-    project: [
-      ...systemFields('project'),
-      ...customFields(args.projectFields),
-    ],
+    project: [...systemFields('project'), ...customFields(args.projectFields)],
     phase: [...systemFields('phase'), ...customFields(args.phaseFields)],
     'work-item': [
       ...systemFields('work-item'),

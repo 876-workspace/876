@@ -4,7 +4,7 @@ import type {
   AttachmentLinkRef,
   AttachmentResourceRef,
   AttachmentUploadSession,
-} from '@/lib/attachments'
+} from '@/types/attachments'
 
 import { request, type ClientResult } from './request'
 

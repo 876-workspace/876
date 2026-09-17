@@ -3,10 +3,8 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
 import { PageBreadcrumb } from '@/components/page-breadcrumb'
-import {
-  FromTemplateData,
-  type FromTemplateSearch,
-} from '@/features/templates/components/from-template-data'
+import { FromTemplateData } from '@/features/templates/components/from-template-data'
+import type { FromTemplateSearch } from '@/types/templates'
 import {
   requireAppAccess,
   requireProjectsContext,
@@ -16,7 +14,9 @@ export const metadata: Metadata = { title: 'New project from template' }
 
 type Props = { searchParams: Promise<FromTemplateSearch> }
 
-export default async function NewProjectFromTemplatePage({ searchParams }: Props) {
+export default async function NewProjectFromTemplatePage({
+  searchParams,
+}: Props) {
   await requireAppAccess({ module: 'projects', permission: 'projects.edit' })
   const { orgId } = await requireProjectsContext()
   const search = await searchParams

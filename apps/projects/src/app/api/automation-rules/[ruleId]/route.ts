@@ -4,7 +4,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
-import { updateAutomationRuleInputSchema } from '@/lib/automation-inputs'
+import { updateAutomationRuleInputSchema } from '@/types/automations'
 import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'

@@ -6,38 +6,28 @@ import { z } from 'zod'
 
 import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
 import { projectsErrorStatus } from '@/app/api/_lib/error-status'
+import { attachmentCaller } from '@/lib/attachments'
 import {
   ATTACHMENT_RELATION,
-  attachmentCaller,
   attachmentResourceTypes,
-} from '@/lib/attachments'
-import type { AttachmentResourceType } from '@/lib/attachments'
+  type AttachmentResourceType,
+} from '@/types/attachments'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
 import { storage } from '@/lib/services/storage'
 
-export const attachmentResourceRefSchema = z.strictObject({
-  resourceType: z.enum(attachmentResourceTypes),
-  resourceId: z.string().trim().min(1),
-})
+import {
+  attachmentCompleteRequestSchema,
+  attachmentLinkRequestSchema,
+  attachmentResourceRefSchema,
+  attachmentUploadSessionRequestSchema,
+} from '@/types/attachments'
 
-export const attachmentUploadSessionRequestSchema =
-  attachmentResourceRefSchema.extend({
-    fileName: z.string().trim().min(1),
-    contentType: z.string().trim().min(1),
-    sizeBytes: z.number().int().positive(),
-  })
-
-export const attachmentCompleteRequestSchema =
-  attachmentResourceRefSchema.extend({
-    sessionId: z.string().trim().min(1),
-  })
-
-export const attachmentLinkRequestSchema = attachmentResourceRefSchema.extend({
-  fileId: z
-    .string()
-    .trim()
-    .regex(/^file_[A-Za-z0-9_-]+$/),
-})
+export {
+  attachmentCompleteRequestSchema,
+  attachmentLinkRequestSchema,
+  attachmentResourceRefSchema,
+  attachmentUploadSessionRequestSchema,
+}
 
 /**
  * Authorizes the actor to change the record an attachment hangs off.

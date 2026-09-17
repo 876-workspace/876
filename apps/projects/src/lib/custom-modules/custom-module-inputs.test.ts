@@ -12,7 +12,7 @@ import {
   updateCustomModuleInputSchema,
   updateCustomRecordInputSchema,
   updateDashboardWidgetInputSchema,
-} from './custom-module-inputs'
+} from '@/types/custom-modules'
 
 describe('custom module inputs', () => {
   it('accepts a complete module definition', () => {
@@ -80,7 +80,9 @@ describe('custom module inputs', () => {
   })
 
   it('requires at least one status on replace', () => {
-    expect(replaceCustomModuleStatusesInputSchema.safeParse({ statuses: [] }).success).toBe(false)
+    expect(
+      replaceCustomModuleStatusesInputSchema.safeParse({ statuses: [] }).success
+    ).toBe(false)
     expect(
       replaceCustomModuleStatusesInputSchema.safeParse({
         statuses: [{ key: 'triage', label: 'Triage', category: 'open' }],
@@ -115,12 +117,16 @@ describe('custom module inputs', () => {
   })
 
   it('rejects a record without a title', () => {
-    expect(createCustomRecordInputSchema.safeParse({ title: '  ' }).success).toBe(false)
+    expect(
+      createCustomRecordInputSchema.safeParse({ title: '  ' }).success
+    ).toBe(false)
   })
 
   it('requires at least one field on record updates', () => {
     expect(updateCustomRecordInputSchema.safeParse({}).success).toBe(false)
-    expect(updateCustomRecordInputSchema.safeParse({ title: 'New title' }).success).toBe(true)
+    expect(
+      updateCustomRecordInputSchema.safeParse({ title: 'New title' }).success
+    ).toBe(true)
   })
 
   it('accepts links to every supported target type', () => {
@@ -158,25 +164,31 @@ describe('custom module inputs', () => {
   })
 
   it('rejects record limits outside range', () => {
-    expect(listCustomRecordsQuerySchema.safeParse({ limit: '500' }).success).toBe(false)
+    expect(
+      listCustomRecordsQuerySchema.safeParse({ limit: '500' }).success
+    ).toBe(false)
   })
 
   it('accepts report queries with csv format', () => {
     expect(
-      moduleReportQuerySchema.safeParse({ fieldKey: 'severity', format: 'csv' }).success
+      moduleReportQuerySchema.safeParse({ fieldKey: 'severity', format: 'csv' })
+        .success
     ).toBe(true)
   })
 
   it('accepts every dashboard widget kind', () => {
     for (const kind of ['record-count', 'status-breakdown', 'recent-records']) {
       expect(
-        createDashboardWidgetInputSchema.safeParse({ kind, moduleId: 'cmod_1' }).success
+        createDashboardWidgetInputSchema.safeParse({ kind, moduleId: 'cmod_1' })
+          .success
       ).toBe(true)
     }
   })
 
   it('requires at least one field on widget updates', () => {
     expect(updateDashboardWidgetInputSchema.safeParse({}).success).toBe(false)
-    expect(updateDashboardWidgetInputSchema.safeParse({ position: 2 }).success).toBe(true)
+    expect(
+      updateDashboardWidgetInputSchema.safeParse({ position: 2 }).success
+    ).toBe(true)
   })
 })

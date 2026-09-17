@@ -9,7 +9,7 @@ import { resolveCallerRoleKeys } from '@/lib/custom-modules/api-access'
 import {
   createCustomModuleStatusInputSchema,
   replaceCustomModuleStatusesInputSchema,
-} from '@/lib/custom-modules/custom-module-inputs'
+} from '@/types/custom-modules'
 import { serviceWithRoleKeys } from '@/lib/custom-modules/service-with-roles'
 
 export const runtime = 'nodejs'
@@ -31,7 +31,9 @@ export async function GET(_request: NextRequest, { params }: Props) {
   )
   if (result.error || !result.data)
     return apiJson(
-      { error: result.error?.message ?? 'Module statuses could not be loaded.' },
+      {
+        error: result.error?.message ?? 'Module statuses could not be loaded.',
+      },
       { status: projectsErrorStatus(result.error?.code ?? '') }
     )
 
@@ -90,11 +92,16 @@ export async function PUT(request: NextRequest, { params }: Props) {
   const existing = await service.listStatuses(auth.orgId, decodedId)
   if (existing.error || !existing.data)
     return apiJson(
-      { error: existing.error?.message ?? 'Module statuses could not be loaded.' },
+      {
+        error:
+          existing.error?.message ?? 'Module statuses could not be loaded.',
+      },
       { status: projectsErrorStatus(existing.error?.code ?? '') }
     )
 
-  const byKey = new Map(existing.data.data.map((status) => [status.key, status]))
+  const byKey = new Map(
+    existing.data.data.map((status) => [status.key, status])
+  )
   for (const [index, desired] of parsed.data.statuses.entries()) {
     const current = byKey.get(desired.key)
     if (!current) {
@@ -107,20 +114,32 @@ export async function PUT(request: NextRequest, { params }: Props) {
       })
       if (created.error || !created.data)
         return apiJson(
-          { error: created.error?.message ?? 'The statuses could not be saved.' },
+          {
+            error: created.error?.message ?? 'The statuses could not be saved.',
+          },
           { status: projectsErrorStatus(created.error?.code ?? '') }
         )
       byKey.set(desired.key, created.data)
       continue
     }
-    if (current.label !== desired.label || current.category !== desired.category) {
-      const updated = await service.updateStatus(auth.orgId, decodedId, current.id, {
-        label: desired.label,
-        category: desired.category,
-      })
+    if (
+      current.label !== desired.label ||
+      current.category !== desired.category
+    ) {
+      const updated = await service.updateStatus(
+        auth.orgId,
+        decodedId,
+        current.id,
+        {
+          label: desired.label,
+          category: desired.category,
+        }
+      )
       if (updated.error || !updated.data)
         return apiJson(
-          { error: updated.error?.message ?? 'The statuses could not be saved.' },
+          {
+            error: updated.error?.message ?? 'The statuses could not be saved.',
+          },
           { status: projectsErrorStatus(updated.error?.code ?? '') }
         )
       byKey.set(desired.key, updated.data)
@@ -130,7 +149,11 @@ export async function PUT(request: NextRequest, { params }: Props) {
   const wanted = new Set(parsed.data.statuses.map((status) => status.key))
   for (const current of existing.data.data) {
     if (wanted.has(current.key)) continue
-    const removed = await service.deleteStatus(auth.orgId, decodedId, current.id)
+    const removed = await service.deleteStatus(
+      auth.orgId,
+      decodedId,
+      current.id
+    )
     if (removed.error)
       return apiJson(
         { error: removed.error?.message ?? 'The statuses could not be saved.' },
@@ -138,14 +161,25 @@ export async function PUT(request: NextRequest, { params }: Props) {
       )
   }
 
-  const orderedIds = parsed.data.statuses.map((status) => byKey.get(status.key)?.id ?? '')
+  const orderedIds = parsed.data.statuses.map(
+    (status) => byKey.get(status.key)?.id ?? ''
+  )
   if (orderedIds.some((id) => id === ''))
-    return apiJson({ error: 'The statuses could not be ordered.' }, { status: 400 })
+    return apiJson(
+      { error: 'The statuses could not be ordered.' },
+      { status: 400 }
+    )
 
-  const reordered = await service.reorderStatuses(auth.orgId, decodedId, orderedIds)
+  const reordered = await service.reorderStatuses(
+    auth.orgId,
+    decodedId,
+    orderedIds
+  )
   if (reordered.error || !reordered.data)
     return apiJson(
-      { error: reordered.error?.message ?? 'The statuses could not be ordered.' },
+      {
+        error: reordered.error?.message ?? 'The statuses could not be ordered.',
+      },
       { status: projectsErrorStatus(reordered.error?.code ?? '') }
     )
 

@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 
 import { layoutsClient } from '@/lib/client'
-import type { LayoutDefinitionInput } from '@/lib/client/layouts'
+import type { LayoutDefinitionInput } from '@/types/layouts'
 
 export function CustomModuleLayoutSection({
   moduleKey,
@@ -59,7 +59,9 @@ export function CustomModuleLayoutSection({
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (pending || !name.trim()) return
-    const raw = String(new FormData(event.currentTarget).get('definition') ?? '')
+    const raw = String(
+      new FormData(event.currentTarget).get('definition') ?? ''
+    )
     let definition: LayoutDefinitionInput
     try {
       definition = JSON.parse(raw) as LayoutDefinitionInput
@@ -101,7 +103,9 @@ export function CustomModuleLayoutSection({
 
   return (
     <form onSubmit={onSubmit} className="max-w-4xl space-y-5">
-      {error ? <AppError title="Layout not saved" error={error} variant="banner" /> : null}
+      {error ? (
+        <AppError title="Layout not saved" error={error} variant="banner" />
+      ) : null}
       {saved ? <p className="text-sm text-emerald-600">Layout saved.</p> : null}
       <div className="max-w-2xl">
         <FormRow label="Name" htmlFor="module-layout-name" required>
