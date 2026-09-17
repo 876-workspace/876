@@ -6,8 +6,6 @@ import type { CrmAccessOutcome, CrmAccessViewer } from '@/types/access'
 
 import { getWorkspace } from '@/lib/services/workspace'
 
-export type { CrmAccessOutcome, CrmAccessViewer }
-
 /**
  * The organization permission that authorizes changing a member's app access.
  *

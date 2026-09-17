@@ -1,3 +1,9 @@
+import type {
+  CustomModule,
+  CustomModuleField,
+  CustomModuleStatus,
+  Layout,
+} from '@876/projects/contracts'
 import { z } from 'zod'
 
 const keySchema = z
@@ -229,9 +235,9 @@ export type RecordFormField = {
 }
 
 export type ModuleBundle = {
-  module: import('@876/projects/contracts').CustomModule
-  fields: import('@876/projects/contracts').CustomModuleField[]
-  statuses: import('@876/projects/contracts').CustomModuleStatus[]
-  layout: import('@876/projects/contracts').Layout | null
+  module: CustomModule
+  fields: CustomModuleField[]
+  statuses: CustomModuleStatus[]
+  layout: Layout | null
   loadError: { code: string; message: string } | null
 }

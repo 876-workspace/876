@@ -3,8 +3,9 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 

@@ -22,8 +22,6 @@ import type {
   WorkItemOption,
 } from '@/types/issues'
 
-export type { DependencyLink, RelationLink, WorkItemOption }
-
 type ScheduleSuggestionView = {
   earliestStart: number | null
   earliestFinish: number | null

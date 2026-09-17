@@ -4,8 +4,6 @@ const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/
 
 import type { EntryTimestamps } from '@/types/time'
 
-export type { EntryTimestamps }
-
 export function entryDateValue(timestamp: number | null): string {
   if (timestamp === null) return ''
 

@@ -4,12 +4,12 @@ import { apiJson } from '@876/core/api'
 
 import {
   attachmentErrorResponse,
-  attachmentUploadSessionRequestSchema,
   attachmentValidationResponse,
   requireAttachmentAccess,
 } from '../_lib/attachments-api'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
 import { storage } from '@/lib/services/storage'
+import { attachmentUploadSessionRequestSchema } from '@/types/attachments'
 
 export const runtime = 'nodejs'
 

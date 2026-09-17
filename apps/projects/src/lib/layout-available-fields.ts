@@ -6,8 +6,6 @@ import type {
 
 import type { AvailableLayoutField } from '@/types/layouts'
 
-export type { AvailableLayoutField }
-
 const SYSTEM_LABELS: Record<string, string> = {
   title: 'Title',
   description: 'Description',

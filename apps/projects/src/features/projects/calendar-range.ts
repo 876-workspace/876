@@ -2,20 +2,10 @@ import {
   CALENDAR_VIEWS,
   DAY_SECONDS,
   type CalendarNavDirection,
-  type CalendarSearchParams,
   type CalendarView,
   type CalendarWindow,
   type ResolvedCalendarWindow,
 } from '@/types/calendar'
-
-export { CALENDAR_VIEWS, DAY_SECONDS }
-export type {
-  CalendarNavDirection,
-  CalendarSearchParams,
-  CalendarView,
-  CalendarWindow,
-  ResolvedCalendarWindow,
-}
 
 const WEEK_LENGTH_DAYS = 7
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']

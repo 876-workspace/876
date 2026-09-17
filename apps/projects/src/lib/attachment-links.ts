@@ -10,8 +10,6 @@ import { z } from 'zod'
 
 import type { AttachmentLinksError } from '@/types/attachments'
 
-export type { AttachmentLinksError }
-
 const envelopeSchema = z.object({
   data: z.unknown().nullable(),
   error: z.object({ code: z.string(), message: z.string() }).nullable(),

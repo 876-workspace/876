@@ -13,9 +13,9 @@ import { describeRecurrence } from '@/features/projects/event-input'
 import {
   formatReminderTiming,
   reminderTargetInput,
-  type ReminderTarget,
 } from '@/features/projects/reminder-timing'
 import { remindersClient } from '@/lib/client/reminders'
+import type { ReminderTarget } from '@/types/events'
 
 const UNIT_MINUTES = { minutes: 1, hours: 60, days: 1_440 } as const
 type Unit = keyof typeof UNIT_MINUTES

@@ -5,8 +5,6 @@ import { useMemo, useRef, useState } from 'react'
 
 import type { MentionMember } from '@/types/collaboration'
 
-export type { MentionMember }
-
 type MentionInputProps = {
   id: string
   name: string

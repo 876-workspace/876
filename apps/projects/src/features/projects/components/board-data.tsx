@@ -7,10 +7,11 @@ import { AppError } from '@876/ui/app-error'
 
 import { BoardDragBoard } from '@/features/projects/components/board-drag-board'
 import { IssueFilterBar } from '@/features/projects/components/issue-filter-bar'
-import type { IssueSearchParams } from '@/features/projects/issue-filters'
+
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
 import { projects } from '@/lib/services/projects'
+import type { IssueSearchParams } from '@/types/issues'
 
 export async function BoardData({
   query,

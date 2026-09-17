@@ -3,7 +3,6 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 
 import {
-  attachmentCompleteRequestSchema,
   attachmentErrorResponse,
   attachmentValidationResponse,
   ensureAttachmentLink,
@@ -11,6 +10,7 @@ import {
 } from '../_lib/attachments-api'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
 import { storage } from '@/lib/services/storage'
+import { attachmentCompleteRequestSchema } from '@/types/attachments'
 
 export const runtime = 'nodejs'
 

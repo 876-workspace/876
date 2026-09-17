@@ -4,11 +4,11 @@ import { apiJson } from '@876/core/api'
 
 import {
   attachmentErrorResponse,
-  attachmentLinkRequestSchema,
   attachmentValidationResponse,
   ensureAttachmentLink,
   requireAttachmentAccess,
 } from '../_lib/attachments-api'
+import { attachmentLinkRequestSchema } from '@/types/attachments'
 
 export const runtime = 'nodejs'
 

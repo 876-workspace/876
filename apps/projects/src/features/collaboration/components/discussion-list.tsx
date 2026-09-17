@@ -1,8 +1,8 @@
 import { Badge } from '@876/ui/badge'
 import Link from 'next/link'
 
-import type { UiDiscussion } from '../mappers'
 import { ClientVisibleBadge } from './client-visible-badge'
+import type { UiDiscussion } from '@/types/collaboration'
 
 export function DiscussionList({
   discussions,
@@ -36,7 +36,8 @@ export function DiscussionList({
           </div>
           <div className="text-muted-foreground mt-2 flex flex-wrap gap-3 text-xs">
             <span>
-              {discussion.postCount} {discussion.postCount === 1 ? 'post' : 'posts'}
+              {discussion.postCount}{' '}
+              {discussion.postCount === 1 ? 'post' : 'posts'}
             </span>
           </div>
         </li>

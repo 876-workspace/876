@@ -144,12 +144,3 @@ export function mapClientGrant(
     revokedAt: grant.revokedAt,
   }
 }
-
-export type {
-  UiActivityItem,
-  UiClientGrant,
-  UiDiscussion,
-  UiDiscussionPost,
-  UiWikiPage,
-  UiWikiRevision,
-} from '@/types/collaboration'

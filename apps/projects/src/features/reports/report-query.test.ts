@@ -4,9 +4,9 @@ import {
   csvExportHref,
   parseReportGroup,
   reportGroupLabel,
-  REPORT_LINKS,
   reportHref,
 } from './report-query'
+import { REPORT_LINKS } from '@/types/reporting'
 
 const SEPTEMBER = { from: 1788220800, to: 1790812800 }
 

@@ -15,8 +15,6 @@ import type {
   TemplatePreviewQuery,
 } from '@/types/templates'
 
-export type { TemplatePreviewHrefInput, TemplatePreviewQuery }
-
 function includeFlag(value: string | undefined): boolean {
   return value !== 'false'
 }

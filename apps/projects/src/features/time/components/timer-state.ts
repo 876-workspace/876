@@ -2,8 +2,6 @@ import type { TimeEntry } from '@876/projects/contracts'
 
 import type { TimerState } from '@/types/time'
 
-export type { TimerState }
-
 export const IDLE_TIMER_LABEL = 'No timer running'
 
 /**

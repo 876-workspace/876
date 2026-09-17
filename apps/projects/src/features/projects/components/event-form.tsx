@@ -23,13 +23,7 @@ import {
 import type { RecurrenceDraft, RecurrenceEnds } from '@/types/events'
 import { eventsClient } from '@/lib/client/events'
 
-import type {
-  EventFormOptions,
-  EventMemberOption,
-  EventWorkItemOption,
-} from '@/types/events'
-
-export type { EventFormOptions, EventMemberOption, EventWorkItemOption }
+import type { EventFormOptions } from '@/types/events'
 
 type Props =
   | { mode: 'create'; options: EventFormOptions; event?: never }

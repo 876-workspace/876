@@ -21,14 +21,6 @@ import type {
   UpdateRateParams,
 } from '@/types/finance'
 
-export type {
-  CreateBudgetParams,
-  CreateRateParams,
-  PutBillingParams,
-  UpdateBudgetParams,
-  UpdateRateParams,
-}
-
 function root(projectId: string) {
   return `/api/projects/${encodeURIComponent(projectId)}`
 }

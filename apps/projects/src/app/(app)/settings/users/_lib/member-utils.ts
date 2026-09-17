@@ -1,4 +1,4 @@
-import type { OrgMember } from './types'
+import type { OrgMember } from '@/types/users'
 
 const ROLE_LABELS: Record<string, string> = {
   owner: 'Owner',

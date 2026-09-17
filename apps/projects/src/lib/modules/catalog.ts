@@ -11,8 +11,6 @@ import { PROJECTS_MODULES } from '@876/core/modules'
  */
 import type { ProjectsSurface } from '@/types/catalog'
 
-export type { ProjectsSurface }
-
 export const PROJECTS_SURFACES: readonly ProjectsSurface[] = [
   {
     key: 'dashboard',

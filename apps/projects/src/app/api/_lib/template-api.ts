@@ -23,13 +23,3 @@ export function templateFailure(
     { status: error === null ? 400 : projectsErrorStatus(error.code) }
   )
 }
-
-/**
- * The three inclusion flags every template read/write body may carry.
- *
- * Absent means "include it": a template exists to carry its contents, so the
- * caller opts out rather than in — the same default the service applies.
- */
-import { templateIncludeSchema } from '@/types/templates'
-
-export { templateIncludeSchema }

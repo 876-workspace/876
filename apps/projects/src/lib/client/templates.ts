@@ -14,8 +14,6 @@ import { request } from './request'
 
 import type { UpdateTemplateParams } from '@/types/templates'
 
-export type { UpdateTemplateParams }
-
 function json(body: unknown): RequestInit {
   return {
     method: 'POST',

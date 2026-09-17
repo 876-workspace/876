@@ -1,12 +1,12 @@
 import { AppError } from '@876/ui/app-error'
 
-import {
-  IssueLinksPanel,
-  type DependencyLink,
-  type RelationLink,
-  type WorkItemOption,
-} from '@/features/projects/components/issue-links-panel'
+import { IssueLinksPanel } from '@/features/projects/components/issue-links-panel'
 import { projects } from '@/lib/services/projects'
+import type {
+  DependencyLink,
+  RelationLink,
+  WorkItemOption,
+} from '@/types/issues'
 
 function unavailableWorkItem(issueId: string): WorkItemOption {
   return { id: issueId, identifier: issueId, title: 'Work item unavailable' }

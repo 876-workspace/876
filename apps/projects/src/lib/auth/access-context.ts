@@ -13,8 +13,6 @@ import { resolvePlatformAppId } from '@/lib/services/platform-app'
 
 import type { ProjectsAccessContextOutcome } from '@/types/access'
 
-export type { ProjectsAccessContextOutcome }
-
 /**
  * Resolves one app-access answer per request. Primitive arguments are
  * intentional: React.cache uses Object.is, so an inline options object misses.

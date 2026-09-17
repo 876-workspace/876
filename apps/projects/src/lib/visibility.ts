@@ -10,8 +10,6 @@ import { z } from 'zod'
 
 import type { VisibilityError, VisibilitySubject } from '@/types/visibility'
 
-export type { VisibilityError, VisibilitySubject }
-
 type VisibilityOutcome = {
   data: VisibilityResult | null
   error: VisibilityError | null

@@ -3,8 +3,6 @@ const WEEK_DAYS = 7
 
 import type { TimePeriod } from '@/types/time'
 
-export type { TimePeriod }
-
 /** Monday 00:00 UTC of the week the timestamp falls in. */
 function weekStart(timestamp: number): number {
   const day = Math.floor(timestamp / DAY_SECONDS) * DAY_SECONDS

@@ -4,12 +4,14 @@ import { apiJson } from '@876/core/api'
 
 import {
   attachmentErrorResponse,
-  attachmentResourceRefSchema,
   attachmentValidationResponse,
   requireAttachmentAccess,
 } from '../../_lib/attachments-api'
 import { attachmentCaller } from '@/lib/attachments'
-import { ATTACHMENT_RELATION } from '@/types/attachments'
+import {
+  ATTACHMENT_RELATION,
+  attachmentResourceRefSchema,
+} from '@/types/attachments'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
 import { storage } from '@/lib/services/storage'
 

@@ -23,15 +23,6 @@ import type {
   UpdateWebhookEndpointParams,
 } from '@/types/integrations'
 
-export type {
-  CreatedIntegrationClientDto,
-  CreateImportJobParams,
-  CreateIntegrationClientParams,
-  CreateWebhookEndpointParams,
-  ListEndpointDeliveriesParams,
-  UpdateWebhookEndpointParams,
-}
-
 function jsonInit(method: 'POST' | 'PATCH', payload?: unknown): RequestInit {
   return {
     method,

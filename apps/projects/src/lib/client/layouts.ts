@@ -11,13 +11,8 @@ import type {
 
 import { request } from './request'
 
-import type {
-  CreateLayoutParams,
-  LayoutDefinitionInput,
-  UpdateLayoutParams,
-} from '@/types/layouts'
+import type { CreateLayoutParams, UpdateLayoutParams } from '@/types/layouts'
 
-export type { CreateLayoutParams, LayoutDefinitionInput, UpdateLayoutParams }
 export type {
   LayoutCondition,
   LayoutEffect,

@@ -4,8 +4,6 @@ import type { LayoutEntity } from '@876/projects/contracts'
 
 import type { ModuleBundle } from '@/types/custom-modules'
 
-export type { ModuleBundle }
-
 import { customModuleLayoutEntity, findModuleByKey } from './module-access'
 import { serviceWithRoleKeys } from './service-with-roles'
 

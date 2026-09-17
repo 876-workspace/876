@@ -3,8 +3,9 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -31,7 +32,10 @@ export async function PUT(request: Request, { params }: Context) {
   if (auth.response) return auth.response
   const parsed = bodySchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success)
-    return apiJson({ error: 'Enter valid phase field values.' }, { status: 422 })
+    return apiJson(
+      { error: 'Enter valid phase field values.' },
+      { status: 422 }
+    )
   const { phaseId } = await params
   const result = await projects.milestones.customFields.values.set(
     auth.orgId,

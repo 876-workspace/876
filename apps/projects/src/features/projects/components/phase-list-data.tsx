@@ -5,7 +5,7 @@ import { PhaseFilterBar } from '@/features/projects/components/phase-filter-bar'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
 import { projects } from '@/lib/services/projects'
-import type { PhaseStatus } from '@/features/projects/phase-filters'
+import type { PhaseStatus } from '@/types/planning'
 
 export async function PhaseListData({
   project,

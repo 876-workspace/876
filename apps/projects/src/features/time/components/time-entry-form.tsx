@@ -20,8 +20,6 @@ import {
 
 import type { TimeEntryProjectOption } from '@/types/time'
 
-export type { TimeEntryProjectOption }
-
 type Props = {
   projects: readonly TimeEntryProjectOption[]
   defaultDate: string

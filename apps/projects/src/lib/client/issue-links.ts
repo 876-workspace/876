@@ -14,12 +14,6 @@ import type {
   UpdateIssueDependencyParams,
 } from '@/types/attachments'
 
-export type {
-  CreateIssueDependencyParams,
-  CreateIssueRelationParams,
-  UpdateIssueDependencyParams,
-}
-
 type DeletedLink = { object: string; id: string; deleted: true }
 
 function issueRoot(issueRef: string) {

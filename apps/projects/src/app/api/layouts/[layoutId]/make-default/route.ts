@@ -3,8 +3,9 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -25,8 +26,7 @@ export async function POST(_request: NextRequest, { params }: Context) {
   if (result.error || !result.data)
     return apiJson(
       {
-        error:
-          result.error?.message ?? 'The layout could not be made default.',
+        error: result.error?.message ?? 'The layout could not be made default.',
       },
       { status: result.error?.code === 'projects/layout-not-found' ? 404 : 400 }
     )

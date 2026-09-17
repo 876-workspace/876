@@ -1,7 +1,6 @@
 import { Badge } from '@876/ui/badge'
 import { Markdown } from '@876/ui/markdown'
-
-import type { UiWikiPage } from '../mappers'
+import type { UiWikiPage } from '@/types/collaboration'
 
 export function WikiPageView({
   page,

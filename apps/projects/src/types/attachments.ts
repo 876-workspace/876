@@ -1,3 +1,7 @@
+import type {
+  IssueDependencyType,
+  IssueRelationType,
+} from '@876/projects/contracts'
 import { z } from 'zod'
 
 export const attachmentResourceTypes = [
@@ -69,17 +73,17 @@ export const attachmentLinkRequestSchema = attachmentResourceRefSchema.extend({
 
 export type CreateIssueRelationParams = {
   targetIssueId: string
-  type: import('@876/projects/contracts').IssueRelationType
+  type: IssueRelationType
 }
 
 export type CreateIssueDependencyParams = {
   predecessorIssueId: string
   successorIssueId: string
-  type?: import('@876/projects/contracts').IssueDependencyType
+  type?: IssueDependencyType
   lagMinutes?: number
 }
 
 export type UpdateIssueDependencyParams = {
-  type?: import('@876/projects/contracts').IssueDependencyType
+  type?: IssueDependencyType
   lagMinutes?: number
 }

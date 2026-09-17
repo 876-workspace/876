@@ -2,15 +2,9 @@ import type { ReportPeriod } from '@/types/reporting'
 
 import {
   REPORT_GROUPS,
-  REPORT_LINKS,
-  REPORT_SLUGS,
   type ReportGroup,
-  type ReportKey,
   type ReportSlug,
 } from '@/types/reporting'
-
-export { REPORT_GROUPS, REPORT_LINKS, REPORT_SLUGS }
-export type { ReportGroup, ReportKey, ReportSlug }
 
 const GROUP_LABELS: Record<ReportGroup, string> = {
   project: 'Project',

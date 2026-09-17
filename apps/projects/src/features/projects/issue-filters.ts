@@ -11,8 +11,6 @@ import type {
   ParsedIssueFilters,
 } from '@/types/issues'
 
-export type { IssueGroupBy, IssueSearchParams, ParsedIssueFilters }
-
 const GROUPS: readonly IssueGroupBy[] = [
   'none',
   'status',

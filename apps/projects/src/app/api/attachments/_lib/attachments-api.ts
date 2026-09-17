@@ -2,32 +2,18 @@ import 'server-only'
 
 import { apiJson } from '@876/core/api'
 import type { ResourceLink } from '@876/storage'
-import { z } from 'zod'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { attachmentCaller } from '@/lib/attachments'
 import {
   ATTACHMENT_RELATION,
-  attachmentResourceTypes,
   type AttachmentResourceType,
 } from '@/types/attachments'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
 import { storage } from '@/lib/services/storage'
 
-import {
-  attachmentCompleteRequestSchema,
-  attachmentLinkRequestSchema,
-  attachmentResourceRefSchema,
-  attachmentUploadSessionRequestSchema,
-} from '@/types/attachments'
-
-export {
-  attachmentCompleteRequestSchema,
-  attachmentLinkRequestSchema,
-  attachmentResourceRefSchema,
-  attachmentUploadSessionRequestSchema,
-}
+import type { ApiContext } from '@/types/access'
 
 /**
  * Authorizes the actor to change the record an attachment hangs off.

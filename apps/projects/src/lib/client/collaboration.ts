@@ -1,19 +1,15 @@
 'use client'
 
 import type {
-  ActivityFeed,
   ClientGrant,
   Discussion,
   DiscussionPost,
   WikiPage,
-  WikiRevision,
 } from '@876/projects'
 
 import { request } from './request'
 
 import type { FollowSubjectType } from '@/types/collaboration'
-
-export type { FollowSubjectType }
 
 function followPath(subjectType: FollowSubjectType, subjectId: string): string {
   if (subjectType === 'project')
@@ -232,9 +228,3 @@ export const visibilityClient = {
     )
   },
 }
-
-export type {
-  ActivityFeed,
-  DiscussionPost,
-  WikiRevision,
-} from '@/types/collaboration'

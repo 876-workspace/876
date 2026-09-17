@@ -18,8 +18,6 @@ import { request } from './request'
  */
 import type { CreateTimeEntryParams, UpdateTimeEntryParams } from '@/types/time'
 
-export type { CreateTimeEntryParams, UpdateTimeEntryParams }
-
 function jsonInit(method: 'POST' | 'PATCH', payload?: unknown): RequestInit {
   return {
     method,

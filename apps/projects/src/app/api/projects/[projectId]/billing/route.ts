@@ -3,8 +3,9 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -58,7 +59,10 @@ export async function PUT(request: Request, { params }: Context) {
   const body = await request.json().catch(() => null)
   const parsed = putBillingSchema.safeParse(body)
   if (!parsed.success)
-    return apiJson({ error: 'Enter a valid billing configuration.' }, { status: 422 })
+    return apiJson(
+      { error: 'Enter a valid billing configuration.' },
+      { status: 422 }
+    )
 
   const { projectId } = await params
   const result = await projects.projectBilling.put(

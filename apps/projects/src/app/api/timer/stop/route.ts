@@ -4,8 +4,9 @@ import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
 import { projectsErrorStatus } from '@/app/api/_lib/error-status'
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -22,7 +23,10 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null)
   const parsed = stopTimerSchema.safeParse(body)
   if (!parsed.success)
-    return apiJson({ error: 'Stop the timer with no payload.' }, { status: 422 })
+    return apiJson(
+      { error: 'Stop the timer with no payload.' },
+      { status: 422 }
+    )
 
   const result = await projects.timeEntries.stopTimer(auth.orgId, {
     userId: auth.userId,

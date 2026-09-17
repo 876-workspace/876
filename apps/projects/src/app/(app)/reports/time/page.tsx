@@ -12,7 +12,6 @@ import { TimeReportData } from '@/features/reports/components/time-report-data'
 import {
   csvExportHref,
   parseReportGroup,
-  REPORT_GROUPS,
   reportGroupLabel,
   reportHref,
 } from '@/features/reports/report-query'
@@ -21,6 +20,7 @@ import {
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
 import { resolvePeriod } from '@/lib/period'
+import { REPORT_GROUPS } from '@/types/reporting'
 
 export const metadata: Metadata = { title: 'Time report' }
 

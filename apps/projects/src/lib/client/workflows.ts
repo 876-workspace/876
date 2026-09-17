@@ -3,16 +3,9 @@
 import { request } from './request'
 
 import type {
-  BlueprintTransitionDto,
   BlueprintTransitionInput,
   WorkflowBlueprintDto,
 } from '@/types/work-structure'
-
-export type {
-  BlueprintTransitionDto,
-  BlueprintTransitionInput,
-  WorkflowBlueprintDto,
-}
 
 function blueprintPath(workItemTypeId: string): string {
   return `/api/workflows/${encodeURIComponent(workItemTypeId)}/blueprint`

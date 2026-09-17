@@ -9,8 +9,9 @@ import {
   serviceFailure,
 } from '@/app/api/_lib/reporting-api'
 import { reportFormatSchema, unixSecondsSchema } from '@/types/reporting'
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 

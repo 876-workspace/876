@@ -3,11 +3,12 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { resolveCallerRoleKeys } from '@/lib/custom-modules/api-access'
 import { updateCustomModuleStatusInputSchema } from '@/types/custom-modules'
 import { serviceWithRoleKeys } from '@/lib/custom-modules/service-with-roles'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 

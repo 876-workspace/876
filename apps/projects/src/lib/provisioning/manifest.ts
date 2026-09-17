@@ -16,8 +16,6 @@ import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
  */
 import type { ProjectsProvisioningManifest } from '@/types/provisioning'
 
-export type { ProjectsProvisioningManifest }
-
 type Properties = Map<string, PlatformProvisioningProperty>
 
 function propertyMap(properties: PlatformProvisioningProperty[]): Properties {

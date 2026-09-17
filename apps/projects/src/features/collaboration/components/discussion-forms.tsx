@@ -8,9 +8,13 @@ import { useState } from 'react'
 
 import { discussionsClient } from '@/lib/client/collaboration'
 
-import type { UiDiscussion, UiDiscussionPost } from '../mappers'
 import { ClientVisibleToggle } from './client-visible-toggle'
-import { MentionInput, type MentionMember } from './mention-input'
+import { MentionInput } from './mention-input'
+import type {
+  UiDiscussion,
+  UiDiscussionPost,
+  MentionMember,
+} from '@/types/collaboration'
 
 export function NewDiscussionForm({
   projectId,
@@ -185,7 +189,11 @@ export function DiscussionReplyForm({
   }
 
   return (
-    <form data-slot="discussion-reply-form" onSubmit={submit} className="space-y-3">
+    <form
+      data-slot="discussion-reply-form"
+      onSubmit={submit}
+      className="space-y-3"
+    >
       {error ? <AppError error={error} variant="banner" /> : null}
       <div className="space-y-1">
         <span id="reply-body-label" className="text-sm font-medium">
@@ -201,7 +209,9 @@ export function DiscussionReplyForm({
         />
       </div>
       {locked ? (
-        <p className="text-muted-foreground text-sm">This discussion is locked.</p>
+        <p className="text-muted-foreground text-sm">
+          This discussion is locked.
+        </p>
       ) : null}
       <Button type="submit" disabled={pending || locked || !body.trim()}>
         {pending ? 'Posting…' : 'Reply'}
@@ -218,7 +228,11 @@ export function DiscussionThreadView({
   posts: readonly UiDiscussionPost[]
 }) {
   return (
-    <section data-slot="discussion-thread" aria-label={discussion.title} className="space-y-4">
+    <section
+      data-slot="discussion-thread"
+      aria-label={discussion.title}
+      className="space-y-4"
+    >
       {posts.length === 0 ? (
         <p className="text-muted-foreground py-6 text-center text-sm">
           No posts yet
@@ -230,7 +244,9 @@ export function DiscussionThreadView({
               <span className="font-medium">{post.authorLabel}</span>
               {post.editedAt !== null ? <span>Edited</span> : null}
             </div>
-            <p className="mt-2 text-sm whitespace-pre-wrap">{post.bodyMarkdown}</p>
+            <p className="mt-2 text-sm whitespace-pre-wrap">
+              {post.bodyMarkdown}
+            </p>
           </article>
         ))
       )}

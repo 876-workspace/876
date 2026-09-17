@@ -11,8 +11,6 @@ import { TemplatePreviewData } from './template-preview-data'
 
 import type { FromTemplateSearch } from '@/types/templates'
 
-export type { FromTemplateSearch }
-
 export async function FromTemplateData({
   orgId,
   search,

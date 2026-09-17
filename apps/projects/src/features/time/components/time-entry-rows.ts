@@ -4,8 +4,6 @@ import type { DataTableSkeletonColumn } from '@876/ui/data-table-skeleton'
 
 import type { TimeEntryLookups } from '@/types/time'
 
-export type { TimeEntryLookups }
-
 /** The four states the table renders a badge for; anything else is still a draft. */
 export function toApprovalStatus(
   value: string

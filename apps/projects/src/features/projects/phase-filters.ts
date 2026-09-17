@@ -1,7 +1,5 @@
 import type { PhaseSearchParams, PhaseStatus } from '@/types/planning'
 
-export type { PhaseSearchParams, PhaseStatus }
-
 const PHASE_STATUSES = new Set<PhaseStatus>(['open', 'completed', 'canceled'])
 
 function first(value: string | string[] | undefined) {

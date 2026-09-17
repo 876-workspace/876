@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 
 import {
-  CALENDAR_VIEWS,
   calendarHref,
   calendarNavHref,
   calendarTodayUtc,
@@ -24,6 +23,7 @@ import {
   requireAppAccess,
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
+import { CALENDAR_VIEWS } from '@/types/calendar'
 
 export const metadata: Metadata = { title: 'Calendar' }
 

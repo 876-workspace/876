@@ -1,3 +1,4 @@
+import type { CreateCapacityInput, UpdateCapacityInput } from '@876/projects'
 import { z } from 'zod'
 
 export type ReportPeriod = { from: number; to: number }
@@ -33,8 +34,8 @@ export const REPORT_LINKS = [
 
 export type ReportKey = (typeof REPORT_LINKS)[number]['key']
 
-export type CreateCapacityParams = import('@876/projects').CreateCapacityInput
-export type UpdateCapacityParams = import('@876/projects').UpdateCapacityInput
+export type CreateCapacityParams = CreateCapacityInput
+export type UpdateCapacityParams = UpdateCapacityInput
 
 export type CapacityRow = {
   id: string

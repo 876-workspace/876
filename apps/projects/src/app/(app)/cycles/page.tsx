@@ -8,10 +8,10 @@ import { CycleListData } from '@/features/projects/components/cycle-list-data'
 import {
   CYCLE_STATUS_OPTIONS,
   parseCycleFilters,
-  type CycleSearchParams,
 } from '@/features/projects/cycle-filters'
 import { CYCLES_SKELETON_COLUMNS } from '@/features/projects/components/cycle-skeleton-columns'
 import { requireAppAccess } from '@/lib/auth/require-projects-context'
+import type { CycleSearchParams } from '@/types/planning'
 
 export const metadata: Metadata = { title: 'Cycles' }
 

@@ -11,8 +11,6 @@ import { getPortalClient } from '@/lib/services/portal'
 
 import type { PortalAccess } from '@/types/access'
 
-export type { PortalAccess }
-
 type PortalProbeClient = Pick<ProjectsPortalClient, 'listIssues'>
 
 type PortalProbe = (

@@ -2,8 +2,9 @@ import 'server-only'
 
 import { apiJson } from '@876/core/api'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -25,12 +26,12 @@ export async function DELETE(_request: Request, { params }: Context) {
   const result = await projects.cycles.unassignIssue(
     auth.orgId,
     decodeURIComponent(cycleId),
-    decodeURIComponent(issueId),
+    decodeURIComponent(issueId)
   )
   if (result.error)
     return apiJson(
       { error: result.error.message },
-      { status: errorStatus(result.error.code) },
+      { status: errorStatus(result.error.code) }
     )
 
   return apiJson({ data: result.data })

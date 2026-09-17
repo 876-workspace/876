@@ -12,8 +12,6 @@ import { getProjectsApiContext } from './api-context'
 
 import type { ApiContext } from '@/types/access'
 
-export type { ApiContext }
-
 type ResolvedApiAccess =
   | {
       response: Response

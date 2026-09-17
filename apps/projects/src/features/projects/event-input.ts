@@ -9,8 +9,6 @@ import type {
   StoredRecurrence,
 } from '@/types/events'
 
-export type { RecurrenceDraft, RecurrenceEnds, StoredRecurrence }
-
 export const WEEKDAY_OPTIONS: readonly { value: number; label: string }[] = [
   { value: 0, label: 'Mon' },
   { value: 1, label: 'Tue' },

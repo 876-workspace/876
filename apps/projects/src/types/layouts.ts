@@ -1,4 +1,8 @@
-import type { LayoutEntity } from '@876/projects/contracts'
+import type {
+  LayoutEntity,
+  LayoutRule,
+  LayoutSection,
+} from '@876/projects/contracts'
 import { z } from 'zod'
 
 const customModuleEntitySchema = z
@@ -75,12 +79,12 @@ export type CreateLayoutBody = z.infer<typeof createLayoutInputSchema>
 export type AvailableLayoutField = { fieldKey: string; label: string }
 
 export type LayoutDefinitionInput = {
-  sections: import('@876/projects/contracts').LayoutSection[]
-  rules?: import('@876/projects/contracts').LayoutRule[]
+  sections: LayoutSection[]
+  rules?: LayoutRule[]
 }
 
 export type CreateLayoutParams = {
-  entity: import('@876/projects/contracts').LayoutEntity
+  entity: LayoutEntity
   workItemTypeId?: string | null
   name: string
   definition: LayoutDefinitionInput

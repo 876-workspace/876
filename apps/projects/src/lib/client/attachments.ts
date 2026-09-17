@@ -6,7 +6,8 @@ import type {
   AttachmentUploadSession,
 } from '@/types/attachments'
 
-import { request, type ClientResult } from './request'
+import { request } from './request'
+import type { ClientResult } from '@/types/client'
 
 type UploadSessionParams = AttachmentResourceRef & {
   fileName: string

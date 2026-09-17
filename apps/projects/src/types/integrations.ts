@@ -1,3 +1,4 @@
+import type { IntegrationClient } from '@876/projects/integration'
 import { z } from 'zod'
 
 export const MAX_IMPORT_BYTES = 5 * 1024 * 1024
@@ -122,7 +123,7 @@ export type ImportSourceValue =
   'csv' | 'jira-csv' | 'jira-json' | 'trello-json' | 'asana-csv' | 'zoho-csv'
 
 export type CreatedIntegrationClientDto = {
-  client: import('@876/projects/integration').IntegrationClient
+  client: IntegrationClient
   secret: string
 }
 

@@ -2,12 +2,8 @@ import type { MyWork } from '@876/projects/contracts'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import {
-  MyWorkEvents,
-  MyWorkIssues,
-  MyWorkReminders,
-  type MyWorkResult,
-} from './my-work-sections'
+import { MyWorkEvents, MyWorkIssues, MyWorkReminders } from './my-work-sections'
+import type { MyWorkResult } from '@/types/issues'
 
 const SEPTEMBER_20_2026 = Date.UTC(2026, 8, 20) / 1000
 

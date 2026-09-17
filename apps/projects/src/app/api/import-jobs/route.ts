@@ -3,9 +3,10 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { createImportJobInputSchema } from '@/types/integrations'
 import { integration } from '@/lib/services/integration'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 

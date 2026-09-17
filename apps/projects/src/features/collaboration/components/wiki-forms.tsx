@@ -15,8 +15,6 @@ import { WikiRevisionList } from './wiki-revision-list'
 
 import type { WikiPageOption } from '@/types/collaboration'
 
-export type { WikiPageOption }
-
 function slugify(title: string): string {
   return title
     .toLowerCase()

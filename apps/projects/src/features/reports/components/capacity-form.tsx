@@ -19,8 +19,6 @@ import {
 
 import type { CapacityMemberOption } from '@/types/reporting'
 
-export type { CapacityMemberOption }
-
 type Props =
   | { mode: 'create'; members: CapacityMemberOption[]; capacity?: never }
   | { mode: 'edit'; members: CapacityMemberOption[]; capacity: MemberCapacity }

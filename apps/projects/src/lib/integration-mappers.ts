@@ -35,10 +35,6 @@ export const IMPORT_SOURCE_VALUES = [
   'zoho-csv',
 ] as const
 
-import type { ImportSourceValue } from '@/types/integrations'
-
-export type { ImportSourceValue }
-
 export function toUiIntegrationClient(
   client: ApiIntegrationClient
 ): UiIntegrationClient {

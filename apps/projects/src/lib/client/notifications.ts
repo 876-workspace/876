@@ -7,8 +7,6 @@ import type {
   NotificationListDto,
 } from '@/types/notifications'
 
-export type { NotificationDto, NotificationListDto }
-
 export const notificationsClient = {
   list() {
     return request<NotificationListDto>('/api/notifications')

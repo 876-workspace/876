@@ -1,6 +1,5 @@
 import Link from 'next/link'
-
-import type { UiWikiPage } from '../mappers'
+import type { UiWikiPage } from '@/types/collaboration'
 
 type WikiNode = {
   page: UiWikiPage
@@ -29,8 +28,7 @@ function buildTree(pages: readonly UiWikiPage[]): WikiNode[] {
     for (const page of pages) {
       if (attached.has(page.id)) continue
       const node = nodes.get(page.id)
-      const parent =
-        page.parentId === null ? null : nodes.get(page.parentId)
+      const parent = page.parentId === null ? null : nodes.get(page.parentId)
       if (node && parent && attached.has(parent.page.id)) {
         parent.children.push(node)
         attached.add(page.id)

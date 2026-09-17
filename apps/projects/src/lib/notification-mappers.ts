@@ -2,8 +2,6 @@ import type { ProjectNotification as UiProjectNotification } from '@876/projects
 
 import type { ServiceNotification } from '@/types/notifications'
 
-export type { ServiceNotification }
-
 export function serviceNotificationToUi(
   notification: ServiceNotification
 ): UiProjectNotification {

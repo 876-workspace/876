@@ -3,8 +3,9 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -57,7 +58,9 @@ export async function PATCH(request: Request, context: Context) {
   )
   if (result.error || !result.data)
     return apiJson(
-      { error: result.error?.message ?? 'The discussion could not be updated.' },
+      {
+        error: result.error?.message ?? 'The discussion could not be updated.',
+      },
       { status: errorStatus(result.error?.code ?? '') }
     )
 

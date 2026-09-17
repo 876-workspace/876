@@ -16,8 +16,6 @@ import type {
   RecordFormField,
 } from '@/types/custom-modules'
 
-export type { LayoutFieldControlKind, RecordFormField }
-
 function controlKindFor(fieldType: string): LayoutFieldControlKind {
   switch (fieldType) {
     case 'textarea':

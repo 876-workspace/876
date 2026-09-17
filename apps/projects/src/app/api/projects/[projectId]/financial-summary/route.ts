@@ -2,7 +2,8 @@ import 'server-only'
 
 import { apiJson } from '@876/core/api'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
+import type { ApiContext } from '@/types/access'
 import { projects } from '@/lib/services/projects'
 
 export const runtime = 'nodejs'
@@ -23,7 +24,12 @@ export async function GET(request: Request, { params }: Context) {
   const url = new URL(request.url)
   const from = Number(url.searchParams.get('from'))
   const to = Number(url.searchParams.get('to'))
-  if (!Number.isInteger(from) || !Number.isInteger(to) || from < 0 || to <= from)
+  if (
+    !Number.isInteger(from) ||
+    !Number.isInteger(to) ||
+    from < 0 ||
+    to <= from
+  )
     return apiJson(
       { error: 'Enter a valid period with from before to.' },
       { status: 422 }

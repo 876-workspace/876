@@ -2,8 +2,9 @@ import 'server-only'
 
 import { apiJson } from '@876/core/api'
 
-import { requireApiAccess, type ApiContext } from '@/lib/auth/api-permission'
+import { requireApiAccess } from '@/lib/auth/api-permission'
 import { projects } from '@/lib/services/projects'
+import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
 
@@ -18,8 +19,7 @@ export async function GET() {
   if (result.error || !result.data)
     return apiJson(
       {
-        error:
-          result.error?.message ?? 'Notifications could not be loaded.',
+        error: result.error?.message ?? 'Notifications could not be loaded.',
       },
       { status: 400 }
     )

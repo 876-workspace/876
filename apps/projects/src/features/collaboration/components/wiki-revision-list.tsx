@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { wikiClient } from '@/lib/client/collaboration'
-
-import type { UiWikiRevision } from '../mappers'
+import type { UiWikiRevision } from '@/types/collaboration'
 
 export function WikiRevisionList({
   projectId,

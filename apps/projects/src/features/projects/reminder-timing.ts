@@ -6,8 +6,6 @@ const MINUTES_PER_DAY = 1_440
 
 import type { ReminderTarget } from '@/types/events'
 
-export type { ReminderTarget }
-
 function plural(amount: number, unit: string): string {
   return `${amount} ${amount === 1 ? unit : `${unit}s`}`
 }

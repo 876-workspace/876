@@ -16,8 +16,6 @@ import { formatMinutesAsHours } from '../capacity-input'
 
 import type { CapacityRow } from '@/types/reporting'
 
-export type { CapacityRow }
-
 function editHref(capacityId: string): string {
   return `/settings/capacity/${encodeURIComponent(capacityId)}/edit`
 }

@@ -135,4 +135,3 @@ export {
   milestonesClient,
   customFieldsClient,
 } from './projects'
-export type { ClientResult } from '@/types/client'

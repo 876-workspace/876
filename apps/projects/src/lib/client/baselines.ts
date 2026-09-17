@@ -6,8 +6,6 @@ import { request } from './request'
 
 import type { CreateBaselineParams } from '@/types/work-structure'
 
-export type { CreateBaselineParams }
-
 function root(projectId: string) {
   return `/api/projects/${encodeURIComponent(projectId)}/baselines`
 }

@@ -1,5 +1,13 @@
-export type PutBillingParams = import('@876/projects').PutProjectBillingInput
-export type CreateBudgetParams = import('@876/projects').CreateBudgetInput
-export type UpdateBudgetParams = import('@876/projects').UpdateBudgetInput
-export type CreateRateParams = import('@876/projects').CreateRateInput
-export type UpdateRateParams = import('@876/projects').UpdateRateInput
+import type {
+  CreateBudgetInput,
+  CreateRateInput,
+  PutProjectBillingInput,
+  UpdateBudgetInput,
+  UpdateRateInput,
+} from '@876/projects'
+
+export type PutBillingParams = PutProjectBillingInput
+export type CreateBudgetParams = CreateBudgetInput
+export type UpdateBudgetParams = UpdateBudgetInput
+export type CreateRateParams = CreateRateInput
+export type UpdateRateParams = UpdateRateInput

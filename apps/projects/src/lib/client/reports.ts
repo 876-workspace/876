@@ -9,8 +9,6 @@ import type {
   UpdateCapacityParams,
 } from '@/types/reporting'
 
-export type { CreateCapacityParams, UpdateCapacityParams }
-
 function json(body: unknown): RequestInit {
   return {
     method: 'POST',
