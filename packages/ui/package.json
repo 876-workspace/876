@@ -34,6 +34,10 @@
       "types": "./src/auth/index.ts",
       "default": "./src/auth/index.ts"
     },
+    "./announcements": {
+      "types": "./src/announcements/index.ts",
+      "default": "./src/announcements/index.ts"
+    },
     "./onboarding": {
       "types": "./src/onboarding/index.ts",
       "default": "./src/onboarding/index.ts"
