@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
+import { AnnouncementRegion } from '@876/ui/announcements'
 import { COMMERCE_APP_NAME } from '@/lib/commerce-app'
 export function Shell({ children }: { children: ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <Link href="/">Home</Link>
         </nav>
       </header>
+      <AnnouncementRegion watchUpdates={false} />
       <main>{children}</main>
     </div>
   )

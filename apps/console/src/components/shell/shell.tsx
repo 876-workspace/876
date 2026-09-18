@@ -7,6 +7,7 @@ import {
   AppShellMain,
   AppShellSidebarArea,
 } from '@876/ui/app-shell'
+import { AnnouncementRegion } from '@876/ui/announcements'
 import { Logo } from '@876/ui/logo'
 import { NavProgress } from '@876/ui/nav-progress'
 import { SidebarTrigger } from '@876/ui/sidebar'
@@ -147,6 +148,8 @@ export async function Shell({
             />
           </div>
         </AppShellHeader>
+
+        <AnnouncementRegion />
 
         <AppShellBody>
           <AppShellMain>{children}</AppShellMain>

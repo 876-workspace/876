@@ -10,6 +10,7 @@ import {
   AppShellMain,
   AppShellSidebarArea,
 } from '@876/ui/app-shell'
+import { AnnouncementRegion } from '@876/ui/announcements'
 import { Button } from '@876/ui/button'
 import { PlusIcon } from '@876/ui/icons'
 import type { OrgSwitcherOrg } from '@876/ui/org-switcher'
@@ -115,6 +116,8 @@ export async function Shell({
             />
           </div>
         </AppShellHeader>
+
+        <AnnouncementRegion />
 
         <AppShellBody>
           <AppShellMain>{children}</AppShellMain>

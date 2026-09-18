@@ -13,6 +13,7 @@ import {
   AppShellHeader,
   AppShellMain,
 } from '@876/ui/app-shell'
+import { AnnouncementRegion } from '@876/ui/announcements'
 
 import type { CrmUiFeatures } from '@/types/features'
 import type { NavGroupDefinition } from '@876/core/access'
@@ -105,6 +106,8 @@ export function Shell({
             />
           </div>
         </AppShellHeader>
+
+        <AnnouncementRegion />
         <AppShellBody>
           <Sidebar navigation={navigation} />
           <AppShellMain>{children}</AppShellMain>

@@ -14,11 +14,9 @@ import {
   AppShellMain,
   AppShellSidebarArea,
 } from '@876/ui/app-shell'
+import { AnnouncementRegion } from '@876/ui/announcements'
 import type { WorkWidgetCapabilities } from '@876/widgets'
-import {
-  SharedWidgetDock,
-  WorkWidgetContextProvider,
-} from '@876/widgets/react'
+import { SharedWidgetDock, WorkWidgetContextProvider } from '@876/widgets/react'
 
 import type { InvoiceFeatures } from '@/types/features'
 import { MobileNav } from './mobile-nav'
@@ -97,6 +95,8 @@ export async function InvoiceShell({
               />
             </div>
           </AppShellHeader>
+
+          <AnnouncementRegion />
 
           <AppShellBody>
             <AppShellMain>{children}</AppShellMain>
