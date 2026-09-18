@@ -3,33 +3,10 @@ import { buildOpenApiDocument } from '@/http/openapi/registry'
 import {
   compareOpenApiContracts,
   formatOpenApiContractComparison,
+  INTENTIONAL_ADDITIONS,
   loadFrozenBillingContract,
   openApiContractsMatch,
-  type OperationKey,
 } from '@/test/openapi-contract'
-
-/**
- * Operations Express serves that the frozen FastAPI contract never had.
- *
- * The frozen document remains an exact oracle for everything it contains — no
- * operation may be removed and no retained operation may change shape. These are
- * deliberate additive extensions, enumerated so that adding one is a reviewed
- * decision rather than a silent contract drift.
- *
- * Transactional document email (876 Communications). `prepare` is side-effect
- * free and renders a composition; `send-email` performs the delivery. The legacy
- * record-only `/send` command is unchanged and still present in the frozen set.
- */
-const INTENTIONAL_ADDITIONS: readonly OperationKey[] = [
-  'GET /invoices/{invoiceId}/email',
-  'POST /invoices/{invoiceId}/send-email',
-  'GET /quotes/{quoteId}/email',
-  'POST /quotes/{quoteId}/send-email',
-  'GET /integrations/organizations/{organizationId}/invoices/{invoiceId}/email',
-  'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/send-email',
-  'GET /integrations/organizations/{organizationId}/quotes/{quoteId}/email',
-  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/send-email',
-]
 
 describe('Billing v1 OpenAPI contract', () => {
   it('matches the frozen FastAPI contract apart from declared additions', async () => {
