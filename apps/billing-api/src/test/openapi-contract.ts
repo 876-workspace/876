@@ -15,6 +15,29 @@ export type CompareOpenApiContractsOptions = {
   intentionalAdditions?: readonly OperationKey[]
 }
 
+/**
+ * Operations Express serves that the frozen FastAPI contract never had.
+ *
+ * The frozen document remains an exact oracle for everything it contains — no
+ * operation may be removed and no retained operation may change shape. These are
+ * deliberate additive extensions, enumerated so that adding one is a reviewed
+ * decision rather than a silent contract drift.
+ *
+ * Transactional document email (876 Communications). `prepare` is side-effect
+ * free and renders a composition; `send-email` performs the delivery. The legacy
+ * record-only `/send` command is unchanged and still present in the frozen set.
+ */
+export const INTENTIONAL_ADDITIONS: readonly OperationKey[] = [
+  'GET /invoices/{invoiceId}/email',
+  'POST /invoices/{invoiceId}/send-email',
+  'GET /quotes/{quoteId}/email',
+  'POST /quotes/{quoteId}/send-email',
+  'GET /integrations/organizations/{organizationId}/invoices/{invoiceId}/email',
+  'POST /integrations/organizations/{organizationId}/invoices/{invoiceId}/send-email',
+  'GET /integrations/organizations/{organizationId}/quotes/{quoteId}/email',
+  'POST /integrations/organizations/{organizationId}/quotes/{quoteId}/send-email',
+]
+
 type ValueMismatch = {
   field: string
   operation: OperationKey

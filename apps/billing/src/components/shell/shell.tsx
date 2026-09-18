@@ -13,6 +13,7 @@ import {
   AppShellBody,
   AppShellMain,
 } from '@876/ui/app-shell'
+import { AnnouncementRegion } from '@876/ui/announcements'
 import { SharedWidgetDock } from '@876/widgets/react'
 import type { NavGroupDefinition } from '@876/core/access'
 
@@ -93,6 +94,8 @@ export async function Shell({
               />
             </div>
           </AppShellHeader>
+
+          <AnnouncementRegion />
 
           <AppShellBody>
             <AppShellMain>{children}</AppShellMain>

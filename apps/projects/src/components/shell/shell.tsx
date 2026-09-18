@@ -13,6 +13,7 @@ import {
   AppShellMain,
   AppShellSidebarArea,
 } from '@876/ui/app-shell'
+import { AnnouncementRegion } from '@876/ui/announcements'
 import { SidebarTrigger } from '@876/ui/sidebar'
 
 import type { ProjectsUiFeatures } from '@/types/features'
@@ -114,6 +115,8 @@ export async function Shell({
             />
           </div>
         </AppShellHeader>
+
+        <AnnouncementRegion />
         <AppShellBody>
           <AppShellMain className="pt-[env(safe-area-inset-top)] pb-28 sm:pt-0 sm:pb-0">
             {children}

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
 import { Providers } from '@/components/providers/providers'
 import { ServiceWorkerProvider } from '@/components/providers/serwist'
+import { AnnouncementRegion } from '@876/ui/announcements'
 import { ThemeProvider } from '@876/ui/theme'
 import { ThemeScript } from '@876/ui/theme-script'
 import { UserStoreProvider } from '@/components/providers/user-store-provider'
@@ -100,7 +101,10 @@ export default async function RootLayout({
         <Providers user={initialUser}>
           <ThemeProvider>
             <UserStoreProvider initialUser={initialUser}>
-              <ServiceWorkerProvider>{children}</ServiceWorkerProvider>
+              <ServiceWorkerProvider>
+                <AnnouncementRegion />
+                {children}
+              </ServiceWorkerProvider>
             </UserStoreProvider>
           </ThemeProvider>
         </Providers>

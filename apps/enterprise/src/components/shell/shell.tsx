@@ -11,6 +11,7 @@ import {
   AppShellMain,
   AppShellSidebarArea,
 } from '@876/ui/app-shell'
+import { AnnouncementRegion } from '@876/ui/announcements'
 import { SidebarTrigger } from '@876/ui/sidebar'
 import type { SidebarUserMenuUser } from '@876/ui/sidebar-user-menu'
 
@@ -84,6 +85,8 @@ export async function Shell({
             <UserMenu user={user} />
           </div>
         </AppShellHeader>
+
+        <AnnouncementRegion />
 
         <AppShellBody>
           <AppShellMain>{children}</AppShellMain>
