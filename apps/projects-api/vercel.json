@@ -3,7 +3,7 @@
   "crons": [
     {
       "path": "/internal/automation/drain",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 6 * * *"
     }
   ],
   "ignoreCommand": "node ../../scripts/vercel-ignore-build.mjs @876/projects-api"
