@@ -68,11 +68,11 @@ describe('Markdown structure', () => {
         content={'```sql\nSELECT id FROM invoices WHERE past_due = true;\n```'}
       />
     )
-    const code = screen.getByText(
+    const code = document.querySelector('code.language-sql')
+
+    expect(code).toHaveTextContent(
       'SELECT id FROM invoices WHERE past_due = true;'
     )
-
-    expect(code.tagName).toBe('CODE')
   })
 
   it('Nested blockquotes, with two levels, render both quoted passages', () => {
