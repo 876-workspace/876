@@ -46,7 +46,7 @@ describe('BudgetVarianceData', () => {
   it('renders the variance as money', async () => {
     render(await BudgetVarianceData({ orgId: 'org_1', period: PERIOD }))
 
-    expect(screen.getByText('-$250.00')).toBeInTheDocument()
+    expect(screen.getByText('-US$250.00')).toBeInTheDocument()
   })
 
   it('banners a report it could not read and keeps the page mounted', async () => {
@@ -63,6 +63,6 @@ describe('BudgetVarianceData', () => {
     expect(
       screen.getByText('The budget variance report could not be loaded')
     ).toBeInTheDocument()
-    expect(screen.queryByText('-$250.00')).not.toBeInTheDocument()
+    expect(screen.queryByText('-US$250.00')).not.toBeInTheDocument()
   })
 })
