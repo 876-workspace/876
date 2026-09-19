@@ -178,7 +178,7 @@ export function WorkBreakdown({ breakdown, ownerLabels, canEdit }: Props) {
                             >
                               <span className="shrink-0 font-mono text-xs font-semibold">
                                 {issue.identifier}
-                              </span>
+                              </span>{' '}
                               <span className="line-clamp-2 text-[0.9375rem] leading-5">
                                 {issue.title}
                               </span>
@@ -199,7 +199,7 @@ export function WorkBreakdown({ breakdown, ownerLabels, canEdit }: Props) {
                         >
                           <span className="shrink-0 font-mono text-xs font-semibold">
                             {issue.identifier}
-                          </span>
+                          </span>{' '}
                           <span className="line-clamp-2 text-[0.9375rem] leading-5">
                             {issue.title}
                           </span>
