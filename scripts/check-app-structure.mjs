@@ -81,18 +81,6 @@ const PRIVATE_DIRS = new Set(['_components', '_lib'])
  */
 
 /**
- * Loose files that predate the rule, per app. A ratchet, not an exemption:
- * entries are deleted as each file moves into its folder, and the list may
- * never grow — so adding a loose file requires editing this list, which is the
- * review moment the flat directory never had.
- *
- * Removal condition: this map is empty and the constant is deleted.
- */
-const LIB_ROOT_RATCHET = JSON.parse(
-  readFileSync(new URL('./app-structure-lib-ratchet.json', import.meta.url), 'utf8')
-)
-
-/**
  * An app's own name, as it must not appear as a file prefix.
  *
  * `symbols: false` disables the *symbol* half of the check while keeping the
@@ -421,12 +409,10 @@ for (const app of APPS) {
   // ---- 8. loose file at the src/lib/ root ---------------------------------
   const libDir = join(root, 'lib')
   if (exists(libDir)) {
-    const ratchet = new Set(LIB_ROOT_RATCHET[app] ?? [])
     for (const entry of readdirSync(libDir, { withFileTypes: true })) {
       if (!entry.isFile()) continue
       const name = entry.name
       if (!/\.tsx?$/.test(name)) continue
-      if (ratchet.has(name)) continue
 
       fail(
         app,

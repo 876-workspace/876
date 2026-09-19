@@ -263,13 +263,10 @@ differing only in an app slug, **three** of `apps-directory.ts` with drifted app
 lists, and **two** `formatMoney` implementations with different signatures
 inside console's own `lib/`.
 
-`scripts/check-app-structure.mjs` check 8 enforces it, and names the folder each
-loose file belongs in. `scripts/app-structure-lib-ratchet.json` records the
-files that predate the rule — a **ratchet, not an exemption**: entries are
-deleted as each file moves, and the list may never grow, so adding a loose file
-requires editing it. Regenerate with `node scripts/generate-lib-ratchet.mjs`
-**only to shrink it**. Removal condition: the map is empty and the constant is
-deleted.
+`scripts/check-app-structure.mjs` check 8 enforces it and names the folder each
+loose file belongs in. It has no exemption list: every app reached zero loose
+files in one pass, so the migration ratchet that carried the 92 pre-existing
+ones was deleted with the last of them.
 
 `src/lib/` holds **no JSX**. A file under `lib/` that renders is a component
 that landed in the wrong bucket.
