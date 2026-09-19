@@ -198,6 +198,7 @@ pnpm --filter @876/projects-api lint
 pnpm --filter @876/projects-api test
 pnpm --filter @876/projects-api exec prisma validate
 pnpm --filter @876/projects typecheck
+pnpm --filter @876/projects-app typecheck
 pnpm --filter @876/projects-mcp test
 ```
 
