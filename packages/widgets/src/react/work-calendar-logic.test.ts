@@ -62,6 +62,8 @@ function reminder(id: string, at: number): WorkReminder {
     title: id,
     note: null,
     remindAt: at,
+    offsetMinutesBeforeDue: null,
+    channel: 'in-app',
     timeZone: 'America/New_York',
     recurrenceRuleId: null,
     userId: 'user_1',

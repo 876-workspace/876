@@ -115,6 +115,7 @@ export async function retrieve(
     reminders: reminderResult.filter(
       (reminder) =>
         reminder.status === 'SCHEDULED' &&
+        reminder.remindAt !== null &&
         reminder.remindAt >= from &&
         reminder.remindAt < to
     ),

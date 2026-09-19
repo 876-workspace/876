@@ -21,6 +21,8 @@ describe('createRemindersResource', () => {
       title: 'Call Depot Dispatcher',
       note: 'Confirm truck departure',
       remindAt: 1_788_271_200,
+      offsetMinutesBeforeDue: null,
+      channel: 'in-app',
       timeZone: 'America/Jamaica',
       recurrenceRuleId: null,
       userId: 'usr_tariq_01',

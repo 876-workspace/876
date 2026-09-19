@@ -128,6 +128,8 @@ describe('createMyWorkResource', () => {
           title: 'Call Supervisor',
           note: null,
           remindAt: 1_788_260_000,
+          offsetMinutesBeforeDue: null,
+          channel: 'in-app',
           timeZone: 'UTC',
           recurrenceRuleId: null,
           userId: 'usr_tariq_01',

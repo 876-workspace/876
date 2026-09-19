@@ -67,6 +67,8 @@ function reminder(
     note: null,
     status: 'SCHEDULED',
     remindAt: FROM + 300,
+    offsetMinutesBeforeDue: null,
+    channel: 'in-app',
     timeZone: null,
     recurrenceRuleId: null,
     userId: 'user_other',
