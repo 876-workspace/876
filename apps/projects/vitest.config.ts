@@ -15,6 +15,12 @@ export default defineConfig({
       'client-only': resolve(
         '../../node_modules/next/dist/compiled/client-only/index.js'
       ),
+      // vi.mock keys on the resolved module id. Without this, a component in
+      // @876/ui resolves next/navigation through its own node_modules link and
+      // escapes an app-level mock, so rendering any shared client component
+      // reaches the real useRouter and throws "expected app router to be
+      // mounted". Pinning one id makes the mock cover the whole graph.
+      'next/navigation': resolve('../../node_modules/next/navigation.js'),
     },
   },
   test: {
