@@ -167,3 +167,54 @@ other app's behaviour) plus the existing `primaryIconOnly`. Projects passes
 | --- | --- | --- | --- |
 | 3a | Mobile app-bar treatment for `ResourceToolbar` + projects opt-in | Command Code DeepSeek | `packages/ui/src/components/resource-toolbar.tsx`, projects list pages |
 | 3b | Detail-page mobile pass (project, phase) + `/install` page | Command Code DeepSeek | `packages/projects-ui/src/{project-detail,phase-detail}.tsx`, `app/(app)/install/**` |
+
+## D6 (revised) — the large-title app bar
+
+Supersedes the sizing in D6 above. Reference supplied by the user, 2026-09-19:
+iOS Settings and WhatsApp Updates. Both use the same pattern and it is the one
+876 Projects adopts on phone.
+
+What those two screens actually do:
+
+1. **The title is big and it is the loudest thing on screen** — roughly 34pt,
+   heavy weight, left aligned, sitting on generous top space with nothing
+   competing beside it. Ours is currently `876-page-title` (20px/600), a desktop
+   size, with a saturated blue button parked next to it.
+2. **Actions sit above the title, not beside it**, as small bare circular icon
+   buttons (WhatsApp's `···` top-left). They are quiet. The title is not.
+3. **Section headings are a second tier of large bold text** ("Status",
+   "Channels") with an optional pill action on the right ("Explore") — not the
+   muted 12px uppercase label a desktop card uses.
+4. **The row list is full-bleed with a leading avatar and a trailing value**,
+   which is exactly what `MobileList` already does. That part of our app is
+   right and must not change.
+
+### The spec
+
+Below `sm`, `ResourceToolbar` renders:
+
+```
+┌─────────────────────────────────────┐
+│                               (···) │  ← row 1: bare circular icon actions
+│  Phases              ⌄              │  ← row 2: text-[2rem] font-bold
+└─────────────────────────────────────┘
+```
+
+- title `text-[2rem] leading-tight font-bold tracking-tight`, `px-4 pt-2 pb-4`;
+- when the title is a `StatusFilterHeading`, the chevron sits inline with it at
+  the large size — the filter *is* the big title, which is exactly the iOS
+  pattern of a tappable large title;
+- overflow `···` becomes `size-9 rounded-full` with no border and no card
+  surface — `variant="ghost"`, not the current bordered white box;
+- **the primary action is suppressed when the host renders a FAB.** Opt-in prop
+  `mobilePrimary?: 'button' | 'fab-owns-it'`, default `'button'` so Console,
+  Couriers, Billing and Invoice are untouched. Projects passes `'fab-owns-it'`.
+
+Section headings inside a phone page: `text-[1.375rem] font-bold tracking-tight`,
+with an optional trailing pill action. The muted uppercase micro-label is a
+desktop-only treatment.
+
+**Deferred, deliberately:** collapsing the large title into a compact sticky bar
+on scroll. It needs either scroll-driven CSS animations (uneven support) or a
+scroll listener in a client component, and it is polish on top of a pattern that
+is already a large improvement. Not in this run.
