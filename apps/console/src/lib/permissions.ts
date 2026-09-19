@@ -285,16 +285,25 @@ function actionLabel(action: string): string {
 }
 
 /** Friendly product name for a permission-group heading. Display only. */
+/**
+ * Labels that title-casing cannot derive. Only genuine exceptions belong here —
+ * a product whose display name is an acronym, or differs from its slug.
+ */
 const PRODUCT_LABELS: Record<string, string> = {
   crm: 'CRM',
-  couriers: 'Couriers',
-  billing: 'Billing',
-  invoice: 'Invoice',
-  projects: 'Projects',
 }
 
+/**
+ * Title-cases the fallback rather than returning the raw slug. Commerce shipped
+ * a permission catalog and rendered as "876 commerce" beside "876 Billing"
+ * because nobody added it to the map above; deriving the common case means a
+ * new product reads correctly the moment its catalog exists.
+ */
 function productLabel(shortSlug: string): string {
-  return PRODUCT_LABELS[shortSlug] ?? shortSlug
+  const override = PRODUCT_LABELS[shortSlug]
+  if (override) return override
+
+  return shortSlug.charAt(0).toUpperCase() + shortSlug.slice(1)
 }
 
 function permissionModules(

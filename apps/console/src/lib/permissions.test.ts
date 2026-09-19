@@ -34,9 +34,9 @@ const OPERATOR_UNIVERSE_KEYS = new Set([
 const EXPECTED_ROLE_COUNTS = {
   // Finance Requests projects its read/create/delete permissions into the
   // generated Console operator catalog.
-  staff: 79,
-  admin: 266,
-  'super-admin': 279,
+  staff: 103,
+  admin: 341,
+  'super-admin': 354,
 } as const
 
 describe('Console permission catalog', () => {
@@ -262,6 +262,20 @@ describe('Console permission catalog', () => {
     expect(result).not.toBe(catalog.auditor)
   })
 
+  // Regression: Commerce shipped a permission catalog and rendered as
+  // "876 commerce" beside "876 Billing", because the label map was
+  // hand-maintained and its fallback returned the raw slug.
+  it('title-cases every product group label, including products with no override', () => {
+    const productLabels = PERMISSION_GROUPS.map((group) => group.label).filter(
+      (label) => label.startsWith('876 ')
+    )
+
+    expect(productLabels.length).toBeGreaterThan(0)
+    for (const label of productLabels) {
+      expect(label.slice(4)).toMatch(/^[A-Z]/)
+    }
+  })
+
   it('nests each product catalog under one product group', () => {
     expect(PERMISSION_GROUPS.map((group) => group.label)).toEqual([
       'Console',
@@ -270,6 +284,7 @@ describe('Console permission catalog', () => {
       '876 CRM',
       '876 Invoice',
       '876 Projects',
+      '876 Commerce',
       'Operator actions',
     ])
     expect(
@@ -281,6 +296,7 @@ describe('Console permission catalog', () => {
       'Customers',
       'Catalog',
       'Sales',
+      'Sales orders',
       'Subscriptions',
       'Reports',
       'Currencies',
