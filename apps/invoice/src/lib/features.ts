@@ -2,7 +2,10 @@ import 'server-only'
 
 import { cache } from 'react'
 import * as Sentry from '@sentry/nextjs'
-import { resolveExperimentDecision } from '@876/core/platform'
+import {
+  createAppExperimentResolver,
+  createExperimentDecisionsFetcher,
+} from '@876/core/platform'
 import { resolveEnabledWidgetIds } from '@876/widgets'
 
 import { getPlatformClient } from '@/lib/clients/platform'
@@ -95,36 +98,13 @@ const getCachedFeatures = cache(async function getCachedFeatures(
   }
 })
 
-/** Resolves a PostHog experiment for the Invoice app. */
-export async function getInvoiceExperiment<T = unknown>(
-  featureSlug: string,
-  context?: {
-    userId?: string
-    organizationId?: string
-    visitorId?: string
-  }
-) {
-  return resolveExperimentDecision<T>(
-    featureSlug,
-    await getExperimentDecisions(
-      context?.userId,
-      context?.organizationId,
-      context?.visitorId
-    )
-  )
-}
-
-const getExperimentDecisions = cache(async function getExperimentDecisions(
-  userId: string | undefined,
-  organizationId: string | undefined,
-  visitorId: string | undefined
-) {
-  const platform = await getPlatformClient()
-  const { data, error } = await platform.features.evaluateDetails({
+const getExperimentDecisions = cache(
+  createExperimentDecisionsFetcher({
     appSlug: INVOICE_APP_SLUG,
-    userId,
-    organizationId,
-    visitorId,
+    getPlatformClient,
   })
-  return error || !data ? null : data.data
-})
+)
+
+/** Resolves a PostHog experiment for the Invoice app. */
+export const getInvoiceExperiment =
+  createAppExperimentResolver(getExperimentDecisions)
