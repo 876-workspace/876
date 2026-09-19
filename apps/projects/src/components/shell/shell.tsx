@@ -62,7 +62,16 @@ export async function Shell({
       <AppShellSidebarArea>
         <Sidebar navigation={navigation} />
       </AppShellSidebarArea>
-      <AppShellContent className="relative">
+      {/*
+        The floating add button is feature-gated, so whether a page has a
+        second way to add is only known here, at runtime. Marking the region
+        lets the toolbar drop its own phone primary when the FAB is present
+        and keep it when the flag is off, instead of every page guessing.
+      */}
+      <AppShellContent
+        className="relative"
+        data-has-fab={uiFeatures.globalAdd ? 'true' : undefined}
+      >
         <AppShellHeader className="hidden sm:flex">
           <SidebarTrigger />
 
