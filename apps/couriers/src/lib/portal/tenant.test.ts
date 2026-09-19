@@ -77,8 +77,9 @@ describe('getPortalTenant', () => {
   })
 
   it('falls back from the base-domain hostname to a tenant slug', async () => {
+    vi.stubEnv('PORTAL_BASE_DOMAIN', 'couriers.example.test')
     mocks.headers.mockResolvedValue(
-      new Headers({ host: 'rocketship.couriers.876.app' })
+      new Headers({ host: 'rocketship.couriers.example.test' })
     )
     mocks.resolve
       .mockResolvedValueOnce({
@@ -89,16 +90,30 @@ describe('getPortalTenant', () => {
 
     await expect(getPortalTenant()).resolves.toEqual(tenant)
     expect(mocks.resolve).toHaveBeenNthCalledWith(1, {
-      hostname: 'rocketship.couriers.876.app',
+      hostname: 'rocketship.couriers.example.test',
     })
     expect(mocks.resolve).toHaveBeenNthCalledWith(2, { slug: 'rocketship' })
   })
 
+  it('skips base-domain resolution when PORTAL_BASE_DOMAIN is unset', async () => {
+    vi.stubEnv('PORTAL_BASE_DOMAIN', '')
+    mocks.headers.mockResolvedValue(
+      new Headers({ host: 'rocketship.couriers.example.test' })
+    )
+
+    await expect(getPortalTenant()).resolves.toBeNull()
+    expect(mocks.resolve).toHaveBeenCalledTimes(1)
+    expect(mocks.resolve).toHaveBeenCalledWith({
+      hostname: 'rocketship.couriers.example.test',
+    })
+  })
+
   it('strips the port and lowercases a forwarded host before resolution', async () => {
+    vi.stubEnv('PORTAL_BASE_DOMAIN', 'couriers.example.test')
     mocks.headers.mockResolvedValue(
       new Headers({
         'x-forwarded-host':
-          '  ROCKETSHIP.COURIERS.876.APP:443, proxy.internal:3003',
+          '  ROCKETSHIP.COURIERS.EXAMPLE.TEST:443, proxy.internal:3003',
       })
     )
     mocks.resolve
@@ -110,7 +125,7 @@ describe('getPortalTenant', () => {
 
     await expect(getPortalTenant()).resolves.toEqual(tenant)
     expect(mocks.resolve).toHaveBeenNthCalledWith(1, {
-      hostname: 'rocketship.couriers.876.app',
+      hostname: 'rocketship.couriers.example.test',
     })
   })
 

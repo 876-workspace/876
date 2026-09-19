@@ -43,8 +43,8 @@ describe('RateList', () => {
   it('renders bill and cost rates per hour', () => {
     render(<RateList rates={[makeRate()]} {...props} />)
 
-    expect(screen.getAllByText('$150.00/h').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('$90.00/h').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('US$150.00/h').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('US$90.00/h').length).toBeGreaterThan(0)
   })
 
   it('labels user-scoped rates with the member', () => {

@@ -9,8 +9,6 @@ import {
   type PortalTenantView,
 } from './client'
 
-const DEFAULT_PORTAL_BASE_DOMAIN = 'couriers.876.app'
-
 export const getPortalTenant = cache(
   async function getPortalTenant(): Promise<PortalTenantView | null> {
     const requestHeaders = await headers()
@@ -22,15 +20,15 @@ export const getPortalTenant = cache(
       const domainTenant = await resolvePortalTenant({ hostname })
       if (domainTenant) return domainTenant
 
-      const baseDomain = normalizeBaseDomain(
-        process.env.PORTAL_BASE_DOMAIN ?? DEFAULT_PORTAL_BASE_DOMAIN
-      )
-      const suffix = `.${baseDomain}`
+      const baseDomain = normalizeBaseDomain(process.env.PORTAL_BASE_DOMAIN)
 
-      if (hostname.endsWith(suffix)) {
-        const slug = hostname.slice(0, -suffix.length).split('.')[0]
-        const tenant = slug ? await resolvePortalTenant({ slug }) : null
-        if (tenant) return tenant
+      if (baseDomain) {
+        const suffix = `.${baseDomain}`
+        if (hostname.endsWith(suffix)) {
+          const slug = hostname.slice(0, -suffix.length).split('.')[0]
+          const tenant = slug ? await resolvePortalTenant({ slug }) : null
+          if (tenant) return tenant
+        }
       }
     }
 
@@ -59,11 +57,15 @@ function normalizeHostname(value: string | null): string | null {
   return hostname.replace(/:\d+$/, '')
 }
 
-function normalizeBaseDomain(value: string): string {
-  return (
-    value
-      .trim()
-      .toLowerCase()
-      .replace(/^\.+|\.+$/g, '') || DEFAULT_PORTAL_BASE_DOMAIN
-  )
+/**
+ * The portal base domain is deployment configuration: when it is unset or
+ * blank, subdomain tenant resolution is skipped rather than pointed at a
+ * guessed domain (.agents/rules/env-configuration.md rule 4).
+ */
+function normalizeBaseDomain(value: string | undefined): string | null {
+  const host = value?.trim().toLowerCase()
+  if (!host) return null
+  const domain = host.replace(/^\.+|\.+$/g, '')
+  if (!domain) return null
+  return domain
 }

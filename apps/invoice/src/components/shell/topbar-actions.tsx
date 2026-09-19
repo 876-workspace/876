@@ -6,23 +6,19 @@ import { PlusIcon } from '@876/ui/icons'
 
 const INVOICE_APPS: AppSwitcherApp[] = [
   { name: 'Invoice', url: '/', current: true },
-  {
-    name: 'Billing',
-    url: process.env.NEXT_PUBLIC_BILLING_URL ?? 'https://billing.876.app',
-  },
-  {
-    name: 'Console',
-    url: process.env.NEXT_PUBLIC_CONSOLE_URL ?? 'https://console.876.app',
-  },
-  {
-    name: 'Couriers',
-    url: process.env.NEXT_PUBLIC_COURIERS_URL ?? 'https://couriers.876.app',
-  },
-  {
-    name: '876',
-    url: process.env.NEXT_PUBLIC_876_APP_URL ?? 'https://876.app',
-  },
+  ...appEntry('Billing', process.env.NEXT_PUBLIC_BILLING_URL),
+  ...appEntry('Console', process.env.NEXT_PUBLIC_CONSOLE_URL),
+  ...appEntry('Couriers', process.env.NEXT_PUBLIC_COURIERS_URL),
+  ...appEntry('876', process.env.NEXT_PUBLIC_APP_URL),
 ]
+
+/**
+ * An app whose origin variable is unset is omitted from the switcher; there is
+ * deliberately no fallback origin (.agents/rules/env-configuration.md rule 4).
+ */
+function appEntry(name: string, url: string | undefined): AppSwitcherApp[] {
+  return url ? [{ name, url }] : []
+}
 
 export function TopbarActions({
   showGlobalAdd,

@@ -34,15 +34,15 @@ describe('BudgetVarianceTable', () => {
   it('renders budget, actual cost, and variance money', () => {
     render(<BudgetVarianceTable report={makeReport([makeRow()])} />)
 
-    expect(screen.getByText('$1,000.00')).toBeInTheDocument()
-    expect(screen.getByText('$1,250.00')).toBeInTheDocument()
-    expect(screen.getByText('-$250.00')).toBeInTheDocument()
+    expect(screen.getByText('US$1,000.00')).toBeInTheDocument()
+    expect(screen.getByText('US$1,250.00')).toBeInTheDocument()
+    expect(screen.getByText('-US$250.00')).toBeInTheDocument()
   })
 
   it('marks a negative variance as destructive', () => {
     render(<BudgetVarianceTable report={makeReport([makeRow()])} />)
 
-    expect(screen.getByText('-$250.00')).toHaveClass('text-destructive')
+    expect(screen.getByText('-US$250.00')).toHaveClass('text-destructive')
   })
 
   it('leaves a positive variance unmarked', () => {
@@ -52,7 +52,7 @@ describe('BudgetVarianceTable', () => {
       />
     )
 
-    expect(screen.getByText('$250.00')).not.toHaveClass('text-destructive')
+    expect(screen.getByText('US$250.00')).not.toHaveClass('text-destructive')
   })
 
   it('renders an em dash for a missing budget', () => {

@@ -2600,6 +2600,9 @@ importers:
 
   packages/projects-ui:
     dependencies:
+      '@876/core':
+        specifier: workspace:*
+        version: link:../core
       '@876/projects':
         specifier: workspace:*
         version: link:../projects

@@ -31,8 +31,8 @@ export function rateScopeLabel(rate: Rate): string {
 }
 
 export function rateAmountLabel(rate: Rate): string {
-  const bill = formatMoney(rate.billRateMinor, rate.currency) ?? '—'
-  const cost = formatMoney(rate.costRateMinor, rate.currency) ?? '—'
+  const bill = formatMoney(rate.billRateMinor, rate.currency)
+  const cost = formatMoney(rate.costRateMinor, rate.currency)
   return `${bill}/h bill · ${cost}/h cost`
 }
 
@@ -110,10 +110,10 @@ export function RateList({
                     {rateScopeLabel(rate)}
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    {formatMoney(rate.billRateMinor, rate.currency) ?? '—'}/h
+                    {formatMoney(rate.billRateMinor, rate.currency)}/h
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    {formatMoney(rate.costRateMinor, rate.currency) ?? '—'}/h
+                    {formatMoney(rate.costRateMinor, rate.currency)}/h
                   </TableCell>
                   <TableCell className="px-5 py-4">
                     {ratePeriodLabel(rate)}

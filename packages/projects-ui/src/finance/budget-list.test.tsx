@@ -45,7 +45,7 @@ describe('BudgetList', () => {
   it('renders money budgets from integer minor units', () => {
     render(<BudgetList budgets={[makeBudget()]} {...props} />)
 
-    expect(screen.getAllByText('$1,000.00').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('US$1,000.00').length).toBeGreaterThan(0)
   })
 
   it('renders hour budgets and the alert threshold', () => {

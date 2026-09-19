@@ -31,8 +31,8 @@ describe('FinancialSummaryPanel', () => {
     )
 
     expect(screen.getByText('11h 00m')).toBeInTheDocument()
-    expect(screen.getByText('$550.00')).toBeInTheDocument()
-    expect(screen.getByText('$990.00')).toBeInTheDocument()
+    expect(screen.getByText('US$550.00')).toBeInTheDocument()
+    expect(screen.getByText('US$990.00')).toBeInTheDocument()
   })
 
   it('flags unpriced minutes instead of pricing them at zero', () => {

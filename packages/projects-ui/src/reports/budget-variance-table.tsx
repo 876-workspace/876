@@ -26,13 +26,11 @@ function Money({
   currency: string | null
   negative?: boolean
 }) {
-  const formatted =
-    minor === null || currency === null ? null : formatMoney(minor, currency)
-  if (formatted === null)
+  if (minor === null || currency === null)
     return <span className="text-muted-foreground">—</span>
   return (
     <span className={negative ? 'text-destructive font-medium' : undefined}>
-      {formatted}
+      {formatMoney(minor, currency)}
     </span>
   )
 }

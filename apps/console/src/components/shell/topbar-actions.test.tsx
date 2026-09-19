@@ -43,14 +43,16 @@ vi.mock('@876/ui/app-switcher', () => ({
 }))
 
 const APP_URL_ENV_NAMES = [
-  'NEXT_PUBLIC_876_APP_URL',
+  'NEXT_PUBLIC_CONSUMER_URL',
   'NEXT_PUBLIC_ENTERPRISE_URL',
   'NEXT_PUBLIC_BILLING_URL',
   'NEXT_PUBLIC_COURIERS_URL',
 ] as const
 
-function stubFallbackAppUrls() {
-  for (const name of APP_URL_ENV_NAMES) vi.stubEnv(name, undefined)
+function stubAppUrls(
+  urls: Partial<Record<(typeof APP_URL_ENV_NAMES)[number], string>>
+) {
+  for (const name of APP_URL_ENV_NAMES) vi.stubEnv(name, urls[name])
 }
 
 function findGlobalAddDivider(container: HTMLElement): HTMLDivElement | null {
@@ -101,9 +103,14 @@ describe('Console TopbarActions', () => {
     expect(mocks.appSwitcher).not.toHaveBeenCalled()
   })
 
-  it('opens the app switcher with the complete fallback app directory', async () => {
+  it('opens the app switcher with the configured app directory', async () => {
     const user = userEvent.setup()
-    stubFallbackAppUrls()
+    stubAppUrls({
+      NEXT_PUBLIC_CONSUMER_URL: 'https://app.preview.876.test',
+      NEXT_PUBLIC_ENTERPRISE_URL: 'https://enterprise.preview.876.test',
+      NEXT_PUBLIC_BILLING_URL: 'https://billing.preview.876.test',
+      NEXT_PUBLIC_COURIERS_URL: 'https://couriers.preview.876.test',
+    })
     const { TopbarActions } = await import('@/components/shell/topbar-actions')
     render(<TopbarActions showGlobalAdd={false} showAppSwitcher={true} />)
 
@@ -111,10 +118,10 @@ describe('Console TopbarActions', () => {
 
     const expectedApps: AppSwitcherApp[] = [
       { name: 'Console', url: '/', current: true },
-      { name: '876', url: 'https://876.app' },
-      { name: 'Enterprise', url: 'https://enterprise.876.app' },
-      { name: 'Billing', url: 'https://billing.876.app' },
-      { name: 'Couriers', url: 'https://couriers.876.app' },
+      { name: '876', url: 'https://app.preview.876.test' },
+      { name: 'Enterprise', url: 'https://enterprise.preview.876.test' },
+      { name: 'Billing', url: 'https://billing.preview.876.test' },
+      { name: 'Couriers', url: 'https://couriers.preview.876.test' },
     ]
     expect(mocks.appSwitcher).toHaveBeenCalledTimes(1)
     expect(mocks.appSwitcher).toHaveBeenCalledWith({ apps: expectedApps })
@@ -130,10 +137,10 @@ describe('Console TopbarActions', () => {
     ])
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/',
-      'https://876.app',
-      'https://enterprise.876.app',
-      'https://billing.876.app',
-      'https://couriers.876.app',
+      'https://app.preview.876.test',
+      'https://enterprise.preview.876.test',
+      'https://billing.preview.876.test',
+      'https://couriers.preview.876.test',
     ])
     expect(links.map((link) => link.getAttribute('aria-current'))).toEqual([
       'page',
@@ -144,10 +151,12 @@ describe('Console TopbarActions', () => {
     ])
   })
 
-  it('uses an environment override for the Billing app URL', async () => {
+  it('omits an app whose origin is unset instead of guessing one', async () => {
     const user = userEvent.setup()
-    stubFallbackAppUrls()
-    vi.stubEnv('NEXT_PUBLIC_BILLING_URL', 'https://billing.preview.876.test')
+    stubAppUrls({
+      NEXT_PUBLIC_CONSUMER_URL: 'https://app.preview.876.test',
+      NEXT_PUBLIC_COURIERS_URL: 'https://couriers.preview.876.test',
+    })
     const { TopbarActions } = await import('@/components/shell/topbar-actions')
     render(<TopbarActions showGlobalAdd={false} showAppSwitcher={true} />)
 
@@ -157,16 +166,20 @@ describe('Console TopbarActions', () => {
     expect(mocks.appSwitcher.mock.calls[0]?.[0]).toEqual({
       apps: [
         { name: 'Console', url: '/', current: true },
-        { name: '876', url: 'https://876.app' },
-        { name: 'Enterprise', url: 'https://enterprise.876.app' },
-        { name: 'Billing', url: 'https://billing.preview.876.test' },
-        { name: 'Couriers', url: 'https://couriers.876.app' },
+        { name: '876', url: 'https://app.preview.876.test' },
+        { name: 'Couriers', url: 'https://couriers.preview.876.test' },
       ],
     })
-    expect(screen.getByRole('menuitem', { name: 'Billing' })).toHaveAttribute(
-      'href',
-      'https://billing.preview.876.test'
-    )
+    const menu = screen.getByRole('menu')
+    const links = within(menu).getAllByRole('menuitem')
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/',
+      'https://app.preview.876.test',
+      'https://couriers.preview.876.test',
+    ])
+    expect(
+      links.some((link) => link.getAttribute('href')?.includes('876.app'))
+    ).toBe(false)
   })
 
   it('pins Help to the public documentation URL', async () => {

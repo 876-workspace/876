@@ -6,12 +6,17 @@ import { Button } from '@876/ui/button'
 
 const BILLING_APPS: AppSwitcherApp[] = [
   { name: 'Billing', url: '/', current: true },
-  {
-    name: 'Couriers',
-    url: process.env.NEXT_PUBLIC_COURIERS_URL ?? 'https://couriers.876.app',
-  },
-  { name: '876', url: 'https://876.app' },
+  ...appEntry('Couriers', process.env.NEXT_PUBLIC_COURIERS_URL),
+  ...appEntry('876', process.env.NEXT_PUBLIC_APP_URL),
 ]
+
+/**
+ * An app whose origin variable is unset is omitted from the switcher; there is
+ * deliberately no fallback origin (.agents/rules/env-configuration.md rule 4).
+ */
+function appEntry(name: string, url: string | undefined): AppSwitcherApp[] {
+  return url ? [{ name, url }] : []
+}
 
 export function TopbarActions({
   showGlobalAdd = true,
