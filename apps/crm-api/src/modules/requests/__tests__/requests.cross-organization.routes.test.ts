@@ -10,8 +10,6 @@ vi.mock('../requests.repository.js', () => repository)
 vi.mock('../../priorities/index.js', () => priorities)
 vi.mock('../../tenants/tenants.service.js', () => ({}))
 vi.mock('../../notes/notes.repository.js', () => ({}))
-vi.mock('../../tasks/tasks.repository.js', () => ({}))
-vi.mock('../../reminders/reminders.repository.js', () => ({}))
 
 const { errorHandler } = await import('../../../http/error-handler.js')
 const { createOperatorRequestsRouter } = await import('../requests.routes.js')

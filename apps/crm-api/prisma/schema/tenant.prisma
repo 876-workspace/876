@@ -21,8 +21,6 @@ model Tenant {
   teamMembers            TeamMember[]
   requestCategories      RequestCategoryDef[]
   requestSubcategories   RequestSubcategory[]
-  requestTasks           RequestTask[]
-  requestReminders       RequestReminder[]
   requestForms           RequestForm[]
   requestFormSubmissions RequestFormSubmission[]
 

@@ -70,8 +70,6 @@ model Request {
   // Subcategory deletion is refused while referenced; NoAction is the database backstop.
   subcategory    RequestSubcategory? @relation(fields: [tenantId, subcategoryId], references: [tenantId, id], onDelete: NoAction)
   notes          RequestNote[]
-  tasks          RequestTask[]
-  reminders      RequestReminder[]
   formSubmission RequestFormSubmission?
 
   @@unique([tenantId, number])
