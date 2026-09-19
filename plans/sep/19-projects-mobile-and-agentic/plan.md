@@ -303,3 +303,98 @@ Rules the format must hold to, because an agent will parse it:
   the pasted text can refresh it.
 - The whole thing is deterministic: same issue in, same bytes out. It is
   snapshot-tested.
+
+## BLOCKED — R2 credentials (storage uploads, platform-wide)
+
+**Symptom:** "Attachment not saved — The storage provider could not complete the
+request" on every upload, in every app.
+
+**Root cause, confirmed 2026-09-19:** `876-storage-api` is deployed and answers
+`/health` and `/ready` with `ok`, but **has no environment variables set in
+production at all**. `apps/storage-api/core/config.py` defaults every R2 field
+to `""`:
+
+```python
+r2_account_id: str = Field(default="", validation_alias="R2_ACCOUNT_ID")
+r2_access_key_id: str = Field(default="", validation_alias="R2_ACCESS_KEY_ID")
+r2_secret_access_key: str = Field(default="", validation_alias="R2_SECRET_ACCESS_KEY")
+```
+
+so the service boots clean and only fails when something tries to sign an upload
+URL. Health checks do not touch R2, which is why nothing reported it. This is
+exactly the degradation `env-configuration.md` was written about.
+
+**Why I could not self-serve it**, having been told to do all of it:
+
+| Source | Result |
+| --- | --- |
+| `apps/storage-api/.env` | has `STORAGE_DATABASE_URL` and `STORAGE_INTERNAL_KEY` only — **no R2 values** |
+| root `.env` | no R2 values |
+| `npx wrangler whoami` | `Invalid access token [code: 9109]` |
+| `CLOUDFLARE_API_TOKEN` in root `.env` | present (53 chars) but `/user/tokens/verify` → `Invalid API Token` |
+
+There is no valid Cloudflare credential anywhere in this environment, so R2
+access keys cannot be minted. Dev and prod do share values here — but neither
+has them, so there is nothing to copy.
+
+**What unblocks it:** a Cloudflare R2 API token (R2 → Manage API tokens →
+*Object Read & Write*). That yields `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`
+and the S3 endpoint. With those plus `CLOUDFLARE_ACCOUNT_ID` (already in `.env`,
+32 chars) every remaining value is derivable:
+
+```
+R2_ACCOUNT_ID        = CLOUDFLARE_ACCOUNT_ID
+R2_ENDPOINT          = https://<account-id>.r2.cloudflarestorage.com
+R2_FILES_BUCKET      = 876-files
+R2_ASSETS_BUCKET     = 876-assets
+R2_ASSETS_BASE_URL   = the assets bucket's public r2.dev or custom domain
+STORAGE_SCHEDULER_KEY= mintable here (random 32 bytes)
+```
+
+Alternatively, refresh `CLOUDFLARE_API_TOKEN` with an *Account → R2 → Edit*
+scope and everything above can be created here without further input.
+
+Staying on R2 while hosting on Vercel is correct and not a leftover: R2 is
+object storage, not hosting, and it is S3-compatible with no egress fees.
+`deployment.md`'s "Cloudflare is retired" concerns *hosting*.
+
+**Shipped regardless:** the user-facing copy. A storage outage must read as
+"The attachment could not be saved. Try again in a moment." with the provider
+detail kept for non-production and the log, per `error-handling.md`.
+
+## D7 — the issue is the record of what was done
+
+User, 2026-09-19: he works heavily through AI, often from a phone, and *cannot
+always reach the codebase*. The run folder under `plans/<month>/<run>/` **stays
+exactly as it is** — he was explicit about that — but it is not reachable from a
+phone, so it cannot be the only record.
+
+So the issue carries the outcome too:
+
+1. **Development links on a work item.** A project here *is an application*, so
+   its issues are software-development issues and deserve first-class
+   development attributes rather than a free-text comment: branch, pull request,
+   commit, deployment. New table, app-owned:
+
+   ```
+   work_item_development_links
+     id · tenant_id · work_item_id
+     kind          branch | pull-request | commit | deploy
+     url · label · external_id
+     state         open | merged | closed | succeeded | failed
+     created_at · updated_at
+     UNIQUE (work_item_id, kind, external_id)
+   ```
+
+   `kind` and `state` are 876-owned symbolic values, so kebab-case per
+   `naming.md`, and durable once persisted.
+
+2. **A closing summary comment**, posted by the orchestrator when a run lands:
+   what changed, which PR, what was verified, what was deliberately left. It is
+   the same content as the run report, written where he can read it.
+
+3. **MCP tools** so any agent can do both: `issue_development_link` (add/update
+   a link) and the existing `issue_comment` for the summary.
+
+This is Phase 6. It is deliberately **not** a substitute for `plan.md`; it is a
+phone-readable projection of it.
