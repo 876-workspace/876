@@ -27,7 +27,7 @@ model Project {
   taskLists TaskList[]
   cycles Cycle[]
   baselines ProjectBaseline[]
-  projectEvents ProjectEvent[]
+  projectEventLinks ProjectEventLink[]
   timeEntries TimeEntry[]
   billingConfig ProjectBilling?
   budgets Budget[]

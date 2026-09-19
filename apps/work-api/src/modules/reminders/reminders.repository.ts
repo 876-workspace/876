@@ -61,13 +61,13 @@ export const due = (now: Date, limit = 500) =>
   })
 
 function remindersAfter(anchor: {
-  remindAt: Date
+  remindAt: Date | null
   createdAt: Date
   id: string
 }) {
   return {
     OR: [
-      { remindAt: { gt: anchor.remindAt } },
+      ...(anchor.remindAt ? [{ remindAt: { gt: anchor.remindAt } }] : []),
       { remindAt: anchor.remindAt, createdAt: { gt: anchor.createdAt } },
       {
         remindAt: anchor.remindAt,
@@ -78,13 +78,13 @@ function remindersAfter(anchor: {
   }
 }
 function remindersBefore(anchor: {
-  remindAt: Date
+  remindAt: Date | null
   createdAt: Date
   id: string
 }) {
   return {
     OR: [
-      { remindAt: { lt: anchor.remindAt } },
+      ...(anchor.remindAt ? [{ remindAt: { lt: anchor.remindAt } }] : []),
       { remindAt: anchor.remindAt, createdAt: { lt: anchor.createdAt } },
       {
         remindAt: anchor.remindAt,

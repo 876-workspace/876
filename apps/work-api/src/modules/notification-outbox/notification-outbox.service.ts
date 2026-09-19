@@ -13,6 +13,9 @@ async function reminderOccurrences(
   reminder: Awaited<ReturnType<typeof reminders.due>>[number],
   now: Date
 ) {
+  // Offset-only reminders carry no absolute time until the owning host
+  // resolves them against a due date, so the absolute due scan skips them.
+  if (reminder.remindAt === null) return []
   if (!reminder.recurrenceRuleId)
     return reminder.remindAt <= now ? [reminder.remindAt] : []
   const tenantOrg = await import('../../db/index.js').then(

@@ -51,6 +51,8 @@ function createReminderFixture(overrides: Record<string, unknown> = {}) {
     title: 'Confirm Dispatch to Montego Bay',
     note: 'Call depot supervisor',
     remindAt: new Date('2026-08-30T11:00:00.000Z'),
+    offsetMinutesBeforeDue: null,
+    channel: 'in-app',
     timeZone: 'America/Jamaica',
     recurrenceRuleId: null,
     userId: 'usr_tariq_01',

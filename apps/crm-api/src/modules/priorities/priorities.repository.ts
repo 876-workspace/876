@@ -72,12 +72,8 @@ export function setDefault(tenantId: string, id: string) {
 }
 
 export async function isReferenced(tenantId: string, id: string) {
-  const [request, task, category, subcategory, form] = await Promise.all([
+  const [request, category, subcategory, form] = await Promise.all([
     prisma.request.findFirst({
-      where: { tenantId, priorityId: id, deletedAt: null },
-      select: { id: true },
-    }),
-    prisma.requestTask.findFirst({
       where: { tenantId, priorityId: id, deletedAt: null },
       select: { id: true },
     }),
@@ -95,7 +91,7 @@ export async function isReferenced(tenantId: string, id: string) {
     }),
   ])
 
-  return Boolean(request || task || category || subcategory || form)
+  return Boolean(request || category || subcategory || form)
 }
 
 export async function remove(id: string, deletedBy: string) {

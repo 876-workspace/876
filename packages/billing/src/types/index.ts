@@ -416,19 +416,24 @@ export {
 export type {
   ProductCreateParams,
   ProductUpdateParams,
+  ProductListParams,
   PlanCreateParams,
   PlanUpdateParams,
+  PlanListParams,
   PriceTierCreateParams,
   PriceCreateParams,
   PriceUpdateParams,
+  PriceQueryParams,
   AddonAssociationUpsertParams,
   AddonAssociationBatchResult,
   AddonPriceCreateParams,
   AddonCreateParams,
   AddonUpdateParams,
+  AddonListParams,
   PriceListEntryCreateParams,
   PriceListCreateParams,
   PriceListUpdateParams,
+  PriceListListParams,
   CatalogCloneParams,
   CatalogResource,
   CatalogCreated,
@@ -551,3 +556,47 @@ export {
   MemberSchema,
   MemberUpdatedSchema,
 } from './member.schema'
+
+// Refunds
+export type {
+  Refund,
+  RefundCreated,
+  RefundCreateParams,
+  RefundList,
+} from './refund'
+export {
+  RefundCreatedSchema,
+  RefundListSchema,
+  RefundSchema,
+} from './refund.schema'
+
+// Vendors
+export type {
+  Vendor,
+  VendorCreated,
+  VendorCreateParams,
+  VendorDeleted,
+  VendorListParams,
+  VendorStatus,
+  VendorUpdateParams,
+} from './vendor'
+export {
+  VendorCreatedSchema,
+  VendorDeletedSchema,
+  VendorListSchema,
+  VendorSchema,
+} from './vendor.schema'
+
+// Billing workspaces (internal projections)
+export type { Tenant, TenantListParams, TenantStatus } from './tenant'
+export { TenantListSchema, TenantSchema } from './tenant.schema'
+
+// Billing dashboard projection
+export type {
+  BillingDashboard,
+  DashboardIssuedInvoiceTotals,
+  DashboardReceivablesOverdue,
+  DashboardRecurringRevenue,
+  DashboardSalesThisMonth,
+} from './dashboard'
+export { BillingDashboardSchema } from './dashboard.schema'

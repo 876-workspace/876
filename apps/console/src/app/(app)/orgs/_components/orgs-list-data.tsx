@@ -3,7 +3,7 @@ import type { AdminOrganization, AdminSubscription } from '@876/platform/compat'
 
 import { platform } from '@/lib/clients/platform'
 import { workspace } from '@/lib/clients/workspace'
-import { isOrgStatus } from '@/lib/org-status'
+import { isOrgStatus } from '@/lib/status'
 import { OrgsList } from './orgs-list'
 
 export async function OrgsListData({

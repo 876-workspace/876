@@ -56,13 +56,20 @@ function taskItems(tasks: readonly WorkTask[]): WorkAgendaItem[] {
 }
 
 function reminderItems(reminders: readonly WorkReminder[]): WorkAgendaItem[] {
-  return reminders.map((reminder) => ({
-    type: 'reminder',
-    id: reminder.id,
-    at: reminder.remindAt,
-    allDay: false,
-    value: reminder,
-  }))
+  const items: WorkAgendaItem[] = []
+  for (const reminder of reminders) {
+    // An offset-only reminder ("30 minutes before due") has no absolute time
+    // until its host resolves the due date, so there is no row to place here.
+    if (reminder.remindAt == null) continue
+    items.push({
+      type: 'reminder',
+      id: reminder.id,
+      at: reminder.remindAt,
+      allDay: false,
+      value: reminder,
+    })
+  }
+  return items
 }
 
 function eventItems(events: readonly WorkEvent[]): WorkAgendaItem[] {

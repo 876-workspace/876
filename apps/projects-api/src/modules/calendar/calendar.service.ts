@@ -1,34 +1,36 @@
+import type {
+  WorkEventResource,
+  WorkRecurrenceDraft,
+  WorkRecurrenceRule,
+  WorkReminder,
+} from '@876/work'
+
 import { getError, type ProjectsError } from '../../http/errors.js'
-import { generateId } from '../../platform/ids.js'
 import {
-  fromDbUnixSeconds,
-  nowUnixSeconds,
-  nullableFromDbUnixSeconds,
-  nullableToDbUnixSeconds,
-  toDbUnixSeconds,
-} from '../../platform/timestamps.js'
+  PROJECTS_SYSTEM_ACTOR,
+  projectsEventWorkContext,
+  projectsIssueWorkContext,
+  projectsMilestoneWorkContext,
+  projectsProjectWorkContext,
+  resolveProjectsCalendarId,
+  workClient,
+  workErrorToProjects,
+} from '../../providers/work.js'
+import { nowUnixSeconds, nullableFromDbUnixSeconds, toDbUnixSeconds } from '../../platform/timestamps.js'
 import * as projects from '../projects/index.js'
 import * as tenants from '../tenants/index.js'
 import * as repository from './calendar.repository.js'
-import type {
-  CalendarIssueRow,
-  UpdateEventParams,
-  UpdateReminderParams,
-} from './calendar.repository.js'
+import type { CalendarIssueRow, UpdateEventLinkParams } from './calendar.repository.js'
+import { expandOccurrences, type RecurrenceRule } from './recurrence.js'
 import {
-  expandOccurrences,
-  type RecurrenceRule,
-} from './recurrence.js'
-import {
-  formatStoredWeekdays,
-  parseStoredWeekdays,
-  serializeAttendee,
   serializeDueReminder,
-  serializeEvent,
   serializeReminder,
+  serializeWorkAttendee,
+  serializeWorkEvent,
+  workReminderTarget,
+  workRuleToRecurrenceRule,
   type CalendarEntryKind,
-  type ProjectEventRow,
-  type ReminderRow,
+  type ProjectEventLinkRow,
   type SerializedAttendee,
   type SerializedCalendar,
   type SerializedCalendarEntry,
@@ -56,90 +58,253 @@ type TenantResolution =
   | { tenant: { id: string }; error: null }
   | { tenant: null; error: ProjectsError }
 
-async function resolveTenant(organizationId: string): Promise<TenantResolution> {
+async function resolveTenant(
+  organizationId: string
+): Promise<TenantResolution> {
   const tenant = await tenants.resolveTenant(organizationId)
   if (!tenant)
     return { tenant: null, error: getError('projects/tenant-not-found') }
   return { tenant, error: null }
 }
 
-function eventRecurrenceRule(row: ProjectEventRow): RecurrenceRule | null {
-  if (row.recurrenceFreq === null) return null
-  const startsAt = fromDbUnixSeconds(row.startsAt)
-  const endsAt = nullableFromDbUnixSeconds(row.endsAt)
+function eventRecurrenceRule(event: SerializedEvent): RecurrenceRule | null {
+  if (!event.recurrence) return null
   return {
-    freq: row.recurrenceFreq as RecurrenceRule['freq'],
-    interval: row.recurrenceInterval ?? 1,
-    byWeekday:
-      row.recurrenceByWeekday === null
-        ? null
-        : parseStoredWeekdays(row.recurrenceByWeekday),
-    until: nullableFromDbUnixSeconds(row.recurrenceUntil),
-    count: row.recurrenceCount,
-    startsAt,
-    durationSeconds: endsAt === null ? null : Math.max(0, endsAt - startsAt),
+    freq: event.recurrence.freq as RecurrenceRule['freq'],
+    interval: event.recurrence.interval,
+    byWeekday: event.recurrence.byWeekday,
+    until: event.recurrence.until,
+    count: event.recurrence.count,
+    startsAt: event.startsAt,
+    durationSeconds:
+      event.endsAt === null ? null : Math.max(0, event.endsAt - event.startsAt),
   }
 }
 
-function reminderRecurrenceRule(
-  row: ReminderRow,
-  base: number
-): RecurrenceRule | null {
-  if (row.recurrenceFreq === null) return null
-  return {
-    freq: row.recurrenceFreq as RecurrenceRule['freq'],
-    interval: row.recurrenceInterval ?? 1,
-    byWeekday:
-      row.recurrenceByWeekday === null
-        ? null
-        : parseStoredWeekdays(row.recurrenceByWeekday),
-    until: nullableFromDbUnixSeconds(row.recurrenceUntil),
-    count: row.recurrenceCount,
-    startsAt: base,
-    durationSeconds: null,
-  }
-}
-
-type RecurrenceColumnsInput = {
-  freq: RecurrenceRule['freq']
+type RecurrencePatch = {
+  freq: 'daily' | 'weekly' | 'monthly' | 'yearly'
   interval?: number | null
   byWeekday?: number[] | null
   until?: number | null
   count?: number | null
 }
 
-function recurrenceColumns(input: RecurrenceColumnsInput | null | undefined): {
-  recurrenceFreq: string | null
-  recurrenceInterval: number | null
-  recurrenceByWeekday: string | null
-  recurrenceUntil: bigint | null
-  recurrenceCount: number | null
-} {
-  if (!input) {
-    return {
-      recurrenceFreq: null,
-      recurrenceInterval: null,
-      recurrenceByWeekday: null,
-      recurrenceUntil: null,
-      recurrenceCount: null,
-    }
-  }
+const PROJECTS_FREQUENCY_TO_WORK = {
+  daily: 'DAILY',
+  weekly: 'WEEKLY',
+  monthly: 'MONTHLY',
+  yearly: 'YEARLY',
+} as const
+
+const PROJECT_WEEKDAY_TO_WORK_DAY = [
+  'SU',
+  'MO',
+  'TU',
+  'WE',
+  'TH',
+  'FR',
+  'SA',
+] as const
+
+function workContextForTarget(target: {
+  issueId?: string | null
+  milestoneId?: string | null
+  eventId?: string | null
+}) {
+  if (target.issueId) return projectsIssueWorkContext(target.issueId)
+  if (target.milestoneId)
+    return projectsMilestoneWorkContext(target.milestoneId)
+  if (target.eventId) return projectsEventWorkContext(target.eventId)
+  return undefined
+}
+
+// Work requires a title while Projects reminders never had one. The title is
+// derived deterministically from the reminder target and never surfaces in
+// the Projects contract.
+function reminderTitleForTarget(target: {
+  issueId?: string | null
+  milestoneId?: string | null
+  eventId?: string | null
+}): string {
+  if (target.issueId) return 'Issue reminder'
+  if (target.milestoneId) return 'Milestone reminder'
+  if (target.eventId) return 'Event reminder'
+  return 'Projects reminder'
+}
+
+function workDaysFromPatch(
+  byWeekday: number[] | null | undefined,
+  fallback: WorkRecurrenceRule | null
+): WorkRecurrenceDraft['byDay'] | undefined {
+  if (byWeekday === undefined)
+    return fallback && fallback.byDay.length > 0 ? fallback.byDay : undefined
+  if (byWeekday === null) return undefined
+  return byWeekday.map((day) => PROJECT_WEEKDAY_TO_WORK_DAY[day])
+}
+
+function toWorkRecurrenceDraft(
+  input: RecurrencePatch,
+  fallback: WorkRecurrenceRule | null = null
+): WorkRecurrenceDraft {
   return {
-    recurrenceFreq: input.freq,
-    recurrenceInterval: input.interval ?? 1,
-    recurrenceByWeekday: formatStoredWeekdays(input.byWeekday),
-    recurrenceUntil: nullableToDbUnixSeconds(input.until ?? null),
-    recurrenceCount: input.count ?? null,
+    frequency: PROJECTS_FREQUENCY_TO_WORK[input.freq],
+    interval:
+      input.interval === undefined || input.interval === null
+        ? (fallback?.interval ?? 1)
+        : input.interval,
+    ...(workDaysFromPatch(input.byWeekday, fallback) === undefined
+      ? {}
+      : { byDay: workDaysFromPatch(input.byWeekday, fallback) }),
+    ...(input.until === undefined
+      ? fallback
+        ? { untilAt: fallback.untilAt }
+        : {}
+      : { untilAt: input.until }),
+    ...(input.count === undefined
+      ? fallback
+        ? { count: fallback.count }
+        : {}
+      : { count: input.count }),
+    timeZone: fallback?.timeZone ?? 'UTC',
   }
 }
 
-async function loadEventWithAttendees(
-  tenantId: string,
-  row: ProjectEventRow
-): Promise<SerializedEvent> {
-  const attendees = await repository.listAttendeesForEvents(tenantId, [row.id])
-  return serializeEvent(row, attendees)
+type WorkReminderPage =
+  | { reminders: WorkReminder[]; error: null }
+  | { reminders: null; error: ProjectsError }
+
+async function listProjectReminders(
+  organizationId: string,
+  filter: { userId?: string; status?: WorkReminder['status'] } = {}
+): Promise<WorkReminderPage> {
+  const output: WorkReminder[] = []
+  let startingAfter: string | undefined
+  for (let page = 0; page < 20; page += 1) {
+    const result = await workClient().reminders.list(organizationId, {
+      ...(filter.userId ? { userId: filter.userId } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+      limit: 100,
+      ...(startingAfter ? { startingAfter } : {}),
+    })
+    if (result.error)
+      return { reminders: null, error: workErrorToProjects(result.error) }
+    for (const reminder of result.data.data) {
+      if (reminder.context?.service === 'projects') output.push(reminder)
+    }
+    if (!result.data.has_more) return { reminders: output, error: null }
+    const last = result.data.data.at(-1)
+    if (!last)
+      return { reminders: null, error: getError('projects/internal-error') }
+    startingAfter = last.id
+  }
+  return { reminders: null, error: getError('projects/internal-error') }
 }
+
+type WorkRuleResult =
+  | { rule: WorkRecurrenceRule | null; error: null }
+  | { rule: null; error: ProjectsError }
+
+async function retrieveWorkRule(
+  organizationId: string,
+  reminderId: string
+): Promise<WorkRuleResult> {
+  const result = await workClient().reminders.recurrence.retrieve(
+    organizationId,
+    reminderId
+  )
+  if (result.error)
+    return { rule: null, error: workErrorToProjects(result.error) }
+  return { rule: result.data, error: null }
+}
+
+async function retrieveWorkEventRule(
+  organizationId: string,
+  eventId: string
+): Promise<WorkRuleResult> {
+  const result = await workClient().events.recurrence.retrieve(
+    organizationId,
+    eventId
+  )
+  if (result.error)
+    return { rule: null, error: workErrorToProjects(result.error) }
+  return { rule: result.data, error: null }
+}
+
+function belongsToProjectEvent(
+  event: WorkEventResource,
+  link: ProjectEventLinkRow
+): boolean {
+  const context = event.context
+  return (
+    context?.service === 'projects' &&
+    context.resource === 'project' &&
+    context.id === link.projectId
+  )
+}
+
+async function serializeProjectWorkEvent(
+  organizationId: string,
+  event: WorkEventResource,
+  link: ProjectEventLinkRow
+): Promise<ServiceResult<SerializedEvent>> {
+  const rule = await retrieveWorkEventRule(organizationId, event.id)
+  if (rule.error) return { data: null, error: rule.error }
+  return { data: serializeWorkEvent(event, link, rule.rule), error: null }
+}
+
+async function findProjectWorkEvent(
+  organizationId: string,
+  tenantId: string,
+  eventId: string
+): Promise<
+  | { event: WorkEventResource; link: ProjectEventLinkRow; error: null }
+  | { event: null; link: null; error: ProjectsError }
+> {
+  const link = await repository.retrieveEventLink(tenantId, eventId)
+  if (!link)
+    return { event: null, link: null, error: getError('projects/event-not-found') }
+  const result = await workClient().events.retrieve(organizationId, eventId)
+  if (result.error)
+    return { event: null, link: null, error: workErrorToProjects(result.error) }
+  if (!belongsToProjectEvent(result.data, link))
+    return { event: null, link: null, error: getError('projects/event-not-found') }
+  return { event: result.data, link, error: null }
+}
+
+function dateOnlyFromUnixSeconds(value: number): string {
+  return new Date(value * 1000).toISOString().slice(0, 10)
+}
+
+function unixSecondsFromDateOnly(value: string): number {
+  return Math.floor(new Date(`${value}T00:00:00.000Z`).getTime() / 1000)
+}
+
+function workEventTiming(input: {
+  startsAt: number
+  endsAt?: number | null
+  allDay?: boolean
+}) {
+  if (input.allDay) {
+    const startDate = dateOnlyFromUnixSeconds(input.startsAt)
+    const endDate = dateOnlyFromUnixSeconds(
+      input.endsAt ?? input.startsAt + 86400
+    )
+    return { allDay: true as const, startDate, endDate }
+  }
+  return {
+    allDay: false as const,
+    startAt: input.startsAt,
+    endAt: input.endsAt ?? input.startsAt + 1,
+    timeZone: 'UTC',
+  }
+}
+
+const PROJECTS_ATTENDEE_TO_WORK = {
+  invited: 'NEEDS_ACTION',
+  accepted: 'ACCEPTED',
+  declined: 'DECLINED',
+  tentative: 'TENTATIVE',
+} as const
 
 export async function listEvents(
   organizationId: string,
@@ -148,24 +313,42 @@ export async function listEvents(
   const resolved = await resolveTenant(organizationId)
   if (resolved.error || !resolved.tenant)
     return { data: null, error: resolved.error }
-  const rows = await repository.listEvents(
+  const links = await repository.listEventLinks(
     resolved.tenant.id,
     query.projectId
   )
-  const attendees = await repository.listAttendeesForEvents(
-    resolved.tenant.id,
-    rows.map((row) => row.id)
-  )
-  const byEvent = new Map<string, typeof attendees>()
-  for (const attendee of attendees) {
-    const bucket = byEvent.get(attendee.eventId) ?? []
-    bucket.push(attendee)
-    byEvent.set(attendee.eventId, bucket)
+  const linksByEventId = new Map(links.map((link) => [link.eventId, link]))
+  const events: WorkEventResource[] = []
+  let startingAfter: string | undefined
+  for (let page = 0; page < 20; page += 1) {
+    const result = await workClient().events.list(organizationId, {
+      ...(query.projectId
+        ? { context: projectsProjectWorkContext(query.projectId) }
+        : {}),
+      limit: 100,
+      ...(startingAfter ? { startingAfter } : {}),
+    })
+    if (result.error)
+      return { data: null, error: workErrorToProjects(result.error) }
+    events.push(...result.data.data)
+    if (!result.data.has_more) break
+    const last = result.data.data.at(-1)
+    if (!last) return { data: null, error: getError('projects/internal-error') }
+    startingAfter = last.id
   }
-  return {
-    data: rows.map((row) => serializeEvent(row, byEvent.get(row.id) ?? [])),
-    error: null,
+  if (startingAfter && events.length >= 2000)
+    return { data: null, error: getError('projects/internal-error') }
+
+  const data: SerializedEvent[] = []
+  for (const event of events) {
+    const link = linksByEventId.get(event.id)
+    if (!link || !belongsToProjectEvent(event, link)) continue
+    const serialized = await serializeProjectWorkEvent(organizationId, event, link)
+    if (serialized.error) return serialized
+    data.push(serialized.data)
   }
+  data.sort((a, b) => a.startsAt - b.startsAt || a.id.localeCompare(b.id))
+  return { data, error: null }
 }
 
 export async function createEvent(
@@ -181,27 +364,43 @@ export async function createEvent(
   )
   if (!project)
     return { data: null, error: getError('projects/project-not-found') }
+  const createdBy = body.createdBy ?? PROJECTS_SYSTEM_ACTOR
+  const calendarId = await resolveProjectsCalendarId(organizationId, createdBy)
+  if (typeof calendarId !== 'string') return { data: null, error: calendarId }
+  const created = await workClient().events.create(organizationId, {
+    calendarId,
+    context: projectsProjectWorkContext(project.id),
+    title: body.title,
+    description: body.description ?? null,
+    location: body.location ?? null,
+    meetingUrl: body.meetingUrl ?? null,
+    createdBy,
+    ...workEventTiming(body),
+  })
+  if (created.error)
+    return { data: null, error: workErrorToProjects(created.error) }
   const now = toDbUnixSeconds(nowUnixSeconds())
-  const row = await repository.createEvent({
-    id: generateId('projectEvent'),
+  const link = await repository.createEventLink({
+    eventId: created.data.id,
     tenantId: resolved.tenant.id,
     projectId: project.id,
     milestoneId: body.milestoneId ?? null,
     issueId: body.issueId ?? null,
     kind: body.kind ?? 'event',
-    title: body.title,
-    description: body.description ?? null,
-    startsAt: toDbUnixSeconds(body.startsAt),
-    endsAt: nullableToDbUnixSeconds(body.endsAt ?? null),
-    allDay: body.allDay ?? false,
-    location: body.location ?? null,
-    meetingUrl: body.meetingUrl ?? null,
-    createdBy: body.createdBy ?? null,
-    ...recurrenceColumns(body.recurrence),
     createdAt: now,
     updatedAt: now,
   })
-  return { data: await loadEventWithAttendees(resolved.tenant.id, row), error: null }
+  let rule: WorkRecurrenceRule | null = null
+  if (body.recurrence) {
+    const set = await workClient().events.recurrence.set(
+      organizationId,
+      created.data.id,
+      toWorkRecurrenceDraft(body.recurrence)
+    )
+    if (set.error) return { data: null, error: workErrorToProjects(set.error) }
+    rule = set.data
+  }
+  return { data: serializeWorkEvent(created.data, link, rule), error: null }
 }
 
 export async function retrieveEvent(
@@ -211,9 +410,13 @@ export async function retrieveEvent(
   const resolved = await resolveTenant(organizationId)
   if (resolved.error || !resolved.tenant)
     return { data: null, error: resolved.error }
-  const row = await repository.retrieveEvent(resolved.tenant.id, eventId)
-  if (!row) return { data: null, error: getError('projects/event-not-found') }
-  return { data: await loadEventWithAttendees(resolved.tenant.id, row), error: null }
+  const found = await findProjectWorkEvent(
+    organizationId,
+    resolved.tenant.id,
+    eventId
+  )
+  if (found.error) return { data: null, error: found.error }
+  return serializeProjectWorkEvent(organizationId, found.event, found.link)
 }
 
 export async function updateEvent(
@@ -224,58 +427,104 @@ export async function updateEvent(
   const resolved = await resolveTenant(organizationId)
   if (resolved.error || !resolved.tenant)
     return { data: null, error: resolved.error }
-  const existing = await repository.retrieveEvent(resolved.tenant.id, eventId)
-  if (!existing)
-    return { data: null, error: getError('projects/event-not-found') }
-  const patch: UpdateEventParams = {
+  const found = await findProjectWorkEvent(
+    organizationId,
+    resolved.tenant.id,
+    eventId
+  )
+  if (found.error) return { data: null, error: found.error }
+  const current = serializeWorkEvent(found.event, found.link, null)
+  const eventPatch = {
+    ...(body.title !== undefined ? { title: body.title } : {}),
+    ...(body.description !== undefined ? { description: body.description } : {}),
+    ...(body.location !== undefined ? { location: body.location } : {}),
+    ...(body.meetingUrl !== undefined ? { meetingUrl: body.meetingUrl } : {}),
+  }
+  const timingTouched =
+    body.startsAt !== undefined ||
+    body.endsAt !== undefined ||
+    body.allDay !== undefined
+  if (timingTouched)
+    Object.assign(
+      eventPatch,
+      workEventTiming({
+        startsAt: body.startsAt ?? current.startsAt,
+        endsAt: body.endsAt === undefined ? current.endsAt : body.endsAt,
+        allDay: body.allDay ?? current.allDay,
+      })
+    )
+  let updated = found.event
+  if (Object.keys(eventPatch).length > 0) {
+    const result = await workClient().events.update(
+      organizationId,
+      eventId,
+      eventPatch
+    )
+    if (result.error)
+      return { data: null, error: workErrorToProjects(result.error) }
+    updated = result.data
+  }
+  const linkPatch: UpdateEventLinkParams = {
     updatedAt: toDbUnixSeconds(nowUnixSeconds()),
   }
-  if (body.milestoneId !== undefined) patch.milestoneId = body.milestoneId
-  if (body.issueId !== undefined) patch.issueId = body.issueId
-  if (body.kind !== undefined) patch.kind = body.kind
-  if (body.title !== undefined) patch.title = body.title
-  if (body.description !== undefined) patch.description = body.description
-  if (body.startsAt !== undefined) patch.startsAt = toDbUnixSeconds(body.startsAt)
-  if (body.endsAt !== undefined)
-    patch.endsAt = nullableToDbUnixSeconds(body.endsAt)
-  if (body.allDay !== undefined) patch.allDay = body.allDay
-  if (body.location !== undefined) patch.location = body.location
-  if (body.meetingUrl !== undefined) patch.meetingUrl = body.meetingUrl
-  if (body.recurrence !== undefined) {
-    if (body.recurrence === null) {
-      patch.recurrenceFreq = null
-      patch.recurrenceInterval = null
-      patch.recurrenceByWeekday = null
-      patch.recurrenceUntil = null
-      patch.recurrenceCount = null
-    } else {
-      const columns = recurrenceColumns(body.recurrence)
-      patch.recurrenceFreq = columns.recurrenceFreq
-      if (body.recurrence.interval !== undefined)
-        patch.recurrenceInterval = columns.recurrenceInterval
-      if (body.recurrence.byWeekday !== undefined)
-        patch.recurrenceByWeekday = columns.recurrenceByWeekday
-      if (body.recurrence.until !== undefined)
-        patch.recurrenceUntil = columns.recurrenceUntil
-      if (body.recurrence.count !== undefined)
-        patch.recurrenceCount = columns.recurrenceCount
-    }
+  if (body.milestoneId !== undefined) linkPatch.milestoneId = body.milestoneId
+  if (body.issueId !== undefined) linkPatch.issueId = body.issueId
+  if (body.kind !== undefined) linkPatch.kind = body.kind
+  const link = await repository.updateEventLink(
+    resolved.tenant.id,
+    eventId,
+    linkPatch
+  )
+  let rule: WorkRecurrenceRule | null = null
+  if (body.recurrence === null) {
+    const cleared = await workClient().events.recurrence.clear(
+      organizationId,
+      eventId
+    )
+    if (cleared.error)
+      return { data: null, error: workErrorToProjects(cleared.error) }
+    updated = cleared.data
+  } else if (body.recurrence !== undefined) {
+    const previous = await retrieveWorkEventRule(organizationId, eventId)
+    if (previous.error) return { data: null, error: previous.error }
+    const set = await workClient().events.recurrence.set(
+      organizationId,
+      eventId,
+      toWorkRecurrenceDraft(body.recurrence, previous.rule)
+    )
+    if (set.error) return { data: null, error: workErrorToProjects(set.error) }
+    rule = set.data
+  } else {
+    const currentRule = await retrieveWorkEventRule(organizationId, eventId)
+    if (currentRule.error) return { data: null, error: currentRule.error }
+    rule = currentRule.rule
   }
-  const row = await repository.updateEvent(resolved.tenant.id, eventId, patch)
-  return { data: await loadEventWithAttendees(resolved.tenant.id, row), error: null }
+  return { data: serializeWorkEvent(updated, link, rule), error: null }
 }
 
 export async function removeEvent(
   organizationId: string,
   eventId: string
-): Promise<ServiceResult<{ object: 'projects.event'; id: string; deleted: true }>> {
+): Promise<
+  ServiceResult<{ object: 'projects.event'; id: string; deleted: true }>
+> {
   const resolved = await resolveTenant(organizationId)
   if (resolved.error || !resolved.tenant)
     return { data: null, error: resolved.error }
-  const existing = await repository.retrieveEvent(resolved.tenant.id, eventId)
-  if (!existing)
-    return { data: null, error: getError('projects/event-not-found') }
-  await repository.deleteEvent(resolved.tenant.id, eventId)
+  const found = await findProjectWorkEvent(
+    organizationId,
+    resolved.tenant.id,
+    eventId
+  )
+  if (found.error) return { data: null, error: found.error }
+  const deleted = await workClient().events.delete(
+    organizationId,
+    eventId,
+    found.event.createdBy
+  )
+  if (deleted.error)
+    return { data: null, error: workErrorToProjects(deleted.error) }
+  await repository.deleteEventLink(resolved.tenant.id, eventId)
   return {
     data: { object: 'projects.event', id: eventId, deleted: true },
     error: null,
@@ -290,27 +539,28 @@ export async function addAttendee(
   const resolved = await resolveTenant(organizationId)
   if (resolved.error || !resolved.tenant)
     return { data: null, error: resolved.error }
-  const event = await repository.retrieveEvent(resolved.tenant.id, eventId)
-  if (!event)
-    return { data: null, error: getError('projects/event-not-found') }
-  const existing = await repository.retrieveAttendee(
+  const found = await findProjectWorkEvent(
+    organizationId,
     resolved.tenant.id,
-    eventId,
-    body.userId
+    eventId
+  )
+  if (found.error) return { data: null, error: found.error }
+  const existing = found.event.participants.find(
+    (participant) =>
+      participant.kind === 'USER' && participant.participantId === body.userId
   )
   if (existing)
     return { data: null, error: getError('projects/attendee-exists') }
-  const now = toDbUnixSeconds(nowUnixSeconds())
-  const row = await repository.createAttendee({
-    id: generateId('eventAttendee'),
-    tenantId: resolved.tenant.id,
-    eventId,
-    userId: body.userId,
-    response: body.response ?? 'invited',
-    createdAt: now,
-    updatedAt: now,
+  const created = await workClient().eventParticipants.create(organizationId, eventId, {
+    kind: 'USER',
+    participantId: body.userId,
+    status: PROJECTS_ATTENDEE_TO_WORK[body.response ?? 'invited'],
   })
-  return { data: serializeAttendee(row), error: null }
+  if (created.error)
+    return { data: null, error: workErrorToProjects(created.error) }
+  const attendee = serializeWorkAttendee(created.data)
+  if (!attendee) return { data: null, error: getError('projects/internal-error') }
+  return { data: attendee, error: null }
 }
 
 export async function respondAttendee(
@@ -322,23 +572,28 @@ export async function respondAttendee(
   const resolved = await resolveTenant(organizationId)
   if (resolved.error || !resolved.tenant)
     return { data: null, error: resolved.error }
-  const event = await repository.retrieveEvent(resolved.tenant.id, eventId)
-  if (!event)
-    return { data: null, error: getError('projects/event-not-found') }
-  const existing = await repository.retrieveAttendee(
+  const found = await findProjectWorkEvent(
+    organizationId,
     resolved.tenant.id,
-    eventId,
-    userId
+    eventId
+  )
+  if (found.error) return { data: null, error: found.error }
+  const existing = found.event.participants.find(
+    (participant) => participant.kind === 'USER' && participant.participantId === userId
   )
   if (!existing)
     return { data: null, error: getError('projects/attendee-not-found') }
-  const row = await repository.updateAttendee(
-    resolved.tenant.id,
+  const updated = await workClient().eventParticipants.update(
+    organizationId,
     eventId,
-    userId,
-    { response: body.response, updatedAt: toDbUnixSeconds(nowUnixSeconds()) }
+    existing.id,
+    { status: PROJECTS_ATTENDEE_TO_WORK[body.response] }
   )
-  return { data: serializeAttendee(row), error: null }
+  if (updated.error)
+    return { data: null, error: workErrorToProjects(updated.error) }
+  const attendee = serializeWorkAttendee(updated.data)
+  if (!attendee) return { data: null, error: getError('projects/internal-error') }
+  return { data: attendee, error: null }
 }
 
 export async function removeAttendee(
@@ -346,22 +601,33 @@ export async function removeAttendee(
   eventId: string,
   userId: string
 ): Promise<
-  ServiceResult<{ object: 'projects.event-attendee'; id: string; deleted: true }>
+  ServiceResult<{
+    object: 'projects.event-attendee'
+    id: string
+    deleted: true
+  }>
 > {
   const resolved = await resolveTenant(organizationId)
   if (resolved.error || !resolved.tenant)
     return { data: null, error: resolved.error }
-  const event = await repository.retrieveEvent(resolved.tenant.id, eventId)
-  if (!event)
-    return { data: null, error: getError('projects/event-not-found') }
-  const existing = await repository.retrieveAttendee(
+  const found = await findProjectWorkEvent(
+    organizationId,
     resolved.tenant.id,
-    eventId,
-    userId
+    eventId
+  )
+  if (found.error) return { data: null, error: found.error }
+  const existing = found.event.participants.find(
+    (participant) => participant.kind === 'USER' && participant.participantId === userId
   )
   if (!existing)
     return { data: null, error: getError('projects/attendee-not-found') }
-  await repository.deleteAttendee(resolved.tenant.id, eventId, userId)
+  const deleted = await workClient().eventParticipants.delete(
+    organizationId,
+    eventId,
+    existing.id
+  )
+  if (deleted.error)
+    return { data: null, error: workErrorToProjects(deleted.error) }
   return {
     data: { object: 'projects.event-attendee', id: existing.id, deleted: true },
     error: null,
@@ -369,10 +635,10 @@ export async function removeAttendee(
 }
 
 function checkReminderOwner(
-  row: ReminderRow,
+  reminder: WorkReminder,
   userId: string
 ): ProjectsError | null {
-  if (row.createdBy !== userId)
+  if (reminder.createdBy !== userId)
     return getError('projects/reminder-forbidden')
   return null
 }
@@ -384,11 +650,18 @@ export async function listReminders(
   const resolved = await resolveTenant(organizationId)
   if (resolved.error || !resolved.tenant)
     return { data: null, error: resolved.error }
-  const rows = await repository.listRemindersByCreator(
-    resolved.tenant.id,
-    createdBy
-  )
-  return { data: rows.map(serializeReminder), error: null }
+  const page = await listProjectReminders(organizationId, {
+    userId: createdBy,
+  })
+  if (page.error) return { data: null, error: page.error }
+  const data: SerializedReminder[] = []
+  for (const reminder of page.reminders) {
+    if (reminder.createdBy !== createdBy) continue
+    const rule = await retrieveWorkRule(organizationId, reminder.id)
+    if (rule.error) return { data: null, error: rule.error }
+    data.push(serializeReminder(reminder, resolved.tenant.id, rule.rule))
+  }
+  return { data, error: null }
 }
 
 export async function createReminder(
@@ -398,23 +671,31 @@ export async function createReminder(
   const resolved = await resolveTenant(organizationId)
   if (resolved.error || !resolved.tenant)
     return { data: null, error: resolved.error }
-  const now = toDbUnixSeconds(nowUnixSeconds())
-  const row = await repository.createReminder({
-    id: generateId('reminder'),
-    tenantId: resolved.tenant.id,
-    issueId: body.issueId ?? null,
-    milestoneId: body.milestoneId ?? null,
-    eventId: body.eventId ?? null,
-    remindAt: nullableToDbUnixSeconds(body.remindAt ?? null),
+  const created = await workClient().reminders.create(organizationId, {
+    context: workContextForTarget(body),
+    title: reminderTitleForTarget(body),
+    remindAt: body.remindAt ?? null,
     offsetMinutesBeforeDue: body.offsetMinutesBeforeDue ?? null,
-    ...recurrenceColumns(body.recurrence),
     channel: body.channel ?? 'in-app',
+    userId: body.createdBy,
     createdBy: body.createdBy,
-    active: body.active ?? true,
-    createdAt: now,
-    updatedAt: now,
   })
-  return { data: serializeReminder(row), error: null }
+  if (created.error)
+    return { data: null, error: workErrorToProjects(created.error) }
+  let rule: WorkRecurrenceRule | null = null
+  if (body.recurrence) {
+    const set = await workClient().reminders.recurrence.set(
+      organizationId,
+      created.data.id,
+      toWorkRecurrenceDraft(body.recurrence)
+    )
+    if (set.error) return { data: null, error: workErrorToProjects(set.error) }
+    rule = set.data
+  }
+  return {
+    data: serializeReminder(created.data, resolved.tenant.id, rule),
+    error: null,
+  }
 }
 
 export async function updateReminder(
@@ -426,51 +707,95 @@ export async function updateReminder(
   const resolved = await resolveTenant(organizationId)
   if (resolved.error || !resolved.tenant)
     return { data: null, error: resolved.error }
-  const existing = await repository.retrieveReminder(
-    resolved.tenant.id,
+  const existing = await workClient().reminders.retrieve(
+    organizationId,
     reminderId
   )
-  if (!existing)
+  if (existing.error?.code === 'work/reminder-not-found')
     return { data: null, error: getError('projects/reminder-not-found') }
-  const forbidden = checkReminderOwner(existing, userId)
+  if (existing.error)
+    return { data: null, error: workErrorToProjects(existing.error) }
+  if (existing.data.context?.service !== 'projects')
+    return { data: null, error: getError('projects/reminder-not-found') }
+  const forbidden = checkReminderOwner(existing.data, userId)
   if (forbidden) return { data: null, error: forbidden }
-  const patch: UpdateReminderParams = {
-    updatedAt: toDbUnixSeconds(nowUnixSeconds()),
+  // Work holds a single context triple while the old columns were
+  // independent. A target patch therefore replaces the target outright:
+  // merging would leave a shadowed second id behind the issue-first
+  // precedence below.
+  const targetsTouched =
+    body.issueId !== undefined ||
+    body.milestoneId !== undefined ||
+    body.eventId !== undefined
+  let updated = existing.data
+  const patch = {
+    ...(targetsTouched
+      ? {
+          context:
+            workContextForTarget({
+              issueId: body.issueId ?? null,
+              milestoneId: body.milestoneId ?? null,
+              eventId: body.eventId ?? null,
+            }) ?? null,
+        }
+      : {}),
+    ...(body.remindAt !== undefined ? { remindAt: body.remindAt } : {}),
+    ...(body.offsetMinutesBeforeDue !== undefined
+      ? { offsetMinutesBeforeDue: body.offsetMinutesBeforeDue }
+      : {}),
+    ...(body.active !== undefined
+      ? {
+          status: body.active ? ('SCHEDULED' as const) : ('CANCELLED' as const),
+        }
+      : {}),
   }
-  if (body.issueId !== undefined) patch.issueId = body.issueId
-  if (body.milestoneId !== undefined) patch.milestoneId = body.milestoneId
-  if (body.eventId !== undefined) patch.eventId = body.eventId
-  if (body.remindAt !== undefined)
-    patch.remindAt = nullableToDbUnixSeconds(body.remindAt)
-  if (body.offsetMinutesBeforeDue !== undefined)
-    patch.offsetMinutesBeforeDue = body.offsetMinutesBeforeDue
-  if (body.active !== undefined) patch.active = body.active
+  if (Object.keys(patch).length > 0) {
+    const result = await workClient().reminders.update(
+      organizationId,
+      reminderId,
+      patch
+    )
+    if (result.error?.code === 'work/reminder-not-found')
+      return { data: null, error: getError('projects/reminder-not-found') }
+    if (result.error)
+      return { data: null, error: workErrorToProjects(result.error) }
+    updated = result.data
+  }
+  let rule: WorkRecurrenceRule | null = null
   if (body.recurrence !== undefined) {
     if (body.recurrence === null) {
-      patch.recurrenceFreq = null
-      patch.recurrenceInterval = null
-      patch.recurrenceByWeekday = null
-      patch.recurrenceUntil = null
-      patch.recurrenceCount = null
+      const cleared = await workClient().reminders.recurrence.clear(
+        organizationId,
+        reminderId
+      )
+      if (cleared.error?.code === 'work/reminder-not-found')
+        return { data: null, error: getError('projects/reminder-not-found') }
+      if (cleared.error)
+        return { data: null, error: workErrorToProjects(cleared.error) }
+      updated = cleared.data
     } else {
-      const columns = recurrenceColumns(body.recurrence)
-      patch.recurrenceFreq = columns.recurrenceFreq
-      if (body.recurrence.interval !== undefined)
-        patch.recurrenceInterval = columns.recurrenceInterval
-      if (body.recurrence.byWeekday !== undefined)
-        patch.recurrenceByWeekday = columns.recurrenceByWeekday
-      if (body.recurrence.until !== undefined)
-        patch.recurrenceUntil = columns.recurrenceUntil
-      if (body.recurrence.count !== undefined)
-        patch.recurrenceCount = columns.recurrenceCount
+      const currentRule = await retrieveWorkRule(organizationId, reminderId)
+      if (currentRule.error) return { data: null, error: currentRule.error }
+      const set = await workClient().reminders.recurrence.set(
+        organizationId,
+        reminderId,
+        toWorkRecurrenceDraft(body.recurrence, currentRule.rule)
+      )
+      if (set.error?.code === 'work/reminder-not-found')
+        return { data: null, error: getError('projects/reminder-not-found') }
+      if (set.error)
+        return { data: null, error: workErrorToProjects(set.error) }
+      rule = set.data
     }
+  } else {
+    const currentRule = await retrieveWorkRule(organizationId, reminderId)
+    if (currentRule.error) return { data: null, error: currentRule.error }
+    rule = currentRule.rule
   }
-  const row = await repository.updateReminder(
-    resolved.tenant.id,
-    reminderId,
-    patch
-  )
-  return { data: serializeReminder(row), error: null }
+  return {
+    data: serializeReminder(updated, resolved.tenant.id, rule),
+    error: null,
+  }
 }
 
 export async function removeReminder(
@@ -483,67 +808,86 @@ export async function removeReminder(
   const resolved = await resolveTenant(organizationId)
   if (resolved.error || !resolved.tenant)
     return { data: null, error: resolved.error }
-  const existing = await repository.retrieveReminder(
-    resolved.tenant.id,
+  const existing = await workClient().reminders.retrieve(
+    organizationId,
     reminderId
   )
-  if (!existing)
+  if (existing.error?.code === 'work/reminder-not-found')
     return { data: null, error: getError('projects/reminder-not-found') }
-  const forbidden = checkReminderOwner(existing, userId)
+  if (existing.error)
+    return { data: null, error: workErrorToProjects(existing.error) }
+  if (existing.data.context?.service !== 'projects')
+    return { data: null, error: getError('projects/reminder-not-found') }
+  const forbidden = checkReminderOwner(existing.data, userId)
   if (forbidden) return { data: null, error: forbidden }
-  await repository.deleteReminder(resolved.tenant.id, reminderId)
+  const result = await workClient().reminders.delete(
+    organizationId,
+    reminderId,
+    userId
+  )
+  if (result.error?.code === 'work/reminder-not-found')
+    return { data: null, error: getError('projects/reminder-not-found') }
+  if (result.error)
+    return { data: null, error: workErrorToProjects(result.error) }
   return {
     data: { object: 'projects.reminder', id: reminderId, deleted: true },
     error: null,
   }
 }
 
-async function resolveReminderTargetDueAt(
+async function resolveWorkReminderTargetDueAt(
+  organizationId: string,
   tenantId: string,
-  row: ReminderRow
-): Promise<number | null> {
-  if (row.issueId) {
-    const target = await repository.retrieveIssueDueDate(tenantId, row.issueId)
-    return nullableFromDbUnixSeconds(target?.dueDate ?? null)
+  reminder: WorkReminder
+): Promise<{ dueAt: number | null; error: ProjectsError | null }> {
+  const target = workReminderTarget(reminder)
+  if (target.issueId) {
+    const due = await repository.retrieveIssueDueDate(tenantId, target.issueId)
+    return { dueAt: nullableFromDbUnixSeconds(due?.dueDate ?? null), error: null }
   }
-  if (row.milestoneId) {
-    const target = await repository.retrieveMilestoneTargetDate(
+  if (target.milestoneId) {
+    const due = await repository.retrieveMilestoneTargetDate(
       tenantId,
-      row.milestoneId
+      target.milestoneId
     )
-    return nullableFromDbUnixSeconds(target?.targetDate ?? null)
+    return {
+      dueAt: nullableFromDbUnixSeconds(due?.targetDate ?? null),
+      error: null,
+    }
   }
-  if (row.eventId) {
-    const target = await repository.retrieveEventStart(tenantId, row.eventId)
-    return target ? fromDbUnixSeconds(target.startsAt) : null
+  if (target.eventId) {
+    const link = await repository.retrieveEventStart(tenantId, target.eventId)
+    if (!link) return { dueAt: null, error: null }
+    const result = await workClient().events.retrieve(organizationId, link.eventId)
+    if (result.error)
+      return { dueAt: null, error: workErrorToProjects(result.error) }
+    if (!result.data.context) return { dueAt: null, error: null }
+    const event = result.data
+    if (event.allDay)
+      return {
+        dueAt: event.startDate ? unixSecondsFromDateOnly(event.startDate) : null,
+        error: null,
+      }
+    return { dueAt: event.startAt, error: null }
   }
-  return null
+  return { dueAt: null, error: null }
 }
 
-async function effectiveReminderBase(
+async function effectiveWorkReminderBase(
+  organizationId: string,
   tenantId: string,
-  row: ReminderRow
-): Promise<number | null> {
-  if (row.remindAt !== null)
-    return fromDbUnixSeconds(row.remindAt)
-  if (row.offsetMinutesBeforeDue === null) return null
-  const targetDueAt = await resolveReminderTargetDueAt(tenantId, row)
-  if (targetDueAt === null) return null
-  return targetDueAt - row.offsetMinutesBeforeDue * 60
-}
-
-async function dueAtForReminder(
-  tenantId: string,
-  row: ReminderRow,
-  at: number
-): Promise<number | null> {
-  const base = await effectiveReminderBase(tenantId, row)
-  if (base === null) return null
-  const rule = reminderRecurrenceRule(row, base)
-  if (!rule) return base <= at ? base : null
-  const occurrences = expandOccurrences(rule, base, at)
-  if (occurrences.length === 0) return null
-  return occurrences[occurrences.length - 1].start
+  reminder: WorkReminder
+): Promise<{ base: number | null; error: ProjectsError | null }> {
+  if (reminder.remindAt !== null) return { base: reminder.remindAt, error: null }
+  if (reminder.offsetMinutesBeforeDue === null) return { base: null, error: null }
+  const target = await resolveWorkReminderTargetDueAt(
+    organizationId,
+    tenantId,
+    reminder
+  )
+  if (target.error) return { base: null, error: target.error }
+  if (target.dueAt === null) return { base: null, error: null }
+  return { base: target.dueAt - reminder.offsetMinutesBeforeDue * 60, error: null }
 }
 
 export async function listDueReminders(
@@ -555,15 +899,46 @@ export async function listDueReminders(
   if (resolved.error || !resolved.tenant)
     return { data: null, error: resolved.error }
   const moment = at ?? nowUnixSeconds()
-  const rows = await repository.listActiveReminders(resolved.tenant.id)
+  const page = await listProjectReminders(organizationId, {
+    status: 'SCHEDULED',
+    ...(createdBy ? { userId: createdBy } : {}),
+  })
+  if (page.error) return { data: null, error: page.error }
   const scoped =
     createdBy === undefined
-      ? rows
-      : rows.filter((row) => row.createdBy === createdBy)
+      ? page.reminders
+      : page.reminders.filter((reminder) => reminder.createdBy === createdBy)
   const due: SerializedDueReminder[] = []
-  for (const row of scoped) {
-    const dueAt = await dueAtForReminder(resolved.tenant.id, row, moment)
-    if (dueAt !== null) due.push(serializeDueReminder(row, dueAt))
+  for (const reminder of scoped) {
+    const baseResult = await effectiveWorkReminderBase(
+      organizationId,
+      resolved.tenant.id,
+      reminder
+    )
+    if (baseResult.error) return { data: null, error: baseResult.error }
+    if (baseResult.base === null) continue
+    const base = baseResult.base
+    const rule = await retrieveWorkRule(organizationId, reminder.id)
+    if (rule.error) return { data: null, error: rule.error }
+    if (!rule.rule) {
+      if (base <= moment)
+        due.push(serializeDueReminder(reminder, resolved.tenant.id, null, base))
+      continue
+    }
+    const occurrences = expandOccurrences(
+      workRuleToRecurrenceRule(rule.rule, base),
+      base,
+      moment
+    )
+    if (occurrences.length === 0) continue
+    due.push(
+      serializeDueReminder(
+        reminder,
+        resolved.tenant.id,
+        rule.rule,
+        occurrences[occurrences.length - 1].start
+      )
+    )
   }
   due.sort((a, b) => a.dueAt - b.dueAt || (a.id < b.id ? -1 : 1))
   // Computing dues never writes: there is no scheduler in this phase, so no
@@ -575,15 +950,17 @@ function eventOccurrenceId(eventId: string, start: number): string {
   return `${eventId}-${start}`
 }
 
-function eventEntriesForRow(
-  row: ProjectEventRow,
+function eventEntriesForEvent(
+  event: SerializedEvent,
   windowStart: number,
   windowEnd: number
 ): SerializedCalendarEntry[] {
-  const kind = (row.kind === 'meeting' ? 'meeting' : 'event') as CalendarEntryKind
-  const startsAt = fromDbUnixSeconds(row.startsAt)
-  const endsAt = nullableFromDbUnixSeconds(row.endsAt)
-  const rule = eventRecurrenceRule(row)
+  const kind = (
+    event.kind === 'meeting' ? 'meeting' : 'event'
+  ) as CalendarEntryKind
+  const startsAt = event.startsAt
+  const endsAt = event.endsAt
+  const rule = eventRecurrenceRule(event)
   if (!rule) {
     const effectiveEnd = endsAt ?? startsAt
     if (startsAt > windowEnd || effectiveEnd < windowStart) return []
@@ -591,24 +968,24 @@ function eventEntriesForRow(
       {
         object: 'calendar-entry',
         kind,
-        id: row.id,
+        id: event.id,
         occurrenceStart: startsAt,
         occurrenceEnd: endsAt,
-        allDay: row.allDay,
-        title: row.title,
-        projectId: row.projectId,
+        allDay: event.allDay,
+        title: event.title,
+        projectId: event.projectId,
       },
     ]
   }
   return expandOccurrences(rule, windowStart, windowEnd).map((occurrence) => ({
     object: 'calendar-entry' as const,
     kind,
-    id: eventOccurrenceId(row.id, occurrence.start),
+    id: eventOccurrenceId(event.id, occurrence.start),
     occurrenceStart: occurrence.start,
     occurrenceEnd: occurrence.end,
-    allDay: row.allDay,
-    title: row.title,
-    projectId: row.projectId,
+    allDay: event.allDay,
+    title: event.title,
+    projectId: event.projectId,
   }))
 }
 
@@ -674,7 +1051,10 @@ export async function getCalendar(
   const { from, to } = query
 
   if (wanted('project')) {
-    const rows = await repository.listCalendarProjects(tenantId, query.projectId)
+    const rows = await repository.listCalendarProjects(
+      tenantId,
+      query.projectId
+    )
     for (const row of rows) {
       const start = nullableFromDbUnixSeconds(row.startDate)
       const end = nullableFromDbUnixSeconds(row.targetDate)
@@ -696,7 +1076,10 @@ export async function getCalendar(
   }
 
   if (wanted('phase')) {
-    const rows = await repository.listCalendarMilestones(tenantId, query.projectId)
+    const rows = await repository.listCalendarMilestones(
+      tenantId,
+      query.projectId
+    )
     for (const row of rows) {
       const start = nullableFromDbUnixSeconds(row.startDate)
       const end = nullableFromDbUnixSeconds(row.targetDate)
@@ -725,16 +1108,19 @@ export async function getCalendar(
   }
 
   if (wanted('event') || wanted('meeting')) {
-    const rows = await repository.listEvents(tenantId, query.projectId)
-    for (const row of rows) {
-      if (row.kind === 'meeting' && !wanted('meeting')) continue
-      if (row.kind !== 'meeting' && !wanted('event')) continue
-      entries.push(...eventEntriesForRow(row, from, to))
+    const events = await listEvents(organizationId, {
+      ...(query.projectId ? { projectId: query.projectId } : {}),
+    })
+    if (events.error) return { data: null, error: events.error }
+    for (const event of events.data) {
+      if (event.kind === 'meeting' && !wanted('meeting')) continue
+      if (event.kind !== 'meeting' && !wanted('event')) continue
+      entries.push(...eventEntriesForEvent(event, from, to))
     }
   }
 
-  entries.sort((a, b) =>
-    a.occurrenceStart - b.occurrenceStart || (a.id < b.id ? -1 : 1)
+  entries.sort(
+    (a, b) => a.occurrenceStart - b.occurrenceStart || (a.id < b.id ? -1 : 1)
   )
   return { data: { object: 'calendar', entries }, error: null }
 }
@@ -769,31 +1155,63 @@ export async function getMyWork(
     .filter((row) => row.status !== 'done' && row.status !== 'canceled')
     .map(toMyWorkIssue)
 
-  const attendances = await repository.listAttendeesByUser(tenantId, userId)
-  const upcomingEvents: SerializedEvent[] = []
-  for (const attendance of attendances) {
-    const row = await repository.retrieveEvent(tenantId, attendance.eventId)
-    if (!row) continue
-    const startsAt = fromDbUnixSeconds(row.startsAt)
-    const endsAt = nullableFromDbUnixSeconds(row.endsAt)
-    if ((endsAt ?? startsAt) < moment) continue
-    const attendees = await repository.listAttendeesForEvents(tenantId, [row.id])
-    upcomingEvents.push(serializeEvent(row, attendees))
-  }
+  const events = await listEvents(organizationId, {})
+  if (events.error) return { data: null, error: events.error }
+  const upcomingEvents = events.data.filter(
+    (event) =>
+      event.attendees.some((attendee) => attendee.userId === userId) &&
+      (event.endsAt ?? event.startsAt) >= moment
+  )
   upcomingEvents.sort((a, b) => a.startsAt - b.startsAt)
 
-  const active = await repository.listActiveReminders(tenantId)
+  const active = await listProjectReminders(organizationId, {
+    status: 'SCHEDULED',
+    userId,
+  })
+  if (active.error) return { data: null, error: active.error }
   const dueReminders: SerializedDueReminder[] = []
-  for (const row of active) {
-    if (row.createdBy !== userId) continue
-    const dueAt = await dueAtForReminder(tenantId, row, moment)
-    if (dueAt !== null) dueReminders.push(serializeDueReminder(row, dueAt))
+  for (const reminder of active.reminders) {
+    if (reminder.createdBy !== userId) continue
+    const baseResult = await effectiveWorkReminderBase(
+      organizationId,
+      tenantId,
+      reminder
+    )
+    if (baseResult.error) return { data: null, error: baseResult.error }
+    if (baseResult.base === null) continue
+    const base = baseResult.base
+    const rule = await retrieveWorkRule(organizationId, reminder.id)
+    if (rule.error) return { data: null, error: rule.error }
+    if (!rule.rule) {
+      if (base <= moment)
+        dueReminders.push(serializeDueReminder(reminder, tenantId, null, base))
+      continue
+    }
+    const occurrences = expandOccurrences(
+      workRuleToRecurrenceRule(rule.rule, base),
+      base,
+      moment
+    )
+    if (occurrences.length === 0) continue
+    dueReminders.push(
+      serializeDueReminder(
+        reminder,
+        tenantId,
+        rule.rule,
+        occurrences[occurrences.length - 1].start
+      )
+    )
   }
   dueReminders.sort((a, b) => a.dueAt - b.dueAt)
 
   return {
-    data: { object: 'my-work', userId, assignedIssues, upcomingEvents, dueReminders },
+    data: {
+      object: 'my-work',
+      userId,
+      assignedIssues,
+      upcomingEvents,
+      dueReminders,
+    },
     error: null,
   }
 }
-

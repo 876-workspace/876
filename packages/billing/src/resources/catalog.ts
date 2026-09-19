@@ -6,6 +6,7 @@ import type {
   AddonAssociationBatchResult,
   AddonAssociationUpsertParams,
   AddonCreateParams,
+  AddonListParams,
   AddonUpdateParams,
   CatalogCloneParams,
   CatalogCreated,
@@ -13,16 +14,21 @@ import type {
   CatalogResource,
   List,
   PlanCreateParams,
+  PlanListParams,
   PlanUpdateParams,
   PriceCreateParams,
   PriceListCreateParams,
+  PriceListListParams,
   PriceListUpdateParams,
+  PriceQueryParams,
   PriceUpdateParams,
   ProductCreateParams,
+  ProductListParams,
   ProductUpdateParams,
   RequestOptions,
   ResolvedPrice,
 } from '../types'
+import type { TransportRequest } from '../transport'
 
 const CatalogResourceSchema = z.looseObject({
   object: z.enum(['product', 'plan', 'price', 'addon', 'price_list']),
@@ -66,14 +72,19 @@ const ResolvedPriceSchema = z.strictObject({
 
 export function createCatalogResources(runtime: Runtime) {
   return {
-    products: createCrudResource<ProductCreateParams, ProductUpdateParams>(
-      runtime,
-      'products'
-    ),
+    products: createCrudResource<
+      ProductCreateParams,
+      ProductUpdateParams,
+      ProductListParams
+    >(runtime, 'products', (params) => ({ active: params.active })),
     plans: {
-      ...createCrudResource<PlanCreateParams, PlanUpdateParams>(
+      ...createCrudResource<PlanCreateParams, PlanUpdateParams, PlanListParams>(
         runtime,
-        'plans'
+        'plans',
+        (params) => ({
+          active: params.active,
+          productId: params.productId,
+        })
       ),
       clone(
         planId: string,
@@ -83,15 +94,25 @@ export function createCatalogResources(runtime: Runtime) {
         return createClone(runtime, 'plans', planId, params, options)
       },
     },
-    prices: createCrudResource<PriceCreateParams, PriceUpdateParams>(
-      runtime,
-      'prices'
-    ),
+    prices: createCrudResource<
+      PriceCreateParams,
+      PriceUpdateParams,
+      PriceQueryParams
+    >(runtime, 'prices', (params) => ({
+      active: params.active,
+      addonId: params.addonId,
+      itemId: params.itemId,
+      planId: params.planId,
+    })),
     addons: {
-      ...createCrudResource<AddonCreateParams, AddonUpdateParams>(
-        runtime,
-        'addons'
-      ),
+      ...createCrudResource<
+        AddonCreateParams,
+        AddonUpdateParams,
+        AddonListParams
+      >(runtime, 'addons', (params) => ({
+        active: params.active,
+        productId: params.productId,
+      })),
       clone(
         addonId: string,
         params: CatalogCloneParams,
@@ -133,10 +154,11 @@ export function createCatalogResources(runtime: Runtime) {
       },
     },
     priceLists: {
-      ...createCrudResource<PriceListCreateParams, PriceListUpdateParams>(
-        runtime,
-        'price-lists'
-      ),
+      ...createCrudResource<
+        PriceListCreateParams,
+        PriceListUpdateParams,
+        PriceListListParams
+      >(runtime, 'price-lists', (params) => ({ active: params.active })),
       resolve(
         priceListId: string,
         priceId: string,
@@ -158,15 +180,21 @@ export function createCatalogResources(runtime: Runtime) {
   }
 }
 
-function createCrudResource<TCreate, TUpdate>(
+function createCrudResource<TCreate, TUpdate, TListParams extends object>(
   runtime: Runtime,
-  path: 'products' | 'plans' | 'prices' | 'addons' | 'price-lists'
+  path: 'products' | 'plans' | 'prices' | 'addons' | 'price-lists',
+  toQuery?: (params: TListParams) => TransportRequest['query']
 ) {
   return {
-    list(options?: RequestOptions) {
+    list(params: TListParams = {} as TListParams, options?: RequestOptions) {
       return Request<List<CatalogResource>>(
         runtime,
-        { method: 'GET', path: `/api/v1/${path}`, signal: options?.signal },
+        {
+          method: 'GET',
+          path: `/api/v1/${path}`,
+          query: toQuery?.(params),
+          signal: options?.signal,
+        },
         CatalogListSchema
       )
     },

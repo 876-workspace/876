@@ -114,6 +114,7 @@ export function workReminderOccursOnDay(
   reminder: WorkReminder,
   day: Date
 ): boolean {
+  if (reminder.remindAt == null) return false
   return (
     reminder.status === 'SCHEDULED' &&
     timestampDateKey(reminder.remindAt) === workCalendarDateKey(day)

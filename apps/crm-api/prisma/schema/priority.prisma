@@ -19,7 +19,6 @@ model RequestPriorityDef {
 
   tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   requests            Request[]
-  tasks               RequestTask[]
   categoryDefaults    RequestCategoryDef[] @relation("CategoryDefaultPriority")
   subcategoryDefaults RequestSubcategory[] @relation("SubcategoryDefaultPriority")
   formDefaults        RequestForm[]        @relation("FormDefaultPriority")

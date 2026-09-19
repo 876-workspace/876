@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 import { Page } from '@876/ui/page'
 
-import { isOrgStatus } from '@/lib/org-status'
+import { isOrgStatus } from '@/lib/status'
 import { OrgSearchBar } from './_components/org-search-bar'
 import { OrgsListData } from './_components/orgs-list-data'
 import { ORGS_SKELETON_COLUMNS } from './_components/orgs-skeleton-columns'

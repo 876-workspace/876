@@ -216,7 +216,9 @@ model WorkReminder {
   contextId        String?             @map("context_id")
   title            String
   note             String?
-  remindAt         DateTime            @map("remind_at")
+  remindAt         DateTime?           @map("remind_at")
+  offsetMinutesBeforeDue Int?         @map("offset_minutes_before_due")
+  channel          String              @default("in-app")
   timeZone         String?             @map("time_zone")
   recurrenceRuleId String?             @map("recurrence_rule_id")
   userId           String              @map("user_id")

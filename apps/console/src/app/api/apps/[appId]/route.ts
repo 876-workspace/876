@@ -3,7 +3,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { isAppStatus } from '@/lib/app-status'
+import { isAppStatus } from '@/lib/status'
 
 export const runtime = 'nodejs'
 

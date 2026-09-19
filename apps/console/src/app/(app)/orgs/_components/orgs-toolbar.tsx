@@ -4,7 +4,7 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { ORG_STATUSES } from '@/lib/org-status'
+import { ORG_STATUSES } from '@/lib/status'
 
 const ORG_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All', headingLabel: 'All Organizations' },

@@ -25,6 +25,8 @@ const payment = {
     isDefault: true,
     isActive: true,
     isSystem: false,
+    imageFileId: null,
+    imageUrl: null,
     createdAt: 1,
     updatedAt: 1,
   },

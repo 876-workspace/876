@@ -6,7 +6,7 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { USER_STATUSES } from '@/lib/user-status'
+import { USER_STATUSES } from '@/lib/status'
 
 const USER_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All', headingLabel: 'All Users' },

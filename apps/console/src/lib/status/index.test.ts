@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { APP_STATUSES, isAppStatus } from '../app-status'
-import { isOrgStatus, ORG_STATUSES } from '../org-status'
-import { isUserStatus, USER_STATUSES } from '../user-status'
+import { APP_STATUSES, isAppStatus } from './index'
+import { isOrgStatus, ORG_STATUSES } from './index'
+import { isUserStatus, USER_STATUSES } from './index'
 
 const INVALID_STATUS_VALUES = [
   '',

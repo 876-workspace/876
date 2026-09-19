@@ -28,12 +28,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock('../../tenants/tenants.service.js', () => mocks.tenants)
 vi.mock('../../priorities/index.js', () => mocks.priorities)
 vi.mock('../requests.repository.js', () => mocks.repository)
-// The requests router mounts the note/task/reminder child routers, whose
-// repositories open the database at import time. This suite covers only the
-// request routes, so the child repositories are stubbed out entirely.
+// The requests router mounts the note child router, whose repository opens the
+// database at import time. This suite covers only the request routes, so that
+// child repository is stubbed out entirely.
 vi.mock('../../notes/notes.repository.js', () => ({}))
-vi.mock('../../tasks/tasks.repository.js', () => ({}))
-vi.mock('../../reminders/reminders.repository.js', () => ({}))
 
 const { errorHandler } = await import('../../../http/error-handler.js')
 const { createRequestsRouter } = await import('../requests.routes.js')

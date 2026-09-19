@@ -23,6 +23,7 @@ describe('createEventsResource', () => {
       title: 'Customer Site Visit',
       description: null,
       location: 'Kingston Port',
+      meetingUrl: null,
       status: 'CONFIRMED',
       busyStatus: 'BUSY',
       allDay: false,

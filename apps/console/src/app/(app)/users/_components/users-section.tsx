@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ListDetailSection } from '@876/ui/list-detail-section'
 
-import { isUserStatus } from '@/lib/user-status'
+import { isUserStatus } from '@/lib/status'
 import { UsersToolbar } from './users-toolbar'
 
 /**

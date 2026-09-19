@@ -93,6 +93,7 @@ model WorkEvent {
   title            String
   description      String?
   location         String?
+  meetingUrl       String?                @map("meeting_url")
   status           WorkEventStatus        @default(CONFIRMED)
   busyStatus       WorkEventBusyStatus    @default(BUSY) @map("busy_status")
   startAt          DateTime?              @map("start_at")

@@ -47,7 +47,9 @@ function serialize(
       : null,
     title: reminder.title,
     note: reminder.note,
-    remindAt: serializeTimestamp(reminder.remindAt)!,
+    remindAt: serializeTimestamp(reminder.remindAt),
+    offsetMinutesBeforeDue: reminder.offsetMinutesBeforeDue,
+    channel: reminder.channel,
     timeZone: reminder.timeZone,
     recurrenceRuleId: reminder.recurrenceRuleId,
     userId: reminder.userId,
@@ -135,7 +137,9 @@ export async function create(
     ...contextColumns(input.context),
     title: input.title,
     note: input.note ?? null,
-    remindAt: fromUnixSeconds(input.remindAt),
+    remindAt: input.remindAt == null ? null : fromUnixSeconds(input.remindAt),
+    offsetMinutesBeforeDue: input.offsetMinutesBeforeDue ?? null,
+    channel: input.channel ?? 'in-app',
     timeZone: input.timeZone ?? 'UTC',
     recurrenceRuleId: input.recurrenceRuleId ?? null,
     userId: input.userId,
@@ -185,6 +189,21 @@ export async function update(
     )
     if (isError(recurrence)) return recurrence
   }
+  // The create contract guarantees at least one timing leg, but an update can
+  // clear the last one the row still holds, leaving a reminder that can never
+  // fire. Reject that merged state instead of persisting it.
+  const nextRemindAt =
+    input.remindAt === undefined
+      ? current.remindAt
+      : input.remindAt == null
+        ? null
+        : fromUnixSeconds(input.remindAt)
+  const nextOffset =
+    input.offsetMinutesBeforeDue === undefined
+      ? current.offsetMinutesBeforeDue
+      : (input.offsetMinutesBeforeDue ?? null)
+  if (nextRemindAt === null && nextOffset === null)
+    return getError('work/invalid-request')
   const row = await repository.update(reminderId, {
     ...lifecycleStamp(current, input.status),
     ...(input.context === undefined ? {} : contextColumns(input.context)),
@@ -192,7 +211,14 @@ export async function update(
     ...(input.note === undefined ? {} : { note: input.note }),
     ...(input.remindAt === undefined
       ? {}
-      : { remindAt: fromUnixSeconds(input.remindAt) }),
+      : {
+          remindAt:
+            input.remindAt == null ? null : fromUnixSeconds(input.remindAt),
+        }),
+    ...(input.offsetMinutesBeforeDue === undefined
+      ? {}
+      : { offsetMinutesBeforeDue: input.offsetMinutesBeforeDue ?? null }),
+    ...(input.channel === undefined ? {} : { channel: input.channel }),
     ...(input.timeZone === undefined ? {} : { timeZone: input.timeZone }),
     ...(input.recurrenceRuleId === undefined
       ? {}

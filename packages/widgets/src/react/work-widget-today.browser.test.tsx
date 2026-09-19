@@ -56,6 +56,8 @@ function reminder(id: string, title: string): WorkReminder {
     title,
     note: null,
     remindAt: Math.floor(Date.now() / 1000),
+    offsetMinutesBeforeDue: null,
+    channel: 'in-app',
     timeZone: 'UTC',
     recurrenceRuleId: null,
     userId: 'user_1',

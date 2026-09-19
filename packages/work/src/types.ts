@@ -495,7 +495,9 @@ export const workReminderSchema = z.object({
   context: workContextSchema.nullable(),
   title: z.string(),
   note: z.string().nullable(),
-  remindAt: unixSchema,
+  remindAt: unixSchema.nullable(),
+  offsetMinutesBeforeDue: z.number().int().min(0).max(525600).nullable(),
+  channel: z.string().trim().min(1).max(120),
   timeZone: z.string().nullable(),
   recurrenceRuleId: z.string().nullable(),
   userId: z.string(),
@@ -508,17 +510,33 @@ export const workReminderSchema = z.object({
 })
 export type WorkReminder = z.infer<typeof workReminderSchema>
 
-export const createWorkReminderInputSchema = z.strictObject({
-  context: workContextSchema.optional().nullable(),
-  title: titleSchema,
-  note: longTextSchema.optional().nullable(),
-  remindAt: unixSchema,
-  timeZone: timeZoneSchema.optional().nullable(),
-  recurrenceRuleId: idSchema.optional().nullable(),
-  userId: idSchema,
-  status: workReminderStatusSchema.optional(),
-  createdBy: idSchema,
-})
+export const createWorkReminderInputSchema = z
+  .strictObject({
+    context: workContextSchema.optional().nullable(),
+    title: titleSchema,
+    note: longTextSchema.optional().nullable(),
+    remindAt: unixSchema.optional().nullable(),
+    offsetMinutesBeforeDue: z
+      .number()
+      .int()
+      .min(0)
+      .max(525600)
+      .optional()
+      .nullable(),
+    channel: z.string().trim().min(1).max(120).optional(),
+    timeZone: timeZoneSchema.optional().nullable(),
+    recurrenceRuleId: idSchema.optional().nullable(),
+    userId: idSchema,
+    status: workReminderStatusSchema.optional(),
+    createdBy: idSchema,
+  })
+  .superRefine((value, context) => {
+    if (value.remindAt == null && value.offsetMinutesBeforeDue == null)
+      context.addIssue({
+        code: 'custom',
+        message: 'Either remindAt or offsetMinutesBeforeDue must be provided.',
+      })
+  })
 export type CreateWorkReminderInput = z.infer<
   typeof createWorkReminderInputSchema
 >
@@ -528,7 +546,15 @@ export const updateWorkReminderInputSchema = z
     context: workContextSchema.optional().nullable(),
     title: titleSchema.optional(),
     note: longTextSchema.optional().nullable(),
-    remindAt: unixSchema.optional(),
+    remindAt: unixSchema.optional().nullable(),
+    offsetMinutesBeforeDue: z
+      .number()
+      .int()
+      .min(0)
+      .max(525600)
+      .optional()
+      .nullable(),
+    channel: z.string().trim().min(1).max(120).optional(),
     timeZone: timeZoneSchema.optional().nullable(),
     recurrenceRuleId: idSchema.optional().nullable(),
     userId: idSchema.optional(),
@@ -755,6 +781,7 @@ export const workEventSchema = z.object({
   title: z.string(),
   description: z.string().nullable(),
   location: z.string().nullable(),
+  meetingUrl: z.string().nullable(),
   status: workEventStatusSchema,
   busyStatus: workEventBusyStatusSchema,
   allDay: z.boolean(),
@@ -778,6 +805,7 @@ const eventBaseInputSchema = z.strictObject({
   title: titleSchema,
   description: longTextSchema.optional().nullable(),
   location: z.string().trim().max(1000).optional().nullable(),
+  meetingUrl: z.string().trim().max(2000).optional().nullable(),
   status: workEventStatusSchema.optional(),
   busyStatus: workEventBusyStatusSchema.optional(),
   recurrenceRuleId: idSchema.optional().nullable(),
@@ -817,6 +845,7 @@ export const updateWorkEventInputSchema = z
     title: titleSchema.optional(),
     description: longTextSchema.optional().nullable(),
     location: z.string().trim().max(1000).optional().nullable(),
+    meetingUrl: z.string().trim().max(2000).optional().nullable(),
     status: workEventStatusSchema.optional(),
     busyStatus: workEventBusyStatusSchema.optional(),
     allDay: z.boolean().optional(),

@@ -4,7 +4,7 @@ import {
   type StatusFilterOption,
 } from '@876/ui/status-filter-heading'
 
-import { APP_STATUSES } from '@/lib/app-status'
+import { APP_STATUSES } from '@/lib/status'
 
 const APP_STATUS_OPTIONS: StatusFilterOption[] = [
   { value: 'all', label: 'All Apps' },
