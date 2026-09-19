@@ -77,13 +77,29 @@ function groupFor(key: string): HTMLElement {
   return element as HTMLElement
 }
 
+function mobileList(container: HTMLElement): HTMLElement {
+  const list = container.querySelector('ul')
+  if (!list) throw new Error('Expected a mobile list')
+  return list as HTMLElement
+}
+
+function mobileRows(container: HTMLElement): HTMLElement[] {
+  return [...mobileList(container).querySelectorAll<HTMLElement>(':scope > li')]
+}
+
+function mobileMeta(row: HTMLElement): HTMLElement | null {
+  return row.querySelector('[data-cell-content] > div > span')
+}
+
 describe('TimesheetSummary', () => {
   afterEach(cleanup)
 
   it('renders the period the timesheet covers', () => {
     renderSummary()
 
-    expect(screen.getByText('Sep 8, 2026 – Sep 14, 2026')).toBeInTheDocument()
+    expect(document.querySelector('[data-period-range]')?.textContent).toBe(
+      'Sep 8, 2026 – Sep 14, 2026'
+    )
   })
 
   it('renders the status badge of the timesheet', () => {
@@ -244,8 +260,47 @@ describe('TimesheetSummary', () => {
     expect(total('billable')).toHaveTextContent('0m')
     expect(total('non-billable')).toHaveTextContent('0m')
     expect(container.querySelectorAll('[data-group]')).toHaveLength(0)
+    expect(screen.getAllByText('No time logged in this period.')).toHaveLength(
+      2
+    )
+  })
+
+  it('renders a phone row per breakdown group with the total as its meta', () => {
+    const { container } = renderSummary({
+      entries: [
+        entry({ id: 'entry_1', durationMinutes: 60 }),
+        entry({
+          id: 'entry_2',
+          projectId: 'proj_2',
+          projectName: 'Internal',
+          durationMinutes: 30,
+        }),
+      ],
+    })
+
+    const rows = mobileRows(container)
+    expect(rows).toHaveLength(2)
+    expect(within(rows[0]).getByText('Acme Redesign')).toBeInTheDocument()
+    expect(mobileMeta(rows[0])).toHaveTextContent('1h')
+    expect(within(rows[1]).getByText('Internal')).toBeInTheDocument()
+    expect(mobileMeta(rows[1])).toHaveTextContent('30m')
+  })
+
+  it('shows the period as the subtitle of every phone row', () => {
+    const { container } = renderSummary({ entries: [entry({ id: 'entry_1' })] })
+
     expect(
-      screen.getByText('No time logged in this period.')
+      mobileRows(container)[0].querySelector('[data-cell-content] > p')
+        ?.textContent
+    ).toBe('Sep 8, 2026 – Sep 14, 2026')
+  })
+
+  it('renders the empty period in the phone list', () => {
+    const { container } = renderSummary({ entries: [] })
+
+    expect(mobileList(container).children).toHaveLength(1)
+    expect(
+      within(mobileList(container)).getByText('No time logged in this period.')
     ).toBeInTheDocument()
   })
 

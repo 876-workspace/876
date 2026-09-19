@@ -61,6 +61,20 @@ function rowFor(id: string): HTMLElement {
   return row as HTMLElement
 }
 
+function mobileList(container: HTMLElement): HTMLElement {
+  const list = container.querySelector('ul')
+  if (!list) throw new Error('Expected a mobile list')
+  return list as HTMLElement
+}
+
+function mobileRows(container: HTMLElement): HTMLElement[] {
+  return [...mobileList(container).querySelectorAll<HTMLElement>(':scope > li')]
+}
+
+function mobileMeta(row: HTMLElement): HTMLElement | null {
+  return row.querySelector('[data-cell-content] > div > span')
+}
+
 describe('TimeEntryList', () => {
   afterEach(cleanup)
 
@@ -251,11 +265,78 @@ describe('TimeEntryList', () => {
     expect(onEdit).toHaveBeenCalledWith(second)
   })
 
+  it('renders a phone row per entry with the duration as its meta', () => {
+    const { container } = renderList({
+      entries: [
+        entry({ id: 'entry_1', durationMinutes: 90 }),
+        entry({ id: 'entry_2', durationMinutes: 30 }),
+      ],
+    })
+
+    const rows = mobileRows(container)
+    expect(rows).toHaveLength(2)
+    expect(mobileMeta(rows[0])).toHaveTextContent('1h 30m')
+    expect(mobileMeta(rows[1])).toHaveTextContent('30m')
+  })
+
+  it('shows the project and start date as the phone subtitle', () => {
+    const { container } = renderList({
+      entries: [
+        entry({
+          id: 'entry_1',
+          startedAt: Date.UTC(2026, 8, 15, 9, 0, 0) / 1000,
+        }),
+      ],
+    })
+
+    expect(
+      mobileRows(container)[0].querySelector('[data-cell-content] > p')
+        ?.textContent
+    ).toBe('Acme Redesign · Sep 15, 2026')
+  })
+
+  it('links a phone row to its work item', () => {
+    const { container } = renderList({
+      entries: [
+        entry({
+          id: 'entry_1',
+          issue: { id: 'iss_9', title: 'Fix the login redirect' },
+        }),
+      ],
+    })
+
+    expect(
+      within(mobileList(container)).getByRole('link', {
+        name: 'View work item Fix the login redirect',
+      })
+    ).toHaveAttribute('href', `${ISSUES_BASE}/iss_9`)
+  })
+
+  it('titles a phone row with the note when the entry has no work item', () => {
+    const { container } = renderList({
+      entries: [entry({ id: 'entry_1', note: 'Pairing on the redirect' })],
+    })
+
+    expect(
+      within(mobileList(container)).getByText('Pairing on the redirect')
+    ).toBeInTheDocument()
+    expect(within(mobileList(container)).queryByRole('link')).toBeNull()
+  })
+
+  it('titles a phone row with the project when the entry has neither work item nor note', () => {
+    const { container } = renderList({ entries: [entry({ id: 'entry_1' })] })
+
+    expect(
+      within(mobileList(container)).getByText('Acme Redesign')
+    ).toBeInTheDocument()
+  })
+
   it('renders the given empty title and nothing else', () => {
     const { container } = renderList({ entries: [], emptyTitle: EMPTY_TITLE })
 
     expect(container.querySelector('table')).toBeNull()
     expect(screen.queryByRole('button')).toBeNull()
-    expect(container.textContent).toBe(EMPTY_TITLE)
+    expect(mobileList(container).textContent).toBe(EMPTY_TITLE)
+    expect(screen.getAllByText(EMPTY_TITLE)).toHaveLength(2)
   })
 })

@@ -13,6 +13,12 @@ import {
   type TimesheetApprovalStatus,
 } from './time-tracking'
 import { formatDate } from './format-date'
+import {
+  avatarTone,
+  MobileList,
+  MobileListCell,
+  MobileListEmpty,
+} from './mobile-list'
 
 export type TimesheetSummaryEntry = {
   id: string
@@ -53,6 +59,26 @@ const DECIDED_LABELS: Record<TimesheetApprovalStatus, string> = {
 
 function totalOf(entries: readonly TimesheetSummaryEntry[]): number {
   return entries.reduce((total, entry) => total + entry.durationMinutes, 0)
+}
+
+function TimesheetGroupCell({
+  group,
+  periodStart,
+  periodEnd,
+}: {
+  group: TimesheetSummaryGroup
+  periodStart: number
+  periodEnd: number
+}) {
+  return (
+    <MobileListCell
+      avatar={group.label.slice(0, 2).toUpperCase()}
+      avatarClassName={avatarTone(group.label)}
+      title={group.label}
+      subtitle={`${formatDate(periodStart)} – ${formatDate(periodEnd)}`}
+      meta={formatDuration(group.totalMinutes)}
+    />
+  )
 }
 
 function groupEntries(
@@ -148,42 +174,60 @@ export function TimesheetSummary({
         </div>
       </dl>
 
-      <Table>
-        <TableHeader className="876-header-row">
-          <TableRow>
-            <TableHead className="px-5 py-3.5">
-              {groupBy === 'project' ? 'Project' : 'Day'}
-            </TableHead>
-            <TableHead className="px-5 py-3.5 text-right">Billable</TableHead>
-            <TableHead className="px-5 py-3.5 text-right">Total</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {groups.map((group) => (
-            <TableRow key={group.key} data-group={group.key}>
-              <TableCell className="px-5 py-4 font-medium">
-                {group.label}
-              </TableCell>
-              <TableCell className="px-5 py-4 text-right tabular-nums">
-                {formatDuration(group.billableMinutes)}
-              </TableCell>
-              <TableCell className="px-5 py-4 text-right tabular-nums">
-                {formatDuration(group.totalMinutes)}
-              </TableCell>
-            </TableRow>
-          ))}
+      <div className="px-4">
+        <MobileList>
           {groups.length === 0 ? (
+            <MobileListEmpty>No time logged in this period.</MobileListEmpty>
+          ) : (
+            groups.map((group) => (
+              <TimesheetGroupCell
+                key={group.key}
+                group={group}
+                periodStart={periodStart}
+                periodEnd={periodEnd}
+              />
+            ))
+          )}
+        </MobileList>
+      </div>
+      <div className="hidden sm:block">
+        <Table>
+          <TableHeader className="876-header-row">
             <TableRow>
-              <TableCell
-                colSpan={3}
-                className="text-muted-foreground px-5 py-8 text-center"
-              >
-                No time logged in this period.
-              </TableCell>
+              <TableHead className="px-5 py-3.5">
+                {groupBy === 'project' ? 'Project' : 'Day'}
+              </TableHead>
+              <TableHead className="px-5 py-3.5 text-right">Billable</TableHead>
+              <TableHead className="px-5 py-3.5 text-right">Total</TableHead>
             </TableRow>
-          ) : null}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {groups.map((group) => (
+              <TableRow key={group.key} data-group={group.key}>
+                <TableCell className="px-5 py-4 font-medium">
+                  {group.label}
+                </TableCell>
+                <TableCell className="px-5 py-4 text-right tabular-nums">
+                  {formatDuration(group.billableMinutes)}
+                </TableCell>
+                <TableCell className="px-5 py-4 text-right tabular-nums">
+                  {formatDuration(group.totalMinutes)}
+                </TableCell>
+              </TableRow>
+            ))}
+            {groups.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={3}
+                  className="text-muted-foreground px-5 py-8 text-center"
+                >
+                  No time logged in this period.
+                </TableCell>
+              </TableRow>
+            ) : null}
+          </TableBody>
+        </Table>
+      </div>
     </section>
   )
 }
