@@ -60,17 +60,17 @@ describe('portal boundary', () => {
   })
 
   it('the portal guard resolves grants through the portal client', () => {
-    const text = readFileSync(join(SRC, 'lib', 'portal-access.ts'), 'utf-8')
+    const text = readFileSync(
+      join(SRC, 'lib', 'portal-access', 'index.ts'),
+      'utf-8'
+    )
     expect(text).toContain('listIssues')
     expect(text).not.toContain('projects.view')
     expect(text).not.toContain('@/lib/clients/projects')
   })
 
   it('the portal service factory builds the portal client only', () => {
-    const text = readFileSync(
-      join(SRC, 'lib', 'clients', 'portal.ts'),
-      'utf-8'
-    )
+    const text = readFileSync(join(SRC, 'lib', 'clients', 'portal.ts'), 'utf-8')
     expect(text).toContain('@876/projects/portal')
     expect(text).not.toContain('@/lib/clients/projects')
     expect(text).not.toContain('@876/projects/service')
