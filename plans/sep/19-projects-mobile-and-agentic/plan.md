@@ -403,3 +403,32 @@ So the issue carries the outcome too:
 
 This is Phase 6. It is deliberately **not** a substitute for `plan.md`; it is a
 phone-readable projection of it.
+
+## Merge and deploy policy (user, 2026-09-19)
+
+> "merge in as you go, then manually deploy all prod vercel at the end"
+
+- Each phase is committed to `feature/projects-mobile-and-agentic` only **after**
+  the orchestrator has run its verification in the foreground and read its
+  report. A delegate's exit code is not evidence (`cli.md`).
+- When a coherent set is green, the integration branch is merged into `main`
+  with a real merge subject (`git.md` → Merge commit subjects), not GitHub's
+  default branch-name wording.
+- CI is ignored — Actions minutes are exhausted and Cloudflare is retired.
+  Local verification is the merge gate (`deployment.md`).
+- **At the end**, every touched Vercel production project is deployed manually:
+  `876-projects` and `876-projects-api` at minimum; `876-console`,
+  `876-couriers`, `876-billing`, `876-invoice` and `876-crm` as well if the
+  shared packages they consume changed (`@876/ui`, `@876/storage`).
+- Any service whose PR added a migration gets `prisma migrate status` against
+  production **before** its redeploy, and `migrate deploy` applied if pending.
+  Dev and production share databases here, so this is checked, never assumed.
+
+### Shared-package blast radius for this run
+
+| Package changed | Apps that must be redeployed |
+| --- | --- |
+| `@876/ui` (toolbar, markdown, 876.css) | console, couriers, billing, invoice, crm, projects |
+| `@876/storage` (error copy) | projects, couriers, billing |
+| `@876/projects-ui`, `@876/projects` | projects |
+| `apps/projects-api` | projects-api (+ migrations first) |
