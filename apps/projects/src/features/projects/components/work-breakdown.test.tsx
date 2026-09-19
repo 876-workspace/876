@@ -157,9 +157,15 @@ function renderBreakdown(canEdit = true) {
 }
 
 function taskListRow(name: string) {
-  const row = screen.getByText(name).closest('li')
+  const row = within(screen.getByTestId('desktop-work-breakdown'))
+    .getByText(name)
+    .closest('li')
   if (!row) throw new Error(`No rendered row for ${name}`)
   return within(row)
+}
+
+function desktopBreakdown() {
+  return within(screen.getByTestId('desktop-work-breakdown'))
 }
 
 beforeEach(() => {
@@ -176,33 +182,35 @@ describe('WorkBreakdown', () => {
   it('renders the phase, its task lists, and its root work item links', () => {
     renderBreakdown()
 
-    expect(screen.getByText('Release one')).toBeInTheDocument()
-    expect(screen.getByText('Backend groundwork')).toBeInTheDocument()
+    expect(desktopBreakdown().getByText('Release one')).toBeInTheDocument()
     expect(
-      screen.getByRole('link', { name: 'CONSOLE-9 — Wire the API' })
+      desktopBreakdown().getByText('Backend groundwork')
+    ).toBeInTheDocument()
+    expect(
+      desktopBreakdown().getByRole('link', { name: 'CONSOLE-9 — Wire the API' })
     ).toHaveAttribute('href', '/issues/CONSOLE-9')
   })
 
   it('shows the task list owner and derived progress', () => {
     renderBreakdown()
 
-    expect(screen.getByText(/Ana Brown/)).toBeInTheDocument()
-    expect(screen.getByText(/1\/3 complete/)).toBeInTheDocument()
+    expect(desktopBreakdown().getByText(/Ana Brown/)).toBeInTheDocument()
+    expect(desktopBreakdown().getByText(/1\/3 complete/)).toBeInTheDocument()
   })
 
   it('keeps task lists without a phase in their own group', () => {
     renderBreakdown()
 
-    expect(screen.getByText('No phase')).toBeInTheDocument()
-    expect(screen.getByText('Operations')).toBeInTheDocument()
+    expect(desktopBreakdown().getByText('No phase')).toBeInTheDocument()
+    expect(desktopBreakdown().getByText('Operations')).toBeInTheDocument()
   })
 
   it('keeps work items outside any task list in an unlisted group', () => {
     renderBreakdown()
 
-    expect(screen.getByText('Unlisted')).toBeInTheDocument()
+    expect(desktopBreakdown().getByText('Unlisted')).toBeInTheDocument()
     expect(
-      screen.getByRole('link', { name: 'CONSOLE-10 — Loose item' })
+      desktopBreakdown().getByRole('link', { name: 'CONSOLE-10 — Loose item' })
     ).toHaveAttribute('href', '/issues/CONSOLE-10')
   })
 
@@ -236,8 +244,8 @@ describe('WorkBreakdown', () => {
       />
     )
 
-    expect(screen.getByText('Archived')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Restore' }))
+    expect(desktopBreakdown().getByText('Archived')).toBeInTheDocument()
+    fireEvent.click(desktopBreakdown().getByRole('button', { name: 'Restore' }))
 
     await waitFor(() => expect(mocks.restore).toHaveBeenCalledWith('tl_1'))
   })
@@ -246,7 +254,9 @@ describe('WorkBreakdown', () => {
     renderBreakdown()
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Move Backend groundwork down' })
+      desktopBreakdown().getByRole('button', {
+        name: 'Move Backend groundwork down',
+      })
     )
 
     await waitFor(() =>
@@ -258,14 +268,74 @@ describe('WorkBreakdown', () => {
     renderBreakdown(false)
 
     expect(
-      screen.queryByRole('button', { name: 'Archive' })
+      desktopBreakdown().queryByRole('button', { name: 'Archive' })
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: 'Restore' })
+      desktopBreakdown().queryByRole('button', { name: 'Restore' })
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: 'Move Backend groundwork up' })
+      desktopBreakdown().queryByRole('button', {
+        name: 'Move Backend groundwork up',
+      })
     ).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
+    expect(
+      desktopBreakdown().queryByRole('link', { name: 'Edit' })
+    ).not.toBeInTheDocument()
+  })
+
+  it('renders no phone breakdown when every issue is unlisted', () => {
+    render(
+      <WorkBreakdown
+        breakdown={{
+          ...breakdown,
+          phases: [],
+          unphasedTaskLists: [{ taskList: unphasedTaskList, issues: [] }],
+          unlistedIssues: [
+            makeIssue({
+              id: 'iss_11',
+              identifier: 'CONSOLE-11',
+              title: 'Only loose item',
+            }),
+          ],
+        }}
+        ownerLabels={ownerLabels}
+        canEdit={false}
+      />
+    )
+
+    expect(screen.queryByTestId('mobile-work-breakdown')).toBeNull()
+    expect(
+      desktopBreakdown().getByRole('link', {
+        name: 'CONSOLE-11 — Only loose item',
+      })
+    ).toHaveAttribute('href', '/issues/CONSOLE-11')
+  })
+
+  it('renders phone task-list groups when they have content', () => {
+    renderBreakdown()
+
+    expect(
+      within(screen.getByTestId('mobile-work-breakdown')).getByText(
+        'Release one'
+      )
+    ).toBeInTheDocument()
+    expect(
+      within(screen.getByTestId('mobile-work-breakdown')).getByText(
+        'Backend groundwork'
+      )
+    ).toBeInTheDocument()
+  })
+
+  it('renders phone work-breakdown issues as links', () => {
+    renderBreakdown()
+
+    const issue = within(screen.getByTestId('mobile-work-breakdown')).getByRole(
+      'link',
+      { name: 'CONSOLE-9 Wire the API' }
+    )
+    expect(issue).toHaveAttribute('href', '/issues/CONSOLE-9')
+    expect(issue.querySelector('.line-clamp-2')).toHaveTextContent(
+      'Wire the API'
+    )
   })
 })
