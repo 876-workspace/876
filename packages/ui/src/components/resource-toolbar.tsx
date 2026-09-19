@@ -195,7 +195,7 @@ export function ResourceToolbar({
           <p className="text-muted-foreground mt-1 text-sm">{description}</p>
         ) : null}
         {mobilePrimary === 'button' ? (
-          <div className="mt-3">{primaryButton}</div>
+          <div className="876-toolbar-mobile-primary mt-3">{primaryButton}</div>
         ) : null}
       </div>
 

@@ -678,3 +678,13 @@
 .hljs-punctuation {
   color: var(--code-punctuation);
 }
+
+/* 876-toolbar-mobile-primary — the toolbar's phone-only primary action.
+   A host that renders a floating action button for the same action marks its
+   content region with data-has-fab, and this one hides. The FAB is the native
+   idiom and sits in thumb reach, so it wins; but the decision is made by the
+   host at runtime because the FAB is feature-gated, and a page must never be
+   left with no way to add. */
+[data-has-fab='true'] [class~='876-toolbar-mobile-primary'] {
+  display: none;
+}
