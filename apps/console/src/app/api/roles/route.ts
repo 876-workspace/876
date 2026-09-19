@@ -2,7 +2,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { service } from '@/lib/service'
+import { records } from '@/lib/records'
 
 export const runtime = 'nodejs'
 
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     )
   }
 
-  const result = await service.roles.create(
+  const result = await records.roles.create(
     body as {
       name: string
       displayName: string

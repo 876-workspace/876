@@ -1,7 +1,7 @@
 import { workspace } from '@/lib/clients/workspace'
 import { platform } from '@/lib/clients/platform'
 import { cache } from 'react'
-import { service } from '@/lib/service'
+import { records } from '@/lib/records'
 
 /**
  * Resolve a user by `user_*` id or username, including soft-deleted records so
@@ -51,7 +51,7 @@ export const resolveUserProfile = cache(async (userId: string) => {
  * identity API no longer carries this fact. Cached per request.
  */
 export const resolveUserMcRole = cache(async (userId: string) => {
-  const grant = await service.team.retrieve(userId)
+  const grant = await records.team.retrieve(userId)
   return grant?.roleName ?? null
 })
 

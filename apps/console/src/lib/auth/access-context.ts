@@ -12,7 +12,7 @@ import { cache } from 'react'
 
 import { getConsoleFeatureKeys } from '@/lib/features'
 import { operatorPermissions } from '@/lib/operator-permissions'
-import { service } from '@/lib/service'
+import { records } from '@/lib/records'
 
 /**
  * Console's own vocabulary plus every product's projected keys and the
@@ -32,7 +32,7 @@ const OPERATOR_PERMISSIONS = operatorPermissions(consolePermissionCatalog)
 export const resolveConsoleGrant = cache(async function resolveConsoleGrant(
   userId: string
 ) {
-  return service.team.retrieve(userId)
+  return records.team.retrieve(userId)
 })
 
 function stringKeys(value: unknown): string[] {

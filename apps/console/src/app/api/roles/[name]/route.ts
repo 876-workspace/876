@@ -2,7 +2,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { service } from '@/lib/service'
+import { records } from '@/lib/records'
 
 export const runtime = 'nodejs'
 
@@ -24,7 +24,7 @@ export async function PATCH(
   } | null
   if (!body) return apiJson({ error: 'Invalid request body.' }, { status: 400 })
 
-  const result = await service.roles.update(name, body)
+  const result = await records.roles.update(name, body)
   if (result.error) {
     return apiJson({ error: result.error }, { status: result.status ?? 400 })
   }
@@ -40,7 +40,7 @@ export async function DELETE(
   if (response) return response
 
   const { name } = await context.params
-  const result = await service.roles.delete(name)
+  const result = await records.roles.delete(name)
   if (result.error) {
     return apiJson({ error: result.error }, { status: result.status ?? 400 })
   }

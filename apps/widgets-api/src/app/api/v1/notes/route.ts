@@ -2,8 +2,8 @@ import { invalidJsonResponse } from '@/lib/errors'
 
 import { requireWidgetsService } from '@/lib/auth/service-key'
 import { serviceResponse } from '@/lib/http'
-import { service } from '@/lib/service'
-import { parseColor } from '@/lib/service/notes/validate'
+import { records } from '@/lib/records'
+import { parseColor } from '@/lib/records/notes/validate'
 
 export const runtime = 'nodejs'
 
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     unfiledParam === '1' || unfiledParam === 'true' ? true : undefined
   const collectionId = url.searchParams.get('collection_id') ?? undefined
 
-  const result = await service.notes.listNotes({
+  const result = await records.notes.listNotes({
     ownerAccountId: auth.actorUserId,
     limit: Number(url.searchParams.get('limit') ?? '') || undefined,
     startingAfter: url.searchParams.get('starting_after') ?? undefined,
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
         ? record.collection_id
         : undefined
 
-  const result = await service.notes.createNote({
+  const result = await records.notes.createNote({
     ownerAccountId: auth.actorUserId,
     title: typeof record.title === 'string' ? record.title : '',
     body: typeof record.body === 'string' ? record.body : '',

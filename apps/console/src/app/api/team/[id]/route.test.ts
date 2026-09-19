@@ -13,8 +13,8 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.guard,
 }))
 
-vi.mock('@/lib/service', () => ({
-  service: {
+vi.mock('@/lib/records', () => ({
+  records: {
     team: { delete: mocks.deleteMember, update: mocks.updateMember },
   },
 }))

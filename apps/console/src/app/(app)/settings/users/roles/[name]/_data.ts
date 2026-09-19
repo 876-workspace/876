@@ -1,7 +1,7 @@
 import { cache } from 'react'
 
-import { service } from '@/lib/service'
+import { records } from '@/lib/records'
 
 export const getRole = cache(async (name: string) =>
-  service.roles.retrieve(name)
+  records.roles.retrieve(name)
 )

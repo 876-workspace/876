@@ -5,7 +5,7 @@ import type { RoleView } from '@/types/role'
 
 import { requireConsolePermission, requireSession } from '@/lib/auth/guards'
 import { ROUTE_PERMISSIONS } from '@/lib/auth/route-permissions'
-import { service } from '@/lib/service'
+import { records } from '@/lib/records'
 import { AnalyticsEvent } from '@/lib/analytics/events'
 import { TrackMCEventOnMount } from '@/lib/analytics/track-event-on-mount'
 import { RolesList } from './_components/roles-list'
@@ -38,7 +38,7 @@ export default async function RolesLayout({
 }
 
 async function RolesListData() {
-  const rows = await service.roles.list()
+  const rows = await records.roles.list()
   const roles: RoleView[] = rows.map((role) => ({
     name: role.name,
     displayName: role.displayName,

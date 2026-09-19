@@ -1,6 +1,6 @@
 import { requireWidgetsService } from '@/lib/auth/service-key'
 import { serviceResponse } from '@/lib/http'
-import { service } from '@/lib/service'
+import { records } from '@/lib/records'
 
 export const runtime = 'nodejs'
 
@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   if (auth.response) return auth.response
 
   const url = new URL(request.url)
-  const result = await service.notes.listAllNotes({
+  const result = await records.notes.listAllNotes({
     ownerAccountId: url.searchParams.get('owner_account_id') ?? undefined,
     limit: Number(url.searchParams.get('limit') ?? '') || undefined,
     startingAfter: url.searchParams.get('starting_after') ?? undefined,

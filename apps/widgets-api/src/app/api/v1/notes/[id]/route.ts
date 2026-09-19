@@ -2,8 +2,8 @@ import { invalidJsonResponse } from '@/lib/errors'
 
 import { requireWidgetsService } from '@/lib/auth/service-key'
 import { serviceResponse } from '@/lib/http'
-import { service } from '@/lib/service'
-import { parseColor } from '@/lib/service/notes/validate'
+import { records } from '@/lib/records'
+import { parseColor } from '@/lib/records/notes/validate'
 
 export const runtime = 'nodejs'
 
@@ -34,7 +34,7 @@ export async function PATCH(request: Request, context: Ctx) {
         ? record.collection_id
         : undefined
 
-  const result = await service.notes.updateNote({
+  const result = await records.notes.updateNote({
     id,
     ownerAccountId: auth.actorUserId,
     title: typeof record.title === 'string' ? record.title : undefined,
@@ -51,7 +51,7 @@ export async function DELETE(_request: Request, context: Ctx) {
   if (auth.response) return auth.response
 
   const { id } = await context.params
-  const result = await service.notes.deleteNote({
+  const result = await records.notes.deleteNote({
     id,
     ownerAccountId: auth.actorUserId,
   })

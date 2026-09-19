@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 import { assertTeamGrantChangeAllowed } from '@/lib/auth/role-change'
 import { requireConsolePermission } from '@/lib/auth/route-guard'
 import { errorResponse } from '@/lib/errors'
-import { service } from '@/lib/service'
+import { records } from '@/lib/records'
 import { teamGrantUpdateSchema } from '@/types/team'
 
 export const runtime = 'nodejs'
@@ -55,7 +55,7 @@ export async function PATCH(
   if (!change.ok) return errorResponse(change.code)
 
   const { expiresAt, ...updates } = body.data
-  const result = await service.team.update(id, {
+  const result = await records.team.update(id, {
     ...updates,
     ...(expiresAt !== undefined
       ? { expiresAt: expiresAt === null ? null : BigInt(expiresAt) }
@@ -81,6 +81,6 @@ export async function DELETE(
   })
   if (!change.ok) return errorResponse(change.code)
 
-  const result = await service.team.delete(id)
+  const result = await records.team.delete(id)
   return apiJson({ data: { count: result.count } })
 }

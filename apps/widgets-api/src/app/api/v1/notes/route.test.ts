@@ -10,8 +10,8 @@ vi.mock('@/lib/auth/service-key', () => ({
   requireWidgetsService: mocks.requireWidgetsService,
 }))
 
-vi.mock('@/lib/service', () => ({
-  service: {
+vi.mock('@/lib/records', () => ({
+  records: {
     notes: {
       listNotes: mocks.listNotes,
       createNote: mocks.createNote,

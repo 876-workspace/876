@@ -6,8 +6,8 @@ const mocks = vi.hoisted(() => ({
   listEmployees: vi.fn(),
 }))
 
-vi.mock('@/lib/service', () => ({
-  service: { team: { list: mocks.listGrants } },
+vi.mock('@/lib/records', () => ({
+  records: { team: { list: mocks.listGrants } },
 }))
 
 vi.mock('@/lib/clients/workspace', () => ({

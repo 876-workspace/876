@@ -1,11 +1,11 @@
 import { platform } from '@/lib/clients/platform'
 import { cache } from 'react'
 
-import { service } from '@/lib/service'
+import { records } from '@/lib/records'
 
 /** The MC access grant for a given user ID, including their role and permissions. */
 export const resolveMemberGrant = cache(async (userId: string) => {
-  return service.team.retrieve(userId)
+  return records.team.retrieve(userId)
 })
 
 /** The 876 identity record for a given user ID; null on failure. */
