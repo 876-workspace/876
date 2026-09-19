@@ -2,7 +2,7 @@
 
 - **Run ID:** `19-work-convergence`
 - **Branch:** `refactor/work-convergence`
-- **Status:** IN_PROGRESS
+- **Status:** COMPLETED — four migrations written, none applied
 
 ## The measurement that motivated this
 
@@ -112,3 +112,30 @@ neither Work model carries. Converging would mean inventing an inbox concept
 Work does not have — and a cross-app notification inbox is a platform decision
 (Core, or a future Notifications service), not something to fold into a
 convergence run. Left where it is.
+
+## Four migrations are written and unapplied
+
+Dev and production share databases, so none of these ran. Apply in this order:
+
+| App          | Folder                                         | What it does                                                                           |
+| ------------ | ---------------------------------------------- | -------------------------------------------------------------------------------------- |
+| crm-api      | `20260919120000_drop_dead_request_task_tables` | drops `crm_request_tasks`, `crm_request_reminders` and their enums                     |
+| work-api     | `20260919000000_reminder_offset_and_channel`   | widens `remind_at`, adds `offset_minutes_before_due` + `channel` + a timing CHECK      |
+| work-api     | `20260919150000_event_meeting_url`             | adds `work_events.meeting_url`                                                         |
+| projects-api | `20260919160000_move_events_to_work`           | creates `projects_event_links`, drops `projects_events` and `projects_event_attendees` |
+
+The two Work migrations are additive and must land **before** the Projects
+drop, which is destructive and cannot be backfilled — Work is a separate
+database, so Projects event and reminder rows are lost with their tables.
+
+## Mappings that are not clean, and were reported rather than hidden
+
+- Projects allows `createdBy: null`; Work requires a creator. Null is stored as
+  the actor `system` and read back as null.
+- Work's `DELEGATED` participant status has no Projects response, and reads as
+  `invited`. Projects never writes it.
+- A legacy all-day event with no `endsAt` takes the following UTC date, because
+  Work's all-day branch requires `endDate > startDate`.
+- Every Work error outside tenant/invalid-request/not-found collapses to
+  `projects/internal-error` — including `work/not-configured` and
+  `work/calendar-not-found`. No registry entries were invented.
