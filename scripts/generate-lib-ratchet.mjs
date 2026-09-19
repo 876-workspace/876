@@ -14,7 +14,7 @@ const APPS = [
   'console', 'billing', 'couriers', '876', 'enterprise',
   'invoice', 'crm', 'projects', 'commerce',
 ]
-const ALLOWED = new Set(['logger.ts', 'features.ts', 'permissions.ts', 'format.ts'])
+const ALLOWED = new Set()  // nothing is allowed loose at the lib root
 
 const out = {}
 for (const app of APPS) {
@@ -23,17 +23,8 @@ for (const app of APPS) {
   const names = readdirSync(dir, { withFileTypes: true })
     .filter((e) => e.isFile() && /\.tsx?$/.test(e.name))
     .map((e) => e.name)
-    .filter((n) => n !== `${app}-app.ts`)
     .filter((n) => !ALLOWED.has(n))
     .filter((n) => !ALLOWED.has(n.replace(/\.test\.tsx?$/, '.ts')))
-    // A colocated test rides on its subject. An *orphan* test — one whose
-    // subject is not a file here (it scans the route tree, say) — is itself a
-    // loose lib file and is recorded.
-    .filter((n, _i, all) => {
-      if (!/\.test\.tsx?$/.test(n)) return true
-      const subject = n.replace(/\.test\.tsx?$/, '')
-      return !all.some((o) => o === `${subject}.ts` || o === `${subject}.tsx`)
-    })
     .sort()
   if (names.length) out[app] = names
 }

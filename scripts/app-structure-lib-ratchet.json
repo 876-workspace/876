@@ -2,21 +2,36 @@
   "876": [
     "api-envelope-routes.test.ts",
     "consumer-app.ts",
+    "features.ts",
+    "logger.ts",
     "metadata.ts",
     "utils.ts"
   ],
   "console": [
     "api-boundary.test.ts",
     "api-envelope-routes.test.ts",
+    "app-color.test.ts",
     "app-color.ts",
     "app-status.ts",
     "apps-catalog.ts",
+    "console-app.ts",
+    "features.test.ts",
+    "features.ts",
+    "format.test.ts",
+    "format.ts",
+    "logger.test.ts",
+    "logger.ts",
+    "operator-permissions.test.ts",
     "operator-permissions.ts",
     "org-status.ts",
+    "permission-grouping.test.ts",
     "permission-grouping.ts",
     "permissions.comprehensive.test.ts",
+    "permissions.test.ts",
+    "permissions.ts",
     "permissions.weird.test.ts",
     "platform-org.ts",
+    "slug.test.ts",
     "slug.ts",
     "status.test.ts",
     "uploadthing.ts",
@@ -24,43 +39,74 @@
     "widgets-auth.ts"
   ],
   "billing": [
+    "billing-app.ts",
     "billing-format-extended.test.ts",
     "feature-route-layouts.test.ts",
+    "features.test.ts",
+    "features.ts",
+    "format.test.ts",
+    "format.ts",
+    "permissions.test.ts",
+    "permissions.ts",
     "status.ts",
     "widgets-auth.ts"
   ],
   "couriers": [
     "api-envelope-routes.test.ts",
     "app-name.ts",
+    "couriers-app.ts",
     "couriers.ts",
+    "features.test.ts",
+    "features.ts",
     "onboarding.ts",
+    "reserved-slugs.test.ts",
     "reserved-slugs.ts",
+    "shipping-address.test.ts",
     "shipping-address.ts",
     "widgets-auth.ts"
   ],
   "enterprise": [
     "api-envelope-routes.test.ts",
+    "enterprise-app.ts",
+    "features.ts",
+    "reserved-slugs.test.ts",
     "reserved-slugs.ts"
   ],
   "invoice": [
+    "features.test.ts",
+    "features.ts",
+    "format.ts",
+    "invoice-app.ts",
     "invoice.ts",
     "status.ts"
   ],
   "crm": [
-    "crm-api.ts"
+    "crm-api.ts",
+    "crm-app.ts",
+    "features.test.ts",
+    "features.ts"
   ],
   "projects": [
     "attachment-links.ts",
     "attachments.ts",
+    "automation-mappers.test.ts",
     "automation-mappers.ts",
+    "date-input.test.ts",
     "date-input.ts",
+    "features.ts",
     "integration-inputs.test.ts",
+    "integration-mappers.test.ts",
     "integration-mappers.ts",
     "layout-available-fields.ts",
     "notification-mappers.ts",
+    "period.test.ts",
     "period.ts",
     "portal-access.ts",
+    "projects-app.ts",
     "visibility.ts",
     "work-structure-data.ts"
+  ],
+  "commerce": [
+    "commerce-app.ts"
   ]
 }
