@@ -245,13 +245,27 @@
     letter-spacing: -0.025em;
   }
 
-  /* Phone large-title app bar — roughly iOS 34pt; actions stay quiet. */
+  /* 876-page-title-lg — the phone large-title app bar (roughly iOS 34pt): the
+     header is the loudest thing on a phone screen, so actions stay quiet. From
+     sm up it returns to the standard page title, which lets the toolbar render a
+     single title element instead of one per breakpoint. */
   [class~='876-page-title-lg'],
   [class~='876-page-title-lg'] [class~='876-page-title'] {
     font-size: 2rem;
     line-height: 1.15;
     font-weight: 700;
     letter-spacing: -0.02em;
+  }
+
+  @media (min-width: 40rem) {
+    [class~='876-page-title-lg'],
+    [class~='876-page-title-lg'] [class~='876-page-title'] {
+      font-size: 1.25rem;
+      line-height: 1.75rem;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+    }
+
   }
 
   /* Card/section <h2>; spacing stays with the caller. */

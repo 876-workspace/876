@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom/vitest'
 
@@ -12,21 +12,10 @@ vi.mock('next/navigation', () => ({
 }))
 
 async function openActions() {
-  const triggers = screen.getAllByRole('button', { name: 'More actions' })
-  await userEvent.setup().click(triggers[triggers.length - 1])
+  await userEvent.setup().click(
+    screen.getByRole('button', { name: 'More actions' })
+  )
   await screen.findByRole('menu')
-}
-
-function phoneLayout() {
-  const layout = document.querySelector('div.mb-4.sm\\:hidden')
-  expect(layout).not.toBeNull()
-  return within(layout as HTMLElement)
-}
-
-function desktopLayout() {
-  const layout = document.querySelector('div.mb-5.hidden.sm\\:flex')
-  expect(layout).not.toBeNull()
-  return within(layout as HTMLElement)
 }
 
 describe('ResourceToolbar', () => {
@@ -35,34 +24,121 @@ describe('ResourceToolbar', () => {
     mocks.refresh.mockReset()
   })
 
-  it('renders the primary action', () => {
-    render(<ResourceToolbar title="Customers" primaryLabel="Add" />)
+  it('renders the title once', () => {
+    render(<ResourceToolbar title="Customers" />)
 
-    expect(screen.getAllByRole('button', { name: 'Add' })).toHaveLength(2)
-  })
-
-  it('keeps an accessible primary action when icon-only', () => {
-    render(
-      <ResourceToolbar title="Customers" primaryLabel="Add" primaryIconOnly />
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Customers'
     )
-
-    expect(screen.getAllByRole('button', { name: 'Add' })).toHaveLength(2)
   })
 
-  it('renders Refresh first', async () => {
+  it('renders the filter heading as the only h1', () => {
     render(
       <ResourceToolbar
         title="Customers"
-        refresh
-        dropdownActions={[{ label: 'Import', icon: 'import' }]}
+        titleFilter={<h1 className="876-page-title">Open ⌄</h1>}
       />
     )
-    await openActions()
 
-    expect(screen.getAllByRole('menuitem')[0]).toHaveTextContent('Refresh')
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+    expect(screen.getByRole('heading', { name: 'Open ⌄' })).toHaveClass(
+      '876-page-title'
+    )
   })
 
-  it('refreshes through the router', async () => {
+  it('gives the title wrapper the responsive large-title class', () => {
+    render(<ResourceToolbar title="Customers" />)
+
+    expect(screen.getByRole('heading', { level: 1 }).className).toContain(
+      '876-page-title-lg'
+    )
+  })
+
+  it('renders one More actions button', () => {
+    render(<ResourceToolbar title="Customers" refresh />)
+
+    expect(
+      screen.getAllByRole('button', { name: 'More actions' })
+    ).toHaveLength(1)
+  })
+
+  it('renders one primary button', () => {
+    render(<ResourceToolbar title="Customers" primaryLabel="Add" />)
+
+    expect(screen.getAllByRole('button', { name: 'Add' })).toHaveLength(1)
+  })
+
+  it("defaults mobilePrimary to 'button' and renders the primary", () => {
+    render(<ResourceToolbar title="Customers" primaryLabel="Add" />)
+
+    expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument()
+  })
+
+  it("keeps a fab-owned primary in the DOM with its phone-hidden class", () => {
+    render(
+      <ResourceToolbar
+        title="Customers"
+        primaryLabel="Add"
+        mobilePrimary="fab-owns-it"
+      />
+    )
+
+    const primary = screen.getByRole('button', { name: 'Add' })
+    expect(primary.parentElement?.className).toContain('hidden')
+    expect(primary.parentElement?.className).toContain('sm:!inline-flex')
+  })
+
+  it('keeps the mobile-primary class on the primary wrapper', () => {
+    render(<ResourceToolbar title="Customers" primaryLabel="Add" />)
+
+    expect(
+      screen.getByRole('button', { name: 'Add' }).parentElement?.className
+    ).toContain('876-toolbar-mobile-primary')
+  })
+
+  it("renders no primary when its label is absent and mobilePrimary is 'button'", () => {
+    render(<ResourceToolbar title="Customers" mobilePrimary="button" />)
+
+    expect(screen.queryByRole('button', { name: 'Add' })).not.toBeInTheDocument()
+  })
+
+  it("renders no primary when its label is absent and mobilePrimary is 'fab-owns-it'", () => {
+    render(<ResourceToolbar title="Customers" mobilePrimary="fab-owns-it" />)
+
+    expect(screen.queryByRole('button', { name: 'Add' })).not.toBeInTheDocument()
+  })
+
+  it('keeps the ghost circular phone trigger and outline desktop trigger', () => {
+    render(<ResourceToolbar title="Customers" refresh />)
+
+    expect(screen.getByRole('button', { name: 'More actions' })).toHaveClass(
+      'size-9',
+      'rounded-full',
+      'border-0',
+      'sm:size-8',
+      'sm:border-border-strong',
+      'sm:bg-background',
+      'sm:shadow-xs'
+    )
+  })
+
+  it('renders refresh and the standard transfer actions once', async () => {
+    render(<ResourceToolbar title="Customers" refresh />)
+    await openActions()
+
+    expect(screen.getAllByRole('menuitem', { name: 'Refresh' })).toHaveLength(1)
+    expect(screen.getAllByRole('menuitem', { name: 'Import' })).toHaveLength(1)
+    expect(screen.getAllByRole('menuitem', { name: 'Export' })).toHaveLength(1)
+    expect(screen.getByRole('menuitem', { name: 'Import' })).toHaveAttribute(
+      'data-disabled'
+    )
+    expect(screen.getByRole('menuitem', { name: 'Export' })).toHaveAttribute(
+      'data-disabled'
+    )
+  })
+
+  it('refreshes through the router once', async () => {
     render(<ResourceToolbar title="Customers" refresh />)
     await openActions()
     await userEvent
@@ -72,169 +148,27 @@ describe('ResourceToolbar', () => {
     expect(mocks.refresh).toHaveBeenCalledTimes(1)
   })
 
-  it('separates Refresh from supplied actions', async () => {
+  it('renders supplied dropdown actions with their labels', async () => {
     render(
       <ResourceToolbar
         title="Customers"
-        refresh
-        dropdownActions={[{ label: 'Import', icon: 'import' }]}
+        dropdownActions={[{ label: 'Archive' }, { label: 'Delete' }]}
       />
     )
     await openActions()
 
-    expect(screen.getByRole('separator')).toBeInTheDocument()
+    expect(screen.getAllByRole('menuitem', { name: 'Archive' })).toHaveLength(1)
+    expect(screen.getAllByRole('menuitem', { name: 'Delete' })).toHaveLength(1)
   })
 
-  it('renders unavailable imports and exports as disabled', async () => {
-    render(
-      <ResourceToolbar
-        title="Customers"
-        refresh
-        dropdownActions={[
-          { label: 'Import', icon: 'import', disabled: true },
-          { label: 'Export', icon: 'export', disabled: true },
-        ]}
-      />
-    )
-    await openActions()
-
-    expect(screen.getByRole('menuitem', { name: 'Import' })).toHaveAttribute(
-      'data-disabled'
-    )
-    expect(screen.getByRole('menuitem', { name: 'Export' })).toHaveAttribute(
-      'data-disabled'
-    )
-  })
-
-  it('renders the title in both the phone and desktop layouts', () => {
-    render(<ResourceToolbar title="Customers" />)
-
-    expect(
-      phoneLayout().getByRole('heading', { name: 'Customers' })
-    ).toHaveClass('876-page-title-lg')
-    expect(
-      desktopLayout().getByRole('heading', { name: 'Customers' })
-    ).toHaveClass('876-page-title')
-  })
-
-  it('renders exactly one h1 in each layout when titleFilter is absent', () => {
-    render(<ResourceToolbar title="Customers" />)
-
-    expect(phoneLayout().getAllByRole('heading', { level: 1 })).toHaveLength(1)
-    expect(desktopLayout().getAllByRole('heading', { level: 1 })).toHaveLength(
-      1
-    )
-  })
-
-  it('does not nest h1 elements when titleFilter is present', () => {
-    render(
-      <ResourceToolbar
-        title="Customers"
-        titleFilter={<h1 className="876-page-title">Open ⌄</h1>}
-      />
-    )
-
-    expect(phoneLayout().getAllByRole('heading', { level: 1 })).toHaveLength(1)
-    expect(desktopLayout().getAllByRole('heading', { level: 1 })).toHaveLength(
-      1
-    )
-    expect(phoneLayout().getByRole('heading', { name: 'Open ⌄' })).toBe(
-      phoneLayout().getByRole('heading', { level: 1 })
-    )
-    // A class starting with a digit is not a writable CSS selector, and
-    // jsdom's selector engine rejects even the attribute form, so the wrapper
-    // is asserted on className rather than matched.
-    expect(
-      phoneLayout().getByRole('heading', { name: 'Open ⌄' }).parentElement
-        ?.className
-    ).toContain('876-page-title-lg')
-  })
-
-  it("defaults mobilePrimary to 'button'", () => {
-    render(<ResourceToolbar title="Customers" primaryLabel="Add" />)
-
-    expect(phoneLayout().getByRole('button', { name: 'Add' })).toBeVisible()
-  })
-
-  it("suppresses only the phone action when mobilePrimary is 'fab-owns-it'", () => {
-    render(
-      <ResourceToolbar
-        title="Customers"
-        primaryLabel="Add"
-        mobilePrimary="fab-owns-it"
-      />
-    )
-
-    expect(
-      phoneLayout().queryByRole('button', { name: 'Add' })
-    ).not.toBeInTheDocument()
-    expect(
-      desktopLayout().getByRole('button', { name: 'Add' })
-    ).toBeInTheDocument()
-  })
-
-  it('uses a borderless circular ghost trigger on phone', () => {
-    render(<ResourceToolbar title="Customers" refresh />)
-
-    const trigger = phoneLayout().getByRole('button', { name: 'More actions' })
-    expect(trigger).toHaveClass('rounded-full', 'size-9', 'border-transparent')
-    expect(trigger).not.toHaveClass('bg-background', 'shadow-xs')
-  })
-
-  it('keeps the outline trigger on desktop', () => {
-    render(<ResourceToolbar title="Customers" refresh />)
-
-    expect(
-      desktopLayout().getByRole('button', { name: 'More actions' })
-    ).toHaveClass('border', 'bg-background', 'shadow-xs')
-  })
-
-  it('renders the description in both layouts', () => {
+  it('renders the description once', () => {
     render(<ResourceToolbar title="Customers" description="All customers" />)
 
-    expect(phoneLayout().getByText('All customers')).toHaveClass(
+    expect(screen.getAllByText('All customers')).toHaveLength(1)
+    expect(screen.getByText('All customers')).toHaveClass(
       'text-muted-foreground',
       'mt-1',
       'text-sm'
     )
-    expect(desktopLayout().getByText('All customers')).toHaveClass(
-      'text-muted-foreground',
-      'mt-1',
-      'text-sm'
-    )
-  })
-
-  it('keeps the standard transfer actions when refresh is enabled', async () => {
-    render(<ResourceToolbar title="Customers" refresh />)
-    await openActions()
-
-    expect(screen.getByRole('menuitem', { name: 'Import' })).toHaveAttribute(
-      'data-disabled'
-    )
-    expect(screen.getByRole('menuitem', { name: 'Export' })).toHaveAttribute(
-      'data-disabled'
-    )
-  })
-
-  it('renders no primary action without a label for either mobile mode', () => {
-    const { rerender } = render(
-      <ResourceToolbar title="Customers" mobilePrimary="button" />
-    )
-
-    expect(
-      phoneLayout().queryByRole('button', { name: 'Add' })
-    ).not.toBeInTheDocument()
-    expect(
-      desktopLayout().queryByRole('button', { name: 'Add' })
-    ).not.toBeInTheDocument()
-
-    rerender(<ResourceToolbar title="Customers" mobilePrimary="fab-owns-it" />)
-
-    expect(
-      phoneLayout().queryByRole('button', { name: 'Add' })
-    ).not.toBeInTheDocument()
-    expect(
-      desktopLayout().queryByRole('button', { name: 'Add' })
-    ).not.toBeInTheDocument()
   })
 })

@@ -24,6 +24,12 @@ export type SidebarUserMenuUser = {
   countryCode?: string | null
 }
 
+export type UserMenuItem = {
+  href: string
+  icon: ReactNode
+  label: string
+}
+
 /**
  * Shared presentational account menu pinned to the sidebar footer. Renders a
  * full-width trigger (avatar + name/email + chevron) with a panel that opens
@@ -113,12 +119,14 @@ SidebarUserMenu.displayName = 'SidebarUserMenu'
 export function CompactUserMenu({
   user,
   onSignOut,
+  items = [],
   className,
   showSystemTheme = true,
   showThemeSwitcher = true,
 }: {
   user: SidebarUserMenuUser
   onSignOut: () => Promise<void>
+  items?: UserMenuItem[]
   className?: string
   showSystemTheme?: boolean
   showThemeSwitcher?: boolean
@@ -127,6 +135,7 @@ export function CompactUserMenu({
     <UserMenuPopover
       user={user}
       onSignOut={onSignOut}
+      items={items}
       showSystemTheme={showSystemTheme}
       showThemeSwitcher={showThemeSwitcher}
       side="bottom"
@@ -158,6 +167,7 @@ CompactUserMenu.displayName = 'CompactUserMenu'
 type UserMenuPopoverProps = {
   user: SidebarUserMenuUser
   onSignOut: () => Promise<void>
+  items?: UserMenuItem[]
   side: 'top' | 'bottom'
   align: 'start' | 'end'
   sideOffset: number
@@ -174,6 +184,7 @@ type UserMenuPopoverProps = {
 function UserMenuPopover({
   user,
   onSignOut,
+  items = [],
   side,
   align,
   sideOffset,
@@ -236,6 +247,17 @@ function UserMenuPopover({
                 />
               </button>
             )}
+
+            {items.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="hover:bg-accent focus-visible:ring-ring flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-hidden [&_svg]:size-4 [&_svg]:shrink-0"
+              >
+                {item.icon}
+                <span className="flex-1 text-left">{item.label}</span>
+              </a>
+            ))}
 
             <button
               type="button"

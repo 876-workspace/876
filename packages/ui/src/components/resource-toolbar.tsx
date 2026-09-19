@@ -139,53 +139,8 @@ export function ResourceToolbar({
   const hasDropdown = refresh || actions.length > 0
 
   return (
-    <>
-      <div className="mb-4 sm:hidden">
-        {hasDropdown ? (
-          <div className="flex justify-end">
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                className={cn(
-                  buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
-                  'size-9 rounded-full'
-                )}
-                aria-label="More actions"
-              >
-                <MoreHorizontalIcon className="size-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-auto min-w-40">
-                {refresh && (
-                  <DropdownMenuItem onClick={() => router.refresh()}>
-                    <RefreshCw className="size-4" />
-                    Refresh
-                  </DropdownMenuItem>
-                )}
-                {refresh && actions.length > 0 && <DropdownMenuSeparator />}
-                {actions.map((action) => {
-                  const Icon = action.icon ? ACTION_ICONS[action.icon] : null
-                  return (
-                    <React.Fragment key={action.label}>
-                      {action.separator && <DropdownMenuSeparator />}
-                      <DropdownMenuItem
-                        variant={action.destructive ? 'destructive' : 'default'}
-                        disabled={action.disabled}
-                        onClick={action.onClick}
-                        render={
-                          action.href && !action.disabled ? (
-                            <Link href={action.href} />
-                          ) : undefined
-                        }
-                      >
-                        {Icon && <Icon className="size-4" />}
-                        {action.label}
-                      </DropdownMenuItem>
-                    </React.Fragment>
-                  )
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        ) : null}
+    <div className="mb-4 flex flex-col gap-2 sm:mb-5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div className="order-2 min-w-0 sm:order-1">
         {titleFilter ? (
           <div className="876-page-title-lg">{titleFilter}</div>
         ) : (
@@ -194,66 +149,64 @@ export function ResourceToolbar({
         {description ? (
           <p className="text-muted-foreground mt-1 text-sm">{description}</p>
         ) : null}
-        {mobilePrimary === 'button' ? (
-          <div className="876-toolbar-mobile-primary mt-3">{primaryButton}</div>
+      </div>
+
+      <div className="order-1 flex shrink-0 items-center justify-end gap-2 sm:order-2">
+        {primaryButton ? (
+          <span
+            className={cn(
+              '876-toolbar-mobile-primary',
+              mobilePrimary === 'fab-owns-it'
+                ? 'hidden sm:!inline-flex'
+                : 'sm:!block'
+            )}
+          >
+            {primaryButton}
+          </span>
+        ) : null}
+
+        {hasDropdown ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(
+                buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+                'size-9 rounded-full border-0 sm:size-8 sm:rounded-[min(var(--radius-md),10px)] sm:border sm:border-border-strong sm:bg-background sm:shadow-xs sm:hover:bg-muted sm:hover:text-foreground sm:aria-expanded:bg-muted sm:aria-expanded:text-foreground dark:sm:bg-input/30 dark:sm:hover:bg-input/50'
+              )}
+              aria-label="More actions"
+            >
+              <MoreHorizontalIcon className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-auto min-w-40">
+              {refresh && (
+                <DropdownMenuItem onClick={() => router.refresh()}>
+                  <RefreshCw className="size-4" />
+                  Refresh
+                </DropdownMenuItem>
+              )}
+              {refresh && actions.length > 0 && <DropdownMenuSeparator />}
+              {actions.map((action) => {
+                const Icon = action.icon ? ACTION_ICONS[action.icon] : null
+                return (
+                  <React.Fragment key={action.label}>
+                    {action.separator && <DropdownMenuSeparator />}
+                    <DropdownMenuItem
+                      variant={action.destructive ? 'destructive' : 'default'}
+                      disabled={action.disabled}
+                      onClick={action.onClick}
+                      render={
+                        action.href && !action.disabled ? <Link href={action.href} /> : undefined
+                      }
+                    >
+                      {Icon && <Icon className="size-4" />}
+                      {action.label}
+                    </DropdownMenuItem>
+                  </React.Fragment>
+                )
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : null}
       </div>
-
-      <div className="mb-5 hidden items-center justify-between gap-4 sm:flex">
-        <div>
-          {titleFilter ?? <h1 className="876-page-title">{title}</h1>}
-          {description && (
-            <p className="text-muted-foreground mt-1 text-sm">{description}</p>
-          )}
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          {primaryButton}
-
-          {hasDropdown && (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                className={cn(
-                  buttonVariants({ variant: 'outline', size: 'icon-sm' })
-                )}
-                aria-label="More actions"
-              >
-                <MoreHorizontalIcon className="size-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-auto min-w-40">
-                {refresh && (
-                  <DropdownMenuItem onClick={() => router.refresh()}>
-                    <RefreshCw className="size-4" />
-                    Refresh
-                  </DropdownMenuItem>
-                )}
-                {refresh && actions.length > 0 && <DropdownMenuSeparator />}
-                {actions.map((action) => {
-                  const Icon = action.icon ? ACTION_ICONS[action.icon] : null
-                  return (
-                    <React.Fragment key={action.label}>
-                      {action.separator && <DropdownMenuSeparator />}
-                      <DropdownMenuItem
-                        variant={action.destructive ? 'destructive' : 'default'}
-                        disabled={action.disabled}
-                        onClick={action.onClick}
-                        render={
-                          action.href && !action.disabled ? (
-                            <Link href={action.href} />
-                          ) : undefined
-                        }
-                      >
-                        {Icon && <Icon className="size-4" />}
-                        {action.label}
-                      </DropdownMenuItem>
-                    </React.Fragment>
-                  )
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </div>
-    </>
+    </div>
   )
 }
