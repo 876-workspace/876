@@ -85,6 +85,14 @@ export const navConfig = defineNavigation([
         colorClassName: 'text-teal-500 dark:text-teal-400',
         requires: { module: 'issues', permission: 'issues.view' },
       },
+      {
+        key: 'inbox',
+        title: 'Inbox',
+        href: '/inbox',
+        icon: 'issues',
+        colorClassName: 'text-amber-500 dark:text-amber-400',
+        requires: { module: 'issues', permission: 'issues.view' },
+      },
     ],
   },
   {
