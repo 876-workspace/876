@@ -432,3 +432,47 @@ phone-readable projection of it.
 | `@876/storage` (error copy) | projects, couriers, billing |
 | `@876/projects-ui`, `@876/projects` | projects |
 | `apps/projects-api` | projects-api (+ migrations first) |
+
+## Handoff state — 2026-09-19 16:1x
+
+**Branch:** `feature/projects-mobile-and-agentic`, 10 commits ahead of `main`.
+
+Landed and verified by the orchestrator in the foreground:
+
+| Commit | Phase | Evidence |
+| --- | --- | --- |
+| `e3bdf5951` | 1 — issue record split | projects-ui: 763 tests, 68 files, green |
+| `2b634b28d` | 1 — page owns the grid | no `lg:mr-[33` survives anywhere |
+| `c21267742` | storage copy | @876/storage: 395 tests green |
+
+In flight (4 delegates, disjoint file sets):
+
+| Delegate | Phase | Owns |
+| --- | --- | --- |
+| Codex terra | 3c project detail | `project-detail.tsx`, `mobile-list.tsx`, `work-breakdown.tsx`, `project-detail-data.tsx` |
+| opencode muse | 2 filter standard | `issue-filter-bar.tsx`, `issues-data.tsx`, `board-data.tsx`, issues/board pages, `workflow-state-options.ts` |
+| Codex terra | 5 markdown | `packages/ui` markdown\*, `876.css` |
+| Codex terra | 4a agent brief | `packages/projects/agent-brief.ts`, `projects-mcp`, `issue-agent-actions.tsx` |
+
+Queued, **sequenced for conflicts**:
+
+1. **large-title app bar** — must wait for the markdown run, both touch `876.css`.
+2. **list mobile sweep** — after project detail, both in `packages/projects-ui`.
+3. **development links** — touches `projects-api` + the issue page.
+4. **idea capture** — also `projects-api` + a new route; run after development
+   links, not beside it.
+
+### Lockfile is volatile while delegates run
+
+The markdown run added `rehype-highlight`, so `pnpm-lock.yaml` is stale and
+pnpm's pre-run check refuses **every** package script repo-wide with
+`ERR_PNPM_OUTDATED_LOCKFILE`, including for unrelated packages. For verification
+during the run:
+
+```bash
+PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false pnpm --filter <pkg> test
+```
+
+Do the real `pnpm install` only once every delegate has exited, then re-run the
+gates. Installing mid-run can prune `node_modules` underneath a working
+delegate.
