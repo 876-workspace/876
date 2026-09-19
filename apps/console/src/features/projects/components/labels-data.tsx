@@ -1,6 +1,6 @@
 import { AppError } from '@876/ui/app-error'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { LabelsTable } from '@876/projects-ui/labels-list'
 
 export async function LabelsData({

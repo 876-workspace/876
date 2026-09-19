@@ -12,7 +12,7 @@ import { RequestsList } from '@/features/crm/components/requests-list'
 import { loadRequestRowContext } from '@/features/crm/request-data'
 import { toRequestListRows } from '@/features/crm/request-list-rows'
 import { workspaceBase } from '@/features/orgs/app-workspaces'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 import { resolveOrg } from '@/features/orgs/org-data'
 

@@ -16,7 +16,7 @@ export async function createManagedCustomer({
   tenant: CouriersTenant
   params: CustomerCreateParams
 }): ServiceResult<CustomerView> {
-  const { getCouriers } = await import('@/lib/services/couriers')
+  const { getCouriers } = await import('@/lib/clients/couriers')
   const client = await getCouriers()
   const result = await client.customers.create(
     params.source === 'registry'
@@ -62,7 +62,7 @@ export async function updateManagedCustomer({
   id: string
   params: CustomerUpdateParams
 }): ServiceResult<CustomerView> {
-  const { getCouriers } = await import('@/lib/services/couriers')
+  const { getCouriers } = await import('@/lib/clients/couriers')
   const client = await getCouriers()
   const result = await client.customers.update(id, {
     ...(params.firstName === undefined ? {} : { firstName: params.firstName }),

@@ -8,7 +8,7 @@ import {
   toUiWebhookDelivery,
   toUiWebhookEndpoint,
 } from '../projects-integration-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { WebhookReplayButton } from './webhook-replay-button'
 

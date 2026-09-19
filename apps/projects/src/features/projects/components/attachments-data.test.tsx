@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   panel: vi.fn(),
 }))
 
-vi.mock('@/lib/services/storage', () => ({
+vi.mock('@/lib/clients/storage', () => ({
   storage: {
     uploads: { create: vi.fn(), complete: vi.fn() },
     files: {

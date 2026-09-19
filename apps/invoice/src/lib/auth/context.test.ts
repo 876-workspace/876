@@ -17,7 +17,7 @@ vi.mock('react', async () => {
   return { ...actual, cache: <T>(fn: T) => fn }
 })
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: async () => ({
     memberships: { listRouting: mockListRouting },
     subscriptions: { retrieve: mockRetrieveSubscription },

@@ -2,7 +2,7 @@ import { BudgetVarianceTable } from '@876/projects-ui/reports/budget-variance-ta
 import { AppError } from '@876/ui/app-error'
 
 import type { ReportPeriod } from '@/types/reporting'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function BudgetVarianceData({
   orgId,

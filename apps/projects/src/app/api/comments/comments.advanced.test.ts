@@ -13,7 +13,7 @@ vi.mock('@/lib/auth/api-permission', () => ({
   requireApiPermission: mocks.requireAccess,
   requireApiAccess: mocks.requireAccess,
 }))
-vi.mock('@/lib/services/projects', () => ({
+vi.mock('@/lib/clients/projects', () => ({
   projects: {
     comments: {
       retrieve: mocks.retrieve,

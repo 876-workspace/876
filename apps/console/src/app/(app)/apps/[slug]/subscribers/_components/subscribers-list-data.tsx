@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { AdminOrganization } from '@876/platform/compat'
 
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import { listCompleteAppSubscriptions, resolveApp } from '../../_data'
 import { SubscribersList } from './subscribers-list'
 

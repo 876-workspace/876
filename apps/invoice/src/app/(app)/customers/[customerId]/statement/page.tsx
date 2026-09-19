@@ -7,7 +7,7 @@ import {
 
 import { getInvoiceContext } from '@/lib/auth/context'
 import { formatDate, formatMoney } from '@/lib/format'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 export const metadata: Metadata = {
   title: 'Statement',

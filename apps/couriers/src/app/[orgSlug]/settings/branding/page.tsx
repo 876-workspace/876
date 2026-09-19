@@ -4,8 +4,8 @@ import type { Branding } from '@876/core/branding'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { createBillingIntegration } from '@/lib/services/billing'
-import { getPlatformClient } from '@/lib/services/platform'
+import { createBillingIntegration } from '@/lib/clients/billing'
+import { getPlatformClient } from '@/lib/clients/platform'
 
 import { BrandingForm } from './_components/branding-form'
 

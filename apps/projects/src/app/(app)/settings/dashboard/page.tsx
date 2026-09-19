@@ -5,7 +5,7 @@ import {
   requireAppPermission,
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { DashboardWidgetsManager } from './_components/dashboard-widgets-manager'
 

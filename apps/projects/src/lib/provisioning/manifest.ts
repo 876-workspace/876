@@ -2,7 +2,7 @@ import 'server-only'
 
 import type { PlatformProvisioningProperty } from '@876/core/platform'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
 
 /**

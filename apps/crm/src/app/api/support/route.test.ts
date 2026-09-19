@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/api-context', () => ({
   getCrmApiContext: mocks.context,
 }))
-vi.mock('@/lib/services/crm-support', () => ({
+vi.mock('@/lib/clients/crm-support', () => ({
   getCrmSupport: () => ({
     requests: { list: mocks.list, create: mocks.create },
   }),

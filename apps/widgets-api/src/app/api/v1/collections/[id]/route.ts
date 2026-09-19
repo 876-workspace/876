@@ -2,8 +2,8 @@ import { invalidJsonResponse } from '@/lib/errors'
 
 import { requireWidgetsService } from '@/lib/auth/service-key'
 import { serviceResponse } from '@/lib/http'
-import { service } from '@/lib/service'
-import { parseCollectionColor } from '@/lib/service/collections/validate'
+import { records } from '@/lib/records'
+import { parseCollectionColor } from '@/lib/records/collections/validate'
 
 export const runtime = 'nodejs'
 
@@ -27,7 +27,7 @@ export async function PATCH(request: Request, context: Ctx) {
   if (color && typeof color === 'object' && 'error' in color)
     return serviceResponse(color)
 
-  const result = await service.collections.updateCollection({
+  const result = await records.collections.updateCollection({
     id,
     ownerAccountId: auth.actorUserId,
     name: typeof record.name === 'string' ? record.name : undefined,
@@ -41,7 +41,7 @@ export async function DELETE(request: Request, context: Ctx) {
   if (auth.response) return auth.response
 
   const { id } = await context.params
-  const result = await service.collections.deleteCollection({
+  const result = await records.collections.deleteCollection({
     id,
     ownerAccountId: auth.actorUserId,
   })

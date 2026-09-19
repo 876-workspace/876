@@ -2,7 +2,7 @@ import 'server-only'
 
 import type { Project } from '@876/projects/contracts'
 
-import { projects } from './services/projects'
+import { projects } from './clients/projects'
 
 /** Loads per-project milestones concurrently for forms and settings summaries. */
 export function listProjectMilestones(orgId: string, projectItems: Project[]) {

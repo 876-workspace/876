@@ -2,7 +2,7 @@ import { AppError, type AppErrorValue } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 
 import { loadMemberLabels } from '@/features/projects/member-labels'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { listProjectMilestones } from '@/lib/work-structure-data'
 import { EventForm } from './event-form'
 import type { EventFormOptions } from '@/types/events'

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { LayoutDetailData } from '@/features/projects/components/layout-detail-data'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { resolveOrg } from '@/features/orgs/org-data'
 import { projectsBase } from '@/features/orgs/app-workspaces'

@@ -15,8 +15,8 @@ import type { PlatformOrganizationProfile } from '@876/core/platform'
 
 import { formatDate, formatMoney } from '@/lib/finance/format'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { createBillingIntegration } from '@/lib/services/billing'
-import { getPlatformClient } from '@/lib/services/platform'
+import { createBillingIntegration } from '@/lib/clients/billing'
+import { getPlatformClient } from '@/lib/clients/platform'
 
 import { resolveInvoice } from '../_lib/invoice-data'
 import { toInvoiceDocumentProps } from '../_lib/invoice-document'

@@ -2,7 +2,7 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { billingIntegration } from '@/lib/services/billing'
+import { billingIntegration } from '@/lib/clients/billing'
 import { getManageContext } from '@/lib/auth/manage-context'
 
 /** Resolve the shared-catalog item behind the item detail header and body. */

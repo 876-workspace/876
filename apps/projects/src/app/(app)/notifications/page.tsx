@@ -5,7 +5,7 @@ import {
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
 import { serviceNotificationToUi } from '@/lib/notification-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { NotificationsManager } from './_components/notifications-manager'
 

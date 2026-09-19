@@ -24,7 +24,7 @@ function getServiceClient() {
  *
  * Storage owns every file: Projects stores an opaque `fileId` association in
  * Storage's resource links and never a file record of its own. This is the
- * `service` tier, and the same lazy shape as `@/lib/services/projects` because
+ * `service` tier, and the same lazy shape as `@/lib/clients/projects` because
  * the build imports route modules before runtime secrets exist.
  */
 export const storage = {

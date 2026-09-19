@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { cache } from 'react'
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 
 export const getProvisioningCatalog = cache(
   (targetType: 'application' | 'finance', targetKey: string) =>

@@ -11,7 +11,7 @@ import {
 import { workErrorResponse } from '@/lib/api/work-response'
 import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
 import { requireAuthorizedInvoiceWorkContext } from '@/lib/auth/work-widget-context'
-import { getWork } from '@/lib/services/work'
+import { getWork } from '@/lib/clients/work'
 
 type RecurrenceParent =
   | { type: 'task'; id: string }

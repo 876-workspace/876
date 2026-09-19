@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 import type { OrganizationSelfUpdateParams } from '@876/account/compat'
 
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 import { findActiveOrgMembership, hasOrgPermission } from '@/lib/auth/guards'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 

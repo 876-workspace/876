@@ -3,7 +3,7 @@ import { invoiceSeller } from '@876/billing-ui/document/invoice-document-data'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { service } from '@/lib/service'
 
 import { BrandingForm } from './_components/branding-form'

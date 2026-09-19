@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/services/crm', () => ({ crm: mocks.crm }))
+vi.mock('@/lib/clients/crm', () => ({ crm: mocks.crm }))
 
 import { POST as createRequest } from './route'
 import { PATCH as updateRequest } from './[requestId]/route'

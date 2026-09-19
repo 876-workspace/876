@@ -9,7 +9,7 @@ import {
   requireCouriersData,
   toBranchView,
 } from '@/lib/couriers'
-import { getCouriers } from '@/lib/services/couriers'
+import { getCouriers } from '@/lib/clients/couriers'
 
 import { BranchForm } from '../../_components/branch-form'
 

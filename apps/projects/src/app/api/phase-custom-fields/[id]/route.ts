@@ -5,7 +5,7 @@ import {
   updateWorkStructureResource,
 } from '@/lib/api/work-structure'
 import { updatePhaseCustomFieldInputSchema } from '@/types/work-structure'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export const runtime = 'nodejs'
 type Context = { params: Promise<{ id: string }> }

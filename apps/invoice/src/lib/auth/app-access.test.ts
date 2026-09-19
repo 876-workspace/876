@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { retrieveMe } = vi.hoisted(() => ({ retrieveMe: vi.fn() }))
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   getWorkspace: vi.fn(async () => ({ members: { retrieveMe } })),
 }))
 const {

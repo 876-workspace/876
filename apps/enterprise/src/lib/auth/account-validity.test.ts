@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({ retrieve: vi.fn() }))
-vi.mock('@/lib/services/account-server', () => ({
+vi.mock('@/lib/clients/account-server', () => ({
   getAccount: vi.fn(async () => ({
     users: { retrieve: mocks.retrieve },
   })),

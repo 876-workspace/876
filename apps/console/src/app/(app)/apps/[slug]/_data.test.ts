@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   listOrganizationSubscriptions: vi.fn(),
 }))
 
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   workspace: {
     apps: {
       entitlements: { list: mocks.listAppSubscriptions },

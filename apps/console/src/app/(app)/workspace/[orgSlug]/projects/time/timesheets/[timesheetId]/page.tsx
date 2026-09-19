@@ -5,7 +5,7 @@ import { Suspense } from 'react'
 
 import { TimesheetDetailData } from '@/features/projects/components/timesheet-detail-data'
 import { formatOperatorDate } from '@/features/projects/components/operator-format'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { resolveOrg } from '@/features/orgs/org-data'
 import { projectsBase } from '@/features/orgs/app-workspaces'

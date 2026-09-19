@@ -22,7 +22,7 @@ import {
   calendarHref,
 } from '@/features/projects/calendar-range'
 import type { CalendarView, ResolvedCalendarWindow } from '@/types/calendar'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 const WEEK_LENGTH = 7
 

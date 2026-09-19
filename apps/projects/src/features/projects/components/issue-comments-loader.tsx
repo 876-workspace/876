@@ -1,7 +1,7 @@
 import { AppError } from '@876/ui/app-error'
 
 import { IssueCommentsData } from '@/features/projects/components/issue-comments-data'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { listIssueCommentVisibility } from '@/lib/visibility'
 
 /**

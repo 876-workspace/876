@@ -1,4 +1,4 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import { Activity } from '@876/ui/icons'
 import { Badge } from '@876/ui/badge'
 import {

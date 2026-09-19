@@ -14,7 +14,7 @@ import Link from 'next/link'
 
 import { RequestComposerClient } from '../_components/request-composer-client'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 export const metadata = { title: 'New request' }
 

@@ -3,7 +3,7 @@ import { CheckCircleIcon, ClipboardList, Folder } from '@876/ui/icons'
 import Link from 'next/link'
 
 import { StatTile } from '@/components/patterns/detail/stat-tile'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { IssuesTable } from '@876/projects-ui/issue-list'
 
 const OPEN_ISSUE_STATUSES = new Set([

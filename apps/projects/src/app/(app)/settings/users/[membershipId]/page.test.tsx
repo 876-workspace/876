@@ -19,7 +19,7 @@ vi.mock('next/navigation', () => ({ notFound: mocks.notFound }))
 vi.mock('@/lib/auth/require-projects-context', () => ({
   requireProjectsContext: mocks.requireContext,
 }))
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   getWorkspace: mocks.getWorkspace,
 }))
 vi.mock('../_data', () => ({

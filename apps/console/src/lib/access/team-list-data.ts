@@ -1,11 +1,11 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import 'server-only'
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 
 import type { AdminEmployeeProfile } from '@876/platform/compat'
 
-import { service } from '@/lib/service'
-import type { TeamGrantStatus } from '@/lib/service/team/list'
+import { records } from '@/lib/records'
+import type { TeamGrantStatus } from '@/lib/records/team/list'
 
 export type TeamListRow = {
   id: string
@@ -77,7 +77,7 @@ export async function loadTeamListData(
     ? loadStaffProfiles(staffOrganizationId)
     : Promise.resolve<StaffProfiles>({ profiles: [], unavailable: false })
 
-  const grants = await service.team.list({ status })
+  const grants = await records.team.list({ status })
   const ids = grants.map((grant) => grant.userId)
   const identityPromise =
     ids.length > 0

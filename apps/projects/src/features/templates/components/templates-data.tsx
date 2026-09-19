@@ -1,7 +1,7 @@
 import { TemplateList } from '@876/projects-ui/templates/template-list'
 import { AppError } from '@876/ui/app-error'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function TemplatesData({ orgId }: { orgId: string }) {
   const result = await projects.projectTemplates.list(orgId)

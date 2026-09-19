@@ -1,6 +1,6 @@
-import { billingOperator } from '@/lib/services/billing'
-import { platform } from '@/lib/services/platform'
-import { workspace } from '@/lib/services/workspace'
+import { billingOperator } from '@/lib/clients/billing'
+import { platform } from '@/lib/clients/platform'
+import { workspace } from '@/lib/clients/workspace'
 import 'server-only'
 
 import type { CustomerCreateParams } from '@876/billing/admin'

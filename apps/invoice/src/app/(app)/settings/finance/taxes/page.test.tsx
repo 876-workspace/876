@@ -33,7 +33,7 @@ vi.mock('@/lib/auth/guards', () => ({
   requireAppPermission: mocks.requireAppPermission,
 }))
 
-vi.mock('@/lib/services/billing', () => ({
+vi.mock('@/lib/clients/billing', () => ({
   getBilling: vi.fn(async () => mocks.billing),
 }))
 

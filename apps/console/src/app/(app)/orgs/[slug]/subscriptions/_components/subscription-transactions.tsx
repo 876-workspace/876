@@ -1,5 +1,5 @@
 
-import { billing } from '@/lib/services/billing'
+import { billing } from '@/lib/clients/billing'
 import type { AdminSubscription } from '@876/platform/compat'
 import {
   Empty,

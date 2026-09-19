@@ -1,4 +1,4 @@
-import { billing, createBilling } from '@/lib/services/billing'
+import { billing, createBilling } from '@/lib/clients/billing'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 

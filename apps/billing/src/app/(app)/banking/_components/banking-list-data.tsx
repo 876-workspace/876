@@ -1,7 +1,7 @@
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { BankingList, type BankAccountRow } from './banking-list'
 
 function formatAccountType(value: string): string {

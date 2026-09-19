@@ -5,9 +5,9 @@ import { cache } from 'react'
 
 import { requireSession } from '@/lib/auth/guards'
 import { getPlatformOrganization } from '@/lib/platform-org'
-import { billing } from '@/lib/services/billing'
-import { crm } from '@/lib/services/crm'
-import { workspace } from '@/lib/services/workspace'
+import { billing } from '@/lib/clients/billing'
+import { crm } from '@/lib/clients/crm'
+import { workspace } from '@/lib/clients/workspace'
 
 import { toRequestCustomerOption } from './request-customer-option'
 import { PLATFORM_REQUESTS_HREF } from './request-paths'

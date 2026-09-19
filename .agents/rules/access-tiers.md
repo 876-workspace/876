@@ -109,7 +109,7 @@ Then:
 4. Expose it at the owning package's caller-named entrypoint: `operator`,
    `service`, `integration`, or `session`.
 5. Add or update only the calling host's matching domain module under
-   `src/lib/services/`.
+   `src/lib/clients/`.
 6. For browser-initiated work, call it from a route handler that authorizes
    first.
 

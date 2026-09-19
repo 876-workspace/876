@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/request-api-access', () => ({
   requireRequestApiAccess: mocks.access,
 }))
-vi.mock('@/lib/services/crm', () => ({
+vi.mock('@/lib/clients/crm', () => ({
   getCrm: () => ({
     requestTasks: { list: mocks.tasks },
     requestEvents: { list: mocks.events },

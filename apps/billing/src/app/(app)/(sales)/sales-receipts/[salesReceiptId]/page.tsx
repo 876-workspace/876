@@ -18,7 +18,7 @@ import {
   hasPermission,
 } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { documentStatusVariant } from '@/lib/status'
 import { BillingSalesReceiptLifecycleActions } from '../_components/sales-receipt-lifecycle-actions'
 

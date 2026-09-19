@@ -6,8 +6,8 @@ import { cache } from 'react'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 import { toCouriersTenant } from '@/lib/couriers'
-import { getPlatformClient } from '@/lib/services/platform'
-import { couriersOperator } from '@/lib/services/couriers'
+import { getPlatformClient } from '@/lib/clients/platform'
+import { couriersOperator } from '@/lib/clients/couriers'
 import type { AppAccessStatus, ManageContext, OrgRole } from '@/types/auth'
 
 export function normalizeOrgRole(role: string): OrgRole {

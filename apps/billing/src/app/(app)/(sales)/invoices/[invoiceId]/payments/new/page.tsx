@@ -9,7 +9,7 @@ import {
 import { PaymentForm } from '@/features/payments/components/payment-form'
 import { getPaymentFormData } from '@/features/payments/payment-form-data'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 export const metadata = { title: 'Record Payment Received' }
 

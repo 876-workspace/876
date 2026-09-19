@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
   notFound: vi.fn(),
 }))
 
-vi.mock('@/lib/services/projects', () => ({
+vi.mock('@/lib/clients/projects', () => ({
   projects: {
     timeEntries: { list: mocks.listEntries, currentTimer: mocks.currentTimer },
     issues: { list: mocks.listIssues },

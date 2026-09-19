@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 
 import { ClonePhaseForm } from '@/features/projects/components/clone-phase-form'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function ClonePhaseData({
   orgId,

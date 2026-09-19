@@ -8,7 +8,7 @@ import {
 import { IssuesTable } from '@876/projects-ui/issue-list'
 import { notFound } from 'next/navigation'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { formatOperatorDateOrDash } from './operator-format'
 

@@ -22,7 +22,7 @@ import { ReceiptText } from '@876/ui/icons'
 import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { formatDate, formatMoney } from '@/lib/format'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { InvoiceRecurringInvoiceLifecycleActions } from '../_components/recurring-invoice-lifecycle-actions'
 
 type Props = { params: Promise<{ recurringInvoiceId: string }> }

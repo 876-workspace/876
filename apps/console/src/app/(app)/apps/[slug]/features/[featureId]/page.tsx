@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Skeleton } from '@876/ui/skeleton'
 
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import { resolveFeature } from '../../../../features/[id]/_data'
 import { resolveApp } from '../../_data'
 import { FeatureChildrenPanel } from './_components/feature-children-panel'

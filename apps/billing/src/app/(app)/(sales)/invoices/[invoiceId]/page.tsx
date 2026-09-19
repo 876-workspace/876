@@ -17,8 +17,8 @@ import {
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
 import { getFeatures } from '@/lib/features'
 import { formatDate, formatMoney } from '@/lib/format'
-import { getBilling } from '@/lib/services/billing'
-import { getPlatformClient } from '@/lib/services/platform'
+import { getBilling } from '@/lib/clients/billing'
+import { getPlatformClient } from '@/lib/clients/platform'
 
 import { InvoiceActions } from './_components/invoice-actions'
 import { InvoiceOriginLink } from './_components/invoice-origin-link'

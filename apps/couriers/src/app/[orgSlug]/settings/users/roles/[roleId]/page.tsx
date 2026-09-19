@@ -13,7 +13,7 @@ import {
   requireCouriersData,
   toRoleView,
 } from '@/lib/couriers'
-import { getCouriers } from '@/lib/services/couriers'
+import { getCouriers } from '@/lib/clients/couriers'
 
 import { ROLE_TYPE_PARAM, isRoleTypeFilter } from '../_components/roles-section'
 import { RoleForm } from '../_components/role-form'

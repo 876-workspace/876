@@ -10,6 +10,7 @@
  *   2. no barrel index.ts in components/ or features/
  *   3. no file (or exported symbol) prefixed with its own app's name
  *   4. no *sideways* import of another route subtree's _components/
+ *   8. no undeclared loose file at the src/lib/ root (the closed set)
  *
  * Check 4 is the important one and the reason this script exists: a descendant
  * route may import an ancestor's `_components/` — that is what "private to the
@@ -61,6 +62,38 @@ const ROUTE_FILES = new Set([
 
 /** Directory names whose contents are exempt from the route-file check. */
 const PRIVATE_DIRS = new Set(['_components', '_lib'])
+
+/**
+ * The closed set of files allowed to sit loose at `src/lib/`.
+ *
+ * A flat `lib/` is not a style problem, it is a duplication engine: nobody
+ * scans an undifferentiated pile before adding to it, which is how this repo
+ * ended up with eight copies of `features.ts`, three of `apps-directory.ts`,
+ * and two `formatMoney` implementations inside console's own `lib/`. Closing
+ * the set makes adding to the root a decision instead of a reflex.
+ *
+ * `<app>-app.ts` is allowed for every app and is computed per app, not listed.
+ * A colocated `*.test.ts` of an allowed file is allowed with it.
+ */
+const ALLOWED_LIB_ROOT_FILES = new Set([
+  'logger.ts', // the app's logger
+  'features.ts', // this app's feature-flag resolution
+  'permissions.ts', // this app's permission catalog and helpers
+  'format.ts', // display formatting; re-exports @876/core, never reimplements
+])
+
+/**
+ * Files that predate the closed set, per app. This is a ratchet, not an
+ * exemption: entries may be deleted as each file moves into a directory, and
+ * the list may never grow. The check fails on a name that is neither allowed
+ * nor listed here, so a new loose file cannot be added without editing this
+ * list — which is the review moment the flat directory never had.
+ *
+ * Removal condition: this map is empty and the constant is deleted.
+ */
+const LIB_ROOT_RATCHET = JSON.parse(
+  readFileSync(new URL('./app-structure-lib-ratchet.json', import.meta.url), 'utf8')
+)
 
 /**
  * An app's own name, as it must not appear as a file prefix.
@@ -378,6 +411,28 @@ for (const app of APPS) {
       )
     }
   }
+
+  // ---- 8. undeclared loose file at the src/lib/ root -----------------------
+  const libDir = join(root, 'lib')
+  if (exists(libDir)) {
+    const ratchet = new Set(LIB_ROOT_RATCHET[app] ?? [])
+    const identityFile = `${app}-app.ts`
+    for (const entry of readdirSync(libDir, { withFileTypes: true })) {
+      if (!entry.isFile()) continue
+      const name = entry.name
+      if (!/\.tsx?$/.test(name)) continue
+      if (name === identityFile) continue
+      // a colocated test is allowed exactly when its subject is
+      const subject = name.replace(/\.test\.tsx?$/, '.ts')
+      if (ALLOWED_LIB_ROOT_FILES.has(name)) continue
+      if (name !== subject && ALLOWED_LIB_ROOT_FILES.has(subject)) continue
+      if (ratchet.has(name)) continue
+      if (name !== subject && ratchet.has(subject)) continue
+
+      fail(app, 'undeclared-lib-root-file', `apps/${app}/src/lib/${name}`)
+    }
+  }
+
 }
 
 /** Route-group children of `dir` that carry their own `loading.tsx`. */

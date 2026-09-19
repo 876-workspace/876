@@ -2,7 +2,7 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 
 /** Confirms that a sealed session still belongs to an active platform account. */
 export const isAccountUsable = cache(async function isAccountUsable(

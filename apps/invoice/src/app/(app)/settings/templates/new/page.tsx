@@ -6,7 +6,7 @@ import { Page, PageBreadcrumb } from '@876/ui/page'
 
 import { getInvoiceContext } from '@/lib/auth/context'
 import { requireAppPermission } from '@/lib/auth/guards'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 import { resolveDocumentTypeParam } from '../_components/document-type-tabs'
 import { TemplateEditorForm } from '../_components/template-editor-form'

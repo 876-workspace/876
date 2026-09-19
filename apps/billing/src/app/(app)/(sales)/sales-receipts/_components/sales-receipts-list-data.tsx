@@ -8,7 +8,7 @@ import {
 } from '@876/ui/empty'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { SalesReceiptsList } from './sales-receipts-list'
 
 export async function SalesReceiptsListData() {

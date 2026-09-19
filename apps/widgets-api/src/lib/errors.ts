@@ -1,8 +1,8 @@
 import { apiError } from '@876/core/api'
 import { getError, toAppError, type HttpStatusCode } from '@876/core'
 
-import { MAX_COLLECTION_NAME_LENGTH } from './service/collections/types'
-import { MAX_BODY_LENGTH, MAX_TITLE_LENGTH } from './service/notes/types'
+import { MAX_COLLECTION_NAME_LENGTH } from './records/collections/types'
+import { MAX_BODY_LENGTH, MAX_TITLE_LENGTH } from './records/notes/types'
 
 /**
  * Canonical Widgets error definitions.

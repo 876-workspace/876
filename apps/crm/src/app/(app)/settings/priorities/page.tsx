@@ -12,7 +12,7 @@ import {
   requireAppPermission,
   requireCrmContext,
 } from '@/lib/auth/require-crm-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 import { PRIORITIES_SKELETON_COLUMNS } from './_components/priorities-skeleton-columns'
 import { PrioritySplit } from './_components/priority-split'

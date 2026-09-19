@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { getInvoice } from '@/lib/invoice'
 import { ItemForm } from '../../_components/item-form'
 

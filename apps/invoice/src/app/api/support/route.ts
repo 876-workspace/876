@@ -2,7 +2,7 @@ import { apiError, apiJson } from '@876/core/api'
 import { supportRequestDraftSchema, supportResponseStatus } from '@876/crm'
 import type { NextRequest } from 'next/server'
 
-import { getCrmSupport } from '@/lib/services/crm-support'
+import { getCrmSupport } from '@/lib/clients/crm-support'
 import { resolveSupportContext } from './_lib/support-context'
 
 function unauthorized() {

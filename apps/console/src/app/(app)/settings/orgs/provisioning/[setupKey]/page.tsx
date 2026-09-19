@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { AppError } from '@876/ui/app-error'
 
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 import { FinanceProvisioningEditor } from '@/features/provisioning/components/finance-provisioning-editor'
 import {
   toFinanceCurrencyOptions,

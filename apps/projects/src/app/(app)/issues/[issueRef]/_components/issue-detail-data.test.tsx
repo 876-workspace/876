@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => ({
   getIssueVisibility: vi.fn(),
 }))
 
-vi.mock('@/lib/services/projects', () => ({
+vi.mock('@/lib/clients/projects', () => ({
   projects: {
     issues: {
       retrieve: mocks.retrieve,

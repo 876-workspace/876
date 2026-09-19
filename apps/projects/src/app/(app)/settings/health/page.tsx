@@ -4,7 +4,7 @@ import { AppError } from '@876/ui/app-error'
 import { PageBreadcrumb } from '@/components/page-breadcrumb'
 import { requireAppAccess } from '@/lib/auth/require-projects-context'
 import { toUiMetricsSummary } from '@/lib/integration-mappers'
-import { integration } from '@/lib/services/integration'
+import { integration } from '@/lib/clients/integration'
 
 export const metadata = { title: 'Platform health' }
 

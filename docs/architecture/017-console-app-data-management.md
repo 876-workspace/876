@@ -26,7 +26,7 @@ Every product/service capability reaches Console through the same joints:
 1. capability      owning service function                     write once
 2. operator route  /v1/organizations/:organizationId/resource  route again
 3. tier client     owning package's operator/admin client
-4. domain module   compose onto owning module in src/lib/services/
+4. domain module   compose onto owning module in src/lib/clients/
 5. surface         Console route over that capability
 ```
 
@@ -103,7 +103,7 @@ See `docs/service-workspace-integration-guide.md`.
 2. Add/verify an operator route pointing at that same service function.
 3. Add the typed operator method to the owning package.
 4. Add or update the matching domain module under Console's
-   `src/lib/services/` (`platform`, `workspace`, `billing`, `crm`, …) — never a
+   `src/lib/clients/` (`platform`, `workspace`, `billing`, `crm`, …) — never a
    `$876` aggregator; see `.claude/rules/sdk-conventions.md` and
    `.claude/rules/workspace-control-plane.md`. Call that root directly from the
    surface that needs it.
@@ -161,7 +161,7 @@ The canonical reference implementation is `GET /v1/requests` in `apps/crm-api`:
 - `packages/crm/src/operator.ts` and
   `packages/crm/src/resources/operator-requests.ts` — exposes the operator-only typed
   client method `requests.listAcrossOrganizations()` on `create876CrmOperatorClient`.
-- `apps/console/src/lib/services/crm.ts` — provides the Console-side
+- `apps/console/src/lib/clients/crm.ts` — provides the Console-side
   `listRequestsAcrossOrganizations()` wrapper delegating directly to the CRM
   domain module.
 - `apps/console/src/app/(app)/requests/all/page.tsx` and

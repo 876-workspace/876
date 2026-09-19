@@ -6,7 +6,7 @@ import { workSyncConnectionSetupInputSchema } from '@876/work'
 import { serializeWorkSyncConnection } from '@/lib/api/work-sync-route'
 import { workErrorResponse } from '@/lib/api/work-response'
 import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
-import { getWork } from '@/lib/services/work'
+import { getWork } from '@/lib/clients/work'
 
 export const runtime = 'nodejs'
 

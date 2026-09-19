@@ -1,4 +1,4 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import type { AdminDeletedUser } from '@876/platform/compat'
 
 import type { Access } from '@/types/auth'

@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 import { resolveCustomer } from '../../../_lib/customer-data'
 
 import { CustomerRequestRecordClient } from '../_components/request-record-client'

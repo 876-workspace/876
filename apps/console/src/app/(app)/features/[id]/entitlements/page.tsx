@@ -1,5 +1,5 @@
-import { platform } from '@/lib/services/platform'
-import { workspace } from '@/lib/services/workspace'
+import { platform } from '@/lib/clients/platform'
+import { workspace } from '@/lib/clients/workspace'
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'

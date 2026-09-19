@@ -8,7 +8,7 @@ const { listMock, commentsDataMock } = vi.hoisted(() => ({
   commentsDataMock: vi.fn(),
 }))
 
-vi.mock('@/lib/services/projects', () => ({
+vi.mock('@/lib/clients/projects', () => ({
   projects: { comments: { list: listMock } },
 }))
 

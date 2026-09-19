@@ -20,7 +20,7 @@ import {
   isRequestStatus,
   REQUEST_STATUS_OPTIONS,
 } from '@/features/crm/request-status'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 import type { CrmRequestStatus } from '@/types/crm'
 
 export const metadata = { title: 'Requests' }

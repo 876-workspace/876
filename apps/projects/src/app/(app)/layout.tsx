@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 
 import { resolveNavigation } from '@876/core/access'
+import { buildAppsDirectory } from '@876/core/apps-directory'
 import { AppError } from '@876/ui/app-error'
 
 import { Shell } from '@/components/shell/shell'
@@ -11,7 +12,6 @@ import {
   resolveCustomModuleNavEntries,
   visibleModules,
 } from '@/lib/custom-modules/module-access'
-import { getAppsDirectory } from '@/lib/apps-directory'
 import { resolveAccessContext } from '@/lib/auth/access-context'
 import { getProjectsContextResult } from '@/lib/auth/context'
 import { navConfig } from '@/components/shell/nav-config'
@@ -75,7 +75,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   let notificationCount = 0
   try {
-    const { projects } = await import('@/lib/services/projects')
+    const { projects } = await import('@/lib/clients/projects')
     const notifications = await projects.notifications.list(orgId, userId)
     if (notifications.data)
       notificationCount = notifications.data.data.filter(
@@ -90,7 +90,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       user={{ name: displayName, email, avatar: user?.avatar ?? null }}
       currentOrg={currentOrg}
       orgs={orgs}
-      apps={getAppsDirectory()}
+      apps={buildAppsDirectory({ current: 'projects' })}
       uiFeatures={uiFeatures}
       navigation={
         access.status === 'ok'

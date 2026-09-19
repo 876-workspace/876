@@ -1,4 +1,4 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import type { AdminOrganization } from '@876/platform/compat'

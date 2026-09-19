@@ -4,8 +4,8 @@ import { can, hasFeature, type AccessContext } from '@876/core/access'
 import { cache } from 'react'
 
 import { getFeatures } from '@/lib/features'
-import { getAccount } from '@/lib/services/account'
-import { resolvePlatformAppId } from '@/lib/services/platform-app'
+import { getAccount } from '@/lib/clients/account'
+import { resolvePlatformAppId } from '@/lib/clients/platform-app'
 
 export type InvoiceAccessContextOutcome =
   | { status: 'ok'; context: AccessContext }

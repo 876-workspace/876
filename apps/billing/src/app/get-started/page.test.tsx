@@ -19,7 +19,7 @@ vi.mock('@876/ui/page', () => ({
   PageHeader: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   PageTitle: ({ children }: { children: ReactNode }) => <h1>{children}</h1>,
 }))
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 vi.mock('@/lib/auth/billing-context', () => ({ getContext: mocks.getContext }))

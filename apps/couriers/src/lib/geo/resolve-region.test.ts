@@ -4,7 +4,7 @@ const { mockListRegions } = vi.hoisted(() => ({ mockListRegions: vi.fn() }))
 
 vi.mock('server-only', () => ({}))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: async () => ({ regions: { list: mockListRegions } }),
 }))
 

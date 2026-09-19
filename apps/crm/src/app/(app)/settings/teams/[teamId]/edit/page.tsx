@@ -3,7 +3,7 @@ import { Page } from '@876/ui/page'
 import { notFound } from 'next/navigation'
 
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 import { TeamForm, type TeamFormValues } from '../../_components/team-form'
 

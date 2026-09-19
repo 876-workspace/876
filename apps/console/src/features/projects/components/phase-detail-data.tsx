@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import { PhaseDetail } from '@876/projects-ui/phase-detail'
 import { notFound } from 'next/navigation'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Phase detail, shared by every host. Read-only: no

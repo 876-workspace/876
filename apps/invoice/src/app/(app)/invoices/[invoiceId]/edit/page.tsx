@@ -4,7 +4,7 @@ import { formatMinorUnits } from '@876/billing-ui/document/document-line-items-e
 
 import { getInvoiceContext } from '@/lib/auth/context'
 import { requireAppPermission } from '@/lib/auth/guards'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 import { DocumentFormPage } from '@876/billing-ui/document/document-form-layout'
 import { DocumentCreateForm } from '@/features/documents/components/document-create-form'

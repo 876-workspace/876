@@ -11,7 +11,7 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requireConsolePermission,
 }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   platform: {
     provisioning: {
       applicationProfiles: {

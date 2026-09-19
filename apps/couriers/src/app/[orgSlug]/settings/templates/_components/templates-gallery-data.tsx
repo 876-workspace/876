@@ -11,7 +11,7 @@ import { AppError } from '@876/ui/app-error'
 
 import { getAppError } from '@/lib/errors'
 import { resolveFinanceErrorCode } from '@/lib/errors/finance'
-import { createBillingIntegration } from '@/lib/services/billing'
+import { createBillingIntegration } from '@/lib/clients/billing'
 
 import { TemplateCardActions } from './template-card-actions'
 

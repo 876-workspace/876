@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 
 import { CycleForm } from '@/features/projects/components/cycle-form'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function NewCycleData() {
   const { orgId } = await requireProjectsContext()

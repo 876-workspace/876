@@ -10,7 +10,7 @@ import {
   requirePagePermission,
 } from '@/lib/auth/billing-context'
 import { formatDate } from '@/lib/format'
-import { getAccountingProviderClient } from '@/lib/services/accounting-providers'
+import { getAccountingProviderClient } from '@/lib/clients/accounting-providers'
 
 export const metadata = { title: 'Accounting Providers - Settings' }
 

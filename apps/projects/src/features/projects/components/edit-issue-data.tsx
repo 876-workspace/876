@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import {
   listProjectMilestones,
   listProjectTaskLists,

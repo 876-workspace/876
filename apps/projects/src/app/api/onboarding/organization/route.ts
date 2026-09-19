@@ -5,10 +5,10 @@ import * as Sentry from '@sentry/nextjs'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export const runtime = 'nodejs'
 

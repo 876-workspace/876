@@ -27,8 +27,8 @@ import {
   COURIERS_WAREHOUSES_SKELETON_COLUMNS,
 } from '@/features/couriers/components/skeleton-columns'
 import { workspaceBase } from '@/features/orgs/app-workspaces'
-import { billing } from '@/lib/services/billing'
-import { couriers } from '@/lib/services/couriers'
+import { billing } from '@/lib/clients/billing'
+import { couriers } from '@/lib/clients/couriers'
 
 import { resolveOrg, resolveOrgMembers } from '@/features/orgs/org-data'
 

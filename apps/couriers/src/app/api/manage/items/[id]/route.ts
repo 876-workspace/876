@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { z } from 'zod'
-import { createBillingIntegration } from '@/lib/services/billing'
+import { createBillingIntegration } from '@/lib/clients/billing'
 import {
   invalidItemRequest,
   itemResultResponse,

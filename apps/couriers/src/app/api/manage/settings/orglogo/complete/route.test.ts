@@ -7,13 +7,13 @@ const mocks = vi.hoisted(() => ({
   updateProfile: vi.fn(),
 }))
 
-vi.mock('@/lib/services/storage', () => ({
+vi.mock('@/lib/clients/storage', () => ({
   storage: { uploads: { complete: mocks.complete } },
 }))
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 

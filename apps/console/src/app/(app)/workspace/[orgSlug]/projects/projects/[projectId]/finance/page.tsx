@@ -7,7 +7,7 @@ import { Suspense } from 'react'
 
 import { ProjectFinanceData } from '@/features/projects/components/project-finance-data'
 import { ProjectTabs } from '@/features/projects/components/project-tabs'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { resolveOrg } from '@/features/orgs/org-data'
 import { projectsBase } from '@/features/orgs/app-workspaces'

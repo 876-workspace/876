@@ -1,8 +1,8 @@
-import { crm } from '@/lib/services/crm'
-import { projects } from '@/lib/services/projects'
-import { platform } from '@/lib/services/platform'
+import { crm } from '@/lib/clients/crm'
+import { projects } from '@/lib/clients/projects'
+import { platform } from '@/lib/clients/platform'
 import 'server-only'
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 
 import { cache } from 'react'
 

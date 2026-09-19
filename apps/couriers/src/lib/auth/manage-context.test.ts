@@ -28,13 +28,13 @@ vi.mock('@/lib/auth/session', () => ({
   getAuthSession: mocks.getAuthSession,
   isSignedSession: mocks.isSignedSession,
 }))
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 vi.mock('@/lib/couriers-app', () => ({
   COURIERS_APP_SLUG: '876-couriers',
 }))
-vi.mock('@/lib/services/couriers', () => ({
+vi.mock('@/lib/clients/couriers', () => ({
   couriersOperator: {
     tenants: { retrieve: mocks.retrieve },
   },

@@ -1,7 +1,7 @@
 import 'server-only'
 import { apiJson } from '@876/core/api'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'

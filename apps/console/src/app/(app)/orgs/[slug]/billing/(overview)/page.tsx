@@ -1,4 +1,4 @@
-import { billing } from '@/lib/services/billing'
+import { billing } from '@/lib/clients/billing'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'

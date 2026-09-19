@@ -1,4 +1,4 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import { apiJson } from '@876/core/api'
 import type { AdminAuditEventCreateParams } from '@876/platform/compat'
 import type { NextRequest } from 'next/server'

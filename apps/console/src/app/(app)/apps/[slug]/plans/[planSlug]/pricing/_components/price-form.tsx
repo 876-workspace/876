@@ -8,7 +8,7 @@ import { NativeSelect, NativeSelectOption } from '@876/ui/native-select'
 import { RadioGroup, RadioGroupItem } from '@876/ui/radio-group'
 import { FormRow } from '@876/ui/form-row'
 import { client } from '@/lib/client'
-import { majorToMinor } from '@/lib/money'
+import { majorToMinor } from '@876/core/money'
 
 type Initial = Record<string, unknown> | null
 
@@ -64,7 +64,9 @@ export function PriceForm({
           trial_period_days: trial ? Number(trial) : null,
         }
         if (scheme === 'per_unit')
-          body.unit_amount = majorToMinor(amount || '0', currency)
+          // The price wire contract carries unit_amount as a JSON number, and
+          // majorToMinor refuses any amount that cannot survive that conversion.
+          body.unit_amount = Number(majorToMinor(amount || '0', currency))
         if (type === 'recurring') {
           body.billing_interval = interval
           body.interval_count = Number(count)

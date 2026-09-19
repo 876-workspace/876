@@ -5,7 +5,7 @@ import { Suspense } from 'react'
 import { AttachmentsData } from '@/features/projects/components/attachments-data'
 import { TaskListForm } from '@/features/projects/components/task-list-form'
 import { loadMemberLabels } from '@/features/projects/member-labels'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { listProjectMilestones } from '@/lib/work-structure-data'
 
 export async function EditTaskListData({

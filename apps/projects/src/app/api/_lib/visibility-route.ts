@@ -4,7 +4,7 @@ import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
 import { setRecordVisibility } from '@/lib/visibility'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import type { VisibilitySubject } from '@/types/visibility'
 
 const visibilitySchema = z.strictObject({ clientVisible: z.boolean() })

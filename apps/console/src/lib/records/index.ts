@@ -12,7 +12,7 @@ import { users } from './users'
  * `service.roles.create(params)`. Reads return plain values; mutations
  * return `{ data, error }` envelopes (`ServiceResult`).
  */
-export const service = {
+export const records = {
   team,
   roles,
   users,

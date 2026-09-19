@@ -40,7 +40,7 @@ Examples:
 
 ```ts
 // Console host
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 const result = await crm.requests.retrieve(organizationId, requestId)
 
 // standalone product session host

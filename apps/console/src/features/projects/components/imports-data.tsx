@@ -4,7 +4,7 @@ import { ImportJobList } from '@876/projects-ui/platform/import-job-list'
 import { AppError } from '@876/ui/app-error'
 
 import { toUiImportJob } from '../projects-integration-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Imports list, shared by every host.

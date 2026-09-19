@@ -8,7 +8,7 @@ import {
   requireRequestAccess,
   resultResponse,
 } from '../../_lib/access'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 export const runtime = 'nodejs'
 type Context = { params: Promise<{ requestId: string }> }

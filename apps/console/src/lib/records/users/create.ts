@@ -1,5 +1,5 @@
-import { workspace } from '@/lib/services/workspace'
-import { platform } from '@/lib/services/platform'
+import { workspace } from '@/lib/clients/workspace'
+import { platform } from '@/lib/clients/platform'
 import type { AdminUser, AdminUserCreateParams } from '@876/platform/compat'
 
 import type { ServiceResult } from '@/types/api'

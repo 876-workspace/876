@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { RequestRecordShell } from '@/features/crm/components/request-record-shell'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 import { resolveOrg } from '@/features/orgs/org-data'
 import { workspaceBase } from '@/features/orgs/app-workspaces'

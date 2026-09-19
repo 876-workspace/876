@@ -4,7 +4,7 @@ import { apiJson } from '@876/core/api'
 import { z } from 'zod'
 
 import { resolvePortalApiAccess } from '@/lib/portal-access'
-import { getPortalClient } from '@/lib/services/portal'
+import { getPortalClient } from '@/lib/clients/portal'
 
 export const runtime = 'nodejs'
 

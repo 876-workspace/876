@@ -5,7 +5,7 @@ import { navigationPermissionKeys } from '@876/billing/navigation'
 import * as Sentry from '@sentry/nextjs'
 import { cache } from 'react'
 
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 
 import {
   workspaceBase,

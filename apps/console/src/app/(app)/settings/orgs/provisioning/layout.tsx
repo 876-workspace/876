@@ -1,4 +1,4 @@
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 import { Suspense, type ReactNode } from 'react'
 import type { AdminProvisioningSetup } from '@876/platform/compat'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'

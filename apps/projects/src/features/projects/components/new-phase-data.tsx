@@ -3,7 +3,7 @@ import { AppError } from '@876/ui/app-error'
 import { PhaseForm } from '@/features/projects/components/phase-form'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function NewPhaseData() {
   const { orgId } = await requireProjectsContext()

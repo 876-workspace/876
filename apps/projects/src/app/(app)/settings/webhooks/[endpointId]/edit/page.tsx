@@ -7,7 +7,7 @@ import {
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
 import { WEBHOOK_EVENT_OPTIONS } from '@/lib/integration-mappers'
-import { integration } from '@/lib/services/integration'
+import { integration } from '@/lib/clients/integration'
 
 import { WebhookEditForm } from './_components/webhook-edit-form'
 

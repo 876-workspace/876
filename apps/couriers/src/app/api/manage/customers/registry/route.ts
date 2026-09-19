@@ -4,8 +4,8 @@ import { apiJson } from '@876/core/api'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
-import { billingIntegration } from '@/lib/services/billing'
-import { getCouriers } from '@/lib/services/couriers'
+import { billingIntegration } from '@/lib/clients/billing'
+import { getCouriers } from '@/lib/clients/couriers'
 
 export const runtime = 'nodejs'
 

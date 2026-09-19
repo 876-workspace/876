@@ -9,7 +9,7 @@ import { z } from 'zod'
 
 import { requireApiCapability } from '@/lib/auth/api-permission'
 import { INVOICE_REQUESTS_SLUG } from '@/lib/features'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 const listQuerySchema = z.object({
   status: requestStatusSchema.optional(),

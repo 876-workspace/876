@@ -12,7 +12,7 @@ import { Skeleton } from '@876/ui/skeleton'
 
 import { getInvoiceContext } from '@/lib/auth/context'
 import { getFeatures, INVOICE_REQUESTS_SLUG } from '@/lib/features'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { CustomerActions } from './_components/customer-actions'
 
 export default async function CustomerDetailLayout({

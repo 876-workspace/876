@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 
 import { toUiClientGrant } from '../collaboration-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { ReadOnlyClientGrantList } from './read-only-client-grants'
 

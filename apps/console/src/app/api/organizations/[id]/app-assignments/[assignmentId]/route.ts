@@ -1,4 +1,4 @@
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 

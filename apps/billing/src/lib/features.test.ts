@@ -4,7 +4,7 @@ import { getFeatures } from './features'
 
 const mocks = vi.hoisted(() => ({ evaluate: vi.fn() }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: async () => ({
     features: { evaluate: mocks.evaluate },
   }),

@@ -3,7 +3,7 @@ import 'server-only'
 import type { CrmCustomerRow } from '@876/crm-ui/customer-list'
 import { cache } from 'react'
 
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 import { resolveCustomerIdentity } from './customer-identity'
 

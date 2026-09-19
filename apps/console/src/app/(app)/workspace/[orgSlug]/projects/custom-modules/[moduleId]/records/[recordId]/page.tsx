@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { CustomModuleRecordDetailData } from '@/features/projects/components/custom-module-record-detail-data'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { resolveOrg } from '@/features/orgs/org-data'
 import { projectsBase } from '@/features/orgs/app-workspaces'

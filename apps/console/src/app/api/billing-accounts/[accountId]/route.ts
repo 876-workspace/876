@@ -1,5 +1,5 @@
-import { billing } from '@/lib/services/billing'
-import { workspace } from '@/lib/services/workspace'
+import { billing } from '@/lib/clients/billing'
+import { workspace } from '@/lib/clients/workspace'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 

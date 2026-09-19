@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 import type { OrgLocationUpdateParams } from '@876/account/compat'
 
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'

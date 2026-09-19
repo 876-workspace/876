@@ -6,7 +6,7 @@ import {
 } from '@876/core/document-templates'
 import { z } from 'zod'
 
-import { createBillingIntegration } from '@/lib/services/billing'
+import { createBillingIntegration } from '@/lib/clients/billing'
 
 import {
   invalidRequest,

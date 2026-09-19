@@ -5,7 +5,7 @@ import { Suspense } from 'react'
 
 import { IssueDetailData } from '@/features/projects/components/issue-detail-data'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { resolveOrg } from '@/features/orgs/org-data'
 import { projectsBase } from '@/features/orgs/app-workspaces'

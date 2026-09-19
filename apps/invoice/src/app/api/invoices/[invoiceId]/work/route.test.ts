@@ -16,7 +16,7 @@ vi.mock('@/lib/auth/work-widget-context', () => ({
   requireAuthorizedInvoiceWorkContext:
     mocks.requireAuthorizedInvoiceWorkContext,
 }))
-vi.mock('@/lib/services/work', () => ({ getWork: mocks.getWork }))
+vi.mock('@/lib/clients/work', () => ({ getWork: mocks.getWork }))
 
 const AUTH = { response: null, orgId: 'org_1', userId: 'user_1' }
 const CONTEXT = {

@@ -1,7 +1,7 @@
 import type { AppErrorValue } from '@876/ui/app-error'
 
 import { remindersForTarget } from '@/features/projects/reminder-timing'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { RemindersPanel } from './reminders-panel'
 import type { ReminderTarget } from '@/types/events'
 

@@ -2,7 +2,7 @@ import { apiError, apiJson } from '@876/core/api'
 import { supportResponseStatus } from '@876/crm'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { getCrmSupport } from '@/lib/services/crm-support'
+import { getCrmSupport } from '@/lib/clients/crm-support'
 
 export async function GET() {
   const context = await getWorkspaceContext()

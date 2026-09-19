@@ -7,7 +7,7 @@ import type {
 } from '@876/billing-ui/document/document-line-items-editor'
 import { toDocumentTaxRateOptions } from '@876/billing-ui/document/document-tax-rate-options'
 
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 import type { Invoice } from '@/lib/invoice'
 import type { ClientResult } from '@/types/api'

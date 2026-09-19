@@ -1,6 +1,6 @@
 import { AppError } from '@876/ui/app-error'
 
-import { listRequestsAcrossOrganizations } from '@/lib/services/crm'
+import { listRequestsAcrossOrganizations } from '@/lib/clients/crm'
 import type { CrmRequestStatus } from '@/types/crm'
 
 import { AllRequestsTable } from './all-requests-table'

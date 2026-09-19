@@ -1,5 +1,5 @@
-import { platform } from '@/lib/services/platform'
-import { workspace } from '@/lib/services/workspace'
+import { platform } from '@/lib/clients/platform'
+import { workspace } from '@/lib/clients/workspace'
 import Link from 'next/link'
 import { ChevronRightIcon } from '@876/ui/icons'
 import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'

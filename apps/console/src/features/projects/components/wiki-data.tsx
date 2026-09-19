@@ -8,7 +8,7 @@ import {
   toUiWikiPage,
   toUiWikiRevision,
 } from '../collaboration-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { ReadOnlyWikiRevisionList } from './read-only-wiki-revisions'
 

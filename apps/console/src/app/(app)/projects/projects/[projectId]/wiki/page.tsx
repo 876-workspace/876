@@ -7,7 +7,7 @@ import { Suspense } from 'react'
 import { ProjectWikiData } from '@/features/projects/components/wiki-data'
 import { ProjectTabs } from '@/features/projects/components/project-tabs'
 import { projectsBase } from '@/features/orgs/app-workspaces'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { requirePlatformProjectsOrgId } from '../../../_lib/base'
 

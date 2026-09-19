@@ -1,7 +1,7 @@
 import { AppError } from '@876/ui/app-error'
 import Link from 'next/link'
 
-import { getPortalClient } from '@/lib/services/portal'
+import { getPortalClient } from '@/lib/clients/portal'
 
 import { PortalReplyForm } from './portal-reply-form'
 import type { PortalAccess } from '@/types/access'

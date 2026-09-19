@@ -6,8 +6,8 @@ import * as Sentry from '@sentry/nextjs'
 import { redirect } from 'next/navigation'
 
 import { ENTERPRISE_APP_SLUG } from '@/lib/enterprise-app'
-import { getAccount } from '@/lib/services/account-server'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getAccount } from '@/lib/clients/account-server'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 import { consumerUrl } from './app-urls'
 import { getAuthSession, isSignedSession } from './session'

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import type { ApplicationProvisioningProfile } from '@876/core/types/application-provisioning-profile'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import { resolveApp } from '../_data'
 import { AppProvisioningShell } from './_components/app-provisioning-shell'
 import { ProfilesList } from './_components/profiles-list'

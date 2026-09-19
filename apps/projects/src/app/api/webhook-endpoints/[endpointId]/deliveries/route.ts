@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server'
 
 import { requireApiAccess } from '@/lib/auth/api-permission'
 import { listWebhookDeliveriesQuerySchema } from '@/types/integrations'
-import { integration } from '@/lib/services/integration'
+import { integration } from '@/lib/clients/integration'
 import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'

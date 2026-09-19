@@ -1,5 +1,5 @@
-import { platform } from '@/lib/services/platform'
-import { workspace } from '@/lib/services/workspace'
+import { platform } from '@/lib/clients/platform'
+import { workspace } from '@/lib/clients/workspace'
 import { Suspense } from 'react'
 import type { AdminApp } from '@876/platform/compat'
 import { Flag } from '@876/ui/icons'

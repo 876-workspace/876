@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import type { IssueStatus } from '@876/projects/contracts'
 import { IssuesList } from '@876/projects-ui/issue-list'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Issues list, shared by every host.

@@ -4,7 +4,7 @@ import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import type { RecurringInvoiceFormInitial } from '@876/billing-ui/recurring-invoice-form'
 
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { BillingRecurringInvoiceEditForm } from '../../_components/recurring-invoice-edit-form'
 
 type Props = { params: Promise<{ recurringInvoiceId: string }> }

@@ -1,4 +1,4 @@
-import { widgetsService } from '@/lib/services/widgets'
+import { widgetsService } from '@/lib/clients/widgets'
 import { apiError, apiJson } from '@876/core/api'
 import type { NoteColor } from '@876/widgets'
 

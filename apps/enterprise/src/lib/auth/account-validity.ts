@@ -2,7 +2,7 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { getAccount } from '@/lib/services/account-server'
+import { getAccount } from '@/lib/clients/account-server'
 
 /** Whether the account behind a sealed session is still usable. */
 export const isAccountUsable = cache(async function isAccountUsable(

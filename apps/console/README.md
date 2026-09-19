@@ -1,7 +1,7 @@
 # Console application configuration
 
 Console reads platform configuration through the named operator clients in
-`src/lib/services/`. Product sign-in feature evaluation and administrative
+`src/lib/clients/`. Product sign-in feature evaluation and administrative
 catalog reads have separate purposes: the former resolves a user's enabled
 flags; the latter supplies all of an app's configuration options.
 

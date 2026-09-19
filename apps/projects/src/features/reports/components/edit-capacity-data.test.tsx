@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   notFound: vi.fn(),
 }))
 
-vi.mock('@/lib/services/projects', () => ({
+vi.mock('@/lib/clients/projects', () => ({
   projects: { capacity: { list: mocks.list } },
 }))
 vi.mock('@/features/projects/member-labels', () => ({

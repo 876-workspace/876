@@ -28,7 +28,7 @@ vi.mock('@/lib/auth/manage-context', () => ({
 vi.mock('@/lib/manage/customers', () => ({
   updateManagedCustomer: mocks.updateManagedCustomer,
 }))
-vi.mock('@/lib/services/couriers', () => ({
+vi.mock('@/lib/clients/couriers', () => ({
   getCouriers: mocks.getCouriers,
 }))
 vi.mock('@/lib/couriers', () => ({

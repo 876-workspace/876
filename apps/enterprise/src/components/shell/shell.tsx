@@ -15,7 +15,7 @@ import { AnnouncementRegion } from '@876/ui/announcements'
 import { SidebarTrigger } from '@876/ui/sidebar'
 import type { SidebarUserMenuUser } from '@876/ui/sidebar-user-menu'
 
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 import { unwrapResult } from '@876/core/client/lookup'
 import { Sidebar } from './sidebar'
 import { AppsGroup, AppNavLink } from './apps-group'

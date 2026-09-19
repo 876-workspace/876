@@ -1,7 +1,7 @@
-import { billing } from '@/lib/services/billing'
-import { crm } from '@/lib/services/crm'
-import { platform } from '@/lib/services/platform'
-import { workspace } from '@/lib/services/workspace'
+import { billing } from '@/lib/clients/billing'
+import { crm } from '@/lib/clients/crm'
+import { platform } from '@/lib/clients/platform'
+import { workspace } from '@/lib/clients/workspace'
 import { cache } from 'react'
 import type { AdminSubscriptionStatus } from '@876/platform/compat'
 

@@ -3,7 +3,7 @@ import { AppError } from '@876/ui/app-error'
 import { TaskListForm } from '@/features/projects/components/task-list-form'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { listProjectMilestones } from '@/lib/work-structure-data'
 
 export async function NewTaskListData({ projectId }: { projectId?: string }) {

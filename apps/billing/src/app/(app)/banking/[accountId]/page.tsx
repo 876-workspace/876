@@ -17,7 +17,7 @@ import { AccountNumberReveal } from '@/features/banking/components/account-numbe
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
 import { service } from '@/lib/service'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 type Props = { params: Promise<{ accountId: string }> }
 

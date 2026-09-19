@@ -15,7 +15,7 @@ function collectSourceFiles(dir: string): string[] {
 
 describe('portal client boundary', () => {
   it('keeps portal surfaces on the portal client only', () => {
-    const forbidden = ['@/lib', 'services', 'projects'].join('/')
+    const forbidden = ['@/lib', 'clients', 'projects'].join('/')
     const roots = [
       join(process.cwd(), 'src', 'app', 'api', 'portal'),
       join(process.cwd(), 'src', 'app', 'portal'),

@@ -9,7 +9,7 @@ import {
 import { AppError } from '@876/ui/app-error'
 
 import { getInvoiceContext } from '@/lib/auth/context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 export const metadata: Metadata = {
   title: 'Transactions',

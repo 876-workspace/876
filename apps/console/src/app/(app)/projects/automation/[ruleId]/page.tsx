@@ -5,7 +5,7 @@ import { Suspense } from 'react'
 
 import { AutomationRuleDetailData } from '@/features/projects/components/automation-rule-detail-data'
 import { projectsBase } from '@/features/orgs/app-workspaces'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { requirePlatformProjectsOrgId } from '../../_lib/base'
 

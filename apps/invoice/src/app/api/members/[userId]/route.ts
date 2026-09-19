@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { getInvoiceContextResult } from '@/lib/auth/context'
 import { requireFinanceMemberManager } from '@/lib/auth/finance-access'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 const bodySchema = z.strictObject({
   roleId: z.string().min(1).max(191),

@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 
 import { CycleForm } from '@/features/projects/components/cycle-form'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function EditCycleData({
   orgId,

@@ -5,7 +5,7 @@ import { linkWorkRemoteCalendarInputSchema } from '@876/work'
 
 import { workErrorResponse } from '@/lib/api/work-response'
 import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
-import { getWork } from '@/lib/services/work'
+import { getWork } from '@/lib/clients/work'
 
 type Context = { params: Promise<{ connectionId: string }> }
 

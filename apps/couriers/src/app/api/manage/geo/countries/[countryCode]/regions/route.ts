@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 
 export const runtime = 'nodejs'
 

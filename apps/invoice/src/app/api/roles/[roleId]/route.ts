@@ -10,7 +10,7 @@ import {
 
 import { getInvoiceContextResult } from '@/lib/auth/context'
 import { requireFinanceRoleManager } from '@/lib/auth/finance-access'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 const bodySchema = z.strictObject({
   name: z.string().trim().min(1).max(160),

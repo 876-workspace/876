@@ -1,6 +1,6 @@
 import { DomainRecordsPanel } from '@876/communications-ui/panels/domain-records-panel'
 
-import { communicationsService } from '@/lib/services/communications'
+import { communicationsService } from '@/lib/clients/communications'
 
 interface DomainRecordsDataProps {
   organizationId: string

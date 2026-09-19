@@ -1,7 +1,7 @@
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/patterns/error-state'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 import { InviteForm } from './_components/invite-form'

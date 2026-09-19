@@ -25,7 +25,7 @@ import {
   PaymentsTable,
 } from '@/features/billing/components/finance-tables'
 import { workspaceBase } from '@/features/orgs/app-workspaces'
-import { billing } from '@/lib/services/billing'
+import { billing } from '@/lib/clients/billing'
 
 import { resolveOrg } from '@/features/orgs/org-data'
 

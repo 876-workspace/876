@@ -12,7 +12,7 @@ import {
   requireAppPermission,
   requireCrmContext,
 } from '@/lib/auth/require-crm-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 import { CATEGORIES_SKELETON_COLUMNS } from './_components/categories-skeleton-columns'
 import { CategorySplit } from './_components/category-split'

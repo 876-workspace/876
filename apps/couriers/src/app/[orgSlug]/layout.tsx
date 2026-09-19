@@ -1,10 +1,11 @@
 import { notFound, redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 
+import { buildAppsDirectory } from '@876/core/apps-directory'
+
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireValidSession } from '@/lib/auth/guards'
 import { Shell } from '@/components/shell/shell'
-import { getAppsDirectory } from '@/lib/apps-directory'
 import { getFeatures } from '@/lib/features'
 import { isReservedOrgSlug } from '@/lib/reserved-slugs'
 
@@ -51,7 +52,10 @@ export default async function OrgLayout({
     logoUrl: ctx.orgLogoUrl,
     planName: ctx.currentPlanName,
   }
-  const apps = getAppsDirectory(basePath)
+  const apps = buildAppsDirectory({
+    current: 'couriers',
+    currentUrl: basePath,
+  })
   const user = {
     name:
       [sessionUser.firstName, sessionUser.lastName].filter(Boolean).join(' ') ||

@@ -5,8 +5,8 @@ import {
   canonicalConsoleRole,
   CONSOLE_SUPER_ADMIN_ROLE,
 } from '@/lib/permissions'
-import { team } from '@/lib/service/team'
-import type { TeamServiceResult } from '@/lib/service/team/validation'
+import { team } from '@/lib/records/team'
+import type { TeamServiceResult } from '@/lib/records/team/validation'
 import type {
   Access,
   RoleCheckResult,

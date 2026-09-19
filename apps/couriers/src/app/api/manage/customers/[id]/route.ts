@@ -6,7 +6,7 @@ import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
-import { getCouriers } from '@/lib/services/couriers'
+import { getCouriers } from '@/lib/clients/couriers'
 import { updateManagedCustomer } from '@/lib/manage/customers'
 import { customerUpdateParamsSchema } from '@/types/customer'
 

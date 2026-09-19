@@ -17,7 +17,7 @@ import { SparklesIcon } from '@876/ui/icons'
 import { notFound } from 'next/navigation'
 
 import { toUiAutomationRule, toUiAutomationRun } from '../automation-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 function formatConditionValue(value: string | string[] | undefined): string {
   if (value === undefined) return ''

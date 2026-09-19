@@ -4,7 +4,7 @@ import { WorkBreakdown } from '@/features/projects/components/work-breakdown'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function WorkBreakdownData({
   orgId,

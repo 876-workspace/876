@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   captureMessage: vi.fn(),
 }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: async () => ({
     features: { evaluate: mocks.evaluate },
   }),

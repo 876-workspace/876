@@ -13,7 +13,7 @@ import {
   attachmentResourceRefSchema,
 } from '@/types/attachments'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
-import { storage } from '@/lib/services/storage'
+import { storage } from '@/lib/clients/storage'
 
 export const runtime = 'nodejs'
 

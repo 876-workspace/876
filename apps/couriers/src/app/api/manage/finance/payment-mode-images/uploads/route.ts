@@ -10,8 +10,8 @@ import { z } from 'zod'
 
 import { getError } from '@/lib/errors'
 
-import { storage } from '@/lib/services/storage'
-import { createBillingIntegration } from '@/lib/services/billing'
+import { storage } from '@/lib/clients/storage'
+import { createBillingIntegration } from '@/lib/clients/billing'
 
 import { invalidRequest, requireFinanceAccess } from '../../_lib/access'
 

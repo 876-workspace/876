@@ -5,7 +5,7 @@ import {
   type SidebarUserMenuUser,
 } from '@876/ui/sidebar-user-menu'
 
-import { account } from '@/lib/services/account'
+import { account } from '@/lib/clients/account'
 import { useUserStore } from '@/stores/user'
 
 export function UserMenu({ user }: { user: SidebarUserMenuUser }) {

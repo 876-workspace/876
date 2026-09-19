@@ -16,7 +16,7 @@ import { ReceiptText } from '@876/ui/icons'
 import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { formatDate, formatMoney } from '@/lib/format'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { documentStatusVariant } from '@/lib/status'
 import { InvoiceSalesReceiptLifecycleActions } from '../_components/sales-receipt-lifecycle-actions'
 

@@ -4,7 +4,7 @@ import { AppError } from '@876/ui/app-error'
 import { LayoutSummary } from '@876/projects-ui/layouts/layout-summary'
 import { notFound } from 'next/navigation'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 const SYSTEM_FIELD_LABELS: Record<string, string> = {
   title: 'Title',

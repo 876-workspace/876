@@ -3,7 +3,7 @@ import type { NoteColor } from '@876/widgets'
 
 import { requireNotepadMember } from '@/lib/widgets-auth'
 import { errorResponse } from '@/lib/errors'
-import { widgets } from '@/lib/services/widgets'
+import { widgets } from '@/lib/clients/widgets'
 
 export const runtime = 'nodejs'
 

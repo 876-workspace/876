@@ -8,7 +8,7 @@ import {
   toUiCustomModuleRecord,
   toUiCustomModuleStatus,
 } from '../custom-modules-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Custom module records list, shared by every host.

@@ -8,7 +8,7 @@ import { ProjectTimeData } from '@/features/projects/components/project-time-dat
 import { ProjectTabs } from '@/features/projects/components/project-tabs'
 import { OPERATOR_TIME_ENTRY_SKELETON_COLUMNS } from '@/features/projects/components/operator-skeleton-columns'
 import { projectsBase } from '@/features/orgs/app-workspaces'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { requirePlatformProjectsOrgId } from '../../../_lib/base'
 

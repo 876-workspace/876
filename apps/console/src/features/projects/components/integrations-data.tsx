@@ -2,7 +2,7 @@ import { IntegrationClientList } from '@876/projects-ui/platform/integration-cli
 import { AppError } from '@876/ui/app-error'
 
 import { toUiIntegrationClient } from '../projects-integration-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Integrations list, shared by every host.

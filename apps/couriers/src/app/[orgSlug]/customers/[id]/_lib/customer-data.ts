@@ -2,8 +2,8 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { couriersOperator, getCouriers } from '@/lib/services/couriers'
-import { billingIntegration } from '@/lib/services/billing'
+import { couriersOperator, getCouriers } from '@/lib/clients/couriers'
+import { billingIntegration } from '@/lib/clients/billing'
 import { getManageContext } from '@/lib/auth/manage-context'
 import {
   isCouriersNotFound,

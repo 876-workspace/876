@@ -7,7 +7,7 @@ import {
 import { notFound } from 'next/navigation'
 
 import type { ProjectCustomFieldValue } from '@876/projects/contracts'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { ProjectDetail } from '@876/projects-ui/project-detail'
 
 function valueText(value: ProjectCustomFieldValue['value']): string {

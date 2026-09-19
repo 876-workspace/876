@@ -11,7 +11,7 @@ import {
 import { getInvoiceContext } from '@/lib/auth/context'
 import { INVOICE_REQUESTS_SLUG } from '@/lib/features'
 import { formatDate, formatMoney } from '@/lib/format'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { RelatedRequestsClient } from '../../_components/related-requests-client'
 
 type Props = { params: Promise<{ paymentId: string }> }

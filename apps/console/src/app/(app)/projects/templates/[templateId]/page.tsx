@@ -6,7 +6,7 @@ import { Suspense } from 'react'
 import { TemplateDetailData } from '@/features/projects/components/template-detail-data'
 import { projectsBase } from '@/features/orgs/app-workspaces'
 import { parseTemplateStartDate } from '@/features/projects/template-start'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { requirePlatformProjectsOrgId } from '../../_lib/base'
 

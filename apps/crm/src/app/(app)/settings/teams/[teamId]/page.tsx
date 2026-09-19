@@ -9,8 +9,8 @@ import { Page } from '@876/ui/page'
 
 import type { DirectoryMember } from '@/features/directory/types'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
-import { crm } from '@/lib/services/crm'
-import { getWorkspace } from '@/lib/services/workspace'
+import { crm } from '@/lib/clients/crm'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 import { TeamActions } from './_components/team-actions'
 import { TeamMembers, type TeamMemberRow } from './_components/team-members'

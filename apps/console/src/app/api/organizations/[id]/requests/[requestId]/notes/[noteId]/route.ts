@@ -3,7 +3,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireConsoleCrmPermission } from '@/lib/auth/route-guard'
-import { createCrm } from '@/lib/services/crm'
+import { createCrm } from '@/lib/clients/crm'
 
 export const runtime = 'nodejs'
 

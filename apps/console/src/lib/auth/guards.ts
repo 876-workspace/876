@@ -1,6 +1,6 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import 'server-only'
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 
 import { can, hasFeature, type AccessContext } from '@876/core/access'
 import { createAuthLoginPath } from '@876/core/auth/return-to'

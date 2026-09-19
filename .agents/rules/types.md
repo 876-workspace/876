@@ -13,7 +13,7 @@ This includes domain types, service inputs and outputs, API request and response
 - Put reusable types in a focused file under `src/types/`, such as `src/types/auth.ts`, `src/types/errors.ts`, or `src/types/workos.ts`.
 - Put reusable Zod schemas next to the types they infer in `src/types/`.
 - Import shared types with `@/types/...` aliases instead of importing from service, SDK, app route, or component implementation files.
-- Keep `src/lib/service/**`, `src/lib/sdk/**`, and `src/app/api/**` focused on behavior. These files should consume types from `src/types/`, not define exported contracts inline.
+- Keep `src/lib/records/**`, `src/lib/sdk/**`, and `src/app/api/**` focused on behavior. These files should consume types from `src/types/`, not define exported contracts inline.
 - Name types and interfaces in `PascalCase`.
 - Name Zod schemas in `camelCase` ending with `Schema`.
 - Prefer `z.infer<typeof someSchema>` for types that must match runtime validation.
@@ -37,7 +37,7 @@ Move a type or schema to `src/types/` when any of these are true:
 
 ## Anti-Patterns
 
-- Do not define exported service or SDK parameter types inside `src/lib/service/**` or `src/lib/sdk/**`.
+- Do not define exported service or SDK parameter types inside `src/lib/records/**` or `src/lib/sdk/**`.
 - Do not define API response types inside route handlers.
 - Do not duplicate the same object shape in multiple files.
 - Do not create barrel files that hide where large type modules come from unless there is a measured need.

@@ -8,7 +8,7 @@ import {
   requireAppPermission,
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { CustomModuleDetailTabs } from './_components/custom-module-detail-tabs'
 

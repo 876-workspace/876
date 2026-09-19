@@ -18,8 +18,8 @@ vi.mock('react', async (importOriginal) => {
   }
 })
 
-vi.mock('@/lib/service', () => ({
-  service: { team: { retrieve: mocks.retrieveTeamMember } },
+vi.mock('@/lib/records', () => ({
+  records: { team: { retrieve: mocks.retrieveTeamMember } },
 }))
 
 vi.mock('@/lib/features', () => ({

@@ -12,7 +12,7 @@ import {
 } from '@876/ui/empty'
 import { Flag } from '@876/ui/icons'
 
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 import { listAppModules } from '@/lib/console/modules'
 import { resolveApp } from '../../_data'
 import { FeaturesList } from './features-list'

@@ -13,34 +13,21 @@ import {
 } from './format'
 
 describe('formatMoney', () => {
-  it.each([null, undefined])('formats %s as custom pricing', (amount) => {
-    expect(formatMoney(amount, 'JMD')).toBe('Custom pricing')
+  // Re-exported from @876/core/money. These pin Billing's boundary — that its
+  // callers get the shared formatter — not the formatter itself, which is
+  // tested where it lives.
+  it.each([null, undefined])('renders %s as an em dash', (amount) => {
+    expect(formatMoney(amount, 'JMD')).toBe('—')
   })
 
-  it.each([
-    [0n, '$0.00'],
-    [1n, '$0.01'],
-    [12_345n, '$123.45'],
-    [-250n, '-$2.50'],
-    ['4900', '$49.00'],
-  ])('formats minor amount %s', (amount, expected) => {
-    expect(formatMoney(amount, 'JMD')).toBe(expected)
+  it('renders JMD minor units with its standard two decimal places', () => {
+    expect(formatMoney(12_345n, 'JMD')).toBe('$123.45')
   })
 
-  it.each([
-    [9_007_199_254_740_992n, 'JMD 9007199254740992 minor units'],
-    ['not-a-number', 'JMD not-a-number minor units'],
-  ])(
-    'preserves unsafe amount %s without precision loss',
-    (amount, expected) => {
-      expect(formatMoney(amount, 'JMD')).toBe(expected)
-    }
-  )
-
-  it("uses each currency's standard minor-unit precision", () => {
-    expect(formatMoney(123n, 'JPY')).toBe('JP¥123')
-    expect(formatMoney(1234n, 'KWD')).toBe('KWD\u00a01.234')
-    expect(formatMoney(1234n, 'JMD', 3)).toBe('$1.234')
+  it('renders an unsafe amount as the code and the raw minor units', () => {
+    expect(formatMoney(9_007_199_254_740_992n, 'JMD')).toBe(
+      'JMD 9007199254740992'
+    )
   })
 })
 

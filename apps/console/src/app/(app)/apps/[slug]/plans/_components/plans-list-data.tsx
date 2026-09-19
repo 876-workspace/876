@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import { resolveApp } from '../../_data'
 import { PlansList } from './plans-list'
 

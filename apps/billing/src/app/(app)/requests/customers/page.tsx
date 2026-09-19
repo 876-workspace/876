@@ -9,7 +9,7 @@ import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { Suspense } from 'react'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 export const metadata = { title: 'Request customers' }
 

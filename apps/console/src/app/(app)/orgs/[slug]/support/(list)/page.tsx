@@ -1,4 +1,4 @@
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'

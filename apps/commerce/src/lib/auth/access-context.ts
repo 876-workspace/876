@@ -3,7 +3,7 @@ import 'server-only'
 import type { AccessContext } from '@876/core/access'
 import { cache } from 'react'
 
-import { getAccount } from '@/lib/services/account'
+import { getAccount } from '@/lib/clients/account'
 
 export type CommerceAccessContextOutcome =
   | { status: 'ok'; context: AccessContext }

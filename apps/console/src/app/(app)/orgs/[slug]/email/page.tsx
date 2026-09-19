@@ -25,7 +25,7 @@ import {
 } from '@/features/email/components/deliveries-table'
 import { DomainVerifyActions } from '@/features/email/components/domain-verify-actions'
 import { resolveOrg } from '@/features/orgs/org-data'
-import { communications } from '@/lib/services/communications'
+import { communications } from '@/lib/clients/communications'
 
 type Props = { params: Promise<{ slug: string }> }
 

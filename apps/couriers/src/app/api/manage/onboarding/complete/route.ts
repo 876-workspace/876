@@ -3,13 +3,13 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import { toSlug } from '@876/core/utils'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
 import { ONBOARDING_COUNTRY, ORGANIZATION_TARGET_KEY } from '@/lib/onboarding'
 import { loadCouriersProvisioningManifest } from '@/lib/provisioning/manifest'
-import { couriersOperator } from '@/lib/services/couriers'
+import { couriersOperator } from '@/lib/clients/couriers'
 
 export const runtime = 'nodejs'
 

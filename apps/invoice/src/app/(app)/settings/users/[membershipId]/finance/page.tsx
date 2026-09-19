@@ -7,7 +7,7 @@ import { create876BillingServerClient } from '@876/billing/server'
 
 import { getInvoiceContextResult } from '@/lib/auth/context'
 import { resolveInvoiceFinanceAccess } from '@/lib/auth/finance-access'
-import { getInvoiceBillingConfig } from '@/lib/services/billing-config'
+import { getInvoiceBillingConfig } from '@/lib/clients/billing-config'
 
 import { loadMember } from '../../_data'
 import { loadRoles } from '../../../roles/_data'

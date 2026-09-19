@@ -1,7 +1,7 @@
 import { apiError, apiSuccess } from '@876/core/api'
 import { cookies } from 'next/headers'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { switchOrganizationInputSchema } from '@/types/auth'
 

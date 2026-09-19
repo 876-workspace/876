@@ -1,6 +1,6 @@
 import { DomainListPanel } from '@876/communications-ui/panels/domain-list-panel'
 
-import { communicationsService } from '@/lib/services/communications'
+import { communicationsService } from '@/lib/clients/communications'
 
 import { DomainVerifyActions } from './domain-verify-actions'
 

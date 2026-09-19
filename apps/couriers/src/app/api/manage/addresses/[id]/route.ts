@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
 import { toAddressUpdateBody, toAddressView } from '@/lib/couriers'
-import { getCouriers } from '@/lib/services/couriers'
+import { getCouriers } from '@/lib/clients/couriers'
 import { addressUpdateParamsSchema } from '@/types/address'
 
 export const runtime = 'nodejs'

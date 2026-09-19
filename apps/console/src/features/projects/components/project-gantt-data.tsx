@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { formatOperatorDateOrDash } from './operator-format'
 import { ReadOnlyGanttView } from './read-only-gantt-view'

@@ -8,7 +8,7 @@ import {
 import { z } from 'zod'
 
 import { requireRequestApiAccess } from '@/lib/auth/request-api-access'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 const listQuerySchema = z.object({
   status: requestStatusSchema.optional(),

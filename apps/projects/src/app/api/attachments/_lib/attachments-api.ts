@@ -11,7 +11,7 @@ import {
   type AttachmentResourceType,
 } from '@/types/attachments'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
-import { storage } from '@/lib/services/storage'
+import { storage } from '@/lib/clients/storage'
 
 import type { ApiContext } from '@/types/access'
 

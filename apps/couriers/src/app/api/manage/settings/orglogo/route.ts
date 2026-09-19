@@ -7,7 +7,7 @@ import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
 import { getAppError, getError } from '@/lib/errors'
 import { getFeatures } from '@/lib/features'
-import { storage } from '@/lib/services/storage'
+import { storage } from '@/lib/clients/storage'
 import { organizationLogoUploadStartSchema } from '@/types/storage'
 
 export const runtime = 'nodejs'

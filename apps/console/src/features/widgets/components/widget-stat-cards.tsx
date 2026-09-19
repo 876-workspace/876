@@ -1,5 +1,5 @@
 import 'server-only'
-import { widgets } from '@/lib/services/widgets'
+import { widgets } from '@/lib/clients/widgets'
 
 import type { WidgetMetadata } from '@876/widgets'
 

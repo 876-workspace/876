@@ -8,7 +8,7 @@ import {
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
 import { availableLayoutFields } from '@/lib/layout-available-fields'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export const metadata = { title: 'Edit layout' }
 

@@ -19,7 +19,7 @@ import {
   MobileListEmpty,
 } from '@876/projects-ui/mobile-list'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 const LINK_CLASS =
   'text-[0.8125rem] font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300'

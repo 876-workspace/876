@@ -1,6 +1,6 @@
 import { TemplateListPanel } from '@876/communications-ui/panels/template-list-panel'
 
-import { communicationsService } from '@/lib/services/communications'
+import { communicationsService } from '@/lib/clients/communications'
 
 interface TemplatesDataProps {
   organizationId: string

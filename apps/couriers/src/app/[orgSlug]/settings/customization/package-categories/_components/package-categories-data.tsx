@@ -3,7 +3,7 @@ import type { PackageCategory } from '@876/couriers/admin'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getAppError } from '@/lib/errors'
-import { couriersOperator } from '@/lib/services/couriers'
+import { couriersOperator } from '@/lib/clients/couriers'
 
 import { type PackageCategoryStatusFilter } from './package-categories-shell'
 import { PackageCategoriesTable } from './package-categories-table'

@@ -4,7 +4,7 @@ import { RequestRecordShell } from '@876/crm-ui/request-record-shell'
 import { Page } from '@876/ui/page'
 
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 import {
   RequestIdentity,

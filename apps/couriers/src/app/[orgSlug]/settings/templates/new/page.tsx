@@ -4,7 +4,7 @@ import { DOCUMENT_TITLES } from '@876/core/document-templates'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { createBillingIntegration } from '@/lib/services/billing'
+import { createBillingIntegration } from '@/lib/clients/billing'
 
 import { resolveDocumentTypeParam } from '../_components/document-type-tabs'
 import { TemplateEditorForm } from '../_components/template-editor-form'

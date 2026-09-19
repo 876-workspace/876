@@ -7,7 +7,7 @@ import {
 import { Skeleton } from '@876/ui/skeleton'
 import { notFound } from 'next/navigation'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { getCouriers } from '@/lib/services/couriers'
+import { getCouriers } from '@/lib/clients/couriers'
 import { getFeatures } from '@/lib/features'
 import { AddCustomerPanel } from '../_components/add-customer-panel'
 import type { CustomerBranchOption } from '../_components/customer-branch-field'

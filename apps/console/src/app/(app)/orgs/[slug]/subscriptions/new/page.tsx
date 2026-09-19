@@ -1,4 +1,4 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import type { Metadata } from 'next'
 import { PageBreadcrumb } from '@876/ui/page'
 

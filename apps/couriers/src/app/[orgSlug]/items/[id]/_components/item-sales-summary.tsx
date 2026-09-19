@@ -3,7 +3,7 @@ import {
   ItemSalesSummaryPanelSkeleton,
 } from '@876/billing-ui/panels/item-sales-summary-panel'
 import { formatBucketLabel } from '@876/billing-ui/report-range'
-import { billingIntegration } from '@/lib/services/billing'
+import { billingIntegration } from '@/lib/clients/billing'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { formatMoney } from '@/lib/finance/format'
 

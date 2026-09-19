@@ -4,7 +4,7 @@ import type { PlatformRoutingMembership } from '@876/core/platform'
 import * as Sentry from '@sentry/nextjs'
 import { cache } from 'react'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { INVOICE_APP_SLUG } from '@/lib/invoice-app'
 import type {
   AccessStatus,

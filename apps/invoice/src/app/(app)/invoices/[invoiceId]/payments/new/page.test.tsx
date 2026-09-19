@@ -34,7 +34,7 @@ vi.mock('@/lib/auth/access-context', () => ({
   canAccess: () => true,
   resolveAccessContext: mocks.resolveAccessContext,
 }))
-vi.mock('@/lib/services/billing', () => ({ getBilling: mocks.getBilling }))
+vi.mock('@/lib/clients/billing', () => ({ getBilling: mocks.getBilling }))
 vi.mock('@/features/payments/payment-form-data', () => ({
   getPaymentFormData: mocks.getPaymentFormData,
 }))

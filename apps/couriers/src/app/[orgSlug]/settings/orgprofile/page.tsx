@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Page } from '@876/ui/page'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getFeatures } from '@/lib/features'
 import { buildSections } from './_lib/field-spec'

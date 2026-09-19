@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 import { formatDate } from '@876/projects-ui/format-date'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import type { CycleStatus } from '@/types/planning'
 
 const STATUS_LABEL: Record<CycleStatus, string> = {

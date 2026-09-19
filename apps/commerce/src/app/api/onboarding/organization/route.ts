@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { getCommerceSession } from '@/lib/auth/session'
 import { normalizeOrgRole } from '@/lib/auth/roles'
 import { COMMERCE_APP_SLUG } from '@/lib/commerce-app'
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 
 export const runtime = 'nodejs'
 

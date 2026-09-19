@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
   delete: vi.fn(),
 }))
 
-vi.mock('@/lib/service/team', () => ({ team: mocks }))
+vi.mock('@/lib/records/team', () => ({ team: mocks }))
 
 function createCaller(overrides: Partial<Access> = {}): Access {
   return {

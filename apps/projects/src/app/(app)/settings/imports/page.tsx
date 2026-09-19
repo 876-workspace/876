@@ -8,7 +8,7 @@ import {
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
 import { IMPORT_SOURCE_VALUES, toUiImportJob } from '@/lib/integration-mappers'
-import { integration } from '@/lib/services/integration'
+import { integration } from '@/lib/clients/integration'
 
 import { ImportUploadForm } from './_components/import-upload-form'
 

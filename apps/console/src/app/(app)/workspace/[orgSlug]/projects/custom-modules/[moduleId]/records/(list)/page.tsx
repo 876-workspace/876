@@ -8,7 +8,7 @@ import { projectsBase } from '@/features/orgs/app-workspaces'
 import { resolveOrg } from '@/features/orgs/org-data'
 import { CustomModuleRecordsData } from '@/features/projects/components/custom-module-records-data'
 import { CUSTOM_MODULE_RECORDS_SKELETON_COLUMNS } from '@/features/projects/components/operator-skeleton-columns'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 type Props = {
   params: Promise<{ orgSlug: string; moduleId: string }>

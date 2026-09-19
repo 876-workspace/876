@@ -4,7 +4,7 @@ import { supportResponseStatus } from '@876/crm'
 import { z } from 'zod'
 
 import { requireRequestApiAccess } from '@/lib/auth/request-api-access'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 const idSchema = z.string().trim().min(1)
 const createBodySchema = z.union([

@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'
 import { cache } from 'react'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
 import type {
   AccessStatus,

@@ -185,29 +185,72 @@ diff which module a route actually depends on. See
 `.agents/rules/performance-bundle-size.md` §2.1.
 
 The one sanctioned exception is a package's declared public entry point
-(`packages/ui`'s subpath exports, `src/lib/service/index.ts`) — a boundary that
+(`packages/ui`'s subpath exports, `src/lib/records/index.ts`) — a boundary that
 is _deliberately_ a contract, not a convenience.
 
-## `src/lib/` — console is the reference shape
+## `src/lib/` — a closed root, not a pile
 
-`apps/console/src/lib/` is the canonical layout. Every app carries the same
-spine; only apps that genuinely own a datastore carry the datastore layers.
+`src/lib/` carries the same spine in every app. Its **root is a closed set**:
+anything not in the table below lives in a directory, or it does not exist.
 
-| Directory / file | Present in                 | Holds                                                            |
-| ---------------- | -------------------------- | ---------------------------------------------------------------- |
-| `services/`      | apps with 876 service data | one explicit bounded client module per domain the host consumes  |
-| `<app>-app.ts`   | every app                  | the app's slug/identity constants                                |
-| `analytics/`     | every app                  | PostHog/analytics dispatch                                       |
-| `auth/`          | every app                  | `guards.ts`, session helpers, route guards                       |
-| `client/`        | every app                  | the typed browser mutation client                                |
-| `errors/`        | every app                  | the app's error registry and mappers                             |
-| `id/`            | every app                  | id generation/parsing helpers                                    |
-| `db/`            | apps with a datastore      | the request-scoped `prisma` singleton, generated client          |
-| `service/<res>/` | apps with a datastore      | `<verb>.ts` per file — the only caller allowed to query `prisma` |
+| Directory / file | Present in                  | Holds                                                             |
+| ---------------- | --------------------------- | ----------------------------------------------------------------- |
+| `clients/`       | apps with 876 service data  | one explicit bounded client module per domain the host consumes   |
+| `records/`       | apps with their own Prisma  | `<resource>/<verb>.ts` — the only caller allowed to query `prisma` |
+| `db/`            | apps with their own Prisma  | the request-scoped `prisma` resolver, generated client            |
+| `analytics/`     | every app                   | PostHog/analytics dispatch                                        |
+| `auth/`          | every app                   | `guards.ts`, session helpers, route guards                        |
+| `client/`        | every app                   | the typed browser mutation client                                 |
+| `errors/`        | every app                   | the app's error registry and mappers                              |
+| `id/`            | every app                   | id generation/parsing helpers                                     |
+| `<app>-app.ts`   | every app                   | the app's slug/identity constants                                 |
+| `logger.ts`      | every app                   | the app's logger                                                  |
+| `features.ts`    | every app                   | this app's feature-flag resolution                                |
+| `permissions.ts` | apps with a catalog         | this app's permission catalog and helpers                         |
+| `format.ts`      | apps that display values    | display formatting — **re-exports `@876/core`, never reimplements** |
 
-Apps with a datastore today: `console`, `billing`, `couriers`. `876` and
-`enterprise` must **not** grow `db/` or `service/` — they have no bounded
-context of their own.
+Apps with their own Prisma records layer today: `console`, `widgets-api`.
+
+### `clients/` reach out; `records/` are ours
+
+These two answered to names that differed by one letter — `services/` and
+`service/` — and meant opposite things. In Billing alone that was 72 imports of
+one and 90 of the other, and reading `service.customers.list()` gave no signal
+whether you were on the app's own data or a bounded 876 client.
+
+- **`clients/`** — configured clients for *other* bounded 876 services:
+  `platform`, `workspace`, `crm`, `billing`, `storage`. They reach outward.
+  They are clients, so they are called clients.
+- **`records/`** — this app's *own* rows, the only code permitted to touch
+  `prisma`. They belong to this app, and to no other surface.
+
+```ts
+import { platform } from '@/lib/clients/platform'
+import { records } from '@/lib/records'
+
+const { data } = await platform.users.list({ limit: 25 })
+const roles = await records.roles.list()
+```
+
+There is no third option at this root. A transitional compatibility shim does
+not get a name here — it gets deleted and its callers migrated. The platform is
+pre-launch; nothing carries a backwards-compatibility obligation.
+
+### The root is closed because a flat root duplicates
+
+This is not tidiness. A pile is unscannable, so people re-add instead of
+reusing, and the repo measurably paid for it: **eight** copies of `features.ts`
+differing only in an app slug, **three** of `apps-directory.ts` with drifted app
+lists, and **two** `formatMoney` implementations with different signatures
+inside console's own `lib/`.
+
+`scripts/check-app-structure.mjs` check 8 enforces the set.
+`scripts/app-structure-lib-ratchet.json` records files that predate it — a
+**ratchet, not an exemption**: entries are deleted as each file moves into a
+directory, and the list may never grow. Adding a loose file therefore requires
+editing that list, which is the review moment the flat directory never had.
+Regenerate it with `node scripts/generate-lib-ratchet.mjs` **only to shrink it**.
+Its removal condition is that the map is empty and the constant is deleted.
 
 `src/lib/` holds **no JSX**. A file under `lib/` that renders is a component
 that landed in the wrong bucket.
@@ -258,7 +301,7 @@ platform-integration side.
 - Do not create a global `interfaces/` or `utils/` catch-all directory.
 - Do not add a barrel `index.ts` that re-exports a directory.
 - Do not prefix files with the app's own name inside that app.
-- Do not add `db/` or `service/` to an app with no datastore.
+- Do not add `db/` or `records/` to an app with no data of its own.
 - Do not put JSX in `src/lib/`.
 - Do not treat `components/patterns/` as permanent — promote to `packages/ui`
   once a second app needs it.

@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'
 import { cache } from 'react'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { CRM_APP_SLUG } from '@/lib/crm-app'
 import type { AccessStatus, CrmContext, CrmContextResult } from '@/types/auth'
 

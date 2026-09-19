@@ -5,7 +5,7 @@ import { Skeleton } from '@876/ui/skeleton'
 
 import { RequestTasksClient } from '@/features/crm/request-tasks-client'
 import { getInvoiceContext } from '@/lib/auth/context'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 export const metadata = { title: 'Request tasks' }
 

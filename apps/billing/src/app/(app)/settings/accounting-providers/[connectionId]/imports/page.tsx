@@ -18,7 +18,7 @@ import {
   requirePagePermission,
 } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
-import { getAccountingProviderClient } from '@/lib/services/accounting-providers'
+import { getAccountingProviderClient } from '@/lib/clients/accounting-providers'
 
 type Props = {
   params: Promise<{ connectionId: string }>

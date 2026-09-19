@@ -2,7 +2,7 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { billingIntegration } from '@/lib/services/billing'
+import { billingIntegration } from '@/lib/clients/billing'
 import { getManageContext } from '@/lib/auth/manage-context'
 
 /** Resolve the invoice shared by the detail header and the overview page. */

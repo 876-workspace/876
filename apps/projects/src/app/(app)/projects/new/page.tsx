@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import { PageBreadcrumb } from '@/components/page-breadcrumb'
 import { NewProjectForm } from '@/features/projects/components/new-project-form'
 import { requireAppAccess, requireProjectsContext } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export const metadata: Metadata = { title: 'New project' }
 

@@ -13,8 +13,8 @@ import {
   requireAppPermission,
   requireCrmContext,
 } from '@/lib/auth/require-crm-context'
-import { crm } from '@/lib/services/crm'
-import { getWorkspace } from '@/lib/services/workspace'
+import { crm } from '@/lib/clients/crm'
+import { getWorkspace } from '@/lib/clients/workspace'
 import type { CrmTeamStatus } from '@/types/crm'
 
 import { TEAMS_SKELETON_COLUMNS } from './_components/teams-skeleton-columns'

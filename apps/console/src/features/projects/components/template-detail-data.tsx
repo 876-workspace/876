@@ -5,7 +5,7 @@ import { TemplatePreviewTable } from '@876/projects-ui/templates/template-previe
 import { TemplateSummary } from '@876/projects-ui/templates/template-summary'
 import { notFound } from 'next/navigation'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { formatOperatorDateOrDash } from './operator-format'
 

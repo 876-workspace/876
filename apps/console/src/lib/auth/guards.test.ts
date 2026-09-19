@@ -28,13 +28,13 @@ vi.mock('@sentry/nextjs', () => ({
   captureException: mocks.captureException,
 }))
 
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   workspace: {
     memberships: { list: mocks.listMemberships },
   },
 }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   platform: { users: { retrieve: mocks.retrieveUser } },
 }))
 
@@ -42,8 +42,8 @@ vi.mock('@/lib/features', () => ({
   getConsoleFeatureKeys: mocks.getConsoleFeatureKeys,
 }))
 
-vi.mock('@/lib/service', () => ({
-  service: { team: { retrieve: mocks.retrieveTeamMember } },
+vi.mock('@/lib/records', () => ({
+  records: { team: { retrieve: mocks.retrieveTeamMember } },
 }))
 
 vi.mock('./session', () => ({

@@ -11,7 +11,7 @@ import {
 } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
 import { billingApiRequest } from '@/lib/service/api'
-import { createStorageService } from '@/lib/services/storage'
+import { createStorageService } from '@/lib/clients/storage'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

@@ -8,7 +8,7 @@ import { Switch } from '@876/ui/switch'
 import { requireAppPermission } from '@/lib/auth/guards'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { INVOICE_MODULE_CATALOG, isInvoiceModuleKey } from '@/lib/modules'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { ReportPreferencesForm } from '@/features/settings/components/report-preferences-form'
 
 type Props = { params: Promise<{ moduleKey: string }> }

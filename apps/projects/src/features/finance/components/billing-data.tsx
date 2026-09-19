@@ -1,6 +1,6 @@
 import { AppError } from '@876/ui/app-error'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { BillingForm } from './billing-form'
 
 export async function BillingData({

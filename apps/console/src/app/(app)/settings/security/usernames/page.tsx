@@ -1,4 +1,4 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import { UsernamesManager } from './_components/usernames-manager'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 

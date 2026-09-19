@@ -9,7 +9,7 @@ import { TemplatePreviewData } from './template-preview-data'
 import { TemplateStartForm } from './template-start-form'
 import { TemplateVersionTable } from './template-version-table'
 import { formatDateInput, parseDateInput, todaySeconds } from '@/lib/date-input'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function TemplateDetailData({
   orgId,

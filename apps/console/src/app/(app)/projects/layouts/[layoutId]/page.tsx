@@ -5,7 +5,7 @@ import { Suspense } from 'react'
 
 import { LayoutDetailData } from '@/features/projects/components/layout-detail-data'
 import { projectsBase } from '@/features/orgs/app-workspaces'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { requirePlatformProjectsOrgId } from '../../_lib/base'
 

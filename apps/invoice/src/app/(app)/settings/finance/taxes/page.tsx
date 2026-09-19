@@ -7,7 +7,7 @@ import { AppError } from '@876/ui/app-error'
 import { getInvoiceContextResult } from '@/lib/auth/context'
 import { resolveInvoiceFinanceAccess } from '@/lib/auth/finance-access'
 import { requireAppPermission } from '@/lib/auth/guards'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 import { TaxesPanel } from '../_components/finance-settings'
 

@@ -17,7 +17,7 @@ const { mockGetCommerceSession, mockGetPlatformClient, mockPlatform } =
 vi.mock('@/lib/auth/session', () => ({
   getCommerceSession: mockGetCommerceSession,
 }))
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: mockGetPlatformClient,
 }))
 

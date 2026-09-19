@@ -3,7 +3,7 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 
 import { requireApiAccess } from '@/lib/auth/api-permission'
-import { integration } from '@/lib/services/integration'
+import { integration } from '@/lib/clients/integration'
 import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'

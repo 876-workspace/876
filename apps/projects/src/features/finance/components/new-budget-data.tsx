@@ -1,6 +1,6 @@
 import { AppError } from '@876/ui/app-error'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { BudgetForm } from './budget-form'
 
 export async function NewBudgetData({

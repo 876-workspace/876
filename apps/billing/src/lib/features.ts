@@ -2,14 +2,17 @@ import 'server-only'
 
 import { cache } from 'react'
 import * as Sentry from '@sentry/nextjs'
-import { resolveExperimentDecision } from '@876/core/platform'
+import {
+  createAppExperimentResolver,
+  createExperimentDecisionsFetcher,
+} from '@876/core/platform'
 import {
   chatWidgetMetadata,
   isWidgetEnabled,
   resolveEnabledWidgetIds,
 } from '@876/widgets'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { BILLING_APP_SLUG } from '@/lib/billing-app'
 import type {
   BillingFeatures,
@@ -184,38 +187,15 @@ const getCachedFeatures = cache(async function getCachedFeatures(
   }
 })
 
+const getExperimentDecisions = cache(
+  createExperimentDecisionsFetcher({
+    appSlug: BILLING_APP_SLUG,
+    getPlatformClient,
+  })
+)
+
 /**
  * Resolves a PostHog experiment for the Billing app.
  */
-export async function getBillingExperiment<T = unknown>(
-  featureSlug: string,
-  context?: {
-    userId?: string
-    organizationId?: string
-    visitorId?: string
-  }
-) {
-  return resolveExperimentDecision<T>(
-    featureSlug,
-    await getExperimentDecisions(
-      context?.userId,
-      context?.organizationId,
-      context?.visitorId
-    )
-  )
-}
-
-const getExperimentDecisions = cache(async function getExperimentDecisions(
-  userId: string | undefined,
-  organizationId: string | undefined,
-  visitorId: string | undefined
-) {
-  const platform = await getPlatformClient()
-  const { data, error } = await platform.features.evaluateDetails({
-    appSlug: BILLING_APP_SLUG,
-    userId,
-    organizationId,
-    visitorId,
-  })
-  return error || !data ? null : data.data
-})
+export const getBillingExperiment =
+  createAppExperimentResolver(getExperimentDecisions)

@@ -9,7 +9,7 @@ import { Skeleton } from '@876/ui/skeleton'
 import Link from 'next/link'
 
 import { formatReminderTiming } from '@/features/projects/reminder-timing'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import type { MyWorkResult } from '@/types/issues'
 

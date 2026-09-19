@@ -4,7 +4,7 @@ import { apiJson } from '@876/core/api'
 
 import { projectsErrorStatus } from '@/app/api/_lib/error-status'
 import { requireApiAccess } from '@/lib/auth/api-permission'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'
