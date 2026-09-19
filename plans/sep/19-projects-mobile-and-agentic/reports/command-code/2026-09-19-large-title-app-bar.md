@@ -38,8 +38,8 @@ Not implemented: navigation to another Document
 
  Test Files  42 passed (42)
       Tests  367 passed (367)
-   Start at  16:24:58
-   Duration  43.81s (transform 2.55s, setup 9.43s, import 22.59s, tests 32.38s, environment 53.63s)
+   Start at  16:28:32
+   Duration  105.23s (transform 5.21s, setup 23.34s, import 59.74s, tests 75.56s, environment 128.87s)
 ```
 
 Exit code: 0. The two navigation notices were emitted by the test environment;

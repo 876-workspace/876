@@ -561,3 +561,36 @@ Every Projects list page that renders `FloatingGlobalAdd` must pass
 `mobilePrimary="fab-owns-it"`. Orchestrator task once the tree is quiet; it is a
 one-prop change per page and must not be handed to a delegate mid-run, because
 those pages are spread across areas other delegates hold.
+
+### 3. `board/page.test.tsx` — ResourceToolbar reaches the real `next/navigation`
+
+```
+Error: invariant expected app router to be mounted
+ ❯ useRouter next/src/client/components/navigation.ts:169
+ ❯ ResourceToolbar packages/ui/src/components/resource-toolbar.tsx:96
+```
+
+The test **does** mock the module:
+
+```ts
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/board',
+  useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
+  useSearchParams: () => new URLSearchParams(),
+}))
+```
+
+so the mock is not reaching `packages/ui`. The likely cause is resolution:
+`vi.mock` keys on the **resolved** module id, and in a pnpm workspace
+`packages/ui` may resolve `next/navigation` through its own `node_modules` link
+rather than the app's, so a component living in `@876/ui` escapes an app-level
+mock. That would make this a structural testing hazard for **every** app test
+that renders a `@876/ui` client component, not a defect in this run's code.
+
+**Not yet established:** whether this failed before this run. `board/page.test.tsx`
+was already in the 16:09 failure list, which was taken *after* Phase 2 had
+edited it, so that observation settles nothing. It is resolved by the baseline
+comparison, not by reasoning — do not "fix" it before knowing which side it
+belongs to. If it is pre-existing, the fix belongs in a separate commit and
+probably in `vitest.config.ts` (an alias making `next/navigation` resolve to one
+id across the workspace), not in this feature branch's scope.
