@@ -6,23 +6,19 @@ import { Button } from '@876/ui/button'
 
 const CONSOLE_APPS: AppSwitcherApp[] = [
   { name: 'Console', url: '/', current: true },
-  {
-    name: '876',
-    url: process.env.NEXT_PUBLIC_876_APP_URL ?? 'https://876.app',
-  },
-  {
-    name: 'Enterprise',
-    url: process.env.NEXT_PUBLIC_ENTERPRISE_URL ?? 'https://enterprise.876.app',
-  },
-  {
-    name: 'Billing',
-    url: process.env.NEXT_PUBLIC_BILLING_URL ?? 'https://billing.876.app',
-  },
-  {
-    name: 'Couriers',
-    url: process.env.NEXT_PUBLIC_COURIERS_URL ?? 'https://couriers.876.app',
-  },
+  ...appEntry('876', process.env.NEXT_PUBLIC_CONSUMER_URL),
+  ...appEntry('Enterprise', process.env.NEXT_PUBLIC_ENTERPRISE_URL),
+  ...appEntry('Billing', process.env.NEXT_PUBLIC_BILLING_URL),
+  ...appEntry('Couriers', process.env.NEXT_PUBLIC_COURIERS_URL),
 ]
+
+/**
+ * An app whose origin variable is unset is omitted from the switcher; there is
+ * deliberately no fallback origin (.agents/rules/env-configuration.md rule 4).
+ */
+function appEntry(name: string, url: string | undefined): AppSwitcherApp[] {
+  return url ? [{ name, url }] : []
+}
 
 export function TopbarActions({
   showGlobalAdd = true,

@@ -53,10 +53,9 @@ import {
   type ViewOption,
 } from '@/components/patterns/view-switcher'
 import { client } from '@/lib/client'
-import { formatDate } from '@/lib/format'
+import { formatDate, formatMoney } from '@/lib/format'
 
 import { Fact } from '@/features/billing/components/billing-fields'
-import { formatMoney } from '@/features/billing/price-options'
 
 export type AccountsView = 'grid' | 'table' | 'list'
 
@@ -257,7 +256,7 @@ function AccountsGridView({
             />
             <Fact
               label="Balance"
-              value={formatMoney(account.balance, account.currency)}
+              value={formatMoney(account.balance, account.currency ?? 'usd')}
             />
             <Fact label="Updated" value={formatDate(account.updated_at)} />
           </dl>
@@ -307,7 +306,7 @@ function AccountsListView({
             {(account.currency ?? 'n/a').toUpperCase()}
           </Badge>
           <span className="text-[0.8125rem] tabular-nums">
-            {formatMoney(account.balance, account.currency)}
+            {formatMoney(account.balance, account.currency ?? 'usd')}
           </span>
           <AccountActions
             account={account}
@@ -404,7 +403,7 @@ function createAccountColumns({
       ),
       cell: ({ row }) => (
         <span className="text-[0.8125rem] tabular-nums">
-          {formatMoney(row.original.balance, row.original.currency)}
+          {formatMoney(row.original.balance, row.original.currency ?? 'usd')}
         </span>
       ),
     },

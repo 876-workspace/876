@@ -64,36 +64,21 @@ const ROUTE_FILES = new Set([
 const PRIVATE_DIRS = new Set(['_components', '_lib'])
 
 /**
- * The closed set of files allowed to sit loose at `src/lib/`.
+ * `src/lib/` holds directories, not loose files.
  *
- * A flat `lib/` is not a style problem, it is a duplication engine: nobody
- * scans an undifferentiated pile before adding to it, which is how this repo
- * ended up with eight copies of `features.ts`, three of `apps-directory.ts`,
- * and two `formatMoney` implementations inside console's own `lib/`. Closing
- * the set makes adding to the root a decision instead of a reflex.
+ * A flat lib/ is a duplication engine: nobody scans an undifferentiated pile
+ * before adding to it, which is how the repo grew eight copies of features.ts,
+ * three of apps-directory.ts, and two formatMoney implementations inside
+ * console's own lib/. Every module gets a folder and an `index.ts`, so a
+ * module's parts, its tests, and its types live together and the root reads as
+ * a list of capabilities rather than a landfill.
  *
- * `<app>-app.ts` is allowed for every app and is computed per app, not listed.
- * A colocated `*.test.ts` of an allowed file is allowed with it.
+ *   lib/permissions/index.ts      not  lib/permissions.ts
+ *   lib/permissions/index.test.ts      lib/permissions.test.ts
+ *
+ * `<name>/index.ts` is a module's declared entry point, which `app-structure.md`
+ * exempts from the no-barrel rule. It is not a barrel over unrelated files.
  */
-const ALLOWED_LIB_ROOT_FILES = new Set([
-  'logger.ts', // the app's logger
-  'features.ts', // this app's feature-flag resolution
-  'permissions.ts', // this app's permission catalog and helpers
-  'format.ts', // display formatting; re-exports @876/core, never reimplements
-])
-
-/**
- * Files that predate the closed set, per app. This is a ratchet, not an
- * exemption: entries may be deleted as each file moves into a directory, and
- * the list may never grow. The check fails on a name that is neither allowed
- * nor listed here, so a new loose file cannot be added without editing this
- * list — which is the review moment the flat directory never had.
- *
- * Removal condition: this map is empty and the constant is deleted.
- */
-const LIB_ROOT_RATCHET = JSON.parse(
-  readFileSync(new URL('./app-structure-lib-ratchet.json', import.meta.url), 'utf8')
-)
 
 /**
  * An app's own name, as it must not appear as a file prefix.
@@ -142,6 +127,15 @@ function walk(dir, out = []) {
     }
   }
   return out
+}
+
+/** Where a loose `src/lib/` file belongs: its module folder, tests beside their subject. */
+function libModuleTarget(name) {
+  const test = name.match(/^(.+)\.(test|spec)\.(tsx?)$/)
+  if (test) return `${test[1]}/index.${test[2]}.${test[3]}`
+
+  const ext = name.endsWith('.tsx') ? 'tsx' : 'ts'
+  return `${name.replace(/\.tsx?$/, '')}/index.${ext}`
 }
 
 function exists(p) {
@@ -412,26 +406,6 @@ for (const app of APPS) {
     }
   }
 
-  // ---- 8. undeclared loose file at the src/lib/ root -----------------------
-  const libDir = join(root, 'lib')
-  if (exists(libDir)) {
-    const ratchet = new Set(LIB_ROOT_RATCHET[app] ?? [])
-    const identityFile = `${app}-app.ts`
-    for (const entry of readdirSync(libDir, { withFileTypes: true })) {
-      if (!entry.isFile()) continue
-      const name = entry.name
-      if (!/\.tsx?$/.test(name)) continue
-      if (name === identityFile) continue
-      // a colocated test is allowed exactly when its subject is
-      const subject = name.replace(/\.test\.tsx?$/, '.ts')
-      if (ALLOWED_LIB_ROOT_FILES.has(name)) continue
-      if (name !== subject && ALLOWED_LIB_ROOT_FILES.has(subject)) continue
-      if (ratchet.has(name)) continue
-      if (name !== subject && ratchet.has(subject)) continue
-
-      fail(app, 'undeclared-lib-root-file', `apps/${app}/src/lib/${name}`)
-    }
-  }
 
 }
 
@@ -493,6 +467,26 @@ function isPageShapedFallback(source) {
     /\bDetailHeaderSkeleton\b/.test(source) ||
     /\b\w*PageSkeleton\b/.test(source)
   )
+}
+
+// ---- 8. loose file at the src/lib/ root --------------------------------
+// Every workspace with a src/lib, not just the Next apps: the Express
+// services carry the same spine and the same pile grows there otherwise.
+for (const workspace of readdirSync('apps', { withFileTypes: true })) {
+  if (!workspace.isDirectory()) continue
+
+  const libDir = join('apps', workspace.name, 'src', 'lib')
+  if (!exists(libDir)) continue
+
+  for (const entry of readdirSync(libDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !/\.tsx?$/.test(entry.name)) continue
+
+    fail(
+      workspace.name,
+      'loose-lib-root-file',
+      `apps/${workspace.name}/src/lib/${entry.name} — move it to lib/${libModuleTarget(entry.name)}`
+    )
+  }
 }
 
 if (failures.length === 0) {

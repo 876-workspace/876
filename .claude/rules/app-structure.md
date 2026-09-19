@@ -190,8 +190,8 @@ is _deliberately_ a contract, not a convenience.
 
 ## `src/lib/` — a closed root, not a pile
 
-`src/lib/` carries the same spine in every app. Its **root is a closed set**:
-anything not in the table below lives in a directory, or it does not exist.
+`src/lib/` carries the same spine in every app. Its **root holds only directories** — one
+per module, each with an `index.ts`. There are no loose files.
 
 | Directory / file | Present in                  | Holds                                                             |
 | ---------------- | --------------------------- | ----------------------------------------------------------------- |
@@ -203,11 +203,11 @@ anything not in the table below lives in a directory, or it does not exist.
 | `client/`        | every app                   | the typed browser mutation client                                 |
 | `errors/`        | every app                   | the app's error registry and mappers                              |
 | `id/`            | every app                   | id generation/parsing helpers                                     |
-| `<app>-app.ts`   | every app                   | the app's slug/identity constants                                 |
-| `logger.ts`      | every app                   | the app's logger                                                  |
-| `features.ts`    | every app                   | this app's feature-flag resolution                                |
-| `permissions.ts` | apps with a catalog         | this app's permission catalog and helpers                         |
-| `format.ts`      | apps that display values    | display formatting — **re-exports `@876/core`, never reimplements** |
+| `<app>-app/`     | every app                   | the app's slug/identity constants                                 |
+| `logger/`        | every app                   | the app's logger                                                  |
+| `features/`      | every app                   | this app's feature-flag resolution                                |
+| `permissions/`   | apps with a catalog         | this app's permission catalog and helpers                         |
+| `format/`        | apps that display values    | display formatting — **re-exports `@876/core`, never reimplements** |
 
 Apps with their own Prisma records layer today: `console`, `widgets-api`.
 
@@ -236,7 +236,32 @@ There is no third option at this root. A transitional compatibility shim does
 not get a name here — it gets deleted and its callers migrated. The platform is
 pre-launch; nothing carries a backwards-compatibility obligation.
 
-### The root is closed because a flat root duplicates
+### The root holds directories, not files
+
+Every module in `src/lib/` gets a **folder and an `index.ts`**, so its parts,
+its tests and its types live together and the root reads as a list of
+capabilities rather than a landfill.
+
+```
+lib/permissions/index.ts        not  lib/permissions.ts
+lib/permissions/index.test.ts        lib/permissions.test.ts
+lib/logger/index.ts                  lib/logger.ts
+lib/slug/index.ts                    lib/slug.ts
+```
+
+A module's `index.ts` is its **declared entry point** — the sanctioned
+exception to the no-barrel rule above. It is not a barrel over unrelated
+modules, and no other `index.ts` belongs in `lib/`.
+
+Because TypeScript resolves `@/lib/permissions` to both `permissions.ts` and
+`permissions/index.ts`, moving a module changes no import **in a Next app**.
+Only relative specifiers inside the moved file shift by one directory.
+
+**An Express service on NodeNext ESM is different.** It imports with an
+explicit extension, and `../../lib/recurrence.js` does *not* resolve to
+`recurrence/index.js` — every importer must become
+`../../lib/recurrence/index.js`, including any `vi.mock()` path, which fails
+silently rather than erroring when it is wrong.
 
 This is not tidiness. A pile is unscannable, so people re-add instead of
 reusing, and the repo measurably paid for it: **eight** copies of `features.ts`
@@ -244,13 +269,10 @@ differing only in an app slug, **three** of `apps-directory.ts` with drifted app
 lists, and **two** `formatMoney` implementations with different signatures
 inside console's own `lib/`.
 
-`scripts/check-app-structure.mjs` check 8 enforces the set.
-`scripts/app-structure-lib-ratchet.json` records files that predate it — a
-**ratchet, not an exemption**: entries are deleted as each file moves into a
-directory, and the list may never grow. Adding a loose file therefore requires
-editing that list, which is the review moment the flat directory never had.
-Regenerate it with `node scripts/generate-lib-ratchet.mjs` **only to shrink it**.
-Its removal condition is that the map is empty and the constant is deleted.
+`scripts/check-app-structure.mjs` check 8 enforces it and names the folder each
+loose file belongs in. It has no exemption list: every app reached zero loose
+files in one pass, so the migration ratchet that carried the 92 pre-existing
+ones was deleted with the last of them.
 
 `src/lib/` holds **no JSX**. A file under `lib/` that renders is a component
 that landed in the wrong bucket.
@@ -294,6 +316,7 @@ platform-integration side.
 
 ## Do not
 
+- Do not leave a loose `.ts` at the `src/lib/` root; give it a folder.
 - Do not leave a non-route `.tsx` as a bare sibling of `page.tsx`.
 - Do not import from another route's `_components/`, in either direction.
 - Do not import another feature's internals from a feature.

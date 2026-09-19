@@ -58,7 +58,7 @@ describe('BillingConfigSummary', () => {
         {...props}
       />
     )
-    expect(screen.getByText('$2,500.00')).toBeInTheDocument()
+    expect(screen.getByText('US$2,500.00')).toBeInTheDocument()
     unmount()
     cleanup()
 

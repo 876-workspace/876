@@ -27,7 +27,7 @@ function MoneyVariance({
   currency: string
 }) {
   const tone = value < 0 ? 'text-destructive' : value > 0 ? 'text-emerald-600' : ''
-  const formatted = formatMoney(Math.abs(value), currency) ?? '—'
+  const formatted = formatMoney(Math.abs(value), currency)
   const sign = value > 0 ? '+' : value < 0 ? '−' : ''
   return (
     <span className={tone}>

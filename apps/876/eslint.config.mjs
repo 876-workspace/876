@@ -3,6 +3,7 @@ import nextVitals from 'eslint-config-next/core-web-vitals'
 import nextTs from 'eslint-config-next/typescript'
 import { createAppStructureRules } from '../../eslint.app-structure.mjs'
 import { generatedIgnores } from '../../eslint.ignores.mjs'
+import { typesafetyRules } from '../../eslint.typesafety.mjs'
 
 /** Admin isolation: the consumer app must never import Console code. */
 const consoleIsolation = {
@@ -25,6 +26,7 @@ const eslintConfig = defineConfig([
     },
   },
   ...createAppStructureRules({ extraPatterns: [consoleIsolation] }),
+  ...typesafetyRules,
   globalIgnores(generatedIgnores),
 ])
 

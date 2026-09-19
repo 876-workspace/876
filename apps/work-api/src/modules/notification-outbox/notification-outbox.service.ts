@@ -2,7 +2,7 @@ import type { WorkRecurrenceRule } from '@876/work'
 import * as alerts from '../alerts/index.js'
 import * as reminders from '../reminders/index.js'
 import * as recurrence from '../recurrence-rules/index.js'
-import { occurrencesBetween } from '../../lib/recurrence.js'
+import { occurrencesBetween } from '../../lib/recurrence/index.js'
 import {
   HttpNotificationGateway,
   type NotificationGateway,

@@ -12,7 +12,7 @@ vi.mock('../reminders/index.js', () => ({
 vi.mock('../recurrence-rules/index.js', () => ({
   retrieve: vi.fn(),
 }))
-vi.mock('../../lib/recurrence.js', () => ({
+vi.mock('../../lib/recurrence/index.js', () => ({
   occurrencesBetween: vi.fn(),
 }))
 vi.mock('../../db/index.js', () => ({
@@ -33,7 +33,7 @@ vi.mock('./notification-outbox.repository.js', () => ({
 import * as alerts from '../alerts/index.js'
 import * as reminders from '../reminders/index.js'
 import * as recurrence from '../recurrence-rules/index.js'
-import { occurrencesBetween } from '../../lib/recurrence.js'
+import { occurrencesBetween } from '../../lib/recurrence/index.js'
 import { prisma } from '../../db/index.js'
 import type { NotificationGateway } from '../../providers/notifications.js'
 import * as repository from './notification-outbox.repository.js'
