@@ -100,7 +100,9 @@ beforeEach(() => {
 
 describe('TimesheetApprovalsData', () => {
   it('asks for the sheets awaiting a decision and the entries they cover', async () => {
-    render(await TimesheetApprovalsData({ orgId: 'org_1', userId: 'usr_manager' }))
+    render(
+      await TimesheetApprovalsData({ orgId: 'org_1', userId: 'usr_manager' })
+    )
 
     expect(mocks.listTimesheets).toHaveBeenCalledWith('org_1', {
       status: 'submitted',
@@ -111,10 +113,14 @@ describe('TimesheetApprovalsData', () => {
   })
 
   it('shows an approver who submitted the sheet and what it covers', async () => {
-    render(await TimesheetApprovalsData({ orgId: 'org_1', userId: 'usr_manager' }))
+    render(
+      await TimesheetApprovalsData({ orgId: 'org_1', userId: 'usr_manager' })
+    )
 
     expect(screen.getByText(/Submitted by Ada Lovelace/)).toBeInTheDocument()
-    expect(screen.getByText('Website rebuild')).toBeInTheDocument()
+    const projectNames = screen.getAllByText('Website rebuild')
+    expect(projectNames).toHaveLength(2)
+    expect(projectNames[0]).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Approve' })).toBeInTheDocument()
   })
 
@@ -128,7 +134,9 @@ describe('TimesheetApprovalsData', () => {
   it('says so when nothing is waiting', async () => {
     mocks.listTimesheets.mockResolvedValue({ data: { data: [] }, error: null })
 
-    render(await TimesheetApprovalsData({ orgId: 'org_1', userId: 'usr_manager' }))
+    render(
+      await TimesheetApprovalsData({ orgId: 'org_1', userId: 'usr_manager' })
+    )
 
     expect(
       screen.getByText('No timesheets are waiting for approval.')
@@ -144,7 +152,9 @@ describe('TimesheetApprovalsData', () => {
       },
     })
 
-    render(await TimesheetApprovalsData({ orgId: 'org_1', userId: 'usr_manager' }))
+    render(
+      await TimesheetApprovalsData({ orgId: 'org_1', userId: 'usr_manager' })
+    )
 
     expect(
       screen.getByText('Some timesheet data could not be loaded')

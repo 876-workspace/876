@@ -88,6 +88,7 @@ describe('Projects navigation access binding', () => {
       '/reports',
       '/issues',
       '/board',
+      '/inbox',
       '/labels',
       '/settings/users',
       '/settings',
