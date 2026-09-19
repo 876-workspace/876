@@ -152,6 +152,7 @@ describe('createMyWorkResource', () => {
           title: 'Daily Logistics Briefing',
           description: null,
           location: null,
+          meetingUrl: null,
           status: 'CONFIRMED',
           busyStatus: 'BUSY',
           allDay: false,

@@ -45,6 +45,7 @@ function row(overrides: Record<string, unknown> = {}) {
     title: 'Sprint Review',
     description: null,
     location: 'Kingston Office',
+    meetingUrl: null,
     status: 'CONFIRMED' as const,
     busyStatus: 'BUSY' as const,
     startAt: new Date('2026-09-01T09:00:00.000Z'),
@@ -361,6 +362,74 @@ describe('Work events service', () => {
     )
   })
 
+  it('create with a meeting url persists and serializes it', async () => {
+    vi.mocked(repository.create).mockResolvedValue(
+      row({ meetingUrl: 'https://meet.876.dev/standup' }) as never
+    )
+    const result = await service.create('org_kingston_1', {
+      calendarId: calendar.id,
+      title: 'Standup',
+      allDay: false,
+      startAt: 1_788_000_000,
+      endAt: 1_788_003_600,
+      timeZone: 'UTC',
+      meetingUrl: 'https://meet.876.dev/standup',
+      createdBy: 'user_1',
+    })
+    expect(repository.create).toHaveBeenCalledTimes(1)
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ meetingUrl: 'https://meet.876.dev/standup' })
+    )
+    expect(result).toEqual(
+      expect.objectContaining({ meetingUrl: 'https://meet.876.dev/standup' })
+    )
+  })
+
+  it('create without a meeting url stores null', async () => {
+    vi.mocked(repository.create).mockResolvedValue(row({}) as never)
+    const result = await service.create('org_kingston_1', {
+      calendarId: calendar.id,
+      title: 'Onsite',
+      allDay: false,
+      startAt: 1_788_000_000,
+      endAt: 1_788_003_600,
+      timeZone: 'UTC',
+      createdBy: 'user_1',
+    })
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ meetingUrl: null })
+    )
+    expect(result).toEqual(expect.objectContaining({ meetingUrl: null }))
+  })
+
+  it('update clears a meeting url when passed null', async () => {
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ meetingUrl: 'https://meet.876.dev/standup' }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(row({}) as never)
+    const result = await service.update('org_kingston_1', 'event_1', {
+      meetingUrl: null,
+    })
+    expect(repository.update).toHaveBeenCalledTimes(1)
+    expect(repository.update).toHaveBeenCalledWith(
+      'event_1',
+      expect.objectContaining({ meetingUrl: null })
+    )
+    expect(result).toEqual(expect.objectContaining({ meetingUrl: null }))
+  })
+
+  it('update leaves a meeting url alone when the field is absent', async () => {
+    vi.mocked(repository.retrieve).mockResolvedValue(
+      row({ meetingUrl: 'https://meet.876.dev/standup' }) as never
+    )
+    vi.mocked(repository.update).mockResolvedValue(
+      row({ meetingUrl: 'https://meet.876.dev/standup' }) as never
+    )
+    await service.update('org_kingston_1', 'event_1', { title: 'Renamed' })
+    const patch = vi.mocked(repository.update).mock.calls[0]?.[1]
+    expect(patch).not.toHaveProperty('meetingUrl')
+  })
+
   it('returns tenant-inactive and never lists when tenant suspended', async () => {
     vi.mocked(tenants.retrieveByOrganization).mockResolvedValue({
       ...tenant,
@@ -641,6 +710,7 @@ describe('Work events service', () => {
       title: 'Sprint Review',
       description: null,
       location: 'Kingston Office',
+      meetingUrl: null,
       status: 'CONFIRMED',
       busyStatus: 'BUSY',
       allDay: false,

@@ -95,6 +95,7 @@ function event(
     title: id,
     description: null,
     location: null,
+    meetingUrl: null,
     status: 'CONFIRMED',
     busyStatus: 'BUSY',
     allDay: false,

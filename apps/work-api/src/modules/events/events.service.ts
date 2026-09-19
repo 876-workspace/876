@@ -55,6 +55,7 @@ function serialize(row: Row, organizationId: string): WorkEventResource {
     title: row.title,
     description: row.description,
     location: row.location,
+    meetingUrl: row.meetingUrl,
     status: row.status,
     busyStatus: row.busyStatus,
     allDay: row.startDate !== null,
@@ -163,6 +164,7 @@ export async function create(
     title: input.title,
     description: input.description ?? null,
     location: input.location ?? null,
+    meetingUrl: input.meetingUrl ?? null,
     status: input.status ?? 'CONFIRMED',
     busyStatus: input.busyStatus ?? 'BUSY',
     startAt: timed ? new Date(input.startAt * 1000) : null,
@@ -206,6 +208,7 @@ export async function update(
       ? {}
       : { description: input.description }),
     ...(input.location === undefined ? {} : { location: input.location }),
+    ...(input.meetingUrl === undefined ? {} : { meetingUrl: input.meetingUrl }),
     ...(input.status === undefined ? {} : { status: input.status }),
     ...(input.busyStatus === undefined ? {} : { busyStatus: input.busyStatus }),
     ...(input.recurrenceRuleId === undefined
