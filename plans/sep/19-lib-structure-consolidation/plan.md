@@ -2,7 +2,7 @@
 
 - **Run ID:** `19-lib-structure-consolidation`
 - **Branch:** `refactor/lib-structure-consolidation`
-- **Status:** IN_PROGRESS
+- **Status:** COMPLETED ✅ (units E, R1, R2, A, B, C)
 - **Started:** 2026-09-19
 
 ## Overview
@@ -63,11 +63,11 @@ resolve afterwards.
 | Unit | Scope | Delegate | Status |
 | --- | --- | --- | --- |
 | E | closed-set rule + `check-app-structure.mjs` check 8 + ratchet | orchestrator | [x] done, gate verified |
-| R1 | `src/lib/services/` → `src/lib/clients/` — all 9 Next apps | Command Code | [ ] |
-| R2 | `src/lib/service/` → `src/lib/records/` — console + widgets-api | opencode | [ ] |
-| A | `features.ts` experiment block → `@876/core/platform` (8 apps) | opencode | [ ] half-applied, needs finishing |
-| B | `formatMoney` → `@876/core/money` (console, billing, core) | Cline | [ ] |
-| C | `apps-directory.ts` → one shared module (couriers, crm, projects) | Cline | [ ] |
+| R1 | `src/lib/services/` → `src/lib/clients/` — 894 files, 11 workspaces | Command Code | [x] `825373ae0` |
+| R2 | `src/lib/service/` → `src/lib/records/` — console + widgets-api | opencode | [x] `940e76594` |
+| A | `features.ts` experiment block → `@876/core/platform` (8 apps) | opencode | [x] `d841b7cca` |
+| B | `formatMoney` → `@876/core/money` (console, billing, core) | Command Code | [x] `a50807bb5` |
+| C | `apps-directory.ts` → one shared module (couriers, crm, projects) | Command Code | [x] `8344c9317` |
 
 R1 and R2 both touch console, so they run **sequentially**, R1 first.
 
@@ -116,3 +116,20 @@ node scripts/check-app-structure.mjs
 pnpm check:rsc-boundaries
 grep -rn "eslint-disable\|as any" <paths each delegate touched>
 ```
+
+## Found during the run, not fixed
+
+- **`formatMoney` has 6 implementations, not 3.** Unit B consolidated the three
+  the survey found (console ×2, billing). Still outstanding:
+  `apps/invoice/src/lib/format.ts`, `apps/couriers/src/lib/finance/format.ts`,
+  `packages/projects-ui/src/finance/format-money.ts` (two exports), and
+  `apps/console/src/features/billing/price-options.ts`. Same consolidation,
+  wider scope.
+- **36 hardcoded `876.app` origins remain** outside the app switcher (console 3,
+  core 2, couriers 2, invoice 1, billing 1, api 1). Same landmine as Unit C
+  removed, different call sites.
+- **4 pre-existing console test failures** in `src/lib/permissions.test.ts` —
+  pinned permission counts drifted (`103` vs `79`, `341` vs `266`, `354` vs
+  `279`) plus one extra product group. Unrelated to this branch: no permission
+  source was touched. Decide whether the catalog legitimately grew before
+  re-pinning.
