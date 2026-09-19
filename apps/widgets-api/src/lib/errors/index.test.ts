@@ -4,7 +4,7 @@ import {
   getWidgetsError,
   toWidgetsClientError,
   WIDGETS_ERRORS,
-} from './errors.js'
+} from './index.js'
 
 describe('Widgets error registry', () => {
   it('satisfies the shared registry contract', () => {

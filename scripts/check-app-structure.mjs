@@ -406,21 +406,6 @@ for (const app of APPS) {
     }
   }
 
-  // ---- 8. loose file at the src/lib/ root ---------------------------------
-  const libDir = join(root, 'lib')
-  if (exists(libDir)) {
-    for (const entry of readdirSync(libDir, { withFileTypes: true })) {
-      if (!entry.isFile()) continue
-      const name = entry.name
-      if (!/\.tsx?$/.test(name)) continue
-
-      fail(
-        app,
-        'loose-lib-root-file',
-        `apps/${app}/src/lib/${name} — move it to lib/${libModuleTarget(name)}`
-      )
-    }
-  }
 
 }
 
@@ -482,6 +467,26 @@ function isPageShapedFallback(source) {
     /\bDetailHeaderSkeleton\b/.test(source) ||
     /\b\w*PageSkeleton\b/.test(source)
   )
+}
+
+// ---- 8. loose file at the src/lib/ root --------------------------------
+// Every workspace with a src/lib, not just the Next apps: the Express
+// services carry the same spine and the same pile grows there otherwise.
+for (const workspace of readdirSync('apps', { withFileTypes: true })) {
+  if (!workspace.isDirectory()) continue
+
+  const libDir = join('apps', workspace.name, 'src', 'lib')
+  if (!exists(libDir)) continue
+
+  for (const entry of readdirSync(libDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !/\.tsx?$/.test(entry.name)) continue
+
+    fail(
+      workspace.name,
+      'loose-lib-root-file',
+      `apps/${workspace.name}/src/lib/${entry.name} — move it to lib/${libModuleTarget(entry.name)}`
+    )
+  }
 }
 
 if (failures.length === 0) {

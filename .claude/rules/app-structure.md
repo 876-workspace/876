@@ -254,8 +254,14 @@ exception to the no-barrel rule above. It is not a barrel over unrelated
 modules, and no other `index.ts` belongs in `lib/`.
 
 Because TypeScript resolves `@/lib/permissions` to both `permissions.ts` and
-`permissions/index.ts`, moving a module changes no import. Only relative
-specifiers inside the moved file shift by one directory.
+`permissions/index.ts`, moving a module changes no import **in a Next app**.
+Only relative specifiers inside the moved file shift by one directory.
+
+**An Express service on NodeNext ESM is different.** It imports with an
+explicit extension, and `../../lib/recurrence.js` does *not* resolve to
+`recurrence/index.js` — every importer must become
+`../../lib/recurrence/index.js`, including any `vi.mock()` path, which fails
+silently rather than erroring when it is wrong.
 
 This is not tidiness. A pile is unscannable, so people re-add instead of
 reusing, and the repo measurably paid for it: **eight** copies of `features.ts`
