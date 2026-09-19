@@ -131,7 +131,7 @@ belong to `platform`. Account-owned current-user operations stay on `$876`.
 
 ## Composition rules
 
-- Console defines eight explicit operator roots under `src/lib/services/`:
+- Console defines eight explicit operator roots under `src/lib/clients/`:
   `billing`, `couriers`, `crm`, `platform`, `storage`, `widgets`, `work`, and
   `workspace`. It does not compose an Account or ecosystem facade.
 - Product applications import only the Account, Workspace, Platform, and

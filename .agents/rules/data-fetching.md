@@ -24,7 +24,7 @@ not** contain raw service fetches or direct DB/provider access.
 ```tsx
 import { Suspense } from 'react'
 import { AppError } from '@876/ui/app-error'
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 
 export default function UsersPage() {
   return (
@@ -116,7 +116,7 @@ if (result.error) throw new Error(result.error.message)
 1. Add the operation to its owning Express data-service module.
 2. Add the typed method to the owning bounded package at the entrypoint for the
    actual caller principal.
-3. Add or update the host's domain module under `src/lib/services/`; do not add
+3. Add or update the host's domain module under `src/lib/clients/`; do not add
    an aggregator.
 4. Call the named bounded root in the Next.js app — never fetch the service
    directly.

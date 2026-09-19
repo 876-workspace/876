@@ -9,7 +9,7 @@ Read this file before writing or modifying data access in `apps/876` or `apps/co
 - Do not access databases or external providers from Next.js feature code.
 - Do not call dedicated service origins directly from browser code.
 - Do not construct package clients in pages, feature components, or route
-  handlers. Import the host-owned domain module under `src/lib/services/`.
+  handlers. Import the host-owned domain module under `src/lib/clients/`.
 - Client-initiated mutations use thin route handlers under the application's own `/api/<resource>` vocabulary. Do not use Server Actions for backend mutations.
 - Route handlers authorize and adapt transport only. Business/domain logic remains in the owning backend service.
 - Browser components call the typed app client under `src/lib/client`; they do not know service URLs, internal keys, integration paths, or backend API versions.
@@ -24,7 +24,7 @@ roots. Browser auth/data operations use the approved typed clients and
 same-origin bridge routes where required.
 
 ```ts
-import { getAccount } from '@/lib/services/account'
+import { getAccount } from '@/lib/clients/account'
 
 const account = getAccount()
 const result = await account.apps.retrieve(appId)
@@ -37,13 +37,13 @@ Do not bypass the core API with direct provider or database access from the Next
 Console is intentionally broader than a normal product app. Its server boundary spans the services Console administrates.
 
 **The canonical composition points are the eight explicit modules in
-`apps/console/src/lib/services/`.** They export `billing`, `couriers`, `crm`,
+`apps/console/src/lib/clients/`.** They export `billing`, `couriers`, `crm`,
 `platform`, `storage`, `widgets`, `work`, and `workspace` operator roots.
 Feature code imports only the root it needs.
 
 ```ts
-import { platform } from '@/lib/services/platform'
-import { billing } from '@/lib/services/billing'
+import { platform } from '@/lib/clients/platform'
+import { billing } from '@/lib/clients/billing'
 
 const user = await platform.users.retrieve({ id: userId })
 const plan = await billing.plans.create(params)
@@ -118,7 +118,7 @@ Keep route handlers free of database queries, provider SDKs, and duplicated doma
 
 1. Add/verify the canonical operation in the owning backend.
 2. Add the typed operation to the owning package's `operator` entrypoint.
-3. Add or update only the matching Console module under `src/lib/services/`.
+3. Add or update only the matching Console module under `src/lib/clients/`.
 4. Choose a Console resource URL based on what the administrator is acting on, not which service receives the request.
 5. Add the thin route and typed browser call only when client-side interaction is needed.
 6. Add tests proving permissions, canonical envelopes, and the absence of a leaked service namespace.

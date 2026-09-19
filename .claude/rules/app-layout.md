@@ -219,7 +219,7 @@ import {
   StatusFilterHeading,
   type StatusFilterOption,
 } from '@/components/status-filter-heading'
-import { couriers } from '@/lib/services/couriers'
+import { couriers } from '@/lib/clients/couriers'
 import { PACKAGE_STATUSES, isPackageStatus } from '@/lib/package-status'
 
 const PACKAGE_STATUS_OPTIONS: StatusFilterOption[] = [

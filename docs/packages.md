@@ -10,7 +10,7 @@ This document is the **single exhaustive reference** for every `@876/*` package:
 
 ```
 Application
-  ├─ service.<resource>.<verb>()      → own Postgres/DB only (src/lib/service/**)
+  ├─ records.<resource>.<verb>()      → own Postgres/DB only (src/lib/records/**)
   └─ $876.<domain>.<resource>.<verb>() → remote 876 service via typed SDK
 
 $876 composition (explicit, per-app):
@@ -572,7 +572,7 @@ CI must be green: `pnpm typecheck`, `pnpm test`, `pnpm boundaries`, `pnpm check:
 
 - `import { create876AdminClient } from '@876/admin'` in `apps/876`/`apps/billing`/any product app (use `@876/core/platform` + `*/integration`).
 - `Console Prisma → Couriers DB` or any cross-DB Prisma. Cross-service via `SDK → API`.
-- `service.billing.products.list()` wrapping `$876.billing.products.list()` (use `$876` directly; `service.*` is local DB only under `src/lib/service/**` and only that layer may import Prisma).
+- `service.billing.products.list()` wrapping `$876.billing.products.list()` (use `$876` directly; `records.*` is local DB only under `src/lib/records/**` and only that layer may import Prisma).
 - Positional `retrieve(orgId)` or `retrieveBySlug` where typed `retrieve({id})` / `retrieve({slug})` is required.
 - `listForOrganization` / `listByX` / `ensure` / `allocate` on public resources — use `list({organizationId})` / `create()` with idempotency.
 - Re-adding `del` as public verb (use `delete`; internal `this.del` transport is fine).
@@ -589,7 +589,7 @@ CI must be green: `pnpm typecheck`, `pnpm test`, `pnpm boundaries`, `pnpm check:
 - Storage: `packages/storage/src/{client.ts,resources/*}`
 - Widgets: `packages/widgets/src/{browser/*,server/*,react/*}`
 - Console composition: `apps/console/src/lib/876/index.ts` (control-plane pattern), `apps/console/src/lib/billing/mirror.ts` (idempotent `create()` mirror)
-- App-local service: `apps/{console,billing,widgets}/src/lib/service/**` + `src/lib/db/**`
+- App-local records: `apps/{console,widgets}/src/lib/records/**` + `src/lib/db/**`
 - Rules: `.agents/rules/sdk-conventions.md`, `.agents/rules/api-access.md`, `.agents/rules/data-fetching.md`
 
 ---

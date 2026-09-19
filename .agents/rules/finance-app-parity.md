@@ -152,7 +152,7 @@ slots for extra columns, extra row actions, and a footer region.
 ## Console
 
 Console renders these same panels at `operator` authority through its own
-`billing` module under `src/lib/services/`. It authorizes with
+`billing` module under `src/lib/clients/`. It authorizes with
 `requireConsolePermission` and writes an audit event before the operator client
 is touched. Console composition differs — different hrefs, more panels, extra
 operator actions — but it must not contain a second copy of any panel.

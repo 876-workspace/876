@@ -89,7 +89,7 @@ Internal service/repository/provider functions may use specialized names.
 
 ## Ownership
 
-- `service.*` owns local DB only (`src/lib/service`).
+- `records.*` owns local DB only (`src/lib/records`).
 - `$876.<product>.*` owns cross-service orchestration behind product API via `providers/`.
 - Repositories never call remote APIs.
 

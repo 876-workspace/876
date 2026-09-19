@@ -40,7 +40,7 @@ widgets.notes.list(...)
 
 There is no ecosystem aggregator: no `@876/services`, no product resources on
 `$876`, and no replacement container under any other name. Each host composes
-only the clients it needs under its own `src/lib/services/`.
+only the clients it needs under its own `src/lib/clients/`.
 
 | Entrypoint    | Principal                              | Typical credential                 |
 | ------------- | -------------------------------------- | ---------------------------------- |
@@ -98,10 +98,10 @@ A product package may build on `@876/core`; it must not become a convenience agg
   `workspace.organizations.retrieve()` rather than adding `listRequests()` or
   `getOrganization()` helpers.
 - **The vocabulary also governs app-local datastore services**, such as
-  `service.<resource>.<verb>()`; using Prisma does not exempt a method from it.
+  `records.<resource>.<verb>()`; using Prisma does not exempt a method from it.
 - **App-local datastore layering has two layers:** a request-scoped `prisma`
-  resolver under `src/lib/db`, and `service.<resource>.<verb>()` under
-  `src/lib/service`, the only layer allowed to query Prisma. The service layer
+  resolver under `src/lib/db`, and `records.<resource>.<verb>()` under
+  `src/lib/records`, the only layer allowed to query Prisma. That layer
   owns business logic, authorization, validation, and datastore/provider error
   mapping.
 - **Cloudflare Prisma clients are request-scoped.** Keep
@@ -110,7 +110,7 @@ A product package may build on `@876/core`; it must not become a convenience agg
 
 ## Client initialization and lifetime
 
-Each host defines one explicit module per domain under `src/lib/services/` and
+Each host defines one explicit module per domain under `src/lib/clients/` and
 imports those roots at call sites. Do not construct SDK clients ad hoc in pages,
 components, or route handlers.
 
@@ -118,12 +118,12 @@ Use a module singleton only when its credential and configuration are static
 for the runtime, and initialize it lazily on first use. OpenNext imports route
 modules at build time, when runtime secrets are unavailable. A static client
 module may expose resource getters backed by a private initializer, as
-`apps/crm/src/lib/services/crm.ts` does.
+`apps/crm/src/lib/clients/crm.ts` does.
 
 Use a request-scoped factory when an access token, active organization, or any
 other authority belongs to one request. Resolve the session first and pass its
 token into the authority-specific factory, as
-`apps/crm/src/lib/services/workspace.ts` does.
+`apps/crm/src/lib/clients/workspace.ts` does.
 
 Never use a lazy `Proxy` to conceal the wrong lifetime. Never combine unrelated
 domains into a convenience aggregator.
@@ -157,7 +157,7 @@ Likewise, organization configuration belongs under `workspace`, while globally p
 2. Add the typed resource method to the owning bounded package at the entrypoint
    for the actual caller principal. Match the standard verb vocabulary and the
    service's response schema.
-3. Add or update only the host's domain module under `src/lib/services/`.
+3. Add or update only the host's domain module under `src/lib/clients/`.
 4. Call the named bounded root directly. Never raw-fetch the service and never
    register the resource in a cross-product aggregator.
 
