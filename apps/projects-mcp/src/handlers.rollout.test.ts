@@ -49,8 +49,17 @@ const mockCycle = {
   endsAt: 1789000000,
   completedAt: null,
   status: 'active' as const,
-  progress: { total: 5, completed: 2, estimatePoints: 8, completedEstimatePoints: 3 },
-  throughput: { completedInWindow: 2, windowStart: 1788400000, windowEnd: 1789000000 },
+  progress: {
+    total: 5,
+    completed: 2,
+    estimatePoints: 8,
+    completedEstimatePoints: 3,
+  },
+  throughput: {
+    completedInWindow: 2,
+    windowStart: 1788400000,
+    windowEnd: 1789000000,
+  },
   createdAt: 1788400000,
   updatedAt: 1788400000,
 }
@@ -100,9 +109,20 @@ const mockTimeSummary = {
   from: 1788400000,
   to: 1789000000,
   groups: [
-    { key: 'prj_console', totalMinutes: 60, billableMinutes: 60, nonBillableMinutes: 0, entryCount: 1 },
+    {
+      key: 'prj_console',
+      totalMinutes: 60,
+      billableMinutes: 60,
+      nonBillableMinutes: 0,
+      entryCount: 1,
+    },
   ],
-  totals: { totalMinutes: 60, billableMinutes: 60, nonBillableMinutes: 0, entryCount: 1 },
+  totals: {
+    totalMinutes: 60,
+    billableMinutes: 60,
+    nonBillableMinutes: 0,
+    entryCount: 1,
+  },
 }
 
 const mockWorkReport = {
@@ -134,7 +154,14 @@ const mockTimeReport = {
   object: 'projects.time-report' as const,
   groupBy: 'project' as const,
   period: { from: 1788400000, to: 1789000000 },
-  data: [{ key: 'prj_console', label: 'Console', billableMinutes: 60, nonBillableMinutes: 0 }],
+  data: [
+    {
+      key: 'prj_console',
+      label: 'Console',
+      billableMinutes: 60,
+      nonBillableMinutes: 0,
+    },
+  ],
 }
 
 const mockBudgetReport = {
@@ -258,18 +285,35 @@ describe('rollout read handlers', () => {
 
   it('phases_list uses the project filter when provided', async () => {
     const spy = vi.spyOn(client.milestones, 'list').mockResolvedValue({
-      data: { object: 'list', data: [mockMilestone], has_more: false, total_count: 1, url: '/m' },
+      data: {
+        object: 'list',
+        data: [mockMilestone],
+        has_more: false,
+        total_count: 1,
+        url: '/m',
+      },
       error: null,
     })
-    const result = await handlePhasesList(client, config, { projectId: 'prj_console', status: 'open' })
-    expect(spy).toHaveBeenCalledWith('org_test_123', 'prj_console', { status: 'open' })
+    const result = await handlePhasesList(client, config, {
+      projectId: 'prj_console',
+      status: 'open',
+    })
+    expect(spy).toHaveBeenCalledWith('org_test_123', 'prj_console', {
+      status: 'open',
+    })
     expect(result.isError).toBeUndefined()
     expect(textOf(result)).toContain('Version 1')
   })
 
   it('phases_list falls back to organization listing without a project', async () => {
     const spy = vi.spyOn(client.milestones, 'listAll').mockResolvedValue({
-      data: { object: 'list', data: [mockMilestone], has_more: false, total_count: 1, url: '/m' },
+      data: {
+        object: 'list',
+        data: [mockMilestone],
+        has_more: false,
+        total_count: 1,
+        url: '/m',
+      },
       error: null,
     })
     const result = await handlePhasesList(client, config, {})
@@ -285,7 +329,9 @@ describe('rollout read handlers', () => {
   })
 
   it('phase_get retrieves one phase and surfaces API errors', async () => {
-    const spy = vi.spyOn(client.milestones, 'retrieve').mockResolvedValue({ data: mockMilestone, error: null })
+    const spy = vi
+      .spyOn(client.milestones, 'retrieve')
+      .mockResolvedValue({ data: mockMilestone, error: null })
     const result = await handlePhaseGet(client, config, { phase: 'ms_v1' })
     expect(spy).toHaveBeenCalledWith('org_test_123', 'ms_v1')
     expect(textOf(result)).toContain('Version 1')
@@ -294,23 +340,39 @@ describe('rollout read handlers', () => {
       data: null,
       error: { code: 'projects/milestone-not-found', message: 'Missing.' },
     })
-    const missing = await handlePhaseGet(client, config, { phase: 'ms_missing' })
+    const missing = await handlePhaseGet(client, config, {
+      phase: 'ms_missing',
+    })
     expect(missing.isError).toBe(true)
     expect(textOf(missing)).toContain('projects/milestone-not-found')
   })
 
   it('cycles_list forwards project and status filters', async () => {
     const spy = vi.spyOn(client.cycles, 'list').mockResolvedValue({
-      data: { object: 'list', data: [mockCycle], has_more: false, total_count: 1, url: '/c' },
+      data: {
+        object: 'list',
+        data: [mockCycle],
+        has_more: false,
+        total_count: 1,
+        url: '/c',
+      },
       error: null,
     })
-    const result = await handleCyclesList(client, config, { projectId: 'prj_console', status: 'active' })
-    expect(spy).toHaveBeenCalledWith('org_test_123', { projectId: 'prj_console', status: 'active' })
+    const result = await handleCyclesList(client, config, {
+      projectId: 'prj_console',
+      status: 'active',
+    })
+    expect(spy).toHaveBeenCalledWith('org_test_123', {
+      projectId: 'prj_console',
+      status: 'active',
+    })
     expect(textOf(result)).toContain('Sprint 3')
   })
 
   it('cycle_get retrieves one cycle', async () => {
-    const spy = vi.spyOn(client.cycles, 'retrieve').mockResolvedValue({ data: mockCycle, error: null })
+    const spy = vi
+      .spyOn(client.cycles, 'retrieve')
+      .mockResolvedValue({ data: mockCycle, error: null })
     const result = await handleCycleGet(client, config, { cycle: 'cyc_1' })
     expect(spy).toHaveBeenCalledWith('org_test_123', 'cyc_1')
     expect(textOf(result)).toContain('Sprint 3')
@@ -318,10 +380,18 @@ describe('rollout read handlers', () => {
 
   it('task_lists_list requires a project and forwards archive flags', async () => {
     const spy = vi.spyOn(client.taskLists, 'list').mockResolvedValue({
-      data: { object: 'list', data: [mockTaskList], has_more: false, total_count: 1, url: '/t' },
+      data: {
+        object: 'list',
+        data: [mockTaskList],
+        has_more: false,
+        total_count: 1,
+        url: '/t',
+      },
       error: null,
     })
-    const result = await handleTaskListsList(client, config, { projectId: 'prj_console' })
+    const result = await handleTaskListsList(client, config, {
+      projectId: 'prj_console',
+    })
     expect(spy).toHaveBeenCalledWith('org_test_123', 'prj_console', {})
     expect(textOf(result)).toContain('Backlog')
 
@@ -332,7 +402,13 @@ describe('rollout read handlers', () => {
 
   it('time_entries_list forwards filters and converts ISO windows', async () => {
     const spy = vi.spyOn(client.timeEntries, 'list').mockResolvedValue({
-      data: { object: 'list', data: [mockTimeEntry], has_more: false, total_count: 1, url: '/te' },
+      data: {
+        object: 'list',
+        data: [mockTimeEntry],
+        has_more: false,
+        total_count: 1,
+        url: '/te',
+      },
       error: null,
     })
     const result = await handleTimeEntriesList(client, config, {
@@ -351,7 +427,9 @@ describe('rollout read handlers', () => {
   })
 
   it('time_summary requires groupBy and window', async () => {
-    const spy = vi.spyOn(client.timeEntries, 'summary').mockResolvedValue({ data: mockTimeSummary, error: null })
+    const spy = vi
+      .spyOn(client.timeEntries, 'summary')
+      .mockResolvedValue({ data: mockTimeSummary, error: null })
     const result = await handleTimeSummary(client, config, {
       groupBy: 'project',
       from: 1788400000,
@@ -364,13 +442,17 @@ describe('rollout read handlers', () => {
     })
     expect(textOf(result)).toContain('Time summary by project')
 
-    const rejected = await handleTimeSummary(client, config, { groupBy: 'project' })
+    const rejected = await handleTimeSummary(client, config, {
+      groupBy: 'project',
+    })
     expect(spy).toHaveBeenCalledTimes(1)
     expect(rejected.isError).toBe(true)
   })
 
   it('report_work forwards the window and project', async () => {
-    const spy = vi.spyOn(client.reports, 'work').mockResolvedValue({ data: mockWorkReport, error: null })
+    const spy = vi
+      .spyOn(client.reports, 'work')
+      .mockResolvedValue({ data: mockWorkReport, error: null })
     const result = await handleReportWork(client, config, {
       from: 1788400000,
       to: 1789000000,
@@ -385,14 +467,18 @@ describe('rollout read handlers', () => {
   })
 
   it('report_health lists project health rows', async () => {
-    const spy = vi.spyOn(client.reports, 'health').mockResolvedValue({ data: mockHealthReport, error: null })
+    const spy = vi
+      .spyOn(client.reports, 'health')
+      .mockResolvedValue({ data: mockHealthReport, error: null })
     const result = await handleReportHealth(client, config, {})
     expect(spy).toHaveBeenCalledWith('org_test_123')
     expect(textOf(result)).toContain('Console')
   })
 
   it('report_time forwards groupBy and window', async () => {
-    const spy = vi.spyOn(client.reports, 'time').mockResolvedValue({ data: mockTimeReport, error: null })
+    const spy = vi
+      .spyOn(client.reports, 'time')
+      .mockResolvedValue({ data: mockTimeReport, error: null })
     const result = await handleReportTime(client, config, {
       groupBy: 'project',
       from: 1788400000,
@@ -407,61 +493,122 @@ describe('rollout read handlers', () => {
   })
 
   it('report_budget_variance forwards the window', async () => {
-    const spy = vi.spyOn(client.reports, 'budgetVariance').mockResolvedValue({ data: mockBudgetReport, error: null })
-    const result = await handleReportBudgetVariance(client, config, { from: 1788400000, to: 1789000000 })
-    expect(spy).toHaveBeenCalledWith('org_test_123', { from: 1788400000, to: 1789000000 })
+    const spy = vi
+      .spyOn(client.reports, 'budgetVariance')
+      .mockResolvedValue({ data: mockBudgetReport, error: null })
+    const result = await handleReportBudgetVariance(client, config, {
+      from: 1788400000,
+      to: 1789000000,
+    })
+    expect(spy).toHaveBeenCalledWith('org_test_123', {
+      from: 1788400000,
+      to: 1789000000,
+    })
     expect(textOf(result)).toContain('Console')
   })
 
   it('report_workload forwards the window and project', async () => {
-    const spy = vi.spyOn(client.reports, 'workload').mockResolvedValue({ data: mockWorkloadReport, error: null })
-    const result = await handleReportWorkload(client, config, { from: 1788400000, to: 1789000000 })
-    expect(spy).toHaveBeenCalledWith('org_test_123', { from: 1788400000, to: 1789000000 })
+    const spy = vi
+      .spyOn(client.reports, 'workload')
+      .mockResolvedValue({ data: mockWorkloadReport, error: null })
+    const result = await handleReportWorkload(client, config, {
+      from: 1788400000,
+      to: 1789000000,
+    })
+    expect(spy).toHaveBeenCalledWith('org_test_123', {
+      from: 1788400000,
+      to: 1789000000,
+    })
     expect(textOf(result)).toContain('usr_1')
   })
 
   it('templates_list and template_get read project templates', async () => {
-    const listSpy = vi.spyOn(client.projectTemplates, 'list').mockResolvedValue({
-      data: { object: 'list', data: [mockTemplate], has_more: false, total_count: 1, url: '/tpl' },
-      error: null,
-    })
+    const listSpy = vi
+      .spyOn(client.projectTemplates, 'list')
+      .mockResolvedValue({
+        data: {
+          object: 'list',
+          data: [mockTemplate],
+          has_more: false,
+          total_count: 1,
+          url: '/tpl',
+        },
+        error: null,
+      })
     const listed = await handleTemplatesList(client, config, {})
     expect(listSpy).toHaveBeenCalledWith('org_test_123')
     expect(textOf(listed)).toContain('Web app')
 
-    const getSpy = vi.spyOn(client.projectTemplates, 'retrieve').mockResolvedValue({ data: mockTemplate, error: null })
-    const single = await handleTemplateGet(client, config, { template: 'tpl_1' })
+    const getSpy = vi
+      .spyOn(client.projectTemplates, 'retrieve')
+      .mockResolvedValue({ data: mockTemplate, error: null })
+    const single = await handleTemplateGet(client, config, {
+      template: 'tpl_1',
+    })
     expect(getSpy).toHaveBeenCalledWith('org_test_123', 'tpl_1')
     expect(textOf(single)).toContain('WEBAPP')
   })
 
   it('custom modules list and records list/get forward module scope', async () => {
-    const modulesSpy = vi.spyOn(client.customModules, 'listModules').mockResolvedValue({
-      data: { object: 'list', data: [mockModule], has_more: false, total_count: 1, url: '/m' },
-      error: null,
-    })
+    const modulesSpy = vi
+      .spyOn(client.customModules, 'listModules')
+      .mockResolvedValue({
+        data: {
+          object: 'list',
+          data: [mockModule],
+          has_more: false,
+          total_count: 1,
+          url: '/m',
+        },
+        error: null,
+      })
     const modules = await handleCustomModulesList(client, config, {})
     expect(modulesSpy).toHaveBeenCalledWith('org_test_123')
     expect(textOf(modules)).toContain('Risks')
 
-    const recordsSpy = vi.spyOn(client.customModules, 'listRecords').mockResolvedValue({
-      data: { object: 'list', data: [mockRecord], has_more: false, total_count: 1, url: '/r' },
-      error: null,
+    const recordsSpy = vi
+      .spyOn(client.customModules, 'listRecords')
+      .mockResolvedValue({
+        data: {
+          object: 'list',
+          data: [mockRecord],
+          has_more: false,
+          total_count: 1,
+          url: '/r',
+        },
+        error: null,
+      })
+    const records = await handleCustomRecordsList(client, config, {
+      module: 'mcm_1',
+      status: 'open',
     })
-    const records = await handleCustomRecordsList(client, config, { module: 'mcm_1', status: 'open' })
-    expect(recordsSpy).toHaveBeenCalledWith('org_test_123', 'mcm_1', { status: 'open' })
+    expect(recordsSpy).toHaveBeenCalledWith('org_test_123', 'mcm_1', {
+      status: 'open',
+    })
     expect(textOf(records)).toContain('Launch risk')
 
-    const recordSpy = vi.spyOn(client.customModules, 'retrieveRecord').mockResolvedValue({ data: mockRecord, error: null })
-    const single = await handleCustomRecordGet(client, config, { module: 'mcm_1', record: 'mcr_1' })
+    const recordSpy = vi
+      .spyOn(client.customModules, 'retrieveRecord')
+      .mockResolvedValue({ data: mockRecord, error: null })
+    const single = await handleCustomRecordGet(client, config, {
+      module: 'mcm_1',
+      record: 'mcr_1',
+    })
     expect(recordSpy).toHaveBeenCalledWith('org_test_123', 'mcm_1', 'mcr_1')
     expect(textOf(single)).toContain('Launch risk')
   })
 
   it('activity_list requires a project and returns feed text', async () => {
-    const spy = vi.spyOn(client.activity, 'listProjectActivity').mockResolvedValue({ data: mockFeed, error: null })
-    const result = await handleActivityList(client, config, { projectId: 'prj_console', limit: 10 })
-    expect(spy).toHaveBeenCalledWith('org_test_123', 'prj_console', { limit: 10 })
+    const spy = vi
+      .spyOn(client.activity, 'listProjectActivity')
+      .mockResolvedValue({ data: mockFeed, error: null })
+    const result = await handleActivityList(client, config, {
+      projectId: 'prj_console',
+      limit: 10,
+    })
+    expect(spy).toHaveBeenCalledWith('org_test_123', 'prj_console', {
+      limit: 10,
+    })
     expect(textOf(result)).toContain('status-changed')
 
     const rejected = await handleActivityList(client, config, {})
@@ -469,14 +616,21 @@ describe('rollout read handlers', () => {
   })
 
   it('wiki_page_get retrieves one page and keeps markdown verbatim', async () => {
-    const spy = vi.spyOn(client.wiki, 'retrieve').mockResolvedValue({ data: mockWikiPage, error: null })
-    const result = await handleWikiPageGet(client, config, { projectId: 'prj_console', page: 'home' })
+    const spy = vi
+      .spyOn(client.wiki, 'retrieve')
+      .mockResolvedValue({ data: mockWikiPage, error: null })
+    const result = await handleWikiPageGet(client, config, {
+      projectId: 'prj_console',
+      page: 'home',
+    })
     expect(spy).toHaveBeenCalledWith('org_test_123', 'prj_console', 'home')
     expect(textOf(result)).toContain('# Welcome')
   })
 
   it('time_entry_create falls back to the default user and forwards the entry', async () => {
-    const spy = vi.spyOn(client.timeEntries, 'create').mockResolvedValue({ data: mockTimeEntry, error: null })
+    const spy = vi
+      .spyOn(client.timeEntries, 'create')
+      .mockResolvedValue({ data: mockTimeEntry, error: null })
     const withUser: Config = { ...config, defaultUserId: 'usr_1' }
     const result = await handleTimeEntryCreate(client, withUser, {
       projectId: 'prj_console',
@@ -526,8 +680,13 @@ describe('rollout read handlers', () => {
     const updateSpy = vi.spyOn(client.issues, 'update')
     const commentSpy = vi.spyOn(client.comments, 'create')
 
-    const created = await handleIssueCreate(client, readOnlyConfig, { title: 'Nope' })
-    const updated = await handleIssueUpdate(client, readOnlyConfig, { issue: 'iss_123', title: 'Nope' })
+    const created = await handleIssueCreate(client, readOnlyConfig, {
+      title: 'Nope',
+    })
+    const updated = await handleIssueUpdate(client, readOnlyConfig, {
+      issue: 'iss_123',
+      title: 'Nope',
+    })
     const commented = await handleIssueComment(
       client,
       { ...readOnlyConfig, defaultUserId: 'usr_1' },
@@ -548,9 +707,16 @@ describe('rollout read handlers', () => {
     const projectUpdateSpy = vi.spyOn(client.projects, 'update')
     const labelCreateSpy = vi.spyOn(client.labels, 'create')
 
-    const created = await handleProjectCreate(client, readOnlyConfig, { name: 'Nope' })
-    const updated = await handleProjectUpdate(client, readOnlyConfig, { project: 'prj_console', name: 'Nope' })
-    const labeled = await handleLabelCreate(client, readOnlyConfig, { name: 'Nope' })
+    const created = await handleProjectCreate(client, readOnlyConfig, {
+      name: 'Nope',
+    })
+    const updated = await handleProjectUpdate(client, readOnlyConfig, {
+      project: 'prj_console',
+      name: 'Nope',
+    })
+    const labeled = await handleLabelCreate(client, readOnlyConfig, {
+      name: 'Nope',
+    })
 
     expect(projectCreateSpy).not.toHaveBeenCalled()
     expect(projectUpdateSpy).not.toHaveBeenCalled()

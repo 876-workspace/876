@@ -19,9 +19,10 @@ describe('server', () => {
     vi.restoreAllMocks()
   })
 
-  it('builds server with instructions and registers all 37 tools', async () => {
+  it('builds server with instructions and registers all 38 tools', async () => {
     const server = buildProjectsMcpServer(config, operatorClient)
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair()
     await server.connect(serverTransport)
 
     const client = new Client({ name: 'test-client', version: '1.0.0' })
@@ -30,17 +31,23 @@ describe('server', () => {
     const toolsRes = await client.listTools()
 
     expect(client.getInstructions()).toBe(PROJECTS_SERVER_INSTRUCTIONS)
-    expect(toolsRes.tools.length).toBe(37)
+    expect(toolsRes.tools.length).toBe(43)
     expect(toolsRes.tools.map((tool) => tool.name).sort()).toEqual([
       'activity_list',
+      'capture_create',
+      'capture_promote',
+      'captures_list',
       'custom_modules_list',
       'custom_record_get',
       'custom_records_list',
       'cycle_get',
       'cycles_list',
+      'issue_brief',
       'issue_comment',
       'issue_comments',
       'issue_create',
+      'issue_development_link',
+      'issue_development_links',
       'issue_events',
       'issue_get',
       'issue_update',
@@ -77,7 +84,8 @@ describe('server', () => {
 
   it('advertises accurate annotations on each tool', async () => {
     const server = buildProjectsMcpServer(config, operatorClient)
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair()
     await server.connect(serverTransport)
 
     const client = new Client({ name: 'test-client', version: '1.0.0' })
@@ -92,6 +100,8 @@ describe('server', () => {
       'project_get',
       'issues_list',
       'issue_get',
+      'issue_brief',
+      'issue_development_links',
       'issue_comments',
       'issue_events',
       'labels_list',
@@ -123,9 +133,16 @@ describe('server', () => {
       const tool = toolMap.get(name)
       expect(tool, `tool ${name} should exist`).toBeDefined()
       expect(tool?.annotations?.readOnlyHint, `${name} readOnlyHint`).toBe(true)
-      expect(tool?.annotations?.destructiveHint, `${name} destructiveHint`).toBe(false)
-      expect(tool?.annotations?.idempotentHint, `${name} idempotentHint`).toBe(true)
-      expect(tool?.annotations?.openWorldHint, `${name} openWorldHint`).toBe(false)
+      expect(
+        tool?.annotations?.destructiveHint,
+        `${name} destructiveHint`
+      ).toBe(false)
+      expect(tool?.annotations?.idempotentHint, `${name} idempotentHint`).toBe(
+        true
+      )
+      expect(tool?.annotations?.openWorldHint, `${name} openWorldHint`).toBe(
+        false
+      )
     }
 
     const creationTools = [
@@ -133,25 +150,46 @@ describe('server', () => {
       'issue_create',
       'issue_comment',
       'label_create',
+      'capture_create',
+      'capture_promote',
+      'issue_development_link',
       'time_entry_create',
     ]
     for (const name of creationTools) {
       const tool = toolMap.get(name)
       expect(tool, `tool ${name} should exist`).toBeDefined()
-      expect(tool?.annotations?.readOnlyHint, `${name} readOnlyHint`).toBe(false)
-      expect(tool?.annotations?.destructiveHint, `${name} destructiveHint`).toBe(false)
-      expect(tool?.annotations?.idempotentHint, `${name} idempotentHint`).toBe(false)
-      expect(tool?.annotations?.openWorldHint, `${name} openWorldHint`).toBe(false)
+      expect(tool?.annotations?.readOnlyHint, `${name} readOnlyHint`).toBe(
+        false
+      )
+      expect(
+        tool?.annotations?.destructiveHint,
+        `${name} destructiveHint`
+      ).toBe(false)
+      expect(tool?.annotations?.idempotentHint, `${name} idempotentHint`).toBe(
+        false
+      )
+      expect(tool?.annotations?.openWorldHint, `${name} openWorldHint`).toBe(
+        false
+      )
     }
 
     const updateTools = ['project_update', 'issue_update']
     for (const name of updateTools) {
       const tool = toolMap.get(name)
       expect(tool, `tool ${name} should exist`).toBeDefined()
-      expect(tool?.annotations?.readOnlyHint, `${name} readOnlyHint`).toBe(false)
-      expect(tool?.annotations?.destructiveHint, `${name} destructiveHint`).toBe(true)
-      expect(tool?.annotations?.idempotentHint, `${name} idempotentHint`).toBe(false)
-      expect(tool?.annotations?.openWorldHint, `${name} openWorldHint`).toBe(false)
+      expect(tool?.annotations?.readOnlyHint, `${name} readOnlyHint`).toBe(
+        false
+      )
+      expect(
+        tool?.annotations?.destructiveHint,
+        `${name} destructiveHint`
+      ).toBe(true)
+      expect(tool?.annotations?.idempotentHint, `${name} idempotentHint`).toBe(
+        false
+      )
+      expect(tool?.annotations?.openWorldHint, `${name} openWorldHint`).toBe(
+        false
+      )
     }
 
     await client.close()
@@ -160,7 +198,8 @@ describe('server', () => {
 
   it('advertises outputSchema and inputSchema for every tool with rich metadata', async () => {
     const server = buildProjectsMcpServer(config, operatorClient)
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair()
     await server.connect(serverTransport)
 
     const client = new Client({ name: 'test-client', version: '1.0.0' })
@@ -168,14 +207,18 @@ describe('server', () => {
 
     const toolsRes = await client.listTools()
 
-    expect(toolsRes.tools.length).toBe(37)
-    expect(new Set(toolsRes.tools.map((tool) => tool.name)).size).toBe(37)
+    expect(toolsRes.tools.length).toBe(43)
+    expect(new Set(toolsRes.tools.map((tool) => tool.name)).size).toBe(43)
 
     for (const tool of toolsRes.tools) {
       expect(tool.inputSchema, `${tool.name} inputSchema`).toBeDefined()
-      expect(tool.inputSchema.type, `${tool.name} inputSchema.type`).toBe('object')
+      expect(tool.inputSchema.type, `${tool.name} inputSchema.type`).toBe(
+        'object'
+      )
       expect(tool.outputSchema, `${tool.name} outputSchema`).toBeDefined()
-      expect(tool.outputSchema?.type, `${tool.name} outputSchema.type`).toBe('object')
+      expect(tool.outputSchema?.type, `${tool.name} outputSchema.type`).toBe(
+        'object'
+      )
       expect(
         tool.description?.trim().length,
         `${tool.name} description`
@@ -207,21 +250,19 @@ describe('server', () => {
     const toolMap = new Map(toolsRes.tools.map((tool) => [tool.name, tool]))
 
     const issuesList = toolMap.get('issues_list')
-    const issuesListProps = (issuesList?.inputSchema.properties ?? {}) as Record<
-      string,
-      Record<string, unknown>
-    >
+    const issuesListProps = (issuesList?.inputSchema.properties ??
+      {}) as Record<string, Record<string, unknown>>
     expect(issuesListProps.status?.enum).toBeUndefined()
     expect(issuesListProps.status?.description).toContain(
       'configured workflow-state key'
     )
-    expect(issuesListProps.status?.description).toContain('workflow_states_list')
+    expect(issuesListProps.status?.description).toContain(
+      'workflow_states_list'
+    )
 
     const issueCreate = toolMap.get('issue_create')
-    const issueCreateProps = (issueCreate?.inputSchema.properties ?? {}) as Record<
-      string,
-      Record<string, unknown>
-    >
+    const issueCreateProps = (issueCreate?.inputSchema.properties ??
+      {}) as Record<string, Record<string, unknown>>
     expect(issueCreateProps.priority?.enum).toEqual([
       'none',
       'low',
@@ -316,7 +357,8 @@ describe('server', () => {
     })
 
     const server = buildProjectsMcpServer(config, operatorClient)
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair()
     await server.connect(serverTransport)
     const client = new Client({ name: 'test-client', version: '1.0.0' })
     await client.connect(clientTransport)
@@ -350,7 +392,8 @@ describe('server', () => {
     })
 
     const server = buildProjectsMcpServer(config, operatorClient)
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair()
     await server.connect(serverTransport)
     const client = new Client({ name: 'test-client', version: '1.0.0' })
     await client.connect(clientTransport)
@@ -376,10 +419,13 @@ describe('server', () => {
     vi.spyOn(operatorClient.projects, 'list').mockRejectedValue(
       new Error(privateDetail)
     )
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const errorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined)
 
     const server = buildProjectsMcpServer(config, operatorClient)
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair()
     await server.connect(serverTransport)
     const client = new Client({ name: 'test-client', version: '1.0.0' })
     await client.connect(clientTransport)

@@ -44,7 +44,9 @@ describe('schemas', () => {
       const invalidSingle = issuesListSchema.safeParse({ priority: 'critical' })
       expect(invalidSingle.success).toBe(false)
 
-      const invalidArray = issuesListSchema.safeParse({ priority: ['none', 'super-urgent'] })
+      const invalidArray = issuesListSchema.safeParse({
+        priority: ['none', 'super-urgent'],
+      })
       expect(invalidArray.success).toBe(false)
     })
 
@@ -101,18 +103,33 @@ describe('schemas', () => {
     })
 
     it('rejects unrecognized keys on project schemas', () => {
-      expect(projectCreateSchema.safeParse({ name: 'Test', extra: 'bad' }).success).toBe(false)
-      expect(projectUpdateSchema.safeParse({ project: 'prj_1', extra: 'bad' }).success).toBe(false)
+      expect(
+        projectCreateSchema.safeParse({ name: 'Test', extra: 'bad' }).success
+      ).toBe(false)
+      expect(
+        projectUpdateSchema.safeParse({ project: 'prj_1', extra: 'bad' })
+          .success
+      ).toBe(false)
     })
   })
 
   describe('issueCreateSchema & issueUpdateSchema', () => {
     it('issueCreate enforces estimate bounds (0 to 100)', () => {
-      expect(issueCreateSchema.safeParse({ title: 'Task', estimate: 0 }).success).toBe(true)
-      expect(issueCreateSchema.safeParse({ title: 'Task', estimate: 100 }).success).toBe(true)
-      expect(issueCreateSchema.safeParse({ title: 'Task', estimate: -1 }).success).toBe(false)
-      expect(issueCreateSchema.safeParse({ title: 'Task', estimate: 101 }).success).toBe(false)
-      expect(issueCreateSchema.safeParse({ title: 'Task', estimate: 5.5 }).success).toBe(false)
+      expect(
+        issueCreateSchema.safeParse({ title: 'Task', estimate: 0 }).success
+      ).toBe(true)
+      expect(
+        issueCreateSchema.safeParse({ title: 'Task', estimate: 100 }).success
+      ).toBe(true)
+      expect(
+        issueCreateSchema.safeParse({ title: 'Task', estimate: -1 }).success
+      ).toBe(false)
+      expect(
+        issueCreateSchema.safeParse({ title: 'Task', estimate: 101 }).success
+      ).toBe(false)
+      expect(
+        issueCreateSchema.safeParse({ title: 'Task', estimate: 5.5 }).success
+      ).toBe(false)
     })
 
     it('issueUpdate supports explicit null to clear nullable fields', () => {
@@ -151,8 +168,12 @@ describe('schemas', () => {
     })
 
     it('rejects unexpected properties on issueCreate and issueUpdate', () => {
-      expect(issueCreateSchema.safeParse({ title: 'Task', foo: 'bar' }).success).toBe(false)
-      expect(issueUpdateSchema.safeParse({ issue: 'iss_1', foo: 'bar' }).success).toBe(false)
+      expect(
+        issueCreateSchema.safeParse({ title: 'Task', foo: 'bar' }).success
+      ).toBe(false)
+      expect(
+        issueUpdateSchema.safeParse({ issue: 'iss_1', foo: 'bar' }).success
+      ).toBe(false)
     })
   })
 
@@ -175,7 +196,9 @@ describe('schemas', () => {
 
       for (const { schema, valid } of schemas) {
         expect(schema.safeParse(valid).success).toBe(true)
-        expect(schema.safeParse({ ...valid, unexpectedField: true }).success).toBe(false)
+        expect(
+          schema.safeParse({ ...valid, unexpectedField: true }).success
+        ).toBe(false)
       }
     })
   })

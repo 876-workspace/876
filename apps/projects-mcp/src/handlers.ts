@@ -8,6 +8,10 @@ import type {
   UpdateProjectInput,
 } from '@876/projects/contracts'
 import type { ProjectsOperatorClient } from '@876/projects/operator'
+import {
+  formatAgentBrief,
+  type AgentBriefLink,
+} from '@876/projects/agent-brief'
 
 import { hasWriteScope, PROJECTS_WRITE_SCOPE, type Config } from './config'
 import {
@@ -60,9 +64,15 @@ import {
   issueCreateSchema,
   issueEventsSchema,
   issueGetSchema,
+  issueBriefSchema,
+  issueDevelopmentLinkSchema,
+  issueDevelopmentLinksSchema,
   issuesListSchema,
   issueUpdateSchema,
   labelCreateSchema,
+  captureCreateSchema,
+  capturesListSchema,
+  capturePromoteSchema,
   labelsListSchema,
   milestonesListSchema,
   phaseGetSchema,
@@ -409,6 +419,162 @@ export async function handleIssueGet(
   )
 }
 
+export async function handleIssueBrief(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  const parsed = issueBriefSchema.safeParse(args)
+  if (!parsed.success)
+    return toolError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+        .join(', '),
+    })
+
+  const issueResult = await client.issues.retrieve(
+    config.organizationId,
+    parsed.data.ref
+  )
+  if (issueResult.error !== null) return toolError(issueResult.error)
+
+  const issue = issueResult.data
+  const [
+    commentsResult,
+    subIssuesResult,
+    relationsResult,
+    parentResult,
+    statesResult,
+    developmentLinksResult,
+  ] = await Promise.all([
+    client.comments.list(config.organizationId, issue.id, { limit: 100 }),
+    client.issues.list(config.organizationId, { parent: issue.id, limit: 100 }),
+    client.issueRelations.list(config.organizationId, issue.id),
+    issue.parentIssueId
+      ? client.issues.retrieve(config.organizationId, issue.parentIssueId)
+      : Promise.resolve(null),
+    client.workflowStates.list(config.organizationId),
+    client.developmentLinks.list(config.organizationId, issue.id),
+  ])
+
+  const notes: string[] = []
+  if (commentsResult.error !== null) notes.push('Comments could not be loaded.')
+  if (subIssuesResult.error !== null)
+    notes.push('Sub-issues could not be loaded.')
+  if (parentResult?.error !== null)
+    notes.push('Parent issue could not be loaded.')
+  if (statesResult.error !== null)
+    notes.push('Workflow states could not be loaded.')
+  if (developmentLinksResult.error !== null)
+    notes.push('Development links could not be loaded.')
+
+  let links: AgentBriefLink[] | undefined
+  if (relationsResult.error !== null) {
+    notes.push('Links could not be loaded.')
+  } else {
+    const linkedIssues = await Promise.all(
+      relationsResult.data.data.map(async (relation) => {
+        const issueId =
+          relation.sourceIssueId === issue.id
+            ? relation.targetIssueId
+            : relation.sourceIssueId
+        const linkedResult = await client.issues.retrieve(
+          config.organizationId,
+          issueId
+        )
+        return linkedResult.error === null
+          ? {
+              relation: relation.type.replaceAll('-', ' '),
+              issue: linkedResult.data,
+            }
+          : null
+      })
+    )
+    if (linkedIssues.some((linked) => linked === null))
+      notes.push('Some linked issues could not be loaded.')
+    links = linkedIssues.flatMap((linked) =>
+      linked
+        ? [
+            {
+              relation: linked.relation,
+              identifier: linked.issue.identifier,
+              title: linked.issue.title,
+            },
+          ]
+        : []
+    )
+  }
+
+  const brief = formatAgentBrief({
+    issue,
+    comments: commentsResult.data?.data,
+    parentIssue: parentResult?.data,
+    subIssues: subIssuesResult.data?.data,
+    links,
+    developmentLinks: developmentLinksResult.data?.data,
+    doneStatusKeys: statesResult.data?.data
+      .filter((state) => state.category === 'completed')
+      .map((state) => state.key),
+  })
+  const completeBrief =
+    notes.length > 0 ? `${brief}\n\n> Note: ${notes.join(' ')}` : brief
+
+  return toolSuccess(completeBrief, { brief: completeBrief })
+}
+
+export async function handleIssueDevelopmentLink(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  if (!hasWriteScope(config)) return writeScopeError()
+  const parsed = issueDevelopmentLinkSchema.safeParse(args)
+  if (!parsed.success)
+    return toolError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+        .join(', '),
+    })
+  const result = await client.developmentLinks.create(
+    config.organizationId,
+    parsed.data.ref,
+    parsed.data
+  )
+  if (result.error !== null) return toolError(result.error)
+  return toolSuccess(
+    `${result.data.kind}: ${result.data.label ?? result.data.url}`,
+    { developmentLink: result.data }
+  )
+}
+
+export async function handleIssueDevelopmentLinks(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  const parsed = issueDevelopmentLinksSchema.safeParse(args)
+  if (!parsed.success)
+    return toolError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+        .join(', '),
+    })
+  const result = await client.developmentLinks.list(
+    config.organizationId,
+    parsed.data.ref
+  )
+  if (result.error !== null) return toolError(result.error)
+  return toolSuccess(
+    result.data.data
+      .map((link) => `${link.kind}: ${link.label ?? link.url}`)
+      .join('\n') || 'No development links.',
+    { developmentLinks: result.data.data }
+  )
+}
+
 export async function handleIssueCreate(
   client: ProjectsOperatorClient,
   config: Config,
@@ -743,6 +909,97 @@ export async function handleLabelCreate(
   return toolSuccess(formatLabel(result.data), {
     label: result.data,
   })
+}
+
+export async function handleCaptureCreate(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  if (!hasWriteScope(config)) return writeScopeError()
+  const parsed = captureCreateSchema.safeParse(args)
+  if (!parsed.success)
+    return toolError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+        .join(', '),
+    })
+  const project = parsed.data.projectKey
+    ? await resolveProjectId(
+        client,
+        config.organizationId,
+        parsed.data.projectKey
+      )
+    : null
+  if (project?.error) return toolError(project.error)
+  const result = await client.captures.create(config.organizationId, {
+    title: parsed.data.title,
+    ...(parsed.data.body !== undefined ? { body: parsed.data.body } : {}),
+    ...(project?.id ? { projectId: project.id } : {}),
+    source: 'mcp',
+    createdBy: config.defaultUserId ?? 'mcp',
+  })
+  if (result.error !== null) return toolError(result.error)
+  return toolSuccess(`${result.data.title}`, { capture: result.data })
+}
+
+export async function handleCapturesList(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  const parsed = capturesListSchema.safeParse(args)
+  if (!parsed.success)
+    return toolError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+        .join(', '),
+    })
+  const result = await client.captures.list(config.organizationId, {
+    status: parsed.data.status ?? 'inbox',
+  })
+  if (result.error !== null) return toolError(result.error)
+  return toolSuccess(
+    result.data.data.map((capture) => capture.title).join('\n') ||
+      '0 captures found.',
+    { captures: result.data.data }
+  )
+}
+
+export async function handleCapturePromote(
+  client: ProjectsOperatorClient,
+  config: Config,
+  args: unknown
+): Promise<ToolResult> {
+  if (!hasWriteScope(config)) return writeScopeError()
+  const parsed = capturePromoteSchema.safeParse(args)
+  if (!parsed.success)
+    return toolError({
+      code: 'validation/invalid-arguments',
+      message: parsed.error.issues
+        .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+        .join(', '),
+    })
+  const project = await resolveProjectId(
+    client,
+    config.organizationId,
+    parsed.data.projectKey
+  )
+  if (project.error) return toolError(project.error)
+  const result = await client.captures.promote(
+    config.organizationId,
+    parsed.data.id,
+    {
+      projectId: project.id,
+      ...(parsed.data.typeKey ? { typeKey: parsed.data.typeKey } : {}),
+      ...(parsed.data.status ? { status: parsed.data.status } : {}),
+      ...(config.defaultUserId ? { creatorUserId: config.defaultUserId } : {}),
+    }
+  )
+  if (result.error !== null) return toolError(result.error)
+  return toolSuccess(formatIssue(result.data), { issue: result.data })
 }
 
 export async function handlePhasesList(
