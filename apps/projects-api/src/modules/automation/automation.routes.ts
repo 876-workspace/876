@@ -1,6 +1,7 @@
 import { Router } from 'express'
 
 import { requireInternalKey } from '../../http/internal-auth.js'
+import { requireInternalKeyOrSession } from '../../http/session-auth.js'
 import * as controller from './automation.controller.js'
 
 export function createAutomationRouter(): Router {
@@ -33,7 +34,7 @@ export function createAutomationRouter(): Router {
     requireInternalKey,
     controller.testRule
   )
-  router.get('/notifications', requireInternalKey, controller.listNotifications)
+  router.get('/notifications', requireInternalKeyOrSession({ module: 'projects', permission: 'projects.view' }), controller.listNotifications)
   router.post(
     '/notifications/:id/read',
     requireInternalKey,

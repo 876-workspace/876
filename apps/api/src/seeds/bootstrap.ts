@@ -11,6 +11,7 @@ import {
   findOrganizationBySlug,
   updateAppKind,
 } from './bootstrap.repository'
+import { seedNativeApps } from './native-apps'
 
 const log = getLogger('seeds:bootstrap')
 
@@ -158,6 +159,8 @@ export async function seedBootstrap(): Promise<BootstrapSeedSummary> {
       )
     }
   }
+
+  await seedNativeApps({ organizationId: orgId })
 
   return {
     organizationCreated,

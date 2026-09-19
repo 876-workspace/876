@@ -26,6 +26,7 @@ export function buildRuntime(options: ClientOptions) {
   return {
     baseUrl: resolveBaseUrl(options.baseUrl),
     internalKey: resolveInternalKey(options.internalKey),
+    accessToken: options.accessToken,
     fetch: options.fetch ?? globalThis.fetch.bind(globalThis),
     requestId: options.requestId,
   }

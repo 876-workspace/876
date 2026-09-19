@@ -20,7 +20,20 @@ const envelopeSchema = z.object({
 
 function reportInvalidResponse(stage: string, issues: unknown): void {
   if (typeof window !== 'undefined') return
-  console.error(`[projects/invalid-response] ${stage} failed validation:`, issues)
+  console.error(
+    `[projects/invalid-response] ${stage} failed validation:`,
+    issues
+  )
+}
+
+function credentialFor(
+  runtime: Runtime
+): { header: string; value: string } | null {
+  if (runtime.accessToken)
+    return { header: 'authorization', value: `Bearer ${runtime.accessToken}` }
+  if (runtime.internalKey)
+    return { header: 'x-internal-key', value: runtime.internalKey }
+  return null
 }
 
 function projectsClientError(
@@ -43,7 +56,8 @@ export async function request<T>(
   init: ClientRequestInit,
   dataSchema: z.ZodType<T>
 ): Promise<Result<T>> {
-  if (!runtime.internalKey)
+  const credential = credentialFor(runtime)
+  if (!credential)
     return { data: null, error: projectsClientError('projects/not-configured') }
 
   const response = await sendClientRequest(
@@ -52,7 +66,7 @@ export async function request<T>(
       ...init,
       headers: {
         ...init.headers,
-        'x-internal-key': runtime.internalKey,
+        [credential.header]: credential.value,
         ...(runtime.requestId ? { 'x-request-id': runtime.requestId } : {}),
       },
     }

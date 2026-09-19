@@ -2,9 +2,11 @@ import type { Request, Response } from 'express'
 import { z } from 'zod'
 
 import {
+  sendProjectsError,
   sendProjectsList,
   sendProjectsResult,
 } from '../../http/result.js'
+import { getSessionUserId } from '../../http/session-auth.js'
 import {
   createRuleBodySchema,
   drainBodySchema,
@@ -85,6 +87,9 @@ export async function testRule(req: Request, res: Response) {
 export async function listNotifications(req: Request, res: Response) {
   const params = organizationParamsSchema.parse(req.params)
   const query = listNotificationsQuerySchema.parse(req.query)
+  const sessionUserId = getSessionUserId(res)
+  if (sessionUserId && query.userId !== sessionUserId)
+    return sendProjectsError(res, 'projects/forbidden')
   const result = await service.listNotifications(
     params.organizationId,
     query.userId

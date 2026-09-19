@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express'
 
 import { sendProjectsList, sendProjectsResult } from '../../http/result.js'
+import { getSessionUserId } from '../../http/session-auth.js'
 import type { IssueMutationContext } from './issues.service.js'
 import {
   createIssueBodySchema,
@@ -36,9 +37,10 @@ function mutationContext(req: Request): IssueMutationContext {
 export async function create(req: Request, res: Response) {
   const params = organizationParamsSchema.parse(req.params)
   const body = createIssueBodySchema.parse(req.body)
+  const sessionUserId = getSessionUserId(res)
   const result = await service.create(
     params.organizationId,
-    body,
+    sessionUserId ? { ...body, creatorUserId: sessionUserId } : body,
     mutationContext(req)
   )
   return sendProjectsResult(res, result, 201)
@@ -53,10 +55,11 @@ export async function retrieve(req: Request, res: Response) {
 export async function update(req: Request, res: Response) {
   const params = issueParamsSchema.parse(req.params)
   const body = updateIssueBodySchema.parse(req.body)
+  const sessionUserId = getSessionUserId(res)
   const result = await service.update(
     params.organizationId,
     params.issueRef,
-    body,
+    sessionUserId ? { ...body, actorUserId: sessionUserId } : body,
     mutationContext(req)
   )
   return sendProjectsResult(res, result)
