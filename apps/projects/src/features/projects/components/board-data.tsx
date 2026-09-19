@@ -6,52 +6,28 @@ import {
 import { AppError } from '@876/ui/app-error'
 
 import { BoardDragBoard } from '@/features/projects/components/board-drag-board'
-import { IssueFilterBar } from '@/features/projects/components/issue-filter-bar'
-
 import { loadMemberLabels } from '@/features/projects/member-labels'
+import { loadWorkflowStateOptions } from '@/features/projects/workflow-state-options'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
 import { projects } from '@/lib/clients/projects'
-import type { IssueSearchParams } from '@/types/issues'
 
 export async function BoardData({
   query,
-  values,
   groupBy,
 }: {
   query: ListIssuesQuery
-  values: IssueSearchParams
   groupBy: IssueBoardGroupBy
 }) {
   const { orgId } = await requireProjectsContext()
-  const [result, projectList, states, labels, members] = await Promise.all([
+  const [result, states, members] = await Promise.all([
     projects.issues.list(orgId, query),
-    projects.projects.list(orgId, { limit: 100 }),
-    projects.workflowStates.list(orgId),
-    projects.labels.list(orgId),
+    loadWorkflowStateOptions(orgId),
     loadMemberLabels(orgId),
   ])
-  const loadError =
-    result.error ??
-    projectList.error ??
-    states.error ??
-    labels.error ??
-    members.error
+  const loadError = result.error ?? states.error ?? members.error
 
   return (
     <div className="space-y-4">
-      <IssueFilterBar
-        action="/board"
-        values={values}
-        groupBy={groupBy}
-        projects={projectList.data?.data ?? []}
-        workflowStates={states.data?.data ?? []}
-        labels={labels.data?.data ?? []}
-        members={Object.entries(members.labels).map(([userId, label]) => ({
-          userId,
-          label,
-        }))}
-        allowUngrouped={false}
-      />
       {loadError ? (
         <AppError
           title="Some board data could not be loaded"
@@ -62,7 +38,7 @@ export async function BoardData({
       {groupBy === 'status' ? (
         <BoardDragBoard
           issues={result.data?.data ?? []}
-          states={(states.data?.data ?? []).map((state) => ({
+          states={states.states.map((state) => ({
             key: state.key,
             label: state.name,
           }))}
