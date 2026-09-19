@@ -476,3 +476,51 @@ PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN=false pnpm --filter <pkg> test
 Do the real `pnpm install` only once every delegate has exited, then re-run the
 gates. Installing mid-run can prune `node_modules` underneath a working
 delegate.
+
+## Defect in my own briefs — the wrong workspace was verified
+
+Every brief in this run told its delegate to verify with:
+
+```bash
+pnpm --filter @876/projects typecheck && pnpm --filter @876/projects test
+```
+
+`@876/projects` is the **contract/client package** (`packages/projects`, 45
+files / 324 tests). The Next.js app is **`@876/projects-app`**
+(`apps/projects`, 233 files / 1591 tests). So every delegate that "verified the
+app" ran a suite that could not contain its changes and reported green in good
+faith.
+
+The correct set:
+
+| Workspace | Name |
+| --- | --- |
+| `apps/projects` | `@876/projects-app` |
+| `apps/projects-api` | `@876/projects-api` |
+| `apps/projects-mcp` | `@876/projects-mcp` |
+| `packages/projects` | `@876/projects` |
+| `packages/projects-ui` | `@876/projects-ui` |
+
+Consequence: the orchestrator owns app-side verification for every phase in this
+run, and the remaining briefs must name `@876/projects-app`.
+
+## Baseline discipline for the app suite
+
+`@876/projects-app` currently reports failures in files **no phase touches** —
+`settings/users/*`, `time/*`, `gantt`, `budget-variance`, `template-detail`,
+`portal-boundary`. The visible cause in `member-card.test.tsx` is
+`isRouteTabActive` reading a null `pathname` in `packages/ui/route-tabs.tsx`,
+i.e. a test that does not mock `usePathname` — unrelated to anything changed
+here.
+
+**Do not attribute these to the run without a baseline.** The suite also cannot
+be a gate while delegates are mid-edit: a run at 16:17 showed
+`issue-detail-data.tsx` calling `projects.comments.list` against a mock without
+`comments`, which is simply the agent-brief delegate half-way through wiring.
+
+Procedure, once every delegate has exited:
+
+1. `pnpm install` (the lockfile is stale from `rehype-highlight`);
+2. run the full app suite and record the failure set;
+3. `git stash -u`, check out `origin/main`, run it again, record the baseline;
+4. restore, and treat only the difference as this run's regressions.
