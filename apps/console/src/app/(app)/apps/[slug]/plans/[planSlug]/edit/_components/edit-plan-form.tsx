@@ -9,8 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@876/ui/radio-group'
 import { FormRow } from '@876/ui/form-row'
 import { toast } from 'sonner'
 
-import { formatMoney } from '@/lib/money'
-import { statusBadgeClass } from '@/lib/format'
+import { formatMoney, statusBadgeClass } from '@/lib/format'
 import { cn } from '@876/core/utils'
 import { client } from '@/lib/client'
 

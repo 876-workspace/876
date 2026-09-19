@@ -2,10 +2,10 @@ import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 
 import { resolveNavigation } from '@876/core/access'
+import { buildAppsDirectory } from '@876/core/apps-directory'
 import { AppError } from '@876/ui/app-error'
 
 import { Shell } from '@/components/shell/shell'
-import { getAppsDirectory } from '@/lib/apps-directory'
 import { resolveAccessContext } from '@/lib/auth/access-context'
 import { getCrmContextResult } from '@/lib/auth/context'
 import { navConfig } from '@/components/shell/nav-config'
@@ -56,7 +56,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       user={{ name: displayName, email, avatar: user?.avatar ?? null }}
       currentOrg={currentOrg}
       orgs={orgs}
-      apps={getAppsDirectory()}
+      apps={buildAppsDirectory({ current: 'crm' })}
       uiFeatures={uiFeatures}
       navigation={
         access.status === 'ok'

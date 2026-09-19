@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { formatMoney } from '@/lib/money'
 import { MoreHorizontalIcon, Trash } from '@876/ui/icons'
 import { buttonVariants } from '@876/ui/button'
 import { Badge } from '@876/ui/badge'
@@ -28,7 +27,7 @@ import {
 } from '@876/ui/alert-dialog'
 import { cn } from '@876/core/utils'
 import type { LegacyColumnDef as ColumnDef } from '@tanstack/react-table/legacy'
-import { statusBadgeClass } from '@/lib/format'
+import { formatMoney, statusBadgeClass } from '@/lib/format'
 import { client } from '@/lib/client'
 
 export type PriceItem = {
