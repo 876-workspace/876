@@ -3,6 +3,8 @@ import {
   IssueDetailHeader,
   IssueMetaRail,
 } from '@876/projects-ui/issue-detail'
+import { IssueAgentActions } from '@876/projects-ui/issue-agent-actions'
+import { formatAgentBrief } from '@876/projects/agent-brief'
 import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -63,6 +65,7 @@ export async function IssueDetailData({
     parent: issue.id,
     limit: 100,
   })
+  const commentsPromise = projects.comments.list(orgId, issue.id, { limit: 100 })
   const parentPromise = issue.parentIssueId
     ? projects.issues.retrieve(orgId, issue.parentIssueId)
     : Promise.resolve({ data: null, error: null })
@@ -78,6 +81,7 @@ export async function IssueDetailData({
     statesResult,
     followResult,
     visible,
+    commentsResult,
   ] = await Promise.all([
     eventsPromise,
     fieldsPromise,
@@ -87,6 +91,7 @@ export async function IssueDetailData({
     statesPromise,
     followPromise,
     visibilityPromise,
+    commentsPromise,
   ])
   const following = followResult.data
     ? followResult.data.data.some((follower) => follower.userId === userId)
@@ -97,7 +102,8 @@ export async function IssueDetailData({
     membersResult.error ??
     subIssuesResult.error ??
     parentResult.error ??
-    statesResult.error
+    statesResult.error ??
+    commentsResult.error
   const detailProps = {
     issue,
     events: eventsResult.data?.data ?? [],
@@ -108,6 +114,19 @@ export async function IssueDetailData({
     issuesHref: '/issues',
     projectHref: `/projects/${issue.projectId}`,
   }
+  const appOrigin =
+    process.env.NEXT_PUBLIC_PROJECTS_URL?.trim() ||
+    'https://876-projects.vercel.app'
+  const agentBrief = formatAgentBrief({
+    issue,
+    comments: commentsResult.data?.data,
+    parentIssue: parentResult.data,
+    subIssues: subIssuesResult.data?.data,
+    doneStatusKeys: statesResult.data?.data
+      .filter((state) => state.category === 'completed')
+      .map((state) => state.key),
+    appOrigin,
+  })
 
   return (
     <div className="space-y-6">
@@ -131,6 +150,11 @@ export async function IssueDetailData({
                 label: state.name,
               }))}
               canEdit={canEdit}
+            />
+            <IssueAgentActions
+              issueRef={issue.identifier}
+              brief={agentBrief}
+              issueUrl={`${appOrigin}/issues/${encodeURIComponent(issue.identifier)}`}
             />
           </>
         }

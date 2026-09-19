@@ -56,6 +56,9 @@ export const projects = {
   get labels() {
     return getServiceClient().labels
   },
+  get captures() {
+    return getServiceClient().captures
+  },
   get comments() {
     return getServiceClient().comments
   },
