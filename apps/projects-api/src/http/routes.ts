@@ -6,6 +6,8 @@ import { createReportsRouter } from '../modules/reports/reports.routes.js'
 import { createTimeRouter } from '../modules/time/time.routes.js'
 import { createIssuesRouter } from '../modules/issues/issues.routes.js'
 import { createLabelsRouter } from '../modules/labels/labels.routes.js'
+import { createCapturesRouter } from '../modules/captures/captures.routes.js'
+import { createDevelopmentLinksRouter } from '../modules/development-links/development-links.routes.js'
 import { createAutomationRouter } from '../modules/automation/automation.routes.js'
 import { createCustomModulesRouter } from '../modules/custom-modules/index.js'
 import { createLayoutsRouter } from '../modules/layouts/layouts.routes.js'
@@ -46,12 +48,23 @@ export function buildRoutes() {
   )
   router.use('/v1/organizations/:organizationId/issues', createIssuesRouter())
   router.use('/v1/organizations/:organizationId/labels', createLabelsRouter())
+  router.use(
+    '/v1/organizations/:organizationId/captures',
+    createCapturesRouter()
+  )
+  router.use(
+    '/v1/organizations/:organizationId',
+    createDevelopmentLinksRouter()
+  )
   router.use('/v1/organizations/:organizationId', createCalendarRouter())
   router.use('/v1/organizations/:organizationId', createTimeRouter())
   router.use('/v1/organizations/:organizationId', createFinanceRouter())
   router.use('/v1/organizations/:organizationId', createReportsRouter())
   router.use('/v1/organizations/:organizationId', createWorkStructureRouter())
-  router.use('/v1/organizations/:organizationId', createProjectCustomFieldsRouter())
+  router.use(
+    '/v1/organizations/:organizationId',
+    createProjectCustomFieldsRouter()
+  )
   router.use('/v1/organizations/:organizationId', createLayoutsRouter())
   router.use('/v1/organizations/:organizationId', createCustomModulesRouter())
   router.use(
@@ -61,7 +74,10 @@ export function buildRoutes() {
   router.use('/v1/organizations/:organizationId', createTemplatesRouter())
   router.use('/v1/organizations/:organizationId', createAutomationRouter())
   router.use('/v1/organizations/:organizationId', createWorkflowsRouter())
-  router.use('/v1/organizations/:organizationId/followers', createFollowersRouter())
+  router.use(
+    '/v1/organizations/:organizationId/followers',
+    createFollowersRouter()
+  )
   router.use(
     '/v1/organizations/:organizationId/projects',
     createActivityRouter()
@@ -95,10 +111,7 @@ export function buildRoutes() {
     '/v1/organizations/:organizationId/import-jobs',
     createImportsRouter()
   )
-  router.use(
-    '/v1/organizations/:organizationId/exports',
-    createExportsRouter()
-  )
+  router.use('/v1/organizations/:organizationId/exports', createExportsRouter())
 
   return router
 }
