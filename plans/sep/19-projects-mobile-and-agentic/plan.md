@@ -218,3 +218,88 @@ desktop-only treatment.
 on scroll. It needs either scroll-driven CSS animations (uneven support) or a
 scroll listener in a client component, and it is polish on top of a pattern that
 is already a large improvement. Not in this run.
+
+## D4 (corrected) — where the agent-brief formatter lives
+
+D4 said the formatter belongs "in `format.ts`'s neighbourhood". That is wrong
+and would have forced a second implementation: `apps/projects-mcp` is an app,
+and the web app cannot import from it. A brief rendered twice is a brief that
+drifts, which is the whole thing D4 exists to prevent.
+
+It lives in the **contract package both consumers already depend on**:
+
+```
+packages/projects/src/agent-brief.ts   →  exported as "@876/projects/agent-brief"
+```
+
+It is a pure function over the existing `@876/projects/contracts` types —
+`Issue`, `Comment`, `IssueEvent`, attachment metadata — returning a string. No
+fetching, no client, no React. The MCP server's `issue_brief` tool calls it; the
+web app's copy button calls it. One implementation, two callers, per
+`ai-code-quality.md`.
+
+### The brief format (orchestrator-owned; delegates implement verbatim)
+
+````markdown
+# BILL-100 — Storage-backed images for billing plans
+
+| Field | Value |
+| --- | --- |
+| Ref | BILL-100 |
+| Project | BILL — 876 Billing |
+| Status | Todo |
+| Type | Feature |
+| Priority | None |
+| Assignee | Unassigned |
+| Phase | — |
+| Labels | feature, scope:api, scope:ui |
+| Created | 2026-09-19 |
+| Updated | 2026-09-19 |
+| URL | <appOrigin>/issues/BILL-100 |
+
+## Description
+
+<the raw markdown description, verbatim, or "_No description._">
+
+## Parent
+
+PROJ-12 — Parent title (Status)      ← omitted entirely when there is no parent
+
+## Sub-issues
+
+- [ ] BILL-101 — Title (Todo)        ← [x] when the state category is done
+                                     ← section omitted when there are none
+
+## Links
+
+- blocks BILL-99 — Title             ← relation verb, then the target
+                                     ← section omitted when there are none
+
+## Attachments
+
+- screenshot.png — image/png, 240 KB ← section omitted when there are none
+
+## Comments (3)                       ← "## Comments" + "_None._" when empty
+
+### @raheem — 2026-09-19 10:42
+
+<comment body, verbatim markdown>
+
+---
+
+Generated from 876 Projects. Re-read the live record with the `876-projects`
+MCP server: `issue_brief` with ref `BILL-100`.
+````
+
+Rules the format must hold to, because an agent will parse it:
+
+- **Empty sections are omitted, never rendered empty** — except Comments, which
+  always renders its heading so the count is unambiguous.
+- Comments are in **chronological order**, oldest first. An agent reading a
+  spec needs the order the thinking happened in.
+- The description and comment bodies are passed through **verbatim**. They are
+  already markdown; do not escape, re-wrap, or truncate them.
+- The trailing footer names the MCP tool and the ref, so an agent handed only
+  the pasted text can refresh it.
+- The whole thing is deterministic: same issue in, same bytes out. It is
+  snapshot-tested.
