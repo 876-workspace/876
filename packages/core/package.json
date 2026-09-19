@@ -24,6 +24,10 @@
       "types": "./src/api.ts",
       "default": "./src/api.ts"
     },
+    "./apps-directory": {
+      "types": "./src/lib/apps-directory.ts",
+      "default": "./src/lib/apps-directory.ts"
+    },
     "./auth/*": {
       "types": "./src/auth/*.ts",
       "default": "./src/auth/*.ts"
@@ -76,8 +80,8 @@
       "default": "./src/modules.ts"
     },
     "./money": {
-      "types": "./src/lib/money/document-totals.ts",
-      "default": "./src/lib/money/document-totals.ts"
+      "types": "./src/lib/money/index.ts",
+      "default": "./src/lib/money/index.ts"
     },
     "./phone": {
       "types": "./src/lib/phone.ts",

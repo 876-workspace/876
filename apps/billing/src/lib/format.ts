@@ -1,35 +1,4 @@
-export function formatMoney(
-  amount: bigint | string | null | undefined,
-  currency: string,
-  decimalPlaces?: number
-): string {
-  if (amount === null || amount === undefined) return 'Custom pricing'
-
-  const numericAmount = Number(amount)
-  if (!Number.isSafeInteger(numericAmount)) {
-    return `${currency} ${String(amount)} minor units`
-  }
-
-  const currencyFormatter = new Intl.NumberFormat('en-JM', {
-    style: 'currency',
-    currency,
-  })
-  const fractionDigits =
-    decimalPlaces ??
-    currencyFormatter.resolvedOptions().maximumFractionDigits ??
-    2
-  const formatter =
-    decimalPlaces === undefined
-      ? currencyFormatter
-      : new Intl.NumberFormat('en-JM', {
-          style: 'currency',
-          currency,
-          minimumFractionDigits: fractionDigits,
-          maximumFractionDigits: fractionDigits,
-        })
-
-  return formatter.format(numericAmount / 10 ** fractionDigits)
-}
+export { formatMoney } from '@876/core/money'
 
 /** Parses a decimal form value into an exact minor-unit integer string. */
 export function parseMinorAmountInput(

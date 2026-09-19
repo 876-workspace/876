@@ -1,36 +1,5 @@
 export { formatDate, formatDateTime } from '@876/core/timestamps'
-
-const moneyFormatters = new Map<string, Intl.NumberFormat>()
-
-/**
- * Formats a minor-unit amount (decimal string or number) as a currency string.
- * Billing serializes amounts as minor-unit decimal strings, so the scale is
- * derived from the currency's standard fraction digits.
- */
-export function formatMoney(
-  amountMinor: string | number | null | undefined,
-  currency: string | null | undefined
-): string {
-  if (amountMinor === null || amountMinor === undefined) return '—'
-  if (!currency) return String(amountMinor)
-
-  const code = currency.toUpperCase()
-  let formatter = moneyFormatters.get(code)
-  if (!formatter) {
-    formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: code,
-    })
-    moneyFormatters.set(code, formatter)
-  }
-
-  const numeric = Number(amountMinor)
-  if (!Number.isSafeInteger(numeric)) return `${code} ${amountMinor}`
-
-  const digits = formatter.resolvedOptions().maximumFractionDigits ?? 2
-
-  return formatter.format(numeric / 10 ** digits)
-}
+export { formatMoney } from '@876/core/money'
 
 export function accountTypeBadgeVariant(
   accountType: string
