@@ -1,4 +1,4 @@
-import type { Comment, Issue } from './contracts'
+import type { Comment, DevelopmentLink, Issue } from './contracts'
 
 export type AgentBriefAttachment = {
   name: string
@@ -18,6 +18,7 @@ export type AgentBriefInput = {
   parentIssue?: Issue | null
   subIssues?: readonly Issue[]
   links?: readonly AgentBriefLink[]
+  developmentLinks?: readonly DevelopmentLink[]
   attachments?: readonly AgentBriefAttachment[]
   projectName?: string | null
   assigneeLabel?: string | null
@@ -127,6 +128,17 @@ export function formatAgentBrief(input: AgentBriefInput): string {
       '',
       ...input.links.map(
         (link) => `- ${link.relation} ${link.identifier} — ${link.title}`
+      )
+    )
+  }
+  if (input.developmentLinks && input.developmentLinks.length > 0) {
+    sections.push(
+      '',
+      '## Development',
+      '',
+      ...input.developmentLinks.map(
+        (link) =>
+          `- ${link.kind}: ${link.label ?? link.url}${link.state ? ` (${link.state})` : ''}`
       )
     )
   }
