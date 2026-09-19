@@ -22,7 +22,11 @@ const {
   baselinesRepo,
   calendarRepo,
   workReminders,
+  workEvents,
+  workParticipants,
+  workCalendars,
   workClient,
+  resolveProjectsCalendarId,
 } = vi.hoisted(() => ({
   layoutsRepo: {
     listLayouts: vi.fn(),
@@ -173,6 +177,11 @@ const {
     deleteBaseline: vi.fn(),
   },
   calendarRepo: {
+    createEventLink: vi.fn(),
+    listEventLinks: vi.fn(),
+    retrieveEventLink: vi.fn(),
+    updateEventLink: vi.fn(),
+    deleteEventLink: vi.fn(),
     createEvent: vi.fn(),
     listEvents: vi.fn(),
     retrieveEvent: vi.fn(),
@@ -202,7 +211,20 @@ const {
     recurrenceSet: vi.fn(),
     recurrenceClear: vi.fn(),
   },
+  workEvents: {
+    list: vi.fn(),
+    retrieve: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    recurrenceRetrieve: vi.fn(),
+    recurrenceSet: vi.fn(),
+    recurrenceClear: vi.fn(),
+  },
+  workParticipants: { create: vi.fn(), update: vi.fn(), delete: vi.fn() },
+  workCalendars: { list: vi.fn(), create: vi.fn() },
   workClient: vi.fn(),
+  resolveProjectsCalendarId: vi.fn(),
 }))
 
 vi.mock('../../tenants/tenants.repository.js', () => tenantsRepo)
@@ -232,6 +254,7 @@ vi.mock('../calendar.repository.js', () => calendarRepo)
 vi.mock('../../../providers/work.js', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../providers/work.js')>()),
   workClient,
+  resolveProjectsCalendarId,
 }))
 
 vi.mock('../../layouts/layouts.repository.js', () => layoutsRepo)
@@ -295,8 +318,8 @@ function eventRow(overrides: Record<string, unknown> = {}) {
     recurrenceByWeekday: null,
     recurrenceUntil: null,
     recurrenceCount: null,
-    createdAt: 1787900000n,
-    updatedAt: 1787900000n,
+    createdAt: 1787900000,
+    updatedAt: 1787900000,
     ...overrides,
   }
 }
@@ -308,8 +331,52 @@ function attendeeRow(overrides: Record<string, unknown> = {}) {
     eventId: 'prjev_1',
     userId: 'usr_2',
     response: 'invited',
+    createdAt: 1787900000,
+    updatedAt: 1787900000,
+    ...overrides,
+  }
+}
+
+function eventLink(overrides: Record<string, unknown> = {}) {
+  return {
+    eventId: 'prjev_1',
+    tenantId: tenant.id,
+    projectId: project.id,
+    milestoneId: null,
+    issueId: null,
+    kind: 'event',
     createdAt: 1787900000n,
     updatedAt: 1787900000n,
+    ...overrides,
+  }
+}
+
+function workEvent(overrides: Record<string, unknown> = {}) {
+  return {
+    object: 'event',
+    id: 'prjev_1',
+    uid: 'uid_prjev_1',
+    organizationId: 'org_cal_1',
+    calendarId: 'cal_projects_1',
+    context: { service: 'projects', resource: 'project', id: project.id },
+    title: 'Sprint planning',
+    description: null,
+    location: null,
+    meetingUrl: null,
+    status: 'CONFIRMED',
+    busyStatus: 'BUSY',
+    allDay: false,
+    startAt: 1788000000,
+    endAt: 1788003600,
+    timeZone: 'UTC',
+    startDate: null,
+    endDate: null,
+    recurrenceRuleId: null,
+    recurrenceId: null,
+    participants: [],
+    createdBy: 'usr_1',
+    createdAt: 1787900000,
+    updatedAt: 1787900000,
     ...overrides,
   }
 }
@@ -410,6 +477,15 @@ beforeEach(() => {
   projectsRepo.retrieve.mockResolvedValue(project)
   projectsRepo.retrieveByKey.mockResolvedValue(null)
   calendarRepo.listEvents.mockResolvedValue([])
+  calendarRepo.listEventLinks.mockResolvedValue([])
+  calendarRepo.retrieveEventLink.mockResolvedValue(null)
+  calendarRepo.createEventLink.mockImplementation(async (params: unknown) => ({
+    ...(params as Record<string, unknown>),
+  }))
+  calendarRepo.updateEventLink.mockImplementation(async (_tenant: string, _event: string, patch: unknown) => ({
+    ...eventLink(),
+    ...(patch as Record<string, unknown>),
+  }))
   calendarRepo.retrieveEvent.mockResolvedValue(null)
   calendarRepo.listAttendeesForEvents.mockResolvedValue([])
   calendarRepo.retrieveAttendee.mockResolvedValue(null)
@@ -419,6 +495,20 @@ beforeEach(() => {
   calendarRepo.listCalendarIssues.mockResolvedValue([])
   calendarRepo.listAssignedIssues.mockResolvedValue([])
   workClient.mockReturnValue({
+    calendars: workCalendars,
+    events: {
+      list: workEvents.list,
+      retrieve: workEvents.retrieve,
+      create: workEvents.create,
+      update: workEvents.update,
+      delete: workEvents.delete,
+      recurrence: {
+        retrieve: workEvents.recurrenceRetrieve,
+        set: workEvents.recurrenceSet,
+        clear: workEvents.recurrenceClear,
+      },
+    },
+    eventParticipants: workParticipants,
     reminders: {
       list: workReminders.list,
       retrieve: workReminders.retrieve,
@@ -431,6 +521,67 @@ beforeEach(() => {
         clear: workReminders.recurrenceClear,
       },
     },
+  })
+  workCalendars.list.mockResolvedValue(workListEnvelope([]))
+  resolveProjectsCalendarId.mockResolvedValue('cal_projects_1')
+  workCalendars.create.mockResolvedValue({
+    data: { id: 'cal_projects_1' },
+    error: null,
+  })
+  workEvents.list.mockResolvedValue(workListEnvelope([]))
+  workEvents.retrieve.mockResolvedValue({ data: workEvent(), error: null })
+  workEvents.create.mockImplementation(async (_org: string, input: unknown) => ({
+    data: workEvent({ ...(input as Record<string, unknown>) }),
+    error: null,
+  }))
+  workEvents.update.mockImplementation(async (_org: string, _id: string, input: unknown) => ({
+    data: workEvent({ ...(input as Record<string, unknown>) }),
+    error: null,
+  }))
+  workEvents.delete.mockResolvedValue({
+    data: { object: 'event', id: 'prjev_1', deleted: true },
+    error: null,
+  })
+  workEvents.recurrenceRetrieve.mockResolvedValue({ data: null, error: null })
+  workEvents.recurrenceClear.mockResolvedValue({ data: workEvent(), error: null })
+  workParticipants.create.mockImplementation(
+    async (_org: string, eventId: string, input: Record<string, unknown>) => ({
+      data: {
+        ...attendeeRow(),
+        eventId,
+        kind: input.kind,
+        participantId: input.participantId,
+        email: null,
+        name: null,
+        role: 'REQUIRED',
+        status: input.status,
+        delegatedTo: null,
+        delegatedFrom: null,
+        respondedAt: null,
+        object: 'event_participant',
+      },
+      error: null,
+    })
+  )
+  workParticipants.update.mockResolvedValue({
+    data: {
+      ...attendeeRow(),
+      object: 'event_participant',
+      kind: 'USER',
+      participantId: 'usr_2',
+      email: null,
+      name: null,
+      role: 'REQUIRED',
+      status: 'ACCEPTED',
+      delegatedTo: null,
+      delegatedFrom: null,
+      respondedAt: null,
+    },
+    error: null,
+  })
+  workParticipants.delete.mockResolvedValue({
+    data: { object: 'event_participant', id: 'prjeva_1', deleted: true },
+    error: null,
   })
   workReminders.list.mockResolvedValue(workListEnvelope([]))
   workReminders.retrieve.mockResolvedValue({
@@ -465,8 +616,18 @@ beforeEach(() => {
 
 describe('calendar events', () => {
   it('lists events with their attendees attached', async () => {
-    calendarRepo.listEvents.mockResolvedValue([eventRow()])
-    calendarRepo.listAttendeesForEvents.mockResolvedValue([attendeeRow()])
+    calendarRepo.listEventLinks.mockResolvedValue([eventLink()])
+    workEvents.list.mockResolvedValue(
+      workListEnvelope([
+        workEvent({
+          participants: [
+            {
+              ...attendeeRow(), object: 'event_participant', kind: 'USER', participantId: 'usr_2', email: null, name: null, role: 'REQUIRED', status: 'NEEDS_ACTION', delegatedTo: null, delegatedFrom: null, respondedAt: null,
+            },
+          ],
+        }),
+      ])
+    )
     const response = await requestJson(
       'GET',
       '/v1/organizations/org_cal_1/events'
@@ -479,13 +640,15 @@ describe('calendar events', () => {
   })
 
   it('scopes the event list to the requested project', async () => {
-    calendarRepo.listEvents.mockResolvedValue([])
     const response = await requestJson(
       'GET',
       '/v1/organizations/org_cal_1/events?projectId=prj_cal_1'
     )
     expect(response.status).toBe(200)
-    expect(calendarRepo.listEvents).toHaveBeenCalledWith(tenant.id, 'prj_cal_1')
+    expect(workEvents.list).toHaveBeenCalledWith('org_cal_1', {
+      context: { service: 'projects', resource: 'project', id: 'prj_cal_1' },
+      limit: 100,
+    })
   })
 
   it('creates an event inside a known project', async () => {
@@ -516,7 +679,7 @@ describe('calendar events', () => {
   })
 
   it('retrieves a single event', async () => {
-    calendarRepo.retrieveEvent.mockResolvedValue(eventRow())
+    calendarRepo.retrieveEventLink.mockResolvedValue(eventLink())
     const response = await requestJson(
       'GET',
       '/v1/organizations/org_cal_1/events/prjev_1'
@@ -535,10 +698,7 @@ describe('calendar events', () => {
   })
 
   it('updates an event title', async () => {
-    calendarRepo.retrieveEvent.mockResolvedValue(eventRow())
-    calendarRepo.updateEvent.mockResolvedValue(
-      eventRow({ title: 'Renamed planning' })
-    )
+    calendarRepo.retrieveEventLink.mockResolvedValue(eventLink())
     const response = await requestJson(
       'PATCH',
       '/v1/organizations/org_cal_1/events/prjev_1',
@@ -559,7 +719,7 @@ describe('calendar events', () => {
   })
 
   it('deletes an event with a tombstone', async () => {
-    calendarRepo.retrieveEvent.mockResolvedValue(eventRow())
+    calendarRepo.retrieveEventLink.mockResolvedValue(eventLink())
     const response = await requestJson(
       'DELETE',
       '/v1/organizations/org_cal_1/events/prjev_1'
@@ -570,7 +730,7 @@ describe('calendar events', () => {
       id: 'prjev_1',
       deleted: true,
     })
-    expect(calendarRepo.deleteEvent).toHaveBeenCalledWith(tenant.id, 'prjev_1')
+    expect(calendarRepo.deleteEventLink).toHaveBeenCalledWith(tenant.id, 'prjev_1')
   })
 
   it('returns 404 when deleting an unknown event', async () => {
@@ -595,10 +755,7 @@ describe('calendar events', () => {
 
 describe('event attendees', () => {
   it('adds an attendee to an event', async () => {
-    calendarRepo.retrieveEvent.mockResolvedValue(eventRow())
-    calendarRepo.createAttendee.mockImplementation(async (params: unknown) => ({
-      ...(params as Record<string, unknown>),
-    }))
+    calendarRepo.retrieveEventLink.mockResolvedValue(eventLink())
     const response = await requestJson(
       'POST',
       '/v1/organizations/org_cal_1/events/prjev_1/attendees',
@@ -610,8 +767,11 @@ describe('event attendees', () => {
   })
 
   it('rejects a duplicate attendee', async () => {
-    calendarRepo.retrieveEvent.mockResolvedValue(eventRow())
-    calendarRepo.retrieveAttendee.mockResolvedValue(attendeeRow())
+    calendarRepo.retrieveEventLink.mockResolvedValue(eventLink())
+    workEvents.retrieve.mockResolvedValue({
+      data: workEvent({ participants: [{ ...attendeeRow(), object: 'event_participant', kind: 'USER', participantId: 'usr_2', email: null, name: null, role: 'REQUIRED', status: 'NEEDS_ACTION', delegatedTo: null, delegatedFrom: null, respondedAt: null }] }),
+      error: null,
+    })
     const response = await requestJson(
       'POST',
       '/v1/organizations/org_cal_1/events/prjev_1/attendees',
@@ -632,11 +792,11 @@ describe('event attendees', () => {
   })
 
   it('records an attendee response', async () => {
-    calendarRepo.retrieveEvent.mockResolvedValue(eventRow())
-    calendarRepo.retrieveAttendee.mockResolvedValue(attendeeRow())
-    calendarRepo.updateAttendee.mockResolvedValue(
-      attendeeRow({ response: 'accepted' })
-    )
+    calendarRepo.retrieveEventLink.mockResolvedValue(eventLink())
+    workEvents.retrieve.mockResolvedValue({
+      data: workEvent({ participants: [{ ...attendeeRow(), object: 'event_participant', kind: 'USER', participantId: 'usr_2', email: null, name: null, role: 'REQUIRED', status: 'NEEDS_ACTION', delegatedTo: null, delegatedFrom: null, respondedAt: null }] }),
+      error: null,
+    })
     const response = await requestJson(
       'PATCH',
       '/v1/organizations/org_cal_1/events/prjev_1/attendees/usr_2',
@@ -647,7 +807,7 @@ describe('event attendees', () => {
   })
 
   it('returns 404 when the attendee row is missing', async () => {
-    calendarRepo.retrieveEvent.mockResolvedValue(eventRow())
+    calendarRepo.retrieveEventLink.mockResolvedValue(eventLink())
     const response = await requestJson(
       'PATCH',
       '/v1/organizations/org_cal_1/events/prjev_1/attendees/usr_ghost',
@@ -658,8 +818,11 @@ describe('event attendees', () => {
   })
 
   it('removes an attendee with a tombstone', async () => {
-    calendarRepo.retrieveEvent.mockResolvedValue(eventRow())
-    calendarRepo.retrieveAttendee.mockResolvedValue(attendeeRow())
+    calendarRepo.retrieveEventLink.mockResolvedValue(eventLink())
+    workEvents.retrieve.mockResolvedValue({
+      data: workEvent({ participants: [{ ...attendeeRow(), object: 'event_participant', kind: 'USER', participantId: 'usr_2', email: null, name: null, role: 'REQUIRED', status: 'NEEDS_ACTION', delegatedTo: null, delegatedFrom: null, respondedAt: null }] }),
+      error: null,
+    })
     const response = await requestJson(
       'DELETE',
       '/v1/organizations/org_cal_1/events/prjev_1/attendees/usr_2'
@@ -673,7 +836,7 @@ describe('event attendees', () => {
   })
 
   it('returns 404 when removing an unknown attendee', async () => {
-    calendarRepo.retrieveEvent.mockResolvedValue(eventRow())
+    calendarRepo.retrieveEventLink.mockResolvedValue(eventLink())
     const response = await requestJson(
       'DELETE',
       '/v1/organizations/org_cal_1/events/prjev_1/attendees/usr_ghost'
@@ -681,6 +844,59 @@ describe('event attendees', () => {
     expect(response.status).toBe(404)
     expect(response.body.error.code).toBe('projects/attendee-not-found')
   })
+})
+
+describe('Work event mapping regressions', () => {
+  for (const [response, status] of [
+    ['invited', 'NEEDS_ACTION'],
+    ['accepted', 'ACCEPTED'],
+    ['declined', 'DECLINED'],
+    ['tentative', 'TENTATIVE'],
+  ] as const) {
+    it(`maps attendee creation ${response} to ${status}`, async () => {
+      calendarRepo.retrieveEventLink.mockResolvedValue(eventLink())
+      const result = await requestJson(
+        'POST',
+        '/v1/organizations/org_cal_1/events/prjev_1/attendees',
+        { userId: 'usr_2', response }
+      )
+      expect(result.status).toBe(201)
+      expect(result.body).toEqual({
+        data: {
+          object: 'projects.event-attendee', id: 'prjeva_1', eventId: 'prjev_1', userId: 'usr_2', response, createdAt: 1787900000, updatedAt: 1787900000,
+        },
+        error: null,
+      })
+      expect(workParticipants.create).toHaveBeenCalledWith('org_cal_1', 'prjev_1', {
+        kind: 'USER', participantId: 'usr_2', status,
+      })
+    })
+
+    it(`maps Work attendee ${status} back to ${response}`, async () => {
+      calendarRepo.listEventLinks.mockResolvedValue([eventLink()])
+      workEvents.list.mockResolvedValue(workListEnvelope([
+        workEvent({ participants: [{ ...attendeeRow(), object: 'event_participant', kind: 'USER', participantId: 'usr_2', email: null, name: null, role: 'REQUIRED', status, delegatedTo: null, delegatedFrom: null, respondedAt: null }] }),
+      ]))
+      const result = await requestJson('GET', '/v1/organizations/org_cal_1/events')
+      expect(result.status).toBe(200)
+      expect(result.body.data.data[0].attendees[0].response).toBe(response)
+    })
+  }
+
+  for (const [allDay, meetingUrl] of [
+    [false, null], [false, 'https://meet.example/review'], [true, null], [true, 'https://meet.example/review'],
+  ] as const) {
+    it(`creates ${allDay ? 'an all-day' : 'a timed'} event ${meetingUrl ? 'with' : 'without'} a meeting URL`, async () => {
+      const result = await requestJson('POST', '/v1/organizations/org_cal_1/events', {
+        projectId: project.id, title: 'Launch review', startsAt: 1788000000, endsAt: 1788086400, allDay, meetingUrl,
+      })
+      expect(result.status).toBe(201)
+      expect(result.body.data.meetingUrl).toBe(meetingUrl)
+      expect(workEvents.create).toHaveBeenCalledWith('org_cal_1', expect.objectContaining({
+        calendarId: 'cal_projects_1', context: { service: 'projects', resource: 'project', id: project.id }, allDay, meetingUrl,
+      }))
+    })
+  }
 })
 
 describe('reminders', () => {
@@ -1153,29 +1369,20 @@ describe('calendar read model', () => {
         plannedFinishDate: BigInt(WINDOW_START + 2 * DAY),
       },
     ])
-    calendarRepo.listEvents.mockResolvedValue([
-      eventRow({
-        id: 'prjev_plain',
-        title: 'Plain event',
-        startsAt: BigInt(WINDOW_START + 4 * DAY),
-        endsAt: BigInt(WINDOW_START + 4 * DAY + 3600),
-      }),
-      eventRow({
-        id: 'prjev_meet',
-        kind: 'meeting',
-        title: 'Team sync',
-        startsAt: BigInt(WINDOW_START + DAY),
-        endsAt: BigInt(WINDOW_START + DAY + 1800),
-      }),
-      eventRow({
-        id: 'prjev_daily',
-        title: 'Daily standup',
-        startsAt: BigInt(WINDOW_START),
-        endsAt: BigInt(WINDOW_START + 900),
-        recurrenceFreq: 'daily',
-        recurrenceInterval: 1,
-      }),
+    calendarRepo.listEventLinks.mockResolvedValue([
+      eventLink({ eventId: 'prjev_plain' }),
+      eventLink({ eventId: 'prjev_meet', kind: 'meeting' }),
+      eventLink({ eventId: 'prjev_daily' }),
     ])
+    workEvents.list.mockResolvedValue(workListEnvelope([
+      workEvent({ id: 'prjev_plain', title: 'Plain event', startAt: WINDOW_START + 4 * DAY, endAt: WINDOW_START + 4 * DAY + 3600 }),
+      workEvent({ id: 'prjev_meet', title: 'Team sync', startAt: WINDOW_START + DAY, endAt: WINDOW_START + DAY + 1800 }),
+      workEvent({ id: 'prjev_daily', title: 'Daily standup', startAt: WINDOW_START, endAt: WINDOW_START + 900 }),
+    ]))
+    workEvents.recurrenceRetrieve.mockImplementation(async (_org: string, id: string) => ({
+      data: id === 'prjev_daily' ? workRuleRow() : null,
+      error: null,
+    }))
   }
 
   it('merges projects, phases, work items, events and meetings', async () => {
@@ -1308,27 +1515,14 @@ describe('my work', () => {
         status: 'canceled',
       }),
     ])
-    calendarRepo.listAttendeesByUser.mockResolvedValue([
-      attendeeRow({ eventId: 'prjev_future' }),
-      attendeeRow({ id: 'prjeva_2', eventId: 'prjev_past' }),
+    calendarRepo.listEventLinks.mockResolvedValue([
+      eventLink({ eventId: 'prjev_future' }),
+      eventLink({ eventId: 'prjev_past' }),
     ])
-    calendarRepo.retrieveEvent.mockImplementation(
-      async (tenantId: string, eventId: string) => {
-        void tenantId
-        if (eventId === 'prjev_future') {
-          return eventRow({
-            id: 'prjev_future',
-            startsAt: 2000000000n,
-            endsAt: 2000003600n,
-          })
-        }
-        return eventRow({
-          id: 'prjev_past',
-          startsAt: 1000000000n,
-          endsAt: 1000003600n,
-        })
-      }
-    )
+    workEvents.list.mockResolvedValue(workListEnvelope([
+      workEvent({ id: 'prjev_future', startAt: 2000000000, endAt: 2000003600, participants: [{ ...attendeeRow(), object: 'event_participant', kind: 'USER', participantId: 'usr_1', email: null, name: null, role: 'REQUIRED', status: 'ACCEPTED', delegatedTo: null, delegatedFrom: null, respondedAt: null }] }),
+      workEvent({ id: 'prjev_past', startAt: 1000000000, endAt: 1000003600, participants: [{ ...attendeeRow(), id: 'prjeva_2', object: 'event_participant', kind: 'USER', participantId: 'usr_1', email: null, name: null, role: 'REQUIRED', status: 'ACCEPTED', delegatedTo: null, delegatedFrom: null, respondedAt: null }] }),
+    ]))
     workReminders.list.mockResolvedValue(
       workListEnvelope([
         reminderRow({ id: 'prjrem_mine', remindAt: 1000000000 }),

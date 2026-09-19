@@ -1,23 +1,10 @@
-model ProjectEvent {
-  id                     String   @id
+model ProjectEventLink {
   tenantId               String   @map("tenant_id")
+  eventId                String   @id @map("event_id")
   projectId              String   @map("project_id")
   milestoneId            String?  @map("milestone_id")
   issueId                String?  @map("issue_id")
-  kind                   String   @default("event") // event|meeting
-  title                  String
-  description            String?
-  startsAt               BigInt   @map("starts_at")
-  endsAt                 BigInt?  @map("ends_at")
-  allDay                 Boolean  @default(false) @map("all_day")
-  location               String?
-  meetingUrl             String?  @map("meeting_url")
-  createdBy              String?  @map("created_by")
-  recurrenceFreq         String?  @map("recurrence_freq") // daily|weekly|monthly|yearly
-  recurrenceInterval     Int?     @map("recurrence_interval")
-  recurrenceByWeekday    String?  @map("recurrence_by_weekday") // comma-separated 0 (Sunday) .. 6 (Saturday), UTC
-  recurrenceUntil        BigInt?  @map("recurrence_until")
-  recurrenceCount        Int?     @map("recurrence_count")
+  kind                   String   @default("event")
   createdAt              BigInt   @map("created_at")
   updatedAt              BigInt   @map("updated_at")
 
@@ -25,27 +12,7 @@ model ProjectEvent {
   project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
   milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
   issue     Issue?     @relation(fields: [issueId], references: [id], onDelete: SetNull)
-  attendees EventAttendee[]
 
-  @@index([tenantId, startsAt], map: "projects_events_tenant_starts_idx")
-  @@index([tenantId, projectId], map: "projects_events_tenant_project_idx")
-  @@index([tenantId, createdBy], map: "projects_events_tenant_creator_idx")
-  @@map("projects_events")
-}
-
-model EventAttendee {
-  id        String @id
-  tenantId  String @map("tenant_id")
-  eventId   String @map("event_id")
-  userId    String @map("user_id")
-  response  String @default("invited") // invited|accepted|declined|tentative
-  createdAt BigInt @map("created_at")
-  updatedAt BigInt @map("updated_at")
-
-  tenant Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  event  ProjectEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  @@unique([eventId, userId], map: "projects_event_attendees_unique")
-  @@index([tenantId, eventId], map: "projects_event_attendees_tenant_idx")
-  @@map("projects_event_attendees")
+  @@index([tenantId, projectId])
+  @@map("projects_event_links")
 }

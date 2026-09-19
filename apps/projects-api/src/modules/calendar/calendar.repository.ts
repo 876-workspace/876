@@ -1,49 +1,21 @@
 import { prisma } from '../../db/index.js'
-import type {
-  EventAttendeeRow,
-  ProjectEventRow,
-} from './calendar.serializers.js'
+import type { ProjectEventLinkRow } from './calendar.serializers.js'
 
-export type CreateEventParams = {
-  id: string
+export type CreateEventLinkParams = {
+  eventId: string
   tenantId: string
   projectId: string
   milestoneId: string | null
   issueId: string | null
   kind: string
-  title: string
-  description: string | null
-  startsAt: bigint
-  endsAt: bigint | null
-  allDay: boolean
-  location: string | null
-  meetingUrl: string | null
-  createdBy: string | null
-  recurrenceFreq: string | null
-  recurrenceInterval: number | null
-  recurrenceByWeekday: string | null
-  recurrenceUntil: bigint | null
-  recurrenceCount: number | null
   createdAt: bigint
   updatedAt: bigint
 }
 
-export type UpdateEventParams = {
+export type UpdateEventLinkParams = {
   milestoneId?: string | null
   issueId?: string | null
   kind?: string
-  title?: string
-  description?: string | null
-  startsAt?: bigint
-  endsAt?: bigint | null
-  allDay?: boolean
-  location?: string | null
-  meetingUrl?: string | null
-  recurrenceFreq?: string | null
-  recurrenceInterval?: number | null
-  recurrenceByWeekday?: string | null
-  recurrenceUntil?: bigint | null
-  recurrenceCount?: number | null
   updatedAt: bigint
 }
 
@@ -73,125 +45,53 @@ export type CalendarIssueRow = {
   plannedFinishDate: bigint | number | null
 }
 
-export async function createEvent(
-  params: CreateEventParams
-): Promise<ProjectEventRow> {
-  const row = await prisma.projectEvent.create({ data: params })
-  return row as unknown as ProjectEventRow
+export async function createEventLink(
+  params: CreateEventLinkParams
+): Promise<ProjectEventLinkRow> {
+  const row = await prisma['projectEventLink'].create({ data: params })
+  return row as unknown as ProjectEventLinkRow
 }
 
-export async function listEvents(
+export async function listEventLinks(
   tenantId: string,
   projectId?: string
-): Promise<ProjectEventRow[]> {
-  const rows = await prisma.projectEvent.findMany({
+): Promise<ProjectEventLinkRow[]> {
+  const rows = await prisma['projectEventLink'].findMany({
     where: { tenantId, ...(projectId ? { projectId } : {}) },
-    orderBy: [{ startsAt: 'asc' }, { id: 'asc' }],
-  })
-  return rows as unknown as ProjectEventRow[]
-}
-
-export async function retrieveEvent(
-  tenantId: string,
-  eventId: string
-): Promise<ProjectEventRow | null> {
-  const row = await prisma.projectEvent.findFirst({
-    where: { tenantId, id: eventId },
-  })
-  return row as unknown as ProjectEventRow | null
-}
-
-export async function updateEvent(
-  tenantId: string,
-  eventId: string,
-  patch: UpdateEventParams
-): Promise<ProjectEventRow> {
-  const row = await prisma.projectEvent.update({
-    where: { id: eventId },
-    data: { ...patch },
-  })
-  return row as unknown as ProjectEventRow
-}
-
-export async function deleteEvent(
-  tenantId: string,
-  eventId: string
-): Promise<void> {
-  await prisma.projectEvent.deleteMany({ where: { tenantId, id: eventId } })
-}
-
-export async function createAttendee(params: {
-  id: string
-  tenantId: string
-  eventId: string
-  userId: string
-  response: string
-  createdAt: bigint
-  updatedAt: bigint
-}): Promise<EventAttendeeRow> {
-  const row = await prisma.eventAttendee.create({ data: params })
-  return row as unknown as EventAttendeeRow
-}
-
-export async function retrieveAttendee(
-  tenantId: string,
-  eventId: string,
-  userId: string
-): Promise<EventAttendeeRow | null> {
-  const row = await prisma.eventAttendee.findFirst({
-    where: { tenantId, eventId, userId },
-  })
-  return row as unknown as EventAttendeeRow | null
-}
-
-export async function listAttendeesForEvents(
-  tenantId: string,
-  eventIds: string[]
-): Promise<EventAttendeeRow[]> {
-  if (eventIds.length === 0) return []
-  const rows = await prisma.eventAttendee.findMany({
-    where: { tenantId, eventId: { in: eventIds } },
-    orderBy: [{ userId: 'asc' }],
-  })
-  return rows as unknown as EventAttendeeRow[]
-}
-
-export async function listAttendeesByUser(
-  tenantId: string,
-  userId: string
-): Promise<EventAttendeeRow[]> {
-  const rows = await prisma.eventAttendee.findMany({
-    where: { tenantId, userId },
     orderBy: [{ eventId: 'asc' }],
   })
-  return rows as unknown as EventAttendeeRow[]
+  return rows as unknown as ProjectEventLinkRow[]
 }
 
-export async function updateAttendee(
+export async function retrieveEventLink(
+  tenantId: string,
+  eventId: string
+): Promise<ProjectEventLinkRow | null> {
+  const row = await prisma['projectEventLink'].findFirst({
+    where: { tenantId, eventId },
+  })
+  return row as unknown as ProjectEventLinkRow | null
+}
+
+export async function updateEventLink(
   tenantId: string,
   eventId: string,
-  userId: string,
-  patch: { response: string; updatedAt: bigint }
-): Promise<EventAttendeeRow> {
-  const row = await prisma.eventAttendee.updateMany({
-    where: { tenantId, eventId, userId },
+  patch: UpdateEventLinkParams
+): Promise<ProjectEventLinkRow> {
+  const row = await prisma['projectEventLink'].update({
+    where: { eventId },
     data: patch,
   })
-  void row
-  const updated = await prisma.eventAttendee.findFirst({
-    where: { tenantId, eventId, userId },
-  })
-  return updated as unknown as EventAttendeeRow
+  if (row.tenantId !== tenantId)
+    throw new Error('Project event link tenant scope changed unexpectedly.')
+  return row as unknown as ProjectEventLinkRow
 }
 
-export async function deleteAttendee(
+export async function deleteEventLink(
   tenantId: string,
-  eventId: string,
-  userId: string
+  eventId: string
 ): Promise<void> {
-  await prisma.eventAttendee.deleteMany({
-    where: { tenantId, eventId, userId },
-  })
+  await prisma['projectEventLink'].deleteMany({ where: { tenantId, eventId } })
 }
 
 export async function listCalendarProjects(
@@ -304,10 +204,10 @@ export async function retrieveMilestoneTargetDate(
 export async function retrieveEventStart(
   tenantId: string,
   eventId: string
-): Promise<{ startsAt: bigint | number } | null> {
-  const row = await prisma.projectEvent.findFirst({
-    where: { tenantId, id: eventId },
-    select: { startsAt: true },
+): Promise<{ eventId: string } | null> {
+  const row = await prisma['projectEventLink'].findFirst({
+    where: { tenantId, eventId },
+    select: { eventId: true },
   })
-  return row as unknown as { startsAt: bigint | number } | null
+  return row
 }

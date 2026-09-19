@@ -1,4 +1,9 @@
-import type { WorkRecurrenceRule, WorkReminder } from '@876/work'
+import type {
+  WorkEventParticipant,
+  WorkEventResource,
+  WorkRecurrenceRule,
+  WorkReminder,
+} from '@876/work'
 
 import {
   fromDbUnixSeconds,
@@ -8,36 +13,13 @@ import type { RecurrenceRule } from './recurrence.js'
 
 type Timestamp = bigint | number
 
-export type ProjectEventRow = {
-  id: string
+export type ProjectEventLinkRow = {
+  eventId: string
   tenantId: string
   projectId: string
   milestoneId: string | null
   issueId: string | null
   kind: string
-  title: string
-  description: string | null
-  startsAt: Timestamp
-  endsAt: Timestamp | null
-  allDay: boolean
-  location: string | null
-  meetingUrl: string | null
-  createdBy: string | null
-  recurrenceFreq: string | null
-  recurrenceInterval: number | null
-  recurrenceByWeekday: string | null
-  recurrenceUntil: Timestamp | null
-  recurrenceCount: number | null
-  createdAt: Timestamp
-  updatedAt: Timestamp
-}
-
-export type EventAttendeeRow = {
-  id: string
-  tenantId: string
-  eventId: string
-  userId: string
-  response: string
   createdAt: Timestamp
   updatedAt: Timestamp
 }
@@ -120,6 +102,35 @@ export type SerializedAttendee = {
   response: string
   createdAt: number
   updatedAt: number
+}
+
+const WORK_PARTICIPANT_STATUS_TO_PROJECTS = {
+  NEEDS_ACTION: 'invited',
+  ACCEPTED: 'accepted',
+  DECLINED: 'declined',
+  TENTATIVE: 'tentative',
+  DELEGATED: 'invited',
+} as const
+
+function dateOnlyToUnixSeconds(value: string): number {
+  return Math.floor(new Date(`${value}T00:00:00.000Z`).getTime() / 1000)
+}
+
+function eventTimes(event: WorkEventResource): {
+  startsAt: number
+  endsAt: number | null
+} {
+  if (event.allDay) {
+    if (!event.startDate || !event.endDate)
+      throw new Error('Work returned an all-day event without dates.')
+    return {
+      startsAt: dateOnlyToUnixSeconds(event.startDate),
+      endsAt: dateOnlyToUnixSeconds(event.endDate),
+    }
+  }
+  if (event.startAt === null || event.endAt === null)
+    throw new Error('Work returned a timed event without times.')
+  return { startsAt: event.startAt, endsAt: event.endAt }
 }
 
 export type SerializedEvent = {
@@ -253,40 +264,47 @@ export function serializeRecurrence(row: {
   }
 }
 
-export function serializeAttendee(row: EventAttendeeRow): SerializedAttendee {
+export function serializeWorkAttendee(
+  participant: WorkEventParticipant
+): SerializedAttendee | null {
+  if (participant.kind !== 'USER' || !participant.participantId) return null
   return {
     object: 'projects.event-attendee',
-    id: row.id,
-    eventId: row.eventId,
-    userId: row.userId,
-    response: row.response,
-    createdAt: fromDbUnixSeconds(row.createdAt),
-    updatedAt: fromDbUnixSeconds(row.updatedAt),
+    id: participant.id,
+    eventId: participant.eventId,
+    userId: participant.participantId,
+    response: WORK_PARTICIPANT_STATUS_TO_PROJECTS[participant.status],
+    createdAt: participant.createdAt,
+    updatedAt: participant.updatedAt,
   }
 }
 
-export function serializeEvent(
-  row: ProjectEventRow,
-  attendees: EventAttendeeRow[]
+export function serializeWorkEvent(
+  event: WorkEventResource,
+  link: ProjectEventLinkRow,
+  rule: WorkRecurrenceRule | null
 ): SerializedEvent {
+  const { startsAt, endsAt } = eventTimes(event)
   return {
     object: 'projects.event',
-    id: row.id,
-    tenantId: row.tenantId,
-    projectId: row.projectId,
-    milestoneId: row.milestoneId,
-    issueId: row.issueId,
-    kind: row.kind,
-    title: row.title,
-    description: row.description,
-    startsAt: fromDbUnixSeconds(row.startsAt),
-    endsAt: nullableFromDbUnixSeconds(row.endsAt),
-    allDay: row.allDay,
-    location: row.location,
-    meetingUrl: row.meetingUrl,
-    createdBy: row.createdBy,
-    recurrence: serializeRecurrence(row),
-    attendees: attendees.map(serializeAttendee),
+    id: event.id,
+    tenantId: link.tenantId,
+    projectId: link.projectId,
+    milestoneId: link.milestoneId,
+    issueId: link.issueId,
+    kind: link.kind,
+    title: event.title,
+    description: event.description,
+    startsAt,
+    endsAt,
+    allDay: event.allDay,
+    location: event.location,
+    meetingUrl: event.meetingUrl,
+    createdBy: event.createdBy === 'system' ? null : event.createdBy,
+    recurrence: serializeWorkRecurrence(rule),
+    attendees: event.participants
+      .map(serializeWorkAttendee)
+      .filter((attendee): attendee is SerializedAttendee => attendee !== null),
   }
 }
 
