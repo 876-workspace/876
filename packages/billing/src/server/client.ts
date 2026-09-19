@@ -2,12 +2,16 @@ import { resolveClientBaseUrl } from '@876/core/client'
 import { z } from 'zod'
 
 import { sendRequest } from '../transport'
+import { BillingDashboardSchema } from '../types/dashboard.schema'
+import type { BillingDashboard } from '../types/dashboard'
 import { MemberAccessSchema, MemberListSchema } from '../types/member.schema'
 import type {
   Member,
   MemberAccess,
   MemberAccessResolveParams,
 } from '../types/member'
+import type { Tenant, TenantListParams } from '../types/tenant'
+import { TenantListSchema } from '../types/tenant.schema'
 import type {
   BillingServerClientOptions,
   BillingServerRequest,
@@ -126,6 +130,61 @@ export function create876BillingServerClient(
           },
           MemberAccessSchema
         ) as Promise<BillingServerResult<MemberAccess | null>>
+      },
+    },
+
+    /**
+     * Billing workspace projections.
+     *
+     * The roster lookup joins workspace rows, so it is an internal-key route
+     * rather than a tenant one and lives here instead of on the session
+     * client. Retrieval by organization ID is already typed on the
+     * integration client (`organizations.retrieve`); retrieval by slug has no
+     * server route, so only `list` is exposed here.
+     */
+    tenants: {
+      /** Resolves Billing workspaces for up to 100 platform organizations. */
+      list(params: TenantListParams): Promise<BillingServerResult<Tenant[]>> {
+        return sendRequest(
+          {
+            baseUrl,
+            fetch: options.fetch ?? globalThis.fetch.bind(globalThis),
+            headers: internalHeaders(),
+          },
+          {
+            method: 'POST',
+            path: '/internal/projections/tenants',
+            body: params,
+          },
+          TenantListSchema
+        ) as Promise<BillingServerResult<Tenant[]>>
+      },
+    },
+
+    /**
+     * Billing dashboard projection.
+     *
+     * A read-only rollup over one workspace's subscriptions, invoices,
+     * receipts, and receivables. Internal-key route; lives here instead of on
+     * the session client.
+     */
+    dashboard: {
+      /** Retrieves the dashboard projection for one workspace. */
+      overview(
+        tenantId: string
+      ): Promise<BillingServerResult<BillingDashboard>> {
+        return sendRequest(
+          {
+            baseUrl,
+            fetch: options.fetch ?? globalThis.fetch.bind(globalThis),
+            headers: internalHeaders(),
+          },
+          {
+            method: 'GET',
+            path: `/internal/projections/tenants/${encodeURIComponent(tenantId)}/dashboard`,
+          },
+          BillingDashboardSchema
+        ) as Promise<BillingServerResult<BillingDashboard>>
       },
     },
 

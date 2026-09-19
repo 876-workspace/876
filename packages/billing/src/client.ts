@@ -21,6 +21,7 @@ import { createPaymentModesResource } from './resources/payment-modes'
 import { createPaymentMethodsResource } from './resources/payment-methods'
 import { createPaymentIntentsResource } from './resources/payment-intents'
 import { createQuotesResource } from './resources/quotes'
+import { createRefundsResource } from './resources/refunds'
 import { createReportsResource } from './resources/reports'
 import { createReportPreferencesResource } from './resources/report-preferences'
 import { createSalesReceiptsResource } from './resources/sales-receipts'
@@ -33,6 +34,7 @@ import { createPaymentProvidersResource } from './resources/payment-providers'
 import { createSubscriptionsResource } from './resources/subscriptions'
 import { createTaxAuthoritiesResource } from './resources/tax-authorities'
 import { createTaxRatesResource } from './resources/tax-rates'
+import { createVendorsResource } from './resources/vendors'
 import type { ClientOptions } from './types'
 
 /** Creates a tenant-scoped 876 Billing client. */
@@ -68,6 +70,7 @@ export function create876Client(options: ClientOptions = {}) {
     priceLists: catalog.priceLists,
     products: catalog.products,
     quotes: createQuotesResource(runtime),
+    refunds: createRefundsResource(runtime),
     reports: createReportsResource(runtime),
     reportPreferences: createReportPreferencesResource(runtime),
     roles: createRolesResource(runtime),
@@ -78,6 +81,7 @@ export function create876Client(options: ClientOptions = {}) {
     subscriptions: createSubscriptionsResource(runtime),
     taxAuthorities: createTaxAuthoritiesResource(runtime),
     taxRates: createTaxRatesResource(runtime),
+    vendors: createVendorsResource(runtime),
   }
 }
 

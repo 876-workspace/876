@@ -694,6 +694,91 @@ export interface CatalogCloneParams {
 }
 
 /**
+ * Parameters for listing products in the active Billing workspace.
+ *
+ * Mirrors the server's `activeQuerySchema` for `GET /api/v1/products`.
+ */
+export interface ProductListParams {
+  /**
+   * Filter to active or inactive products. Omit to list both.
+   */
+  active?: boolean
+}
+
+/**
+ * Parameters for listing plans in the active Billing workspace.
+ *
+ * Mirrors the server's `planQuerySchema` for `GET /api/v1/plans`.
+ */
+export interface PlanListParams {
+  /**
+   * Filter to active or inactive plans. Omit to list both.
+   */
+  active?: boolean
+
+  /**
+   * Filter to plans belonging to one product.
+   */
+  productId?: string
+}
+
+/**
+ * Parameters for listing prices in the active Billing workspace.
+ *
+ * Mirrors the server's `priceQuerySchema` for `GET /api/v1/prices`.
+ */
+export interface PriceQueryParams {
+  /**
+   * Filter to active or inactive prices. Omit to list both.
+   */
+  active?: boolean
+
+  /**
+   * Filter to prices belonging to one addon.
+   */
+  addonId?: string
+
+  /**
+   * Filter to prices belonging to one item.
+   */
+  itemId?: string
+
+  /**
+   * Filter to prices belonging to one plan.
+   */
+  planId?: string
+}
+
+/**
+ * Parameters for listing addons in the active Billing workspace.
+ *
+ * Mirrors the server's `planQuerySchema` for `GET /api/v1/addons`.
+ */
+export interface AddonListParams {
+  /**
+   * Filter to active or inactive addons. Omit to list both.
+   */
+  active?: boolean
+
+  /**
+   * Filter to addons belonging to one product.
+   */
+  productId?: string
+}
+
+/**
+ * Parameters for listing price lists in the active Billing workspace.
+ *
+ * Mirrors the server's `activeQuerySchema` for `GET /api/v1/price-lists`.
+ */
+export interface PriceListListParams {
+  /**
+   * Filter to active or inactive price lists. Omit to list both.
+   */
+  active?: boolean
+}
+
+/**
  * A catalog resource returned by create or retrieve operations.
  */
 export interface CatalogResource extends Record<string, unknown> {
