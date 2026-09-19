@@ -1,2 +1,4 @@
 import config from '../../eslint.config.mjs'
-export default config
+import { typesafetyRules } from '../../eslint.typesafety.mjs'
+
+export default [...config, ...typesafetyRules]
