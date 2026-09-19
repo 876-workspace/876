@@ -524,3 +524,40 @@ Procedure, once every delegate has exited:
 2. run the full app suite and record the failure set;
 3. `git stash -u`, check out `origin/main`, run it again, record the baseline;
 4. restore, and treat only the difference as this run's regressions.
+
+## Orchestrator follow-ups found in verification
+
+### 1. `876-page-title-lg` cannot be matched by a CSS selector in jsdom
+
+`resource-toolbar.test.tsx` fails with:
+
+```
+SyntaxError: Invalid selector .876-page-title-lg
+  ❯ .closest('[class~="876-page-title-lg"]')
+```
+
+A CSS class beginning with a digit is only valid in a selector when escaped
+(`.\38 76-page-title-lg`), and `@asamuzakjp/dom-selector` — which jsdom 30 uses
+— rejects it even through the attribute form. Every 876 chrome class has this
+shape (`876-card`, `876-page-title`), so this is a platform-wide testing
+constraint, not a one-off.
+
+**Fix:** assert on `className` directly rather than through a selector:
+
+```ts
+expect(heading.parentElement?.className).toContain('876-page-title-lg')
+```
+
+The component is correct; only the assertion is unwritable as a selector.
+
+### 2. Projects never opts into `mobilePrimary="fab-owns-it"`
+
+The app-bar brief scoped its delegate to `packages/ui` alone, so
+`ResourceToolbar` gained the prop but no Projects page passes it. Until a page
+does, the phone still shows **both** a blue `+ Add` in the toolbar and the
+floating action button — the exact duplication D6 exists to remove.
+
+Every Projects list page that renders `FloatingGlobalAdd` must pass
+`mobilePrimary="fab-owns-it"`. Orchestrator task once the tree is quiet; it is a
+one-prop change per page and must not be handed to a delegate mid-run, because
+those pages are spread across areas other delegates hold.
