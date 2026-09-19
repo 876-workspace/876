@@ -66,7 +66,6 @@ model Milestone {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   issues Issue[]
   projectEvents ProjectEvent[]
-  reminders Reminder[]
   timeEntries TimeEntry[]
   comments MilestoneComment[]
   events MilestoneEvent[]

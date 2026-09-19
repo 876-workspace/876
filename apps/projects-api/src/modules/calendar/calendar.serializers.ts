@@ -1,7 +1,10 @@
+import type { WorkRecurrenceRule, WorkReminder } from '@876/work'
+
 import {
   fromDbUnixSeconds,
   nullableFromDbUnixSeconds,
 } from '../../platform/timestamps.js'
+import type { RecurrenceRule } from './recurrence.js'
 
 type Timestamp = bigint | number
 
@@ -39,24 +42,66 @@ export type EventAttendeeRow = {
   updatedAt: Timestamp
 }
 
-export type ReminderRow = {
-  id: string
-  tenantId: string
+export type WorkReminderTarget = {
   issueId: string | null
   milestoneId: string | null
   eventId: string | null
-  remindAt: Timestamp | null
-  offsetMinutesBeforeDue: number | null
-  recurrenceFreq: string | null
-  recurrenceInterval: number | null
-  recurrenceByWeekday: string | null
-  recurrenceUntil: Timestamp | null
-  recurrenceCount: number | null
-  channel: string
-  createdBy: string
-  active: boolean
-  createdAt: Timestamp
-  updatedAt: Timestamp
+}
+
+const WORK_FREQUENCY_TO_PROJECTS = {
+  DAILY: 'daily',
+  WEEKLY: 'weekly',
+  MONTHLY: 'monthly',
+  YEARLY: 'yearly',
+} as const
+
+const WORK_DAY_TO_NUMBER = {
+  MO: 1,
+  TU: 2,
+  WE: 3,
+  TH: 4,
+  FR: 5,
+  SA: 6,
+  SU: 0,
+} as const
+
+export function workReminderTarget(reminder: WorkReminder): WorkReminderTarget {
+  const context = reminder.context
+  const isProjects = context?.service === 'projects'
+  return {
+    issueId: isProjects && context?.resource === 'issue' ? context.id : null,
+    milestoneId:
+      isProjects && context?.resource === 'milestone' ? context.id : null,
+    eventId: isProjects && context?.resource === 'event' ? context.id : null,
+  }
+}
+
+export function serializeWorkRecurrence(
+  rule: WorkRecurrenceRule | null
+): SerializedRecurrence | null {
+  if (!rule) return null
+  return {
+    freq: WORK_FREQUENCY_TO_PROJECTS[rule.frequency],
+    interval: rule.interval,
+    byWeekday: rule.byDay.map((day) => WORK_DAY_TO_NUMBER[day]),
+    until: rule.untilAt,
+    count: rule.count,
+  }
+}
+
+export function workRuleToRecurrenceRule(
+  rule: WorkRecurrenceRule,
+  base: number
+): RecurrenceRule {
+  return {
+    freq: WORK_FREQUENCY_TO_PROJECTS[rule.frequency],
+    interval: rule.interval,
+    byWeekday: rule.byDay.map((day) => WORK_DAY_TO_NUMBER[day]),
+    until: rule.untilAt,
+    count: rule.count,
+    startsAt: base,
+    durationSeconds: null,
+  }
 }
 
 export type SerializedRecurrence = {
@@ -119,11 +164,7 @@ export type SerializedDueReminder = SerializedReminder & {
 }
 
 export type CalendarEntryKind =
-  | 'project'
-  | 'phase'
-  | 'work-item'
-  | 'event'
-  | 'meeting'
+  'project' | 'phase' | 'work-item' | 'event' | 'meeting'
 
 export type SerializedCalendarEntry = {
   object: 'calendar-entry'
@@ -188,7 +229,9 @@ export function parseStoredWeekdays(value: string | null): number[] {
     .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
 }
 
-export function formatStoredWeekdays(days: number[] | null | undefined): string | null {
+export function formatStoredWeekdays(
+  days: number[] | null | undefined
+): string | null {
   if (!days || days.length === 0) return null
   return [...new Set(days)].sort((a, b) => a - b).join(',')
 }
@@ -247,28 +290,35 @@ export function serializeEvent(
   }
 }
 
-export function serializeReminder(row: ReminderRow): SerializedReminder {
+export function serializeReminder(
+  reminder: WorkReminder,
+  tenantId: string,
+  rule: WorkRecurrenceRule | null
+): SerializedReminder {
+  const target = workReminderTarget(reminder)
   return {
     object: 'projects.reminder',
-    id: row.id,
-    tenantId: row.tenantId,
-    issueId: row.issueId,
-    milestoneId: row.milestoneId,
-    eventId: row.eventId,
-    remindAt: nullableFromDbUnixSeconds(row.remindAt),
-    offsetMinutesBeforeDue: row.offsetMinutesBeforeDue,
-    recurrence: serializeRecurrence(row),
-    channel: row.channel,
-    createdBy: row.createdBy,
-    active: row.active,
-    createdAt: fromDbUnixSeconds(row.createdAt),
-    updatedAt: fromDbUnixSeconds(row.updatedAt),
+    id: reminder.id,
+    tenantId,
+    issueId: target.issueId,
+    milestoneId: target.milestoneId,
+    eventId: target.eventId,
+    remindAt: reminder.remindAt,
+    offsetMinutesBeforeDue: reminder.offsetMinutesBeforeDue,
+    recurrence: serializeWorkRecurrence(rule),
+    channel: reminder.channel,
+    createdBy: reminder.createdBy,
+    active: reminder.status !== 'CANCELLED',
+    createdAt: reminder.createdAt,
+    updatedAt: reminder.updatedAt,
   }
 }
 
 export function serializeDueReminder(
-  row: ReminderRow,
+  reminder: WorkReminder,
+  tenantId: string,
+  rule: WorkRecurrenceRule | null,
   dueAt: number
 ): SerializedDueReminder {
-  return { ...serializeReminder(row), dueAt }
+  return { ...serializeReminder(reminder, tenantId, rule), dueAt }
 }

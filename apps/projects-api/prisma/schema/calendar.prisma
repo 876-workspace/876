@@ -26,7 +26,6 @@ model ProjectEvent {
   milestone Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
   issue     Issue?     @relation(fields: [issueId], references: [id], onDelete: SetNull)
   attendees EventAttendee[]
-  reminders Reminder[]
 
   @@index([tenantId, startsAt], map: "projects_events_tenant_starts_idx")
   @@index([tenantId, projectId], map: "projects_events_tenant_project_idx")
@@ -49,33 +48,4 @@ model EventAttendee {
   @@unique([eventId, userId], map: "projects_event_attendees_unique")
   @@index([tenantId, eventId], map: "projects_event_attendees_tenant_idx")
   @@map("projects_event_attendees")
-}
-
-model Reminder {
-  id                      String   @id
-  tenantId                String   @map("tenant_id")
-  issueId                 String?  @map("issue_id")
-  milestoneId             String?  @map("milestone_id")
-  eventId                 String?  @map("event_id")
-  remindAt                BigInt?  @map("remind_at")
-  offsetMinutesBeforeDue  Int?     @map("offset_minutes_before_due")
-  recurrenceFreq          String?  @map("recurrence_freq") // daily|weekly|monthly|yearly
-  recurrenceInterval      Int?     @map("recurrence_interval")
-  recurrenceByWeekday     String?  @map("recurrence_by_weekday")
-  recurrenceUntil         BigInt?  @map("recurrence_until")
-  recurrenceCount         Int?     @map("recurrence_count")
-  channel                 String   @default("in-app")
-  createdBy               String   @map("created_by")
-  active                  Boolean  @default(true)
-  createdAt               BigInt   @map("created_at")
-  updatedAt               BigInt   @map("updated_at")
-
-  tenant    Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  issue     Issue?        @relation(fields: [issueId], references: [id], onDelete: SetNull)
-  milestone Milestone?    @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
-  event     ProjectEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
-
-  @@index([tenantId, createdBy], map: "projects_reminders_tenant_creator_idx")
-  @@index([tenantId, remindAt], map: "projects_reminders_tenant_remind_idx")
-  @@map("projects_reminders")
 }

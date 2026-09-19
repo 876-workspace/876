@@ -21,6 +21,8 @@ const {
   ganttRepo,
   baselinesRepo,
   calendarRepo,
+  workReminders,
+  workClient,
 } = vi.hoisted(() => ({
   layoutsRepo: {
     listLayouts: vi.fn(),
@@ -182,12 +184,6 @@ const {
     listAttendeesByUser: vi.fn(),
     updateAttendee: vi.fn(),
     deleteAttendee: vi.fn(),
-    createReminder: vi.fn(),
-    listRemindersByCreator: vi.fn(),
-    listActiveReminders: vi.fn(),
-    retrieveReminder: vi.fn(),
-    updateReminder: vi.fn(),
-    deleteReminder: vi.fn(),
     listCalendarProjects: vi.fn(),
     listCalendarMilestones: vi.fn(),
     listCalendarIssues: vi.fn(),
@@ -196,6 +192,17 @@ const {
     retrieveMilestoneTargetDate: vi.fn(),
     retrieveEventStart: vi.fn(),
   },
+  workReminders: {
+    list: vi.fn(),
+    retrieve: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    recurrenceRetrieve: vi.fn(),
+    recurrenceSet: vi.fn(),
+    recurrenceClear: vi.fn(),
+  },
+  workClient: vi.fn(),
 }))
 
 vi.mock('../../tenants/tenants.repository.js', () => tenantsRepo)
@@ -222,6 +229,10 @@ vi.mock('../../comments/comments.repository.js', () => commentsRepo)
 vi.mock('../../projects/gantt.repository.js', () => ganttRepo)
 vi.mock('../../projects/baselines.repository.js', () => baselinesRepo)
 vi.mock('../calendar.repository.js', () => calendarRepo)
+vi.mock('../../../providers/work.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../providers/work.js')>()),
+  workClient,
+}))
 
 vi.mock('../../layouts/layouts.repository.js', () => layoutsRepo)
 vi.mock(
@@ -305,23 +316,59 @@ function attendeeRow(overrides: Record<string, unknown> = {}) {
 
 function reminderRow(overrides: Record<string, unknown> = {}) {
   return {
+    object: 'reminder',
     id: 'prjrem_1',
-    tenantId: tenant.id,
-    issueId: 'iss_cal_a',
-    milestoneId: null,
-    eventId: null,
-    remindAt: 1788000000n,
+    organizationId: 'org_cal_1',
+    context: { service: 'projects', resource: 'issue', id: 'iss_cal_a' },
+    title: 'Issue reminder',
+    note: null,
+    remindAt: 1788000000,
     offsetMinutesBeforeDue: null,
-    recurrenceFreq: null,
-    recurrenceInterval: null,
-    recurrenceByWeekday: null,
-    recurrenceUntil: null,
-    recurrenceCount: null,
     channel: 'in-app',
+    timeZone: null,
+    recurrenceRuleId: null,
+    userId: 'usr_1',
+    status: 'SCHEDULED',
+    sentAt: null,
+    dismissedAt: null,
     createdBy: 'usr_1',
-    active: true,
-    createdAt: 1787900000n,
-    updatedAt: 1787900000n,
+    createdAt: 1787900000,
+    updatedAt: 1787900000,
+    ...overrides,
+  }
+}
+
+function workListEnvelope(rows: unknown[]) {
+  return {
+    data: {
+      object: 'list',
+      data: rows,
+      has_more: false,
+      total_count: null,
+      url: '/v1/organizations/org_cal_1/reminders',
+    },
+    error: null,
+  }
+}
+
+function workRuleRow(overrides: Record<string, unknown> = {}) {
+  return {
+    object: 'recurrence_rule',
+    id: 'rule_1',
+    organizationId: 'org_cal_1',
+    frequency: 'DAILY',
+    interval: 1,
+    byDay: [],
+    byMonthDay: [],
+    byMonth: [],
+    count: null,
+    untilAt: null,
+    timeZone: 'UTC',
+    weekStart: null,
+    rrule: 'DTSTART:20260101T000000Z\nRRULE:FREQ=DAILY;INTERVAL=1',
+    createdBy: 'usr_1',
+    createdAt: 1787900000,
+    updatedAt: 1787900000,
     ...overrides,
   }
 }
@@ -354,7 +401,9 @@ beforeEach(() => {
   layoutsRepo.listLayouts.mockResolvedValue([])
   projectCustomFieldsRepo.listProjectCustomFields.mockResolvedValue([])
   projectCustomFieldsRepo.listProjectCustomFieldValues.mockResolvedValue([])
-  projectCustomFieldsRepo.listProjectCustomFieldValuesForProjects.mockResolvedValue([])
+  projectCustomFieldsRepo.listProjectCustomFieldValuesForProjects.mockResolvedValue(
+    []
+  )
   vi.clearAllMocks()
   process.env.PROJECTS_INTERNAL_KEY = 'test-internal-key'
   tenantsRepo.retrieveByOrganization.mockResolvedValue(tenant)
@@ -365,13 +414,53 @@ beforeEach(() => {
   calendarRepo.listAttendeesForEvents.mockResolvedValue([])
   calendarRepo.retrieveAttendee.mockResolvedValue(null)
   calendarRepo.listAttendeesByUser.mockResolvedValue([])
-  calendarRepo.listRemindersByCreator.mockResolvedValue([])
-  calendarRepo.listActiveReminders.mockResolvedValue([])
-  calendarRepo.retrieveReminder.mockResolvedValue(null)
   calendarRepo.listCalendarProjects.mockResolvedValue([])
   calendarRepo.listCalendarMilestones.mockResolvedValue([])
   calendarRepo.listCalendarIssues.mockResolvedValue([])
   calendarRepo.listAssignedIssues.mockResolvedValue([])
+  workClient.mockReturnValue({
+    reminders: {
+      list: workReminders.list,
+      retrieve: workReminders.retrieve,
+      create: workReminders.create,
+      update: workReminders.update,
+      delete: workReminders.delete,
+      recurrence: {
+        retrieve: workReminders.recurrenceRetrieve,
+        set: workReminders.recurrenceSet,
+        clear: workReminders.recurrenceClear,
+      },
+    },
+  })
+  workReminders.list.mockResolvedValue(workListEnvelope([]))
+  workReminders.retrieve.mockResolvedValue({
+    data: reminderRow(),
+    error: null,
+  })
+  workReminders.create.mockImplementation(
+    async (_org: string, input: unknown) => ({
+      data: reminderRow({
+        ...(input as Record<string, unknown>),
+        context:
+          (input as { context?: unknown }).context ?? reminderRow().context,
+      }),
+      error: null,
+    })
+  )
+  workReminders.update.mockImplementation(
+    async (_org: string, _id: string, input: unknown) => ({
+      data: reminderRow({ ...(input as Record<string, unknown>) }),
+      error: null,
+    })
+  )
+  workReminders.delete.mockResolvedValue({
+    data: { object: 'reminder', id: 'prjrem_1', deleted: true },
+    error: null,
+  })
+  workReminders.recurrenceRetrieve.mockResolvedValue({
+    data: null,
+    error: null,
+  })
 })
 
 describe('calendar events', () => {
@@ -396,10 +485,7 @@ describe('calendar events', () => {
       '/v1/organizations/org_cal_1/events?projectId=prj_cal_1'
     )
     expect(response.status).toBe(200)
-    expect(calendarRepo.listEvents).toHaveBeenCalledWith(
-      tenant.id,
-      'prj_cal_1'
-    )
+    expect(calendarRepo.listEvents).toHaveBeenCalledWith(tenant.id, 'prj_cal_1')
   })
 
   it('creates an event inside a known project', async () => {
@@ -484,10 +570,7 @@ describe('calendar events', () => {
       id: 'prjev_1',
       deleted: true,
     })
-    expect(calendarRepo.deleteEvent).toHaveBeenCalledWith(
-      tenant.id,
-      'prjev_1'
-    )
+    expect(calendarRepo.deleteEvent).toHaveBeenCalledWith(tenant.id, 'prjev_1')
   })
 
   it('returns 404 when deleting an unknown event', async () => {
@@ -601,32 +684,76 @@ describe('event attendees', () => {
 })
 
 describe('reminders', () => {
-  it('lists reminders scoped to their creator', async () => {
-    calendarRepo.listRemindersByCreator.mockResolvedValue([reminderRow()])
+  it('lists reminders scoped to their creator through Work', async () => {
+    workReminders.list.mockResolvedValue(workListEnvelope([reminderRow()]))
     const response = await requestJson(
       'GET',
       '/v1/organizations/org_cal_1/reminders?createdBy=usr_1'
     )
     expect(response.status).toBe(200)
-    expect(calendarRepo.listRemindersByCreator).toHaveBeenCalledWith(
-      tenant.id,
-      'usr_1'
+    expect(workReminders.list).toHaveBeenCalledTimes(1)
+    expect(workReminders.list).toHaveBeenCalledWith('org_cal_1', {
+      userId: 'usr_1',
+      limit: 100,
+    })
+    expect(workReminders.recurrenceRetrieve).toHaveBeenCalledTimes(1)
+    expect(workReminders.recurrenceRetrieve).toHaveBeenCalledWith(
+      'org_cal_1',
+      'prjrem_1'
     )
     expect(response.body.data.data).toHaveLength(1)
+    expect(response.body.data.data[0]).toEqual({
+      object: 'projects.reminder',
+      id: 'prjrem_1',
+      tenantId: tenant.id,
+      issueId: 'iss_cal_a',
+      milestoneId: null,
+      eventId: null,
+      remindAt: 1788000000,
+      offsetMinutesBeforeDue: null,
+      recurrence: null,
+      channel: 'in-app',
+      createdBy: 'usr_1',
+      active: true,
+      createdAt: 1787900000,
+      updatedAt: 1787900000,
+    })
   })
 
-  it('keeps another creator rows out of the list', async () => {
-    calendarRepo.listRemindersByCreator.mockResolvedValue([])
+  it('keeps reminders from other services out of the list', async () => {
+    workReminders.list.mockResolvedValue(
+      workListEnvelope([
+        reminderRow(),
+        reminderRow({
+          id: 'prjrem_crm',
+          context: { service: 'crm', resource: 'request', id: 'req_1' },
+          createdBy: 'usr_1',
+          userId: 'usr_1',
+        }),
+      ])
+    )
+    const response = await requestJson(
+      'GET',
+      '/v1/organizations/org_cal_1/reminders?createdBy=usr_1'
+    )
+    expect(response.status).toBe(200)
+    expect(
+      response.body.data.data.map((row: { id: string }) => row.id)
+    ).toEqual(['prjrem_1'])
+  })
+
+  it('returns an empty list when Work has no reminders', async () => {
     const response = await requestJson(
       'GET',
       '/v1/organizations/org_cal_1/reminders?createdBy=usr_2'
     )
     expect(response.status).toBe(200)
     expect(response.body.data.data).toEqual([])
-    expect(calendarRepo.listRemindersByCreator).toHaveBeenCalledWith(
-      tenant.id,
-      'usr_2'
-    )
+    expect(workReminders.list).toHaveBeenCalledTimes(1)
+    expect(workReminders.list).toHaveBeenCalledWith('org_cal_1', {
+      userId: 'usr_2',
+      limit: 100,
+    })
   })
 
   it('requires the creator scope when listing reminders', async () => {
@@ -635,20 +762,100 @@ describe('reminders', () => {
       '/v1/organizations/org_cal_1/reminders'
     )
     expect(response.status).toBe(400)
+    expect(workReminders.list).not.toHaveBeenCalled()
   })
 
-  it('creates a reminder for its creator', async () => {
-    calendarRepo.createReminder.mockImplementation(async (params: unknown) => ({
-      ...(params as Record<string, unknown>),
-    }))
+  it('creates a reminder carrying the Projects issue context', async () => {
     const response = await requestJson(
       'POST',
       '/v1/organizations/org_cal_1/reminders',
       { issueId: 'iss_cal_a', remindAt: 1788000000, createdBy: 'usr_1' }
     )
     expect(response.status).toBe(201)
+    expect(workReminders.create).toHaveBeenCalledTimes(1)
+    expect(workReminders.create).toHaveBeenCalledWith('org_cal_1', {
+      context: { service: 'projects', resource: 'issue', id: 'iss_cal_a' },
+      title: 'Issue reminder',
+      remindAt: 1788000000,
+      offsetMinutesBeforeDue: null,
+      channel: 'in-app',
+      userId: 'usr_1',
+      createdBy: 'usr_1',
+    })
     expect(response.body.data.object).toBe('projects.reminder')
+    expect(response.body.data.issueId).toBe('iss_cal_a')
     expect(response.body.data.channel).toBe('in-app')
+  })
+
+  it('round-trips an offset reminder with a null remindAt', async () => {
+    const response = await requestJson(
+      'POST',
+      '/v1/organizations/org_cal_1/reminders',
+      {
+        milestoneId: 'ms_1',
+        offsetMinutesBeforeDue: 60,
+        createdBy: 'usr_1',
+      }
+    )
+    expect(response.status).toBe(201)
+    expect(workReminders.create).toHaveBeenCalledWith(
+      'org_cal_1',
+      expect.objectContaining({
+        context: { service: 'projects', resource: 'milestone', id: 'ms_1' },
+        remindAt: null,
+        offsetMinutesBeforeDue: 60,
+      })
+    )
+    expect(response.body.data.remindAt).toBeNull()
+    expect(response.body.data.offsetMinutesBeforeDue).toBe(60)
+  })
+
+  it('creates a recurring reminder through a Work recurrence rule', async () => {
+    workReminders.recurrenceSet.mockResolvedValue({
+      data: workRuleRow(),
+      error: null,
+    })
+    const response = await requestJson(
+      'POST',
+      '/v1/organizations/org_cal_1/reminders',
+      {
+        eventId: 'prjev_1',
+        remindAt: 1788000000,
+        recurrence: { freq: 'daily', interval: 1 },
+        createdBy: 'usr_1',
+      }
+    )
+    expect(response.status).toBe(201)
+    expect(workReminders.recurrenceSet).toHaveBeenCalledTimes(1)
+    expect(workReminders.recurrenceSet).toHaveBeenCalledWith(
+      'org_cal_1',
+      'prjrem_1',
+      { frequency: 'DAILY', interval: 1, timeZone: 'UTC' }
+    )
+    expect(response.body.data.recurrence).toEqual({
+      freq: 'daily',
+      interval: 1,
+      byWeekday: [],
+      until: null,
+      count: null,
+    })
+  })
+
+  it('maps a Work failure to a Projects error value instead of throwing', async () => {
+    workReminders.list.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'work/tenant-not-found',
+        message: 'This organization has no Work workspace yet.',
+      },
+    })
+    const response = await requestJson(
+      'GET',
+      '/v1/organizations/org_cal_1/reminders?createdBy=usr_1'
+    )
+    expect(response.status).toBe(404)
+    expect(response.body.data).toBeNull()
+    expect(response.body.error.code).toBe('projects/tenant-not-found')
   })
 
   it('rejects a reminder without any target', async () => {
@@ -658,6 +865,7 @@ describe('reminders', () => {
       { remindAt: 1788000000, createdBy: 'usr_1' }
     )
     expect(response.status).toBe(400)
+    expect(workReminders.create).not.toHaveBeenCalled()
   })
 
   it('rejects a reminder without any timing', async () => {
@@ -667,24 +875,38 @@ describe('reminders', () => {
       { issueId: 'iss_cal_a', createdBy: 'usr_1' }
     )
     expect(response.status).toBe(400)
+    expect(workReminders.create).not.toHaveBeenCalled()
   })
 
   it('lets the creator update their reminder', async () => {
-    calendarRepo.retrieveReminder.mockResolvedValue(reminderRow())
-    calendarRepo.updateReminder.mockResolvedValue(
-      reminderRow({ remindAt: 1788100000n })
-    )
     const response = await requestJson(
       'PATCH',
       '/v1/organizations/org_cal_1/reminders/prjrem_1?userId=usr_1',
       { remindAt: 1788100000 }
     )
     expect(response.status).toBe(200)
+    expect(workReminders.update).toHaveBeenCalledTimes(1)
+    expect(workReminders.update).toHaveBeenCalledWith('org_cal_1', 'prjrem_1', {
+      remindAt: 1788100000,
+    })
     expect(response.body.data.remindAt).toBe(1788100000)
   })
 
+  it('maps target and active changes onto Work context and status', async () => {
+    const response = await requestJson(
+      'PATCH',
+      '/v1/organizations/org_cal_1/reminders/prjrem_1?userId=usr_1',
+      { milestoneId: 'ms_9', active: false }
+    )
+    expect(response.status).toBe(200)
+    expect(workReminders.update).toHaveBeenCalledTimes(1)
+    expect(workReminders.update).toHaveBeenCalledWith('org_cal_1', 'prjrem_1', {
+      context: { service: 'projects', resource: 'milestone', id: 'ms_9' },
+      status: 'CANCELLED',
+    })
+  })
+
   it('forbids edits from anyone but the creator', async () => {
-    calendarRepo.retrieveReminder.mockResolvedValue(reminderRow())
     const response = await requestJson(
       'PATCH',
       '/v1/organizations/org_cal_1/reminders/prjrem_1?userId=usr_2',
@@ -692,10 +914,17 @@ describe('reminders', () => {
     )
     expect(response.status).toBe(403)
     expect(response.body.error.code).toBe('projects/reminder-forbidden')
-    expect(calendarRepo.updateReminder).not.toHaveBeenCalled()
+    expect(workReminders.update).not.toHaveBeenCalled()
   })
 
   it('returns 404 when updating an unknown reminder', async () => {
+    workReminders.retrieve.mockResolvedValue({
+      data: null,
+      error: {
+        code: 'work/reminder-not-found',
+        message: 'Reminder not found.',
+      },
+    })
     const response = await requestJson(
       'PATCH',
       '/v1/organizations/org_cal_1/reminders/prjrem_missing?userId=usr_1',
@@ -703,15 +932,37 @@ describe('reminders', () => {
     )
     expect(response.status).toBe(404)
     expect(response.body.error.code).toBe('projects/reminder-not-found')
+    expect(workReminders.update).not.toHaveBeenCalled()
+  })
+
+  it('treats a reminder from another service as not found', async () => {
+    workReminders.retrieve.mockResolvedValue({
+      data: reminderRow({
+        context: { service: 'crm', resource: 'request', id: 'req_1' },
+      }),
+      error: null,
+    })
+    const response = await requestJson(
+      'DELETE',
+      '/v1/organizations/org_cal_1/reminders/prjrem_1?userId=usr_1'
+    )
+    expect(response.status).toBe(404)
+    expect(response.body.error.code).toBe('projects/reminder-not-found')
+    expect(workReminders.delete).not.toHaveBeenCalled()
   })
 
   it('lets the creator delete their reminder', async () => {
-    calendarRepo.retrieveReminder.mockResolvedValue(reminderRow())
     const response = await requestJson(
       'DELETE',
       '/v1/organizations/org_cal_1/reminders/prjrem_1?userId=usr_1'
     )
     expect(response.status).toBe(200)
+    expect(workReminders.delete).toHaveBeenCalledTimes(1)
+    expect(workReminders.delete).toHaveBeenCalledWith(
+      'org_cal_1',
+      'prjrem_1',
+      'usr_1'
+    )
     expect(response.body.data).toEqual({
       object: 'projects.reminder',
       id: 'prjrem_1',
@@ -720,58 +971,64 @@ describe('reminders', () => {
   })
 
   it('forbids deletes from anyone but the creator', async () => {
-    calendarRepo.retrieveReminder.mockResolvedValue(reminderRow())
     const response = await requestJson(
       'DELETE',
       '/v1/organizations/org_cal_1/reminders/prjrem_1?userId=usr_2'
     )
     expect(response.status).toBe(403)
     expect(response.body.error.code).toBe('projects/reminder-forbidden')
-    expect(calendarRepo.deleteReminder).not.toHaveBeenCalled()
+    expect(workReminders.delete).not.toHaveBeenCalled()
   })
 })
 
 describe('due reminders', () => {
-  it('returns active reminders due at the requested moment', async () => {
-    // The repository only yields active rows, so inactive reminders can
-    // never surface: the service reads dues from listActiveReminders alone.
-    calendarRepo.listActiveReminders.mockResolvedValue([
-      reminderRow({ id: 'prjrem_due', remindAt: 1788000000n }),
-      reminderRow({ id: 'prjrem_future', remindAt: 1789000000n }),
-    ])
+  it('returns Work reminders due at the requested moment', async () => {
+    workReminders.list.mockResolvedValue(
+      workListEnvelope([
+        reminderRow({ id: 'prjrem_due', remindAt: 1788000000 }),
+        reminderRow({ id: 'prjrem_future', remindAt: 1789000000 }),
+      ])
+    )
     const response = await requestJson(
       'GET',
       '/v1/organizations/org_cal_1/reminders/due?at=1788000000'
     )
     expect(response.status).toBe(200)
-    expect(response.body.data.data.map((row: { id: string }) => row.id)).toEqual([
-      'prjrem_due',
-    ])
+    expect(workReminders.list).toHaveBeenCalledTimes(1)
+    expect(workReminders.list).toHaveBeenCalledWith('org_cal_1', {
+      status: 'SCHEDULED',
+      limit: 100,
+    })
+    expect(
+      response.body.data.data.map((row: { id: string }) => row.id)
+    ).toEqual(['prjrem_due'])
   })
 
   it('marks nothing as sent while computing dues', async () => {
-    calendarRepo.listActiveReminders.mockResolvedValue([
-      reminderRow({ remindAt: 1787000000n }),
-    ])
+    workReminders.list.mockResolvedValue(
+      workListEnvelope([reminderRow({ remindAt: 1787000000 })])
+    )
     const response = await requestJson(
       'GET',
       '/v1/organizations/org_cal_1/reminders/due?at=1788000000'
     )
     expect(response.status).toBe(200)
     expect(response.body.data.data).toHaveLength(1)
-    expect(calendarRepo.updateReminder).not.toHaveBeenCalled()
-    expect(calendarRepo.deleteReminder).not.toHaveBeenCalled()
-    expect(calendarRepo.createReminder).not.toHaveBeenCalled()
+    expect(workReminders.update).not.toHaveBeenCalled()
+    expect(workReminders.delete).not.toHaveBeenCalled()
+    expect(workReminders.create).not.toHaveBeenCalled()
   })
 
   it('computes offset reminders from their target due date', async () => {
-    calendarRepo.listActiveReminders.mockResolvedValue([
-      reminderRow({
-        id: 'prjrem_offset',
-        remindAt: null,
-        offsetMinutesBeforeDue: 60,
-      }),
-    ])
+    workReminders.list.mockResolvedValue(
+      workListEnvelope([
+        reminderRow({
+          id: 'prjrem_offset',
+          remindAt: null,
+          offsetMinutesBeforeDue: 60,
+        }),
+      ])
+    )
     calendarRepo.retrieveIssueDueDate.mockResolvedValue({
       dueDate: 1788000000n,
     })
@@ -779,9 +1036,13 @@ describe('due reminders', () => {
       'GET',
       '/v1/organizations/org_cal_1/reminders/due?at=1787996400'
     )
-    expect(
-      due.body.data.data.map((row: { id: string }) => row.id)
-    ).toEqual(['prjrem_offset'])
+    expect(due.body.data.data.map((row: { id: string }) => row.id)).toEqual([
+      'prjrem_offset',
+    ])
+    expect(calendarRepo.retrieveIssueDueDate).toHaveBeenCalledWith(
+      tenant.id,
+      'iss_cal_a'
+    )
     const early = await requestJson(
       'GET',
       '/v1/organizations/org_cal_1/reminders/due?at=1787996399'
@@ -790,14 +1051,19 @@ describe('due reminders', () => {
   })
 
   it('reports a recurring reminder at its latest occurrence before at', async () => {
-    calendarRepo.listActiveReminders.mockResolvedValue([
-      reminderRow({
-        id: 'prjrem_daily',
-        remindAt: 1788000000n,
-        recurrenceFreq: 'daily',
-        recurrenceInterval: 1,
-      }),
-    ])
+    workReminders.list.mockResolvedValue(
+      workListEnvelope([
+        reminderRow({
+          id: 'prjrem_daily',
+          remindAt: 1788000000,
+          recurrenceRuleId: 'rule_1',
+        }),
+      ])
+    )
+    workReminders.recurrenceRetrieve.mockResolvedValue({
+      data: workRuleRow(),
+      error: null,
+    })
     const response = await requestJson(
       'GET',
       `/v1/organizations/org_cal_1/reminders/due?at=${1788000000 + 2 * DAY + 12}`
@@ -805,6 +1071,54 @@ describe('due reminders', () => {
     expect(response.status).toBe(200)
     expect(response.body.data.data).toHaveLength(1)
     expect(response.body.data.data[0].dueAt).toBe(1788000000 + 2 * DAY)
+    expect(response.body.data.data[0].recurrence).toEqual({
+      freq: 'daily',
+      interval: 1,
+      byWeekday: [],
+      until: null,
+      count: null,
+    })
+  })
+
+  it('skips a reminder with neither time nor offset', async () => {
+    workReminders.list.mockResolvedValue(
+      workListEnvelope([
+        reminderRow({
+          id: 'prjrem_empty',
+          remindAt: null,
+          offsetMinutesBeforeDue: null,
+        }),
+      ])
+    )
+    const response = await requestJson(
+      'GET',
+      '/v1/organizations/org_cal_1/reminders/due?at=1788000000'
+    )
+    expect(response.status).toBe(200)
+    expect(response.body.data.data).toEqual([])
+  })
+
+  it('returns an empty list when Work has no reminders', async () => {
+    const response = await requestJson(
+      'GET',
+      '/v1/organizations/org_cal_1/reminders/due?at=1788000000'
+    )
+    expect(response.status).toBe(200)
+    expect(response.body.data.data).toEqual([])
+  })
+
+  it('maps a Work list failure to a Projects error value', async () => {
+    workReminders.list.mockResolvedValue({
+      data: null,
+      error: { code: 'work/invalid-response', message: 'Bad gateway.' },
+    })
+    const response = await requestJson(
+      'GET',
+      '/v1/organizations/org_cal_1/reminders/due?at=1788000000'
+    )
+    expect(response.status).toBe(500)
+    expect(response.body.data).toBeNull()
+    expect(response.body.error.code).toBe('projects/internal-error')
   })
 })
 
@@ -894,9 +1208,9 @@ describe('calendar read model', () => {
       `/v1/organizations/org_cal_1/calendar?from=${WINDOW_START}&to=${WINDOW_START + 5 * DAY}`
     )
     const entries = response.body.data.entries as Array<{ id: string }>
-    expect(
-      entries.filter((entry) => entry.id === 'prjev_plain')
-    ).toHaveLength(1)
+    expect(entries.filter((entry) => entry.id === 'prjev_plain')).toHaveLength(
+      1
+    )
   })
 
   it('expands recurring occurrences with href-safe ids inside the window', async () => {
@@ -998,30 +1312,35 @@ describe('my work', () => {
       attendeeRow({ eventId: 'prjev_future' }),
       attendeeRow({ id: 'prjeva_2', eventId: 'prjev_past' }),
     ])
-    calendarRepo.retrieveEvent.mockImplementation(async (tenantId: string, eventId: string) => {
-      void tenantId
-      if (eventId === 'prjev_future') {
+    calendarRepo.retrieveEvent.mockImplementation(
+      async (tenantId: string, eventId: string) => {
+        void tenantId
+        if (eventId === 'prjev_future') {
+          return eventRow({
+            id: 'prjev_future',
+            startsAt: 2000000000n,
+            endsAt: 2000003600n,
+          })
+        }
         return eventRow({
-          id: 'prjev_future',
-          startsAt: 2000000000n,
-          endsAt: 2000003600n,
+          id: 'prjev_past',
+          startsAt: 1000000000n,
+          endsAt: 1000003600n,
         })
       }
-      return eventRow({
-        id: 'prjev_past',
-        startsAt: 1000000000n,
-        endsAt: 1000003600n,
-      })
-    })
-    calendarRepo.listActiveReminders.mockResolvedValue([
-      reminderRow({ id: 'prjrem_mine', remindAt: 1000000000n }),
-      reminderRow({
-        id: 'prjrem_theirs',
-        createdBy: 'usr_other',
-        remindAt: 1000000000n,
-      }),
-      reminderRow({ id: 'prjrem_later', remindAt: 4000000000n }),
-    ])
+    )
+    workReminders.list.mockResolvedValue(
+      workListEnvelope([
+        reminderRow({ id: 'prjrem_mine', remindAt: 1000000000 }),
+        reminderRow({
+          id: 'prjrem_theirs',
+          createdBy: 'usr_other',
+          userId: 'usr_other',
+          remindAt: 1000000000,
+        }),
+        reminderRow({ id: 'prjrem_later', remindAt: 4000000000 }),
+      ])
+    )
   }
 
   it('returns assigned issues, upcoming events and due reminders', async () => {
@@ -1039,9 +1358,7 @@ describe('my work', () => {
       )
     ).toEqual(['CAL-1'])
     expect(
-      response.body.data.upcomingEvents.map(
-        (event: { id: string }) => event.id
-      )
+      response.body.data.upcomingEvents.map((event: { id: string }) => event.id)
     ).toEqual(['prjev_future'])
     expect(
       response.body.data.dueReminders.map(

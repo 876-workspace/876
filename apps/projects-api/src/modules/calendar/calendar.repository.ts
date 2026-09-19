@@ -2,7 +2,6 @@ import { prisma } from '../../db/index.js'
 import type {
   EventAttendeeRow,
   ProjectEventRow,
-  ReminderRow,
 } from './calendar.serializers.js'
 
 export type CreateEventParams = {
@@ -45,41 +44,6 @@ export type UpdateEventParams = {
   recurrenceByWeekday?: string | null
   recurrenceUntil?: bigint | null
   recurrenceCount?: number | null
-  updatedAt: bigint
-}
-
-export type CreateReminderParams = {
-  id: string
-  tenantId: string
-  issueId: string | null
-  milestoneId: string | null
-  eventId: string | null
-  remindAt: bigint | null
-  offsetMinutesBeforeDue: number | null
-  recurrenceFreq: string | null
-  recurrenceInterval: number | null
-  recurrenceByWeekday: string | null
-  recurrenceUntil: bigint | null
-  recurrenceCount: number | null
-  channel: string
-  createdBy: string
-  active: boolean
-  createdAt: bigint
-  updatedAt: bigint
-}
-
-export type UpdateReminderParams = {
-  issueId?: string | null
-  milestoneId?: string | null
-  eventId?: string | null
-  remindAt?: bigint | null
-  offsetMinutesBeforeDue?: number | null
-  recurrenceFreq?: string | null
-  recurrenceInterval?: number | null
-  recurrenceByWeekday?: string | null
-  recurrenceUntil?: bigint | null
-  recurrenceCount?: number | null
-  active?: boolean
   updatedAt: bigint
 }
 
@@ -228,63 +192,6 @@ export async function deleteAttendee(
   await prisma.eventAttendee.deleteMany({
     where: { tenantId, eventId, userId },
   })
-}
-
-export async function createReminder(
-  params: CreateReminderParams
-): Promise<ReminderRow> {
-  const row = await prisma.reminder.create({ data: params })
-  return row as unknown as ReminderRow
-}
-
-export async function listRemindersByCreator(
-  tenantId: string,
-  createdBy: string
-): Promise<ReminderRow[]> {
-  const rows = await prisma.reminder.findMany({
-    where: { tenantId, createdBy },
-    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-  })
-  return rows as unknown as ReminderRow[]
-}
-
-export async function listActiveReminders(
-  tenantId: string
-): Promise<ReminderRow[]> {
-  const rows = await prisma.reminder.findMany({
-    where: { tenantId, active: true },
-    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-  })
-  return rows as unknown as ReminderRow[]
-}
-
-export async function retrieveReminder(
-  tenantId: string,
-  reminderId: string
-): Promise<ReminderRow | null> {
-  const row = await prisma.reminder.findFirst({
-    where: { tenantId, id: reminderId },
-  })
-  return row as unknown as ReminderRow | null
-}
-
-export async function updateReminder(
-  tenantId: string,
-  reminderId: string,
-  patch: UpdateReminderParams
-): Promise<ReminderRow> {
-  const row = await prisma.reminder.update({
-    where: { id: reminderId },
-    data: { ...patch },
-  })
-  return row as unknown as ReminderRow
-}
-
-export async function deleteReminder(
-  tenantId: string,
-  reminderId: string
-): Promise<void> {
-  await prisma.reminder.deleteMany({ where: { tenantId, id: reminderId } })
 }
 
 export async function listCalendarProjects(
