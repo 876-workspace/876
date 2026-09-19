@@ -63,6 +63,13 @@ type Props = {
   primaryDisabled?: boolean
   primaryVariant?:
     'default' | 'brand' | 'outline' | 'info' | 'success' | 'warning'
+  /**
+   * How the primary action behaves below `sm`. `'fab-owns-it'` suppresses the
+   * primary button on phone because the host already renders a floating action
+   * button for the same action — two primary affordances on one screen is one
+   * too many. Defaults to `'button'`, which is the existing behaviour.
+   */
+  mobilePrimary?: 'button' | 'fab-owns-it'
   /** Navigate to this URL when the primary button is clicked. */
   primaryHref?: string
   /** Called when the primary button is clicked (ignored if primaryHref is set). */
@@ -80,6 +87,7 @@ export function ResourceToolbar({
   primaryIconOnly = false,
   primaryDisabled = false,
   primaryVariant = 'default',
+  mobilePrimary = 'button',
   primaryHref,
   onPrimaryAction,
   dropdownActions = [],
@@ -131,22 +139,38 @@ export function ResourceToolbar({
   const hasDropdown = refresh || actions.length > 0
 
   return (
-    <div className="mb-5 flex items-center justify-between gap-4">
-      <div>
-        {titleFilter ?? <h1 className="876-page-title">{title}</h1>}
-        {description && (
-          <p className="text-muted-foreground mt-1 text-sm">{description}</p>
+    <div className="mb-4 flex flex-col gap-2 sm:mb-5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div className="order-2 min-w-0 sm:order-1">
+        {titleFilter ? (
+          <div className="876-page-title-lg">{titleFilter}</div>
+        ) : (
+          <h1 className="876-page-title-lg">{title}</h1>
         )}
+        {description ? (
+          <p className="text-muted-foreground mt-1 text-sm">{description}</p>
+        ) : null}
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
-        {primaryButton}
+      <div className="order-1 flex shrink-0 items-center justify-end gap-2 sm:order-2">
+        {primaryButton ? (
+          <span
+            className={cn(
+              '876-toolbar-mobile-primary',
+              mobilePrimary === 'fab-owns-it'
+                ? 'hidden sm:!inline-flex'
+                : 'sm:!block'
+            )}
+          >
+            {primaryButton}
+          </span>
+        ) : null}
 
-        {hasDropdown && (
+        {hasDropdown ? (
           <DropdownMenu>
             <DropdownMenuTrigger
               className={cn(
-                buttonVariants({ variant: 'outline', size: 'icon-sm' })
+                buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+                'size-9 rounded-full border-0 sm:size-8 sm:rounded-[min(var(--radius-md),10px)] sm:border sm:border-border-strong sm:bg-background sm:shadow-xs sm:hover:bg-muted sm:hover:text-foreground sm:aria-expanded:bg-muted sm:aria-expanded:text-foreground dark:sm:bg-input/30 dark:sm:hover:bg-input/50'
               )}
               aria-label="More actions"
             >
@@ -170,9 +194,7 @@ export function ResourceToolbar({
                       disabled={action.disabled}
                       onClick={action.onClick}
                       render={
-                        action.href && !action.disabled ? (
-                          <Link href={action.href} />
-                        ) : undefined
+                        action.href && !action.disabled ? <Link href={action.href} /> : undefined
                       }
                     >
                       {Icon && <Icon className="size-4" />}
@@ -183,7 +205,7 @@ export function ResourceToolbar({
               })}
             </DropdownMenuContent>
           </DropdownMenu>
-        )}
+        ) : null}
       </div>
     </div>
   )

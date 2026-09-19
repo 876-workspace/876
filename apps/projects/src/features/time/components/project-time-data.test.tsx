@@ -59,7 +59,10 @@ function entry(overrides: Partial<TimeEntry> = {}): TimeEntry {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mocks.listEntries.mockResolvedValue({ data: { data: [entry()] }, error: null })
+  mocks.listEntries.mockResolvedValue({
+    data: { data: [entry()] },
+    error: null,
+  })
   mocks.listIssues.mockResolvedValue({ data: { data: [] }, error: null })
   mocks.retrieveProject.mockResolvedValue({
     data: { id: 'prj_1', name: 'Website rebuild' },
@@ -71,14 +74,21 @@ beforeEach(() => {
 describe('ProjectTimeData', () => {
   it('reads the entries of this project for the signed-in viewer', async () => {
     render(
-      await ProjectTimeData({ orgId: 'org_1', userId: 'usr_1', projectId: 'prj_1', canEdit: true })
+      await ProjectTimeData({
+        orgId: 'org_1',
+        userId: 'usr_1',
+        projectId: 'prj_1',
+        canEdit: true,
+      })
     )
 
     expect(mocks.listEntries).toHaveBeenCalledWith('org_1', {
       projectId: 'prj_1',
     })
     expect(mocks.currentTimer).toHaveBeenCalledWith('org_1', 'usr_1')
-    expect(screen.getByText('Website rebuild')).toBeInTheDocument()
+    const projectNames = screen.getAllByText('Website rebuild')
+    expect(projectNames).toHaveLength(2)
+    expect(projectNames[0]).toBeInTheDocument()
   })
 
   it('names the work item each entry points at', async () => {
@@ -92,10 +102,17 @@ describe('ProjectTimeData', () => {
     })
 
     render(
-      await ProjectTimeData({ orgId: 'org_1', userId: 'usr_1', projectId: 'prj_1', canEdit: true })
+      await ProjectTimeData({
+        orgId: 'org_1',
+        userId: 'usr_1',
+        projectId: 'prj_1',
+        canEdit: true,
+      })
     )
 
-    expect(screen.getByRole('link', { name: 'Ship the header' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Ship the header' })
+    ).toBeInTheDocument()
   })
 
   it('shows a timer running against another project without naming it wrongly', async () => {
@@ -105,7 +122,12 @@ describe('ProjectTimeData', () => {
     })
 
     render(
-      await ProjectTimeData({ orgId: 'org_1', userId: 'usr_1', projectId: 'prj_1', canEdit: true })
+      await ProjectTimeData({
+        orgId: 'org_1',
+        userId: 'usr_1',
+        projectId: 'prj_1',
+        canEdit: true,
+      })
     )
 
     expect(screen.getByText('Tracking another project')).toBeInTheDocument()
@@ -121,15 +143,22 @@ describe('ProjectTimeData', () => {
     })
 
     render(
-      await ProjectTimeData({ orgId: 'org_1', userId: 'usr_1', projectId: 'prj_1', canEdit: true })
+      await ProjectTimeData({
+        orgId: 'org_1',
+        userId: 'usr_1',
+        projectId: 'prj_1',
+        canEdit: true,
+      })
     )
 
     expect(
       screen.getByText('Some time data could not be loaded')
     ).toBeInTheDocument()
-    expect(
-      screen.getByText('No time logged against this project yet.')
-    ).toBeInTheDocument()
+    const emptyNotes = screen.getAllByText(
+      'No time logged against this project yet.'
+    )
+    expect(emptyNotes).toHaveLength(2)
+    expect(emptyNotes[0]).toBeInTheDocument()
   })
 
   it('opens the editor for the entry the URL names', async () => {
@@ -174,7 +203,12 @@ describe('ProjectTimeData', () => {
     })
 
     render(
-      await ProjectTimeData({ orgId: 'org_1', userId: 'usr_1', projectId: 'prj_9', canEdit: true })
+      await ProjectTimeData({
+        orgId: 'org_1',
+        userId: 'usr_1',
+        projectId: 'prj_9',
+        canEdit: true,
+      })
     )
 
     expect(mocks.notFound).toHaveBeenCalled()

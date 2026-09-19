@@ -90,7 +90,10 @@ function timesheet(overrides: Partial<Timesheet> = {}): Timesheet {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mocks.listEntries.mockResolvedValue({ data: { data: [entry()] }, error: null })
+  mocks.listEntries.mockResolvedValue({
+    data: { data: [entry()] },
+    error: null,
+  })
   mocks.listTimesheets.mockResolvedValue({ data: { data: [] }, error: null })
   mocks.listProjects.mockResolvedValue({
     data: { data: [{ id: 'prj_1', name: 'Website rebuild' }] },
@@ -117,7 +120,9 @@ describe('MyTimeData', () => {
 
     expect(mocks.listEntries).toHaveBeenCalledWith('org_1', { userId: 'usr_1' })
     expect(screen.getByText('Entries in this period')).toBeInTheDocument()
-    expect(screen.getByText('1h 30m')).toBeInTheDocument()
+    const durations = screen.getAllByText('1h 30m')
+    expect(durations).toHaveLength(2)
+    expect(durations[0]).toBeInTheDocument()
   })
 
   it('leaves out entries the period does not cover', async () => {
@@ -189,7 +194,9 @@ describe('MyTimeData', () => {
       })
     )
 
-    expect(screen.queryByRole('button', { name: 'Create for period' })).toBeNull()
+    expect(
+      screen.queryByRole('button', { name: 'Create for period' })
+    ).toBeNull()
   })
 
   it('shows each sheet with the entries it gathered', async () => {
@@ -212,7 +219,9 @@ describe('MyTimeData', () => {
     )
 
     expect(screen.getByRole('button', { name: 'Submit' })).toBeInTheDocument()
-    expect(screen.getByText('Jan 1, 2024 – Jan 7, 2024')).toBeInTheDocument()
+    const periods = screen.getAllByText('Jan 1, 2024 – Jan 7, 2024')
+    expect(periods).toHaveLength(2)
+    expect(periods[0]).toBeInTheDocument()
   })
 
   it('withholds the sheet actions from a viewer who cannot edit', async () => {
@@ -231,7 +240,9 @@ describe('MyTimeData', () => {
     )
 
     expect(screen.queryByRole('button', { name: 'Submit' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Create for period' })).toBeNull()
+    expect(
+      screen.queryByRole('button', { name: 'Create for period' })
+    ).toBeNull()
   })
 
   it('reports a failed read without dropping the sections', async () => {

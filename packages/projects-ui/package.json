@@ -39,6 +39,10 @@
       "types": "./src/issue-detail.tsx",
       "default": "./src/issue-detail.tsx"
     },
+    "./issue-agent-actions": {
+      "types": "./src/issue-agent-actions.tsx",
+      "default": "./src/issue-agent-actions.tsx"
+    },
     "./issue-comments": {
       "types": "./src/issue-comments.tsx",
       "default": "./src/issue-comments.tsx"

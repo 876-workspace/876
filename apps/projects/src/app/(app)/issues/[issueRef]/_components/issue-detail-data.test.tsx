@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   listStates: vi.fn(),
   linksData: vi.fn(),
   listFollowers: vi.fn(),
+  listComments: vi.fn(),
   getIssueVisibility: vi.fn(),
 }))
 
@@ -23,6 +24,7 @@ vi.mock('@/lib/clients/projects', () => ({
       list: mocks.listIssues,
       events: { list: mocks.listEvents },
     },
+    comments: { list: mocks.listComments },
     customFields: { list: mocks.listFields },
     workflowStates: { list: mocks.listStates },
     followers: { list: mocks.listFollowers },
@@ -120,6 +122,7 @@ beforeEach(() => {
   mocks.memberLabels.mockResolvedValue({ labels: {} })
   mocks.listStates.mockResolvedValue({ data: { data: [] }, error: null })
   mocks.listFollowers.mockResolvedValue({ data: { data: [] }, error: null })
+  mocks.listComments.mockResolvedValue({ data: { data: [] }, error: null })
   mocks.getIssueVisibility.mockResolvedValue(null)
 })
 
@@ -127,7 +130,9 @@ describe('IssueDetailData', () => {
   it('shows the Blocked badge when the work item is blocked', async () => {
     await renderDetail(makeIssue({ blocked: true }))
 
-    expect(screen.getByText('Blocked')).toBeInTheDocument()
+    const blocked = screen.getAllByText('Blocked')
+    expect(blocked).toHaveLength(2)
+    expect(blocked[0]).toBeInTheDocument()
   })
 
   it('leaves the Blocked badge off when the work item is not blocked', async () => {

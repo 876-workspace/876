@@ -145,18 +145,18 @@ export function MarkdownEditor({
           </Button>
         </div>
         {tab === 'write' ? (
-          <div className="border-border/50 flex flex-wrap gap-0.5 sm:ml-auto sm:border-l sm:pl-2">
+          <div className="876-scroll-none border-border/50 flex gap-1 overflow-x-auto sm:ml-auto sm:border-l sm:pl-2">
             {tools.map(
               ({ label, prefix, suffix, icon: Icon, mark, markClassName }) => (
                 <Button
                   key={label}
                   type="button"
                   variant="ghost"
-                  size="icon-xs"
+                  size="icon"
                   disabled={disabled}
                   aria-label={label}
                   title={label}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground size-9"
                   onClick={() => apply(prefix, suffix)}
                 >
                   {Icon ? (
@@ -186,7 +186,7 @@ export function MarkdownEditor({
           placeholder={placeholder}
           rows={minRows}
           disabled={disabled}
-          className="bg-background min-h-32 resize-y rounded-none border-0 px-4 py-3 shadow-none focus-visible:ring-0"
+          className="bg-background min-h-32 resize-y rounded-none border-0 px-4 py-3 text-base shadow-none focus-visible:ring-0"
         />
       ) : (
         <div className="bg-background min-h-32 px-4 py-3">

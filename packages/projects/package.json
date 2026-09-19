@@ -15,6 +15,10 @@
       "types": "./src/contracts.ts",
       "default": "./src/contracts.ts"
     },
+    "./agent-brief": {
+      "types": "./src/agent-brief.ts",
+      "default": "./src/agent-brief.ts"
+    },
     "./service": {
       "types": "./src/service-client.ts",
       "default": "./src/service-client.ts"

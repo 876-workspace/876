@@ -16,6 +16,7 @@ import {
 } from './handlers.test-fixtures'
 import {
   handleIssueComment,
+  handleIssueBrief,
   handleIssueComments,
   handleIssueCreate,
   handleIssueEvents,
@@ -116,6 +117,121 @@ describe('handlers', () => {
     })
     expect(commentsSpy).not.toHaveBeenCalled()
     expect(textOf(withoutComments)).toContain('CONSOLE-12')
+  })
+
+  it('issue_brief returns the shared formatted brief for a fixture issue', async () => {
+    vi.spyOn(client.issues, 'retrieve').mockResolvedValue({
+      data: mockIssue,
+      error: null,
+    })
+    vi.spyOn(client.comments, 'list').mockResolvedValue({
+      data: {
+        object: 'list',
+        data: [mockComment],
+        has_more: false,
+        total_count: 1,
+        url: '/comments',
+      },
+      error: null,
+    })
+    vi.spyOn(client.issues, 'list').mockResolvedValue({
+      data: {
+        object: 'list',
+        data: [],
+        has_more: false,
+        total_count: 0,
+        url: '/issues',
+      },
+      error: null,
+    })
+    vi.spyOn(client.issueRelations, 'list').mockResolvedValue({
+      data: {
+        object: 'list',
+        data: [],
+        has_more: false,
+        total_count: 0,
+        url: '/relations',
+      },
+      error: null,
+    })
+    vi.spyOn(client.workflowStates, 'list').mockResolvedValue({
+      data: {
+        object: 'list',
+        data: [mockWorkflowState],
+        has_more: false,
+        total_count: 1,
+        url: '/states',
+      },
+      error: null,
+    })
+
+    const result = await handleIssueBrief(client, config, { ref: 'CONSOLE-12' })
+
+    expect(result.structuredContent).toEqual({ brief: textOf(result) })
+    expect(textOf(result)).toContain('# CONSOLE-12 — Fix workspace detail 404s')
+    expect(textOf(result)).toContain('## Comments (1)')
+  })
+
+  it('issue_brief degrades when a sub-fetch fails', async () => {
+    vi.spyOn(client.issues, 'retrieve').mockResolvedValue({
+      data: mockIssue,
+      error: null,
+    })
+    vi.spyOn(client.comments, 'list').mockResolvedValue({
+      data: {
+        object: 'list',
+        data: [],
+        has_more: false,
+        total_count: 0,
+        url: '/comments',
+      },
+      error: null,
+    })
+    vi.spyOn(client.issues, 'list').mockResolvedValue({
+      data: null,
+      error: {
+        code: 'projects/unavailable',
+        message: 'sub-issues unavailable',
+      },
+    })
+    vi.spyOn(client.issueRelations, 'list').mockResolvedValue({
+      data: {
+        object: 'list',
+        data: [],
+        has_more: false,
+        total_count: 0,
+        url: '/relations',
+      },
+      error: null,
+    })
+    vi.spyOn(client.workflowStates, 'list').mockResolvedValue({
+      data: {
+        object: 'list',
+        data: [],
+        has_more: false,
+        total_count: 0,
+        url: '/states',
+      },
+      error: null,
+    })
+
+    const result = await handleIssueBrief(client, config, { ref: 'CONSOLE-12' })
+
+    expect(result.isError).toBeUndefined()
+    expect(textOf(result)).not.toContain('## Sub-issues')
+    expect(textOf(result)).toContain('> Note: Sub-issues could not be loaded.')
+  })
+
+  it('issue_brief returns the standard not-found error for an unknown ref', async () => {
+    vi.spyOn(client.issues, 'retrieve').mockResolvedValue({
+      data: null,
+      error: { code: 'projects/issue-not-found', message: 'Issue not found' },
+    })
+
+    const result = await handleIssueBrief(client, config, { ref: 'NOPE-1' })
+
+    expect(result.isError).toBe(true)
+    expect(textOf(result)).toContain('projects/issue-not-found')
   })
 
   it('issue_create forwards configured type, milestone, custom fields and creator', async () => {
@@ -302,10 +418,12 @@ describe('handlers', () => {
   })
 
   it('project_create and project_update forward project default work item type', async () => {
-    const createSpy = vi.spyOn(client.projects, 'create').mockResolvedValueOnce({
-      data: mockProject,
-      error: null,
-    })
+    const createSpy = vi
+      .spyOn(client.projects, 'create')
+      .mockResolvedValueOnce({
+        data: mockProject,
+        error: null,
+      })
     await handleProjectCreate(client, config, {
       name: 'Console',
       defaultWorkItemTypeId: mockWorkItemType.id,
@@ -325,10 +443,12 @@ describe('handlers', () => {
       },
       error: null,
     })
-    const updateSpy = vi.spyOn(client.projects, 'update').mockResolvedValueOnce({
-      data: { ...mockProject, defaultWorkItemTypeId: null },
-      error: null,
-    })
+    const updateSpy = vi
+      .spyOn(client.projects, 'update')
+      .mockResolvedValueOnce({
+        data: { ...mockProject, defaultWorkItemTypeId: null },
+        error: null,
+      })
     await handleProjectUpdate(client, config, {
       project: 'CONSOLE',
       defaultWorkItemTypeId: null,
@@ -354,7 +474,9 @@ describe('handlers', () => {
       .spyOn(client.projects, 'retrieve')
       .mockResolvedValueOnce({ data: mockProject, error: null })
 
-    const result = await handleProjectGet(client, config, { project: 'CONSOLE' })
+    const result = await handleProjectGet(client, config, {
+      project: 'CONSOLE',
+    })
     expect(retrieveSpy).toHaveBeenCalledWith('org_test_123', 'prj_console')
     expect(result.isError).toBeUndefined()
   })

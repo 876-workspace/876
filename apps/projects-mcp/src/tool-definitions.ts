@@ -15,9 +15,15 @@ import {
   handleIssueCreate,
   handleIssueEvents,
   handleIssueGet,
+  handleIssueBrief,
+  handleIssueDevelopmentLink,
+  handleIssueDevelopmentLinks,
   handleIssuesList,
   handleIssueUpdate,
   handleLabelCreate,
+  handleCaptureCreate,
+  handleCapturesList,
+  handleCapturePromote,
   handleLabelsList,
   handleMilestonesList,
   handlePhaseGet,
@@ -65,12 +71,24 @@ import {
   issueEventsSchema,
   issueGetOutputSchema,
   issueGetSchema,
+  issueBriefOutputSchema,
+  issueBriefSchema,
+  issueDevelopmentLinkOutputSchema,
+  issueDevelopmentLinkSchema,
+  issueDevelopmentLinksOutputSchema,
+  issueDevelopmentLinksSchema,
   issuesListOutputSchema,
   issuesListSchema,
   issueUpdateOutputSchema,
   issueUpdateSchema,
   labelCreateOutputSchema,
   labelCreateSchema,
+  captureCreateOutputSchema,
+  captureCreateSchema,
+  capturesListOutputSchema,
+  capturesListSchema,
+  capturePromoteOutputSchema,
+  capturePromoteSchema,
   labelsListOutputSchema,
   labelsListSchema,
   milestonesListOutputSchema,
@@ -254,7 +272,46 @@ export function registerProjectTools(
     withToolErrorBoundary((args) => handleIssueGet(client, config, args))
   )
 
-  // 8. issue_create
+  // 8. issue_brief
+  server.registerTool(
+    'issue_brief',
+    {
+      description:
+        'Retrieve one issue as a complete, paste-ready markdown brief for an implementing agent: metadata, description, parent, sub-issues, links, attachments and every comment in chronological order. Prefer this over issue_get when you are about to implement the issue, because comments frequently carry the specification that supersedes the description.',
+      inputSchema: issueBriefSchema,
+      outputSchema: issueBriefOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleIssueBrief(client, config, args))
+  )
+
+  server.registerTool(
+    'issue_development_link',
+    {
+      description:
+        'Record what was built for an issue: a branch, pull request, commit or deployment. Idempotent on the external id, so re-recording the same pull request updates it instead of duplicating it. Use this at the end of an implementation run so the issue itself shows the work, for someone reading it away from the codebase.',
+      inputSchema: issueDevelopmentLinkSchema,
+      outputSchema: issueDevelopmentLinkOutputSchema,
+      annotations: CREATE_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) =>
+      handleIssueDevelopmentLink(client, config, args)
+    )
+  )
+  server.registerTool(
+    'issue_development_links',
+    {
+      description: 'List development links recorded for an issue.',
+      inputSchema: issueDevelopmentLinksSchema,
+      outputSchema: issueDevelopmentLinksOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) =>
+      handleIssueDevelopmentLinks(client, config, args)
+    )
+  )
+
+  // 9. issue_create
   server.registerTool(
     'issue_create',
     {
@@ -343,6 +400,39 @@ export function registerProjectTools(
       annotations: CREATE_ANNOTATIONS,
     },
     withToolErrorBoundary((args) => handleLabelCreate(client, config, args))
+  )
+
+  server.registerTool(
+    'capture_create',
+    {
+      description:
+        'Capture a raw idea without choosing a project, type or status. Use this when the user is thinking out loud and the thought is not yet a work item; it lands in the inbox for triage later. Prefer this over issue_create when no project has been named.',
+      inputSchema: captureCreateSchema,
+      outputSchema: captureCreateOutputSchema,
+      annotations: CREATE_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleCaptureCreate(client, config, args))
+  )
+  server.registerTool(
+    'captures_list',
+    {
+      description:
+        'List raw ideas in the triage inbox, optionally filtering by lifecycle status.',
+      inputSchema: capturesListSchema,
+      outputSchema: capturesListOutputSchema,
+      annotations: READ_ONLY_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleCapturesList(client, config, args))
+  )
+  server.registerTool(
+    'capture_promote',
+    {
+      description: 'Promote a capture into an issue in the selected project.',
+      inputSchema: capturePromoteSchema,
+      outputSchema: capturePromoteOutputSchema,
+      annotations: CREATE_ANNOTATIONS,
+    },
+    withToolErrorBoundary((args) => handleCapturePromote(client, config, args))
   )
 
   // 15. work_item_types_list
@@ -461,9 +551,7 @@ export function registerProjectTools(
       outputSchema: timeEntriesListOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    withToolErrorBoundary((args) =>
-      handleTimeEntriesList(client, config, args)
-    )
+    withToolErrorBoundary((args) => handleTimeEntriesList(client, config, args))
   )
 
   // 24. time_summary
@@ -562,7 +650,8 @@ export function registerProjectTools(
   server.registerTool(
     'template_get',
     {
-      description: 'Retrieve one project template by ID with version and counts.',
+      description:
+        'Retrieve one project template by ID with version and counts.',
       inputSchema: templateGetSchema,
       outputSchema: templateGetOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
@@ -608,9 +697,7 @@ export function registerProjectTools(
       outputSchema: customRecordGetOutputSchema,
       annotations: READ_ONLY_ANNOTATIONS,
     },
-    withToolErrorBoundary((args) =>
-      handleCustomRecordGet(client, config, args)
-    )
+    withToolErrorBoundary((args) => handleCustomRecordGet(client, config, args))
   )
 
   // 35. activity_list
@@ -648,8 +735,6 @@ export function registerProjectTools(
       outputSchema: timeEntryCreateOutputSchema,
       annotations: CREATE_ANNOTATIONS,
     },
-    withToolErrorBoundary((args) =>
-      handleTimeEntryCreate(client, config, args)
-    )
+    withToolErrorBoundary((args) => handleTimeEntryCreate(client, config, args))
   )
 }

@@ -3,57 +3,30 @@ import { createIssueGroups } from '@876/projects-ui/issue-grouping'
 import { IssuesTable } from '@876/projects-ui/issue-list'
 import { AppError } from '@876/ui/app-error'
 
-import { IssueFilterBar } from '@/features/projects/components/issue-filter-bar'
-
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
 import { projects } from '@/lib/clients/projects'
-import type { IssueGroupBy, IssueSearchParams } from '@/types/issues'
+import type { IssueGroupBy } from '@/types/issues'
 
 export async function IssuesData({
   query,
-  values,
   groupBy,
 }: {
   query: ListIssuesQuery
-  values: IssueSearchParams
   groupBy: IssueGroupBy
 }) {
   const { orgId } = await requireProjectsContext()
-  const [result, projectList, states, labels, members] = await Promise.all([
+  const [result, members] = await Promise.all([
     projects.issues.list(orgId, query),
-    projects.projects.list(orgId, { limit: 100 }),
-    projects.workflowStates.list(orgId),
-    projects.labels.list(orgId),
     loadMemberLabels(orgId),
   ])
   const rows = result.data?.data ?? []
-  const loadError =
-    result.error ??
-    projectList.error ??
-    states.error ??
-    labels.error ??
-    members.error
-  const memberOptions = Object.entries(members.labels).map(
-    ([userId, label]) => ({
-      userId,
-      label,
-    })
-  )
+  const loadError = result.error ?? members.error
   const groups =
     groupBy === 'none' ? [] : createIssueGroups(rows, groupBy, members.labels)
 
   return (
     <div className="space-y-4">
-      <IssueFilterBar
-        action="/issues"
-        values={values}
-        groupBy={groupBy}
-        projects={projectList.data?.data ?? []}
-        workflowStates={states.data?.data ?? []}
-        labels={labels.data?.data ?? []}
-        members={memberOptions}
-      />
       {loadError ? (
         <AppError
           title="Some issue data could not be loaded"

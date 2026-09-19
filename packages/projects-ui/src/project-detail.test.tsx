@@ -87,21 +87,21 @@ describe('ProjectDetail', () => {
     render(<ProjectDetail project={makeProject()} issuesHref="/issues" />)
 
     expect(
-      screen.getByRole('heading', { name: 'Website refresh' })
-    ).toBeInTheDocument()
+      screen.getAllByRole('heading', { name: 'Website refresh' })
+    ).toHaveLength(2)
   })
 
   it('renders the project key in the record header', () => {
     render(<ProjectDetail project={makeProject()} issuesHref="/issues" />)
 
-    expect(screen.getByText('WEB')).toBeInTheDocument()
+    expect(screen.getAllByText('WEB')).toHaveLength(2)
   })
 
   it('renders status and health badges in the header', () => {
     render(<ProjectDetail project={makeProject()} issuesHref="/issues" />)
 
-    expect(screen.getByText('Active')).toBeInTheDocument()
-    expect(screen.getByText('On track')).toBeInTheDocument()
+    expect(screen.getAllByText('Active')).toHaveLength(2)
+    expect(screen.getAllByText('On track')).toHaveLength(2)
   })
 
   it('renders the explicit empty description state', () => {
@@ -123,10 +123,10 @@ describe('ProjectDetail', () => {
     expect(
       screen.getByRole('heading', { name: 'Overview' })
     ).toBeInTheDocument()
-    expect(screen.getByText('Project lead')).toBeInTheDocument()
-    expect(screen.getByText('Target date')).toBeInTheDocument()
-    expect(screen.getByText('Members')).toBeInTheDocument()
-    expect(screen.getByText('Customer')).toBeInTheDocument()
+    expect(screen.getAllByText('Project lead')).toHaveLength(2)
+    expect(screen.getAllByText('Target date')).toHaveLength(2)
+    expect(screen.getAllByText('Members')).toHaveLength(2)
+    expect(screen.getAllByText('Customer')).toHaveLength(2)
   })
 
   it('renders a resolved project lead when supplied by the host', () => {
@@ -138,7 +138,7 @@ describe('ProjectDetail', () => {
       />
     )
 
-    expect(screen.getByText('Ana Brown')).toBeInTheDocument()
+    expect(screen.getAllByText('Ana Brown')).toHaveLength(2)
   })
 
   it('renders a clean empty state for an unassigned project lead', () => {
@@ -191,5 +191,81 @@ describe('ProjectDetail', () => {
     expect(
       screen.queryByRole('button', { name: /back to projects/i })
     ).toBeNull()
+  })
+
+  it('renders the phone title and key as plain header metadata', () => {
+    const { container } = render(
+      <ProjectDetail project={makeProject()} issuesHref="/issues" />
+    )
+
+    expect(screen.getAllByText('Website refresh')[0]).toHaveClass('text-[2rem]')
+    expect(container.querySelector('.font-mono')?.textContent).toBe('WEB')
+  })
+
+  it('renders status and health on the phone metadata line', () => {
+    const { container } = render(
+      <ProjectDetail project={makeProject()} issuesHref="/issues" />
+    )
+
+    const metadata = container.querySelector(
+      'header.sm\\:hidden .text-muted-foreground'
+    )
+    expect(metadata).toHaveTextContent('WEB·Active·On track')
+  })
+
+  it('keeps the folder icon tile desktop-only', () => {
+    render(<ProjectDetail project={makeProject()} issuesHref="/issues" />)
+
+    expect(screen.getByTestId('project-folder-icon')).toHaveClass(
+      'hidden',
+      'sm:flex'
+    )
+  })
+
+  it('renders one phone fact row for every project fact', () => {
+    render(<ProjectDetail project={makeProject()} issuesHref="/issues" />)
+
+    expect(screen.getByTestId('mobile-fact-list').children).toHaveLength(6)
+  })
+
+  it('renders Follow in the phone header action row', () => {
+    render(
+      <ProjectDetail
+        project={makeProject()}
+        issuesHref="/issues"
+        mobileActions={<button type="button">Follow</button>}
+      />
+    )
+
+    expect(screen.getByTestId('project-mobile-actions')).toHaveTextContent(
+      'Follow'
+    )
+  })
+
+  it('keeps template and clone actions out of the phone action row', () => {
+    render(
+      <ProjectDetail
+        project={makeProject()}
+        issuesHref="/issues"
+        mobileActions={<button type="button">Follow</button>}
+      />
+    )
+
+    expect(screen.getByTestId('project-mobile-actions')).not.toHaveTextContent(
+      'Save as template'
+    )
+    expect(screen.getByTestId('project-mobile-actions')).not.toHaveTextContent(
+      'Clone'
+    )
+  })
+
+  it('renders phone work overview statistics with tabular numerals', () => {
+    const { container } = render(
+      <ProjectDetail project={makeProject()} issuesHref="/issues" />
+    )
+
+    expect(
+      screen.getByTestId('mobile-work-overview').querySelector('.tabular-nums')
+    ).toHaveTextContent('0items0open0in progress0done0overdue')
   })
 })

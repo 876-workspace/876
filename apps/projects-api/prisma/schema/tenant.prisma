@@ -65,6 +65,7 @@ model Tenant {
   webhookDeliveries WebhookDelivery[]
   importJobs ImportJob[]
   importJobRows ImportJobRow[]
+  developmentLinks WorkItemDevelopmentLink[]
 
   @@map("projects_tenants")
 }

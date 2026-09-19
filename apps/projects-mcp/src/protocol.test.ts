@@ -82,7 +82,9 @@ describe('protocol era compatibility', () => {
     await client.connect(createTransport())
 
     expect(client.getProtocolEra()).toBe('modern')
-    expect(client.getDiscoverResult()?.supportedVersions).toContain('2026-07-28')
+    expect(client.getDiscoverResult()?.supportedVersions).toContain(
+      '2026-07-28'
+    )
     expect(client.getDiscoverResult()?.instructions).toBe(
       PROJECTS_SERVER_INSTRUCTIONS
     )
@@ -116,7 +118,9 @@ describe('protocol era compatibility', () => {
     await client.connect(createTransport())
 
     expect(client.getProtocolEra()).toBe('modern')
-    expect(client.getDiscoverResult()?.supportedVersions).toContain('2026-07-28')
+    expect(client.getDiscoverResult()?.supportedVersions).toContain(
+      '2026-07-28'
+    )
 
     await client.close()
   })

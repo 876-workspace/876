@@ -88,9 +88,13 @@ describe('TimesheetCard', () => {
       />
     )
 
-    expect(screen.getByText('Jan 1, 2024 – Jan 7, 2024')).toBeInTheDocument()
+    const periods = screen.getAllByText('Jan 1, 2024 – Jan 7, 2024')
+    expect(periods).toHaveLength(2)
+    expect(periods[0]).toBeInTheDocument()
     expect(screen.getByText(/Submitted by Ada Lovelace/)).toBeInTheDocument()
-    expect(screen.getByText('Website rebuild')).toBeInTheDocument()
+    const projectNames = screen.getAllByText('Website rebuild')
+    expect(projectNames).toHaveLength(2)
+    expect(projectNames[0]).toBeInTheDocument()
     expect(screen.getByText('0m')).toBeInTheDocument()
   })
 
@@ -221,7 +225,9 @@ describe('TimesheetCard', () => {
     expect(
       screen.getByText('A timesheet cannot be approved by its owner.')
     ).toBeInTheDocument()
-    expect(screen.getByText('Jan 1, 2024 – Jan 7, 2024')).toBeInTheDocument()
+    const periods = screen.getAllByText('Jan 1, 2024 – Jan 7, 2024')
+    expect(periods).toHaveLength(2)
+    expect(periods[0]).toBeInTheDocument()
     expect(mocks.refresh).not.toHaveBeenCalled()
   })
 })

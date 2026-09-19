@@ -93,16 +93,22 @@ describe('TimeEntriesPanel', () => {
   it('renders the entries it was given', () => {
     renderPanel()
 
-    expect(screen.getByText('Website rebuild')).toBeInTheDocument()
-    expect(screen.getByText('1h 30m')).toBeInTheDocument()
+    const projectNames = screen.getAllByText('Website rebuild')
+    expect(projectNames).toHaveLength(2)
+    expect(projectNames[0]).toBeInTheDocument()
+    const durations = screen.getAllByText('1h 30m')
+    expect(durations).toHaveLength(2)
+    expect(durations[0]).toBeInTheDocument()
   })
 
   it('says so when the period holds nothing', () => {
     renderPanel({ rows: [] })
 
-    expect(
-      screen.getByText('No time logged against this project yet.')
-    ).toBeInTheDocument()
+    const emptyNotes = screen.getAllByText(
+      'No time logged against this project yet.'
+    )
+    expect(emptyNotes).toHaveLength(2)
+    expect(emptyNotes[0]).toBeInTheDocument()
   })
 
   it('opens the picked entry’s editor on the URL', async () => {

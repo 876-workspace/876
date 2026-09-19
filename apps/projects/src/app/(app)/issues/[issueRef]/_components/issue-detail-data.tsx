@@ -1,17 +1,24 @@
-import { IssueDetail } from '@876/projects-ui/issue-detail'
+import {
+  IssueDetailBody,
+  IssueDetailHeader,
+  IssueMetaRail,
+} from '@876/projects-ui/issue-detail'
+import { IssueAgentActions } from '@876/projects-ui/issue-agent-actions'
+import { formatAgentBrief } from '@876/projects/agent-brief'
 import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 
 import { AttachmentsData } from '@/features/projects/components/attachments-data'
 import { IssueCommentsLoader } from '@/features/projects/components/issue-comments-loader'
-import { IssueStatusSelect } from '@/features/projects/components/issue-status-select'
-import { IssueVisibilityData } from './issue-visibility-data'
 import { IssueLinksData } from '@/features/projects/components/issue-links-data'
+import { IssueStatusSelect } from '@/features/projects/components/issue-status-select'
 import { RemindersData } from '@/features/projects/components/reminders-data'
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { projects } from '@/lib/clients/projects'
 import { getIssueVisibility } from '@/lib/visibility'
+
+import { IssueVisibilityData } from './issue-visibility-data'
 
 export async function IssueDetailData({
   orgId,
@@ -37,7 +44,6 @@ export async function IssueDetailData({
   const fieldsPromise = projects.customFields.list(orgId)
   const membersPromise = loadMemberLabels(orgId)
   const statesPromise = projects.workflowStates.list(orgId)
-
   const issueResult = await issuePromise
   if (issueResult.error?.code === 'projects/issue-not-found') notFound()
   if (issueResult.error || !issueResult.data)
@@ -54,12 +60,14 @@ export async function IssueDetailData({
       />
     )
 
+  const issue = issueResult.data
   const subIssuesPromise = projects.issues.list(orgId, {
-    parent: issueResult.data.id,
+    parent: issue.id,
     limit: 100,
   })
-  const parentPromise = issueResult.data.parentIssueId
-    ? projects.issues.retrieve(orgId, issueResult.data.parentIssueId)
+  const commentsPromise = projects.comments.list(orgId, issue.id, { limit: 100 })
+  const parentPromise = issue.parentIssueId
+    ? projects.issues.retrieve(orgId, issue.parentIssueId)
     : Promise.resolve({ data: null, error: null })
   const visibilityPromise = canToggleVisibility
     ? getIssueVisibility(orgId, decodedIssueRef)
@@ -73,6 +81,7 @@ export async function IssueDetailData({
     statesResult,
     followResult,
     visible,
+    commentsResult,
   ] = await Promise.all([
     eventsPromise,
     fieldsPromise,
@@ -82,6 +91,7 @@ export async function IssueDetailData({
     statesPromise,
     followPromise,
     visibilityPromise,
+    commentsPromise,
   ])
   const following = followResult.data
     ? followResult.data.data.some((follower) => follower.userId === userId)
@@ -92,109 +102,130 @@ export async function IssueDetailData({
     membersResult.error ??
     subIssuesResult.error ??
     parentResult.error ??
-    statesResult.error
+    statesResult.error ??
+    commentsResult.error
+  const detailProps = {
+    issue,
+    events: eventsResult.data?.data ?? [],
+    parentIssue: parentResult.data,
+    subIssues: subIssuesResult.data?.data ?? [],
+    customFields: fieldsResult.data?.data ?? [],
+    userLabels: membersResult.labels,
+    issuesHref: '/issues',
+    projectHref: `/projects/${issue.projectId}`,
+  }
+  const appOrigin =
+    process.env.NEXT_PUBLIC_PROJECTS_URL?.trim() ||
+    'https://876-projects.vercel.app'
+  const agentBrief = formatAgentBrief({
+    issue,
+    comments: commentsResult.data?.data,
+    parentIssue: parentResult.data,
+    subIssues: subIssuesResult.data?.data,
+    doneStatusKeys: statesResult.data?.data
+      .filter((state) => state.category === 'completed')
+      .map((state) => state.key),
+    appOrigin,
+  })
 
   return (
-    <>
-      <div className="space-y-4">
-        <IssueVisibilityData
-          issueRef={issueResult.data.identifier}
-          issueTitle={issueResult.data.title}
-          canToggleVisibility={canToggleVisibility}
-          following={following}
-          visible={visible}
+    <div className="space-y-6">
+      <IssueDetailHeader
+        issue={issue}
+        editHref={`/issues/${issue.identifier}/edit`}
+        actions={
+          <>
+            <IssueVisibilityData
+              issueRef={issue.identifier}
+              issueTitle={issue.title}
+              canToggleVisibility={canToggleVisibility}
+              following={following}
+              visible={visible}
+            />
+            <IssueStatusSelect
+              issueRef={issue.identifier}
+              currentStatus={issue.status}
+              statuses={(statesResult.data?.data ?? []).map((state) => ({
+                key: state.key,
+                label: state.name,
+              }))}
+              canEdit={canEdit}
+            />
+            <IssueAgentActions
+              issueRef={issue.identifier}
+              brief={agentBrief}
+              issueUrl={`${appOrigin}/issues/${encodeURIComponent(issue.identifier)}`}
+            />
+          </>
+        }
+      />
+      {enrichmentError ? (
+        <AppError
+          title="Some issue details could not be loaded"
+          error={enrichmentError}
+          variant="banner"
         />
-        <IssueStatusSelect
-          issueRef={issueResult.data.identifier}
-          currentStatus={issueResult.data.status}
-          statuses={(statesResult.data?.data ?? []).map((state) => ({
-            key: state.key,
-            label: state.name,
-          }))}
-          canEdit={canEdit}
-        />
-        {enrichmentError ? (
-          <AppError
-            title="Some issue details could not be loaded"
-            error={enrichmentError}
-            variant="banner"
-          />
-        ) : null}
-        <IssueDetail
-          issue={issueResult.data}
-          events={eventsResult.data?.data ?? []}
-          parentIssue={parentResult.data}
-          subIssues={subIssuesResult.data?.data ?? []}
-          customFields={fieldsResult.data?.data ?? []}
-          userLabels={membersResult.labels}
-          issuesHref="/issues"
-          projectHref={`/projects/${issueResult.data.projectId}`}
-          editHref={`/issues/${issueResult.data.identifier}/edit`}
-        />
+      ) : null}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
+          <IssueDetailBody {...detailProps} />
+          <Suspense
+            fallback={
+              <div className="text-muted-foreground text-sm">
+                Loading relationships and dependencies…
+              </div>
+            }
+          >
+            <IssueLinksData orgId={orgId} issueRef={issue.identifier} />
+          </Suspense>
+          <Suspense
+            fallback={
+              <div className="text-muted-foreground text-sm">
+                Loading comments…
+              </div>
+            }
+          >
+            <IssueCommentsLoader
+              orgId={orgId}
+              issueRef={issue.identifier}
+              currentUserId={userId}
+              canToggleClientVisibility={canToggleVisibility}
+            />
+          </Suspense>
+          <Suspense
+            fallback={
+              <div className="text-muted-foreground text-sm">
+                Loading attachments…
+              </div>
+            }
+          >
+            <AttachmentsData
+              orgId={orgId}
+              userId={userId}
+              projectId={issue.projectId}
+              resourceType="issue"
+              resourceId={issue.id}
+              canEdit={canEdit}
+            />
+          </Suspense>
+        </div>
+        <aside className="space-y-6">
+          <IssueMetaRail {...detailProps} />
+          <Suspense
+            fallback={
+              <div className="text-muted-foreground text-sm">
+                Loading reminders…
+              </div>
+            }
+          >
+            <RemindersData
+              orgId={orgId}
+              userId={userId}
+              target={{ issueId: issue.id }}
+            />
+          </Suspense>
+        </aside>
       </div>
-      <div className="mt-6 lg:mr-[33.333333%]">
-        <Suspense
-          fallback={
-            <div className="text-muted-foreground text-sm">
-              Loading relationships and dependencies…
-            </div>
-          }
-        >
-          <IssueLinksData
-            orgId={orgId}
-            issueRef={issueResult.data.identifier}
-          />
-        </Suspense>
-      </div>
-      <div className="mt-6 lg:mr-[33.333333%]">
-        <Suspense
-          fallback={
-            <div className="text-muted-foreground text-sm">
-              Loading comments…
-            </div>
-          }
-        >
-          <IssueCommentsLoader
-            orgId={orgId}
-            issueRef={issueResult.data.identifier}
-            currentUserId={userId}
-            canToggleClientVisibility={canToggleVisibility}
-          />
-        </Suspense>
-      </div>
-      <div className="mt-6 lg:mr-[33.333333%]">
-        <Suspense
-          fallback={
-            <div className="text-muted-foreground text-sm">
-              Loading reminders…
-            </div>
-          }
-        >
-          <RemindersData
-            orgId={orgId}
-            userId={userId}
-            target={{ issueId: issueResult.data.id }}
-          />
-        </Suspense>
-      </div>
-      <div className="mt-6 lg:mr-[33.333333%]">
-        <Suspense
-          fallback={
-            <div className="text-muted-foreground text-sm">
-              Loading attachments…
-            </div>
-          }
-        >
-          <AttachmentsData
-            orgId={orgId}
-            userId={userId}
-            projectId={issueResult.data.projectId}
-            resourceType="issue"
-            resourceId={issueResult.data.id}
-            canEdit={canEdit}
-          />
-        </Suspense>
-      </div>
-    </>
+    </div>
   )
 }

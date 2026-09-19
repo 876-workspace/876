@@ -77,6 +77,9 @@ export function WorkBreakdown({ breakdown, ownerLabels, canEdit }: Props) {
       ),
     [groups]
   )
+  const hasTaskListStructure = groups.some((group) =>
+    group.taskLists.some((item) => item.issues.length > 0)
+  )
 
   async function move(groupKey: string, index: number, direction: -1 | 1) {
     const group = groups.find((candidate) => candidate.key === groupKey)
@@ -138,143 +141,220 @@ export function WorkBreakdown({ breakdown, ownerLabels, canEdit }: Props) {
   }
 
   return (
-    <section className="876-card space-y-4 p-4">
-      <h2 className="876-page-title">Work breakdown</h2>
+    <>
+      {hasTaskListStructure ? (
+        <section
+          data-testid="mobile-work-breakdown"
+          className="space-y-5 sm:hidden"
+        >
+          <h2 className="876-section-title">Work breakdown</h2>
+          {groups.map((group) => {
+            if (
+              group.taskLists.length === 0 &&
+              group.unlistedIssues.length === 0
+            )
+              return null
 
-      {error ? (
-        <AppError
-          title="The work breakdown could not be updated"
-          error={error}
-          variant="banner"
-        />
-      ) : null}
-
-      {!hasContent ? (
-        <p className="text-muted-foreground text-sm">
-          No task lists or work items yet.
-        </p>
-      ) : null}
-
-      {groups.map((group) => {
-        if (group.taskLists.length === 0 && group.unlistedIssues.length === 0)
-          return null
-
-        return (
-          <div key={group.key} className="space-y-2">
-            <h3 className="text-sm font-medium">{group.label}</h3>
-
-            {group.taskLists.length > 0 ? (
-              <ul className="space-y-2">
-                {group.taskLists.map((item, index) => (
-                  <li
-                    key={item.taskList.id}
-                    className="border-border rounded-md border px-3 py-2"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {item.taskList.name}
-                          </span>
-                          {item.taskList.archivedAt ? (
-                            <Badge variant="secondary">Archived</Badge>
-                          ) : null}
-                        </div>
-                        <div className="text-muted-foreground text-xs">
-                          {[
-                            item.taskList.ownerUserId
-                              ? (ownerLabels[item.taskList.ownerUserId] ??
-                                item.taskList.ownerUserId)
-                              : null,
-                            dateRange(item.taskList),
-                            `${item.taskList.progress.completed}/${item.taskList.progress.total} complete`,
-                          ]
-                            .filter(Boolean)
-                            .join(' · ')}
-                        </div>
-                      </div>
-
-                      {canEdit ? (
-                        <div className="flex items-center gap-1">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon-sm"
-                            aria-label={`Move ${item.taskList.name} up`}
-                            disabled={index === 0}
-                            onClick={() => move(group.key, index, -1)}
-                          >
-                            <ChevronUp className="size-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon-sm"
-                            aria-label={`Move ${item.taskList.name} down`}
-                            disabled={index === group.taskLists.length - 1}
-                            onClick={() => move(group.key, index, 1)}
-                          >
-                            <ChevronDown className="size-4" />
-                          </Button>
-                          <Link
-                            href={`/task-lists/${encodeURIComponent(item.taskList.id)}/edit`}
-                            className={buttonVariants({
-                              variant: 'outline',
-                              size: 'sm',
-                            })}
-                          >
-                            <Pencil className="size-3.5" />
-                            Edit
-                          </Link>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => toggleArchived(item.taskList)}
-                            disabled={pendingId === item.taskList.id}
-                          >
-                            {item.taskList.archivedAt ? 'Restore' : 'Archive'}
-                          </Button>
-                        </div>
+            return (
+              <div key={group.key} className="space-y-3">
+                <h3 className="text-sm font-medium">{group.label}</h3>
+                {group.taskLists.map((item) => (
+                  <div key={item.taskList.id} className="space-y-2">
+                    <div className="flex items-center gap-2 px-0">
+                      <span className="text-[0.9375rem] font-medium">
+                        {item.taskList.name}
+                      </span>
+                      {item.taskList.archivedAt ? (
+                        <Badge variant="secondary">Archived</Badge>
                       ) : null}
                     </div>
-
                     {item.issues.length > 0 ? (
-                      <ul className="mt-2 space-y-1">
+                      <ul className="-mx-4">
                         {item.issues.map((issue) => (
                           <li key={issue.id}>
                             <Link
                               href={issueHref(issue)}
-                              className="text-sm hover:underline"
+                              className="border-border/60 active:bg-muted/70 flex gap-2 border-t px-4 py-3"
                             >
-                              {issue.identifier} — {issue.title}
+                              <span className="shrink-0 font-mono text-xs font-semibold">
+                                {issue.identifier}
+                              </span>{' '}
+                              <span className="line-clamp-2 text-[0.9375rem] leading-5">
+                                {issue.title}
+                              </span>
                             </Link>
                           </li>
                         ))}
                       </ul>
                     ) : null}
-                  </li>
+                  </div>
                 ))}
-              </ul>
-            ) : null}
+                {group.unlistedIssues.length > 0 ? (
+                  <ul className="-mx-4">
+                    {group.unlistedIssues.map((issue) => (
+                      <li key={issue.id}>
+                        <Link
+                          href={issueHref(issue)}
+                          className="border-border/60 active:bg-muted/70 flex gap-2 border-t px-4 py-3"
+                        >
+                          <span className="shrink-0 font-mono text-xs font-semibold">
+                            {issue.identifier}
+                          </span>{' '}
+                          <span className="line-clamp-2 text-[0.9375rem] leading-5">
+                            {issue.title}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            )
+          })}
+        </section>
+      ) : null}
 
-            {group.unlistedIssues.length > 0 ? (
-              <ul className="space-y-1">
-                {group.unlistedIssues.map((issue) => (
-                  <li key={issue.id}>
-                    <Link
-                      href={issueHref(issue)}
-                      className="text-sm hover:underline"
+      <section
+        data-testid="desktop-work-breakdown"
+        className="876-card hidden space-y-4 p-4 sm:block"
+      >
+        <h2 className="876-section-title">Work breakdown</h2>
+
+        {error ? (
+          <AppError
+            title="The work breakdown could not be updated"
+            error={error}
+            variant="banner"
+          />
+        ) : null}
+
+        {!hasContent ? (
+          <p className="text-muted-foreground text-sm">
+            No task lists or work items yet.
+          </p>
+        ) : null}
+
+        {groups.map((group) => {
+          if (group.taskLists.length === 0 && group.unlistedIssues.length === 0)
+            return null
+
+          return (
+            <div key={group.key} className="space-y-2">
+              <h3 className="text-sm font-medium">{group.label}</h3>
+
+              {group.taskLists.length > 0 ? (
+                <ul className="space-y-2">
+                  {group.taskLists.map((item, index) => (
+                    <li
+                      key={item.taskList.id}
+                      className="border-border rounded-md border px-3 py-2"
                     >
-                      {issue.identifier} — {issue.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        )
-      })}
-    </section>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">
+                              {item.taskList.name}
+                            </span>
+                            {item.taskList.archivedAt ? (
+                              <Badge variant="secondary">Archived</Badge>
+                            ) : null}
+                          </div>
+                          <div className="text-muted-foreground text-xs">
+                            {[
+                              item.taskList.ownerUserId
+                                ? (ownerLabels[item.taskList.ownerUserId] ??
+                                  item.taskList.ownerUserId)
+                                : null,
+                              dateRange(item.taskList),
+                              `${item.taskList.progress.completed}/${item.taskList.progress.total} complete`,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </div>
+                        </div>
+
+                        {canEdit ? (
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon-sm"
+                              aria-label={`Move ${item.taskList.name} up`}
+                              disabled={index === 0}
+                              onClick={() => move(group.key, index, -1)}
+                            >
+                              <ChevronUp className="size-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon-sm"
+                              aria-label={`Move ${item.taskList.name} down`}
+                              disabled={index === group.taskLists.length - 1}
+                              onClick={() => move(group.key, index, 1)}
+                            >
+                              <ChevronDown className="size-4" />
+                            </Button>
+                            <Link
+                              href={`/task-lists/${encodeURIComponent(item.taskList.id)}/edit`}
+                              className={buttonVariants({
+                                variant: 'outline',
+                                size: 'sm',
+                              })}
+                            >
+                              <Pencil className="size-3.5" />
+                              Edit
+                            </Link>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => toggleArchived(item.taskList)}
+                              disabled={pendingId === item.taskList.id}
+                            >
+                              {item.taskList.archivedAt ? 'Restore' : 'Archive'}
+                            </Button>
+                          </div>
+                        ) : null}
+                      </div>
+
+                      {item.issues.length > 0 ? (
+                        <ul className="mt-2 space-y-1">
+                          {item.issues.map((issue) => (
+                            <li key={issue.id}>
+                              <Link
+                                href={issueHref(issue)}
+                                className="text-sm hover:underline"
+                              >
+                                {issue.identifier} — {issue.title}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+
+              {group.unlistedIssues.length > 0 ? (
+                <ul className="space-y-1">
+                  {group.unlistedIssues.map((issue) => (
+                    <li key={issue.id}>
+                      <Link
+                        href={issueHref(issue)}
+                        className="text-sm hover:underline"
+                      >
+                        {issue.identifier} — {issue.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          )
+        })}
+      </section>
+    </>
   )
 }

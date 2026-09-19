@@ -1,6 +1,13 @@
 import { ProjectDetail } from '@876/projects-ui/project-detail'
 import { AppError } from '@876/ui/app-error'
 import { buttonVariants } from '@876/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@876/ui/dropdown-menu'
+import { MoreHorizontalIcon } from '@876/ui/icons'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
@@ -57,7 +64,7 @@ export async function ProjectDetailData({
           variant="banner"
         />
       ) : null}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="hidden flex-wrap items-center gap-2 sm:flex">
         <FollowData
           orgId={orgId}
           userId={userId}
@@ -68,7 +75,7 @@ export async function ProjectDetailData({
       {canEdit ? (
         <nav
           aria-label="Project actions"
-          className="flex flex-wrap items-center gap-2"
+          className="hidden flex-wrap items-center gap-2 sm:flex"
         >
           <Link
             href={`/projects/${encodeURIComponent(projectResult.data.id)}/save-as-template`}
@@ -95,6 +102,46 @@ export async function ProjectDetailData({
             : null
         }
         issuesHref="/issues"
+        mobileActions={
+          <>
+            <FollowData
+              orgId={orgId}
+              userId={userId}
+              subjectType="project"
+              subjectId={projectResult.data.id}
+            />
+            {canEdit ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  aria-label="More project actions"
+                  className={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
+                >
+                  <MoreHorizontalIcon aria-hidden="true" className="size-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    render={
+                      <Link
+                        href={`/projects/${encodeURIComponent(projectResult.data.id)}/save-as-template`}
+                      />
+                    }
+                  >
+                    Save as template
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    render={
+                      <Link
+                        href={`/projects/${encodeURIComponent(projectResult.data.id)}/clone`}
+                      />
+                    }
+                  >
+                    Clone
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
+          </>
+        }
       />
       <ProjectCustomFieldsPanel
         fields={projectFieldsResult.data?.data ?? []}

@@ -51,6 +51,7 @@ model Issue {
   baselineItems ProjectBaselineItem[]
   projectEventLinks ProjectEventLink[]
   timeEntries TimeEntry[]
+  developmentLinks WorkItemDevelopmentLink[]
 
   @@unique([tenantId, identifier])
   @@unique([projectId, number])

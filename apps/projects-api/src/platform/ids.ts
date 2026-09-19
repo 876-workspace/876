@@ -6,6 +6,8 @@ export const ENTITY_PREFIXES = {
   projectMember: 'prjmem_',
   issue: 'iss_',
   label: 'lbl_',
+  capture: 'cap_',
+  developmentLink: 'devl_',
   comment: 'cmt_',
   issueEvent: 'isev_',
   workItemType: 'wit_',

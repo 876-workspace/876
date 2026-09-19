@@ -1,0 +1,16 @@
+model Capture {
+  id              String  @id
+  tenantId        String  @map("tenant_id")
+  title           String
+  body            String?
+  status          String
+  source          String?
+  createdBy       String  @map("created_by")
+  projectId       String? @map("project_id")
+  promotedIssueId String? @map("promoted_issue_id")
+  createdAt       BigInt  @map("created_at")
+  updatedAt       BigInt  @map("updated_at")
+
+  @@index([tenantId, status])
+  @@map("projects_captures")
+}

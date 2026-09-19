@@ -1,6 +1,14 @@
 import type { HttpStatusCode } from '@876/core'
 
 export const PROJECTS_ERRORS = {
+  'projects/capture-not-found': {
+    message: 'The capture could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/capture-already-promoted': {
+    message: 'This capture has already been promoted.',
+    httpStatus: 409 as HttpStatusCode,
+  },
   'projects/tenant-not-found': {
     message: 'This organization does not have a 876 Projects workspace.',
     httpStatus: 404 as HttpStatusCode,
@@ -23,6 +31,10 @@ export const PROJECTS_ERRORS = {
   },
   'projects/issue-not-found': {
     message: 'The issue could not be found.',
+    httpStatus: 404 as HttpStatusCode,
+  },
+  'projects/development-link-not-found': {
+    message: 'The development link could not be found.',
     httpStatus: 404 as HttpStatusCode,
   },
   'projects/label-not-found': {
@@ -413,7 +425,8 @@ export const PROJECTS_ERRORS = {
     httpStatus: 422 as HttpStatusCode,
   },
   'projects/transition-requirements-unmet': {
-    message: 'This transition requires additional fields, a comment, or a permission.',
+    message:
+      'This transition requires additional fields, a comment, or a permission.',
     httpStatus: 400 as HttpStatusCode,
   },
   'projects/automation-rule-not-found': {

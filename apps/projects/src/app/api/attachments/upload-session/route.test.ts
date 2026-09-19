@@ -179,7 +179,7 @@ describe('POST /api/attachments/upload-session', () => {
       data: null,
       error: {
         code: 'storage/not-configured',
-        message: 'Configure the Storage service internal key.',
+        message: 'Files are not available right now.',
       },
     })
 

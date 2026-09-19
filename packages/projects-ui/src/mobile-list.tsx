@@ -35,6 +35,34 @@ export function MobileListEmpty({ children }: { children: ReactNode }) {
   )
 }
 
+/** Phone detail facts use the same full-bleed, hairline-separated language. */
+export function MobileFactList({ children }: { children: ReactNode }) {
+  return (
+    <ul data-testid="mobile-fact-list" className="-mx-4 sm:hidden">
+      {children}
+    </ul>
+  )
+}
+
+export function MobileFact({
+  label,
+  value,
+}: {
+  label: string
+  value: ReactNode
+}) {
+  const displayValue = value === null || value === '' ? '—' : value
+
+  return (
+    <li className="border-border flex items-center justify-between gap-4 border-t py-3 first:border-t-0">
+      <span className="text-muted-foreground text-[0.9375rem]">{label}</span>
+      <span className="text-right text-[0.9375rem] font-medium">
+        {displayValue}
+      </span>
+    </li>
+  )
+}
+
 const AVATAR_TONES = [
   'bg-sky-500',
   'bg-violet-500',

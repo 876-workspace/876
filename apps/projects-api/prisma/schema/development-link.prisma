@@ -1,0 +1,19 @@
+model WorkItemDevelopmentLink {
+  id         String  @id
+  tenantId   String  @map("tenant_id")
+  workItemId String  @map("work_item_id")
+  kind       String
+  url        String
+  label      String?
+  externalId String  @map("external_id")
+  state      String?
+  createdAt  BigInt  @map("created_at")
+  updatedAt  BigInt  @map("updated_at")
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workItem Issue  @relation(fields: [workItemId], references: [id], onDelete: Cascade)
+
+  @@unique([workItemId, kind, externalId])
+  @@index([tenantId, workItemId])
+  @@map("work_item_development_links")
+}

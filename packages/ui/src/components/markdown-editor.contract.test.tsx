@@ -76,6 +76,20 @@ describe('MarkdownEditor visual contract', () => {
     )
   })
 
+  it('keeps the formatting toolbar to one horizontally scrollable row', () => {
+    renderEditor()
+
+    expect(
+      screen.getByRole('button', { name: 'Bold' }).parentElement
+    ).toHaveClass('876-scroll-none', 'flex', 'gap-1', 'overflow-x-auto')
+  })
+
+  it('uses a base-size textarea to prevent iOS focus zoom', () => {
+    renderEditor()
+
+    expect(screen.getByRole('textbox')).toHaveClass('text-base')
+  })
+
   it('disables mode controls, formatting actions, and the textarea together', () => {
     renderEditor({ disabled: true })
 
