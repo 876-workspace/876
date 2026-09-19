@@ -245,6 +245,15 @@
     letter-spacing: -0.025em;
   }
 
+  /* Phone large-title app bar — roughly iOS 34pt; actions stay quiet. */
+  [class~='876-page-title-lg'],
+  [class~='876-page-title-lg'] [class~='876-page-title'] {
+    font-size: 2rem;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
   /* Card/section <h2>; spacing stays with the caller. */
   [class~='876-section-title'] {
     color: var(--foreground);
@@ -602,4 +611,70 @@
   display: none;
   width: 0;
   height: 0;
+}
+
+/* ── Markdown code highlighting ────────────────────────────────────────── */
+:root {
+  --code-keyword: var(--info);
+  --code-string: var(--success);
+  --code-comment: var(--muted-foreground);
+  --code-number: var(--warning);
+  --code-function: var(--primary);
+  --code-variable: var(--destructive);
+  --code-punctuation: color-mix(in oklab, var(--foreground) 65%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --code-keyword: var(--info);
+    --code-string: var(--success);
+    --code-comment: var(--muted-foreground);
+    --code-number: var(--warning);
+    --code-function: var(--primary);
+    --code-variable: var(--destructive);
+    --code-punctuation: color-mix(in oklab, var(--foreground) 72%, transparent);
+  }
+}
+
+:root[data-theme='dark'] {
+  --code-keyword: var(--info);
+  --code-string: var(--success);
+  --code-comment: var(--muted-foreground);
+  --code-number: var(--warning);
+  --code-function: var(--primary);
+  --code-variable: var(--destructive);
+  --code-punctuation: color-mix(in oklab, var(--foreground) 72%, transparent);
+}
+
+.hljs-keyword,
+.hljs-literal,
+.hljs-type {
+  color: var(--code-keyword);
+}
+
+.hljs-string,
+.hljs-attr {
+  color: var(--code-string);
+}
+
+.hljs-comment {
+  color: var(--code-comment);
+}
+
+.hljs-number {
+  color: var(--code-number);
+}
+
+.hljs-function,
+.hljs-title,
+.hljs-built_in {
+  color: var(--code-function);
+}
+
+.hljs-variable {
+  color: var(--code-variable);
+}
+
+.hljs-punctuation {
+  color: var(--code-punctuation);
 }

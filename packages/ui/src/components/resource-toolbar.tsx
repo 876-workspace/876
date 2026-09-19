@@ -63,6 +63,13 @@ type Props = {
   primaryDisabled?: boolean
   primaryVariant?:
     'default' | 'brand' | 'outline' | 'info' | 'success' | 'warning'
+  /**
+   * How the primary action behaves below `sm`. `'fab-owns-it'` suppresses the
+   * primary button on phone because the host already renders a floating action
+   * button for the same action — two primary affordances on one screen is one
+   * too many. Defaults to `'button'`, which is the existing behaviour.
+   */
+  mobilePrimary?: 'button' | 'fab-owns-it'
   /** Navigate to this URL when the primary button is clicked. */
   primaryHref?: string
   /** Called when the primary button is clicked (ignored if primaryHref is set). */
@@ -80,6 +87,7 @@ export function ResourceToolbar({
   primaryIconOnly = false,
   primaryDisabled = false,
   primaryVariant = 'default',
+  mobilePrimary = 'button',
   primaryHref,
   onPrimaryAction,
   dropdownActions = [],
@@ -131,60 +139,121 @@ export function ResourceToolbar({
   const hasDropdown = refresh || actions.length > 0
 
   return (
-    <div className="mb-5 flex items-center justify-between gap-4">
-      <div>
-        {titleFilter ?? <h1 className="876-page-title">{title}</h1>}
-        {description && (
+    <>
+      <div className="mb-4 sm:hidden">
+        {hasDropdown ? (
+          <div className="flex justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(
+                  buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+                  'size-9 rounded-full'
+                )}
+                aria-label="More actions"
+              >
+                <MoreHorizontalIcon className="size-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-auto min-w-40">
+                {refresh && (
+                  <DropdownMenuItem onClick={() => router.refresh()}>
+                    <RefreshCw className="size-4" />
+                    Refresh
+                  </DropdownMenuItem>
+                )}
+                {refresh && actions.length > 0 && <DropdownMenuSeparator />}
+                {actions.map((action) => {
+                  const Icon = action.icon ? ACTION_ICONS[action.icon] : null
+                  return (
+                    <React.Fragment key={action.label}>
+                      {action.separator && <DropdownMenuSeparator />}
+                      <DropdownMenuItem
+                        variant={action.destructive ? 'destructive' : 'default'}
+                        disabled={action.disabled}
+                        onClick={action.onClick}
+                        render={
+                          action.href && !action.disabled ? (
+                            <Link href={action.href} />
+                          ) : undefined
+                        }
+                      >
+                        {Icon && <Icon className="size-4" />}
+                        {action.label}
+                      </DropdownMenuItem>
+                    </React.Fragment>
+                  )
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ) : null}
+        {titleFilter ? (
+          <div className="876-page-title-lg">{titleFilter}</div>
+        ) : (
+          <h1 className="876-page-title-lg">{title}</h1>
+        )}
+        {description ? (
           <p className="text-muted-foreground mt-1 text-sm">{description}</p>
-        )}
+        ) : null}
+        {mobilePrimary === 'button' ? (
+          <div className="mt-3">{primaryButton}</div>
+        ) : null}
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
-        {primaryButton}
+      <div className="mb-5 hidden items-center justify-between gap-4 sm:flex">
+        <div>
+          {titleFilter ?? <h1 className="876-page-title">{title}</h1>}
+          {description && (
+            <p className="text-muted-foreground mt-1 text-sm">{description}</p>
+          )}
+        </div>
 
-        {hasDropdown && (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className={cn(
-                buttonVariants({ variant: 'outline', size: 'icon-sm' })
-              )}
-              aria-label="More actions"
-            >
-              <MoreHorizontalIcon className="size-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-auto min-w-40">
-              {refresh && (
-                <DropdownMenuItem onClick={() => router.refresh()}>
-                  <RefreshCw className="size-4" />
-                  Refresh
-                </DropdownMenuItem>
-              )}
-              {refresh && actions.length > 0 && <DropdownMenuSeparator />}
-              {actions.map((action) => {
-                const Icon = action.icon ? ACTION_ICONS[action.icon] : null
-                return (
-                  <React.Fragment key={action.label}>
-                    {action.separator && <DropdownMenuSeparator />}
-                    <DropdownMenuItem
-                      variant={action.destructive ? 'destructive' : 'default'}
-                      disabled={action.disabled}
-                      onClick={action.onClick}
-                      render={
-                        action.href && !action.disabled ? (
-                          <Link href={action.href} />
-                        ) : undefined
-                      }
-                    >
-                      {Icon && <Icon className="size-4" />}
-                      {action.label}
-                    </DropdownMenuItem>
-                  </React.Fragment>
-                )
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {primaryButton}
+
+          {hasDropdown && (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className={cn(
+                  buttonVariants({ variant: 'outline', size: 'icon-sm' })
+                )}
+                aria-label="More actions"
+              >
+                <MoreHorizontalIcon className="size-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-auto min-w-40">
+                {refresh && (
+                  <DropdownMenuItem onClick={() => router.refresh()}>
+                    <RefreshCw className="size-4" />
+                    Refresh
+                  </DropdownMenuItem>
+                )}
+                {refresh && actions.length > 0 && <DropdownMenuSeparator />}
+                {actions.map((action) => {
+                  const Icon = action.icon ? ACTION_ICONS[action.icon] : null
+                  return (
+                    <React.Fragment key={action.label}>
+                      {action.separator && <DropdownMenuSeparator />}
+                      <DropdownMenuItem
+                        variant={action.destructive ? 'destructive' : 'default'}
+                        disabled={action.disabled}
+                        onClick={action.onClick}
+                        render={
+                          action.href && !action.disabled ? (
+                            <Link href={action.href} />
+                          ) : undefined
+                        }
+                      >
+                        {Icon && <Icon className="size-4" />}
+                        {action.label}
+                      </DropdownMenuItem>
+                    </React.Fragment>
+                  )
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
