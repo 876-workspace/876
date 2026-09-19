@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { getCrmApiContext } from '@/lib/auth/api-context'
 import { requireAppAccessManager } from '@/lib/auth/app-access'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 const createSchema = z.object({
   user_id: z.string().min(1).optional(),

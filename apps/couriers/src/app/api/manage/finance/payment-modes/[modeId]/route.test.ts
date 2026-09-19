@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/services/billing', () => ({
+vi.mock('@/lib/clients/billing', () => ({
   createBillingIntegration: mocks.createBillingIntegration,
 }))
 
@@ -172,7 +172,7 @@ describe('Couriers payment mode update route image fields', () => {
   it('rejects a caller-supplied image file and URL without calling Billing', async () => {
     const { PATCH } = await import('./route')
     const createBillingIntegration = vi.mocked(
-      (await import('@/lib/services/billing')).createBillingIntegration
+      (await import('@/lib/clients/billing')).createBillingIntegration
     )
     createBillingIntegration.mockClear()
 

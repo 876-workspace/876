@@ -5,7 +5,7 @@ import type { RecurringInvoiceFormInitial } from '@876/billing-ui/recurring-invo
 
 import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { InvoiceRecurringInvoiceEditForm } from '../../_components/recurring-invoice-edit-form'
 
 type Props = { params: Promise<{ recurringInvoiceId: string }> }

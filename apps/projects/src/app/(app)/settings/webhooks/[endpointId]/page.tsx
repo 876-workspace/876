@@ -10,7 +10,7 @@ import {
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
 import { toUiWebhookDelivery } from '@/lib/integration-mappers'
-import { integration } from '@/lib/services/integration'
+import { integration } from '@/lib/clients/integration'
 
 import { WebhookDeliveryManager } from './_components/webhook-delivery-manager'
 

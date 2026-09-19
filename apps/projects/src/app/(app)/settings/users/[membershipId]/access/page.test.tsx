@@ -20,7 +20,7 @@ vi.mock('@/lib/auth/require-projects-context', () => ({
 vi.mock('@/lib/auth/app-access', () => ({
   resolveCrmAccessViewer: mocks.resolveViewer,
 }))
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   getWorkspace: mocks.getWorkspace,
 }))
 vi.mock('../../_data', () => ({

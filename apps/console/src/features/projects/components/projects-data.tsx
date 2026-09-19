@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import type { ProjectStatus } from '@876/projects/contracts'
 import { ProjectsList } from '@876/projects-ui/project-list'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Projects list, shared by 876's own `/projects` section

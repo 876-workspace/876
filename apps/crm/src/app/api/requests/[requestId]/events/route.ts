@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 
 import { getCrmApiContext } from '@/lib/auth/api-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 import type { CrmRequestEventCreateInput } from '@/types/crm'
 
 type Context = { params: Promise<{ requestId: string }> }

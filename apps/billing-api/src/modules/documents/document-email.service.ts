@@ -2,7 +2,7 @@ import { formatMinorUnits } from '@876/core/money'
 import { nowUnixSeconds } from '@876/core/timestamps'
 
 import { appError, AppHttpError } from '@/http/errors'
-import { communicationsService } from '@/lib/services/communications'
+import { communicationsService } from '@/lib/clients/communications'
 import { enabledCurrencyDecimalPlaces } from '@/modules/currencies'
 import { tenantOrganization } from '@/modules/tenants'
 import { idempotencyHash } from '@/platform/idempotency'

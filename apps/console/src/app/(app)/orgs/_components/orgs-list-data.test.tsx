@@ -9,10 +9,10 @@ const mocks = vi.hoisted(() => ({
   subscriptions: vi.fn(),
 }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   platform: { organizations: { list: mocks.list, search: mocks.search } },
 }))
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   workspace: {
     organizations: { subscriptions: { list: mocks.subscriptions } },
   },

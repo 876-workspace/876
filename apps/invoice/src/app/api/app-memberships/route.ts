@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { getInvoiceApiContext } from '@/lib/auth/api-context'
 import { requireAppAccessManager } from '@/lib/auth/app-access'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 const createSchema = z.object({ user_id: z.string().min(1).optional(), membership_id: z.string().min(1).optional(), app_id: z.string().min(1).optional(), app_slug: z.string().min(1).optional(), app_role_id: z.string().min(1).optional(), permission_grants: z.array(z.string()).optional(), permission_denies: z.array(z.string()).optional(), title: z.string().min(1).max(160).nullable().optional(), attributes: z.record(z.string(), z.unknown()).nullable().optional(), status: z.string().min(1).max(32).optional() })
 function unauthorized() { return Response.json({ data: null, error: { code: 'invoice/unauthorized', message: 'Unauthorized.' } }, { status: 401 }) }

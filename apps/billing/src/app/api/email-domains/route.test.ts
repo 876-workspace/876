@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/billing-context', () => ({
   getWorkspaceContext: mocks.context,
 }))
-vi.mock('@/lib/services/communications', () => ({
+vi.mock('@/lib/clients/communications', () => ({
   communicationsService: () => ({
     domains: { create: mocks.create },
   }),

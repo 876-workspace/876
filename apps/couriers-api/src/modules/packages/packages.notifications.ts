@@ -1,4 +1,4 @@
-import { communicationsService } from '@/lib/services/communications'
+import { communicationsService } from '@/lib/clients/communications'
 import { retrieveTenant } from '@/modules/tenants'
 import { idempotencyHash } from '@/platform/idempotency'
 import { getLogger } from '@/platform/logger'

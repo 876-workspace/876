@@ -8,7 +8,7 @@ import { AttachmentsData } from '@/features/projects/components/attachments-data
 import { ProjectTabs } from '@/features/projects/components/project-tabs'
 import { ATTACHMENTS_SKELETON_COLUMNS } from '@/features/projects/components/operator-skeleton-columns'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { resolveOrg } from '@/features/orgs/org-data'
 import { projectsBase } from '@/features/orgs/app-workspaces'

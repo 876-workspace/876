@@ -6,7 +6,7 @@ import { getError, toAppError } from '@876/core'
 
 import { RequestTasksClient } from '../../_components/request-tasks-client'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 export const metadata = { title: 'Request tasks' }
 

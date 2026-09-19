@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
 import { toRoleView } from '@/lib/couriers'
-import { getCouriers } from '@/lib/services/couriers'
+import { getCouriers } from '@/lib/clients/couriers'
 import { roleUpdateParamsSchema } from '@/types/role'
 
 export const runtime = 'nodejs'

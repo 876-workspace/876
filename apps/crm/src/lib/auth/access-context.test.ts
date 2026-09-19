@@ -10,13 +10,13 @@ vi.mock('react', async () => {
   const actual = await vi.importActual<typeof import('react')>('react')
   return { ...actual, cache: <T>(fn: T) => fn }
 })
-vi.mock('@/lib/services/account', () => ({
+vi.mock('@/lib/clients/account', () => ({
   getAccount: async () => ({
     appMemberships: { me: { retrieve: mocks.retrieve } },
   }),
 }))
 vi.mock('@/lib/features', () => ({ getFeatures: mocks.getFeatures }))
-vi.mock('@/lib/services/platform-app', () => ({
+vi.mock('@/lib/clients/platform-app', () => ({
   resolvePlatformAppId: mocks.resolvePlatformAppId,
 }))
 

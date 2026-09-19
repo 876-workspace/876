@@ -2,7 +2,7 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 type MemberLabelResult = {
   labels: Readonly<Record<string, string>>

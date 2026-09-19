@@ -6,7 +6,7 @@ import { Badge } from '@876/ui/badge'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
 import { ErrorState } from '@/components/patterns/error-state'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 export default async function OrganizationAppDetailPage({

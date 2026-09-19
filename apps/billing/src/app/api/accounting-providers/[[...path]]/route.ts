@@ -9,7 +9,7 @@ import {
   canManageBilling,
   getContext,
 } from '@/lib/auth/billing-context'
-import { getAccountingProviderClient } from '@/lib/services/accounting-providers'
+import { getAccountingProviderClient } from '@/lib/clients/accounting-providers'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

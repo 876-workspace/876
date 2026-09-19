@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import { PhaseList } from '@876/projects-ui/phase-list'
 
 import type { PhaseStatus } from '../phase-status'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Phases list, shared by every host.

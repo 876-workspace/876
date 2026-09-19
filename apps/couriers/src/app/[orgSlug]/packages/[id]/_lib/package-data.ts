@@ -4,8 +4,8 @@ import { cache } from 'react'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { isCouriersNotFound, requireCouriersData } from '@/lib/couriers'
-import { billingIntegration } from '@/lib/services/billing'
-import { couriersOperator } from '@/lib/services/couriers'
+import { billingIntegration } from '@/lib/clients/billing'
+import { couriersOperator } from '@/lib/clients/couriers'
 
 export const resolvePackage = cache(async (orgSlug: string, id: string) => {
   const ctx = await getManageContext(orgSlug)

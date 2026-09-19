@@ -2,7 +2,7 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 
 export const isAccountUsable = cache(async function isAccountUsable(
   userId: string

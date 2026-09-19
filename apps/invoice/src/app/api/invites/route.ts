@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { getInvoiceContextResult } from '@/lib/auth/context'
 import { requireFinanceMemberManager } from '@/lib/auth/finance-access'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 const bodySchema = z.strictObject({
   email: z.string().trim().email().max(320),

@@ -1,4 +1,4 @@
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { FollowButton } from './follow-button'
 import type { FollowSubjectType } from '@/types/collaboration'

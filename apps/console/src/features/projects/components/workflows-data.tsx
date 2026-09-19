@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from '@876/ui/empty'
 import { WrenchScrewdriverIcon } from '@876/ui/icons'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { WorkflowTransitionsTable } from './workflow-transitions-table'
 

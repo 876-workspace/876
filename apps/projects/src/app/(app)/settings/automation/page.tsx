@@ -7,7 +7,7 @@ import {
   requireAppPermission,
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { AutomationRulesManager } from './_components/automation-rules-manager'
 

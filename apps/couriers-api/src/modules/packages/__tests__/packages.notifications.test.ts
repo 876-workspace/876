@@ -124,7 +124,7 @@ vi.mock('@/providers/billing/customers', () => ({
   retrieveCustomer: mockRegistryRetrieve,
 }))
 
-vi.mock('@/lib/services/communications', () => ({
+vi.mock('@/lib/clients/communications', () => ({
   communicationsService: mockCommunicationsService,
 }))
 
@@ -583,8 +583,8 @@ describe('package shipment notifications', () => {
       COMMUNICATIONS_INTERNAL_KEY: '',
     })
     const actual = await vi.importActual<
-      typeof import('@/lib/services/communications')
-    >('@/lib/services/communications')
+      typeof import('@/lib/clients/communications')
+    >('@/lib/clients/communications')
     actual.resetCommunicationsServiceForTest()
     mockCommunicationsService.mockImplementationOnce(() =>
       actual.communicationsService()

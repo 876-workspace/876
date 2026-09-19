@@ -8,7 +8,7 @@ import {
 
 import { getInvoiceContext } from '@/lib/auth/context'
 import { formatMoney } from '@/lib/format'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { CustomerContacts } from './_components/customer-contacts'
 import {
   CustomerSalesSummaryData,

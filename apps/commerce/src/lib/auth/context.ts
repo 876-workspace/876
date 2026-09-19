@@ -3,7 +3,7 @@ import 'server-only'
 import { cache } from 'react'
 
 import { COMMERCE_APP_SLUG } from '@/lib/commerce-app'
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 
 import { getCommerceSession } from './session'
 import { isAccountUsable } from './account-validity'

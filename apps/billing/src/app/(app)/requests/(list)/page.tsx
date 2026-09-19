@@ -13,7 +13,7 @@ import { ResourceToolbar } from '@876/ui/resource-toolbar'
 import { StatusFilterHeading } from '@876/ui/status-filter-heading'
 
 import { getWorkspaceContext, hasPermission } from '@/lib/auth/billing-context'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 export const metadata = { title: 'Requests' }
 

@@ -9,7 +9,7 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requirePermission,
 }))
 
-vi.mock('@/lib/services/widgets', () => ({
+vi.mock('@/lib/clients/widgets', () => ({
   widgets: {
     notes: { list: mocks.list },
   },

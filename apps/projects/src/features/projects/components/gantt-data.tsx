@@ -4,7 +4,7 @@ import { GanttBaselines } from '@/features/projects/components/gantt-baselines'
 import { GanttView } from '@/features/projects/components/gantt-view'
 import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function GanttData({
   orgId,

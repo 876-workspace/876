@@ -4,7 +4,7 @@ import type { AdminProvisioningSetupCreateParams } from '@876/platform/compat'
 import type { NextRequest } from 'next/server'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 
 export const runtime = 'nodejs'
 

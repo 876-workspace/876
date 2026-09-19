@@ -1,5 +1,5 @@
-import { platform } from '@/lib/services/platform'
-import { workspace } from '@/lib/services/workspace'
+import { platform } from '@/lib/clients/platform'
+import { workspace } from '@/lib/clients/workspace'
 import { WIDGET_HOST_APP_SLUGS, WIDGET_HOST_LABELS } from '@876/widgets'
 
 import {

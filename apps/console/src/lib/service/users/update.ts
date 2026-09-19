@@ -1,4 +1,4 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import type { AdminUser, AdminUserUpdateParams } from '@876/platform/compat'
 
 import { assertRoleChangeAllowed } from '@/lib/auth/role-change'

@@ -1,7 +1,7 @@
 import { apiError, apiJson } from '@876/core/api'
 import { supportResponseStatus } from '@876/crm'
 
-import { getCrmSupport } from '@/lib/services/crm-support'
+import { getCrmSupport } from '@/lib/clients/crm-support'
 import { resolveSupportContext } from '../_lib/support-context'
 
 export async function GET() {

@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/api-permission', () => ({
   requireApiAccess: mocks.requireAccess,
 }))
-vi.mock('@/lib/services/projects', () => ({
+vi.mock('@/lib/clients/projects', () => ({
   projects: {
     automationRules: {
       list: mocks.listRules,

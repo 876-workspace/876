@@ -31,7 +31,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn(), replace: vi.fn() }),
 }))
 
-vi.mock('@/lib/services/projects', () => ({
+vi.mock('@/lib/clients/projects', () => ({
   projects: {
     issues: {
       retrieve: mocks.retrieveIssue,
@@ -56,7 +56,7 @@ vi.mock('./attachments-data', () => ({
   AttachmentsData: () => <div data-testid="issue-attachments" />,
 }))
 
-vi.mock('@/lib/services/storage', () => ({
+vi.mock('@/lib/clients/storage', () => ({
   storage: {
     resourceLinks: {
       list: mocks.listLinks,

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { PhaseForm } from '@/features/projects/components/phase-form'
 import { loadMemberLabels } from '@/features/projects/member-labels'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function EditPhaseData({
   orgId,

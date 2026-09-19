@@ -1,5 +1,5 @@
-import { widgets } from '@/lib/services/widgets'
-import { platform } from '@/lib/services/platform'
+import { widgets } from '@/lib/clients/widgets'
+import { platform } from '@/lib/clients/platform'
 import {
   WIDGET_HOST_APP_SLUGS,
   WIDGET_HOST_LABELS,

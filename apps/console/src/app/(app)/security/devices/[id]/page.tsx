@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@876/ui/table'
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import { DeviceActions } from './_components/device-actions'
 
 type Props = { params: Promise<{ id: string }> }

@@ -7,7 +7,7 @@ import { Suspense } from 'react'
 import { ProjectActivityData } from '@/features/projects/components/activity-data'
 import { ProjectTabs } from '@/features/projects/components/project-tabs'
 import { projectsBase } from '@/features/orgs/app-workspaces'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { requirePlatformProjectsOrgId } from '../../../_lib/base'
 

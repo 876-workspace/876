@@ -16,7 +16,7 @@ import { canAccess } from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { requireAppCapability } from '@/lib/auth/guards'
 import { INVOICE_REQUESTS_SLUG } from '@/lib/features'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 export const metadata = { title: 'Requests' }
 

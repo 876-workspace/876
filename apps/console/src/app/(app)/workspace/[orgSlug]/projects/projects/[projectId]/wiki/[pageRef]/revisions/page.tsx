@@ -8,7 +8,7 @@ import { WikiRevisionsData } from '@/features/projects/components/wiki-data'
 import { ProjectTabs } from '@/features/projects/components/project-tabs'
 import { projectsBase } from '@/features/orgs/app-workspaces'
 import { resolveOrg } from '@/features/orgs/org-data'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 type Props = {
   params: Promise<{ orgSlug: string; projectId: string; pageRef: string }>

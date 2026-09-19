@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   getManageContext: vi.fn(),
 }))
 
-vi.mock('@/lib/services/storage', () => ({
+vi.mock('@/lib/clients/storage', () => ({
   storage: { uploads: { create: mocks.create } },
 }))
 vi.mock('@/lib/features', () => ({

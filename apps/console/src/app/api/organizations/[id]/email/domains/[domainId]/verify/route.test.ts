@@ -12,12 +12,12 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requirePermission,
 }))
 
-vi.mock('@/lib/services/communications', () => ({
+vi.mock('@/lib/clients/communications', () => ({
   createCommunications: mocks.createClient,
   communications: { domains: { verify: mocks.verify } },
 }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   platform: { auditEvents: { create: mocks.auditCreate } },
 }))
 

@@ -7,7 +7,7 @@ import { z } from 'zod'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
-import { couriersOperator } from '@/lib/services/couriers'
+import { couriersOperator } from '@/lib/clients/couriers'
 
 export const runtime = 'nodejs'
 

@@ -1,6 +1,6 @@
 import type { PlatformProvisioningProperty } from '@876/core/platform'
 
-import { createBackgroundPlatformClient } from '@/lib/services/platform'
+import { createBackgroundPlatformClient } from '@/lib/clients/platform'
 
 export interface BillingProvisioningManifest {
   object: 'provisioning_manifest'

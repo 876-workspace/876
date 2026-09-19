@@ -13,10 +13,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/services/couriers', () => ({
+vi.mock('@/lib/clients/couriers', () => ({
   couriersOperator: { customers: { list: mocks.listProfiles } },
 }))
-vi.mock('@/lib/services/billing', () => ({
+vi.mock('@/lib/clients/billing', () => ({
   billingIntegration: { customers: { list: mocks.listCustomers } },
 }))
 vi.mock('@/lib/couriers', () => ({

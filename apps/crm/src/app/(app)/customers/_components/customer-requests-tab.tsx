@@ -1,7 +1,7 @@
 import { CustomerRequestsPanel } from '@876/crm-ui/customer-requests-panel'
 import { AppError } from '@876/ui/app-error'
 
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 
 export async function CustomerRequestsTab({

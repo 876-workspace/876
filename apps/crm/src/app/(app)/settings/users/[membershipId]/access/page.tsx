@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
 import { resolveCrmAccessViewer } from '@/lib/auth/app-access'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 import { buildAccessEntries } from '@876/access-ui/entries'
 import type { AppMembership, AppRole } from '../../_lib/types'

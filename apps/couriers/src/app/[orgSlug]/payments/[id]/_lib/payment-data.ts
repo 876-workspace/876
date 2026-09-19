@@ -2,7 +2,7 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { billingIntegration } from '@/lib/services/billing'
+import { billingIntegration } from '@/lib/clients/billing'
 import { getManageContext } from '@/lib/auth/manage-context'
 
 /** Resolve the payment shared by the detail card and its metadata. */

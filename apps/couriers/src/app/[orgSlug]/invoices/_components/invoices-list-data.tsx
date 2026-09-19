@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { billingIntegration } from '@/lib/services/billing'
+import { billingIntegration } from '@/lib/clients/billing'
 import { getManageContext } from '@/lib/auth/manage-context'
 
 import { InvoicesList } from './invoices-list'

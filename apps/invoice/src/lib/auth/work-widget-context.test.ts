@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('./api-permission', () => ({
   requireApiPermission: mocks.requireApiPermission,
 }))
-vi.mock('@/lib/services/billing', () => ({
+vi.mock('@/lib/clients/billing', () => ({
   getBilling: mocks.getBilling,
 }))
 

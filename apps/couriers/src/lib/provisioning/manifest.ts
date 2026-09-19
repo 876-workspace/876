@@ -3,7 +3,7 @@ import 'server-only'
 import type { PlatformProvisioningProperty } from '@876/core/platform'
 
 import { COURIERS_APP_SLUG } from '@/lib/couriers-app'
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 
 export interface CouriersProvisioningManifest {
   object: 'couriers_provisioning_manifest'

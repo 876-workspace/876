@@ -3,8 +3,8 @@ import 'server-only'
 import { create876BillingServerClient } from '@876/billing/server'
 import { cache } from 'react'
 
-import { getInvoiceBillingConfig } from '@/lib/services/billing-config'
-import { resolveBillingTenantId } from '@/lib/services/billing-tenants'
+import { getInvoiceBillingConfig } from '@/lib/clients/billing-config'
+import { resolveBillingTenantId } from '@/lib/clients/billing-tenants'
 
 import { getInvoiceContextResult } from './context'
 

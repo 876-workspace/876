@@ -8,7 +8,7 @@ import {
   requireAttachmentAccess,
 } from '../_lib/attachments-api'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
-import { storage } from '@/lib/services/storage'
+import { storage } from '@/lib/clients/storage'
 import { attachmentUploadSessionRequestSchema } from '@/types/attachments'
 
 export const runtime = 'nodejs'

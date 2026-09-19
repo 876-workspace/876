@@ -1,7 +1,7 @@
 import { apiError, apiJson } from '@876/core/api'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { communicationsService } from '@/lib/services/communications'
+import { communicationsService } from '@/lib/clients/communications'
 
 type RouteContext = { params: Promise<{ domainId: string }> }
 

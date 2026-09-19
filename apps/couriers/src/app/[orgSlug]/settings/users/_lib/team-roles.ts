@@ -1,7 +1,7 @@
 import { cache } from 'react'
 
 import { requireCouriersData, toRoleView } from '@/lib/couriers'
-import { getCouriers } from '@/lib/services/couriers'
+import { getCouriers } from '@/lib/clients/couriers'
 
 /**
  * The tenant's roles, deduplicated for the lifetime of one request.

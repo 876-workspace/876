@@ -14,7 +14,7 @@ import {
   unixSecondsSchema,
 } from '@/types/reporting'
 import { requireApiAccess } from '@/lib/auth/api-permission'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'

@@ -9,7 +9,7 @@ import {
   AuthProvider,
 } from '@876/ui/auth'
 
-import { account } from '@/lib/services/account'
+import { account } from '@/lib/clients/account'
 
 /**
  * Business onboarding — new organization creation plus the organization creator account.

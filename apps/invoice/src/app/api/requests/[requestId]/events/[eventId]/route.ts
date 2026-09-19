@@ -3,7 +3,7 @@ import { supportResponseStatus } from '@876/crm'
 
 import { requireApiCapability } from '@/lib/auth/api-permission'
 import { INVOICE_REQUESTS_SLUG } from '@/lib/features'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 export const runtime = 'nodejs'
 

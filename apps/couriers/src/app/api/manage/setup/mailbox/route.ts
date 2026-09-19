@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
 import { toCouriersTenant } from '@/lib/couriers'
-import { couriersOperator } from '@/lib/services/couriers'
+import { couriersOperator } from '@/lib/clients/couriers'
 
 export const runtime = 'nodejs'
 

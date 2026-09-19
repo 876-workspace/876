@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 
 import { loadMemberLabels } from '@/features/projects/member-labels'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { mapDiscussion, mapDiscussionPost } from '../mappers'
 import {

@@ -10,13 +10,13 @@ vi.mock('@/lib/service', () => ({
   service: { team: { list: mocks.listGrants } },
 }))
 
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   workspace: {
     employees: { list: mocks.listEmployees },
   },
 }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   platform: { users: { list: mocks.listUsers } },
 }))
 

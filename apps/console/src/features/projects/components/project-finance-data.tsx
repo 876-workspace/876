@@ -5,7 +5,7 @@ import { FinancialSummaryPanel } from '@876/projects-ui/finance/financial-summar
 import { RateList } from '@876/projects-ui/finance/rate-list'
 import { notFound } from 'next/navigation'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the project Finance tab, shared by every host: billing

@@ -4,7 +4,7 @@ import { AppError } from '@876/ui/app-error'
 import { Badge } from '@876/ui/badge'
 
 import type { CycleStatus } from '../cycle-status'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { formatOperatorDateOrDash } from './operator-format'
 

@@ -3,7 +3,7 @@ import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 
 import { toUiActivityItem } from '../collaboration-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 const PAGE_LIMIT = 25
 const GLOBAL_PROJECT_LIMIT = 20

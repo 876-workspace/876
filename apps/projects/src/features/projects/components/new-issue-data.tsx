@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import {
   listProjectMilestones,
   listProjectTaskLists,

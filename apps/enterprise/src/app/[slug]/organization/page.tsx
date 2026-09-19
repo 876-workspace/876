@@ -7,7 +7,7 @@ import { ChevronRight } from '@876/ui/icons'
 import { Page } from '@876/ui/page'
 
 import { ErrorState } from '@/components/patterns/error-state'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 const DETAIL_PREVIEW_FIELDS: {

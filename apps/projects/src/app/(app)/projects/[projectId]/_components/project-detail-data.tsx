@@ -10,7 +10,7 @@ import { AttachmentsData } from '@/features/projects/components/attachments-data
 import { ProjectCustomFieldsPanel } from '@/features/projects/components/project-custom-fields-panel'
 import { WorkBreakdownData } from '@/features/projects/components/work-breakdown-data'
 import { loadMemberLabels } from '@/features/projects/member-labels'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function ProjectDetailData({
   orgId,

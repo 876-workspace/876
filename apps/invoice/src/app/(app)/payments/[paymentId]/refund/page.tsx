@@ -12,7 +12,7 @@ import {
 import { RefundForm } from '@/features/payments/components/refund-form'
 import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 export const metadata = { title: 'Refund payment' }
 

@@ -10,7 +10,7 @@ vi.mock('@/lib/auth/billing-context', () => ({
   getContext: mocks.getContext,
   canManageBilling: (role: string) => role === 'super-admin' || role === 'admin',
 }))
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 vi.mock('@/lib/billing-app', () => ({ BILLING_APP_SLUG: '876-billing' }))

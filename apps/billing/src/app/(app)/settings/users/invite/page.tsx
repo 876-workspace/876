@@ -1,7 +1,7 @@
 
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 
 import { BillingMemberInvitePanel } from '../_components/member-invite-panel'
 

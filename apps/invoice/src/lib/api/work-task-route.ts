@@ -8,7 +8,7 @@ import { workTaskMatchesContext } from '@/lib/api/work-context-match'
 import { workErrorResponse } from '@/lib/api/work-response'
 import { requireAuthorizedInvoiceWorkContext } from '@/lib/auth/work-widget-context'
 import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
-import { getWork } from '@/lib/services/work'
+import { getWork } from '@/lib/clients/work'
 
 export const runtime = 'nodejs'
 

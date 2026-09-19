@@ -7,7 +7,7 @@ import {
   requireAppAccess,
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export const metadata: Metadata = { title: 'Activity' }
 

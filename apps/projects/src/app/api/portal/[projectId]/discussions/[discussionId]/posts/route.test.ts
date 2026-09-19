@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/portal-access', () => ({
   resolvePortalApiAccess: mocks.resolveAccess,
 }))
-vi.mock('@/lib/services/portal', () => ({
+vi.mock('@/lib/clients/portal', () => ({
   getPortalClient: () => ({
     createDiscussionPost: mocks.createDiscussionPost,
   }),

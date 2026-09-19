@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import { Suspense } from 'react'
 
 import { formatDateInput, todaySeconds } from '@/lib/date-input'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { parseTemplatePreviewQuery } from '../template-preview-query'
 import type { TemplatePreviewQuery } from '@/types/templates'

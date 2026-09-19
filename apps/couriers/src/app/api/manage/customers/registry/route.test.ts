@@ -12,10 +12,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/services/billing', () => ({
+vi.mock('@/lib/clients/billing', () => ({
   billingIntegration: { customers: { list: mocks.listRegistry } },
 }))
-vi.mock('@/lib/services/couriers', () => ({ getCouriers: mocks.getCouriers }))
+vi.mock('@/lib/clients/couriers', () => ({ getCouriers: mocks.getCouriers }))
 
 import { GET } from './route'
 

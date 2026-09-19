@@ -23,7 +23,7 @@ import {
 import { cn } from '@876/core/utils'
 
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 const WEEK_SECONDS = 7 * 24 * 60 * 60
 const LIST_LIMIT = 5

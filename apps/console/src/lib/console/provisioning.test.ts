@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   languages: vi.fn(),
   catalog: vi.fn(),
 }))
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   workspace: {
     geo: { listCurrencies: mocks.currencies, listLanguages: mocks.languages },
     provisioning: { retrieveCatalog: mocks.catalog },

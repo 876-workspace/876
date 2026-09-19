@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   panel: vi.fn(),
 }))
 
-vi.mock('@/lib/services/projects', () => ({
+vi.mock('@/lib/clients/projects', () => ({
   projects: {
     issues: { retrieve: mocks.retrieve },
     issueRelations: { list: mocks.listRelations },

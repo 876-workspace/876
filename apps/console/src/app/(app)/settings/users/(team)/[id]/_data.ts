@@ -1,4 +1,4 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import { cache } from 'react'
 
 import { service } from '@/lib/service'

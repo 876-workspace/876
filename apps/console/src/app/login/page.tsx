@@ -1,4 +1,4 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 

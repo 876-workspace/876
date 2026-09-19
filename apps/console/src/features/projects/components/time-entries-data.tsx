@@ -7,7 +7,7 @@ import type {
 } from '@876/projects/contracts'
 import type { TimeEntryListRow } from '@876/projects-ui/time-entry-list'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { formatOperatorDuration } from './operator-format'
 import { ReadOnlyTimeEntries } from './read-only-time-entries'

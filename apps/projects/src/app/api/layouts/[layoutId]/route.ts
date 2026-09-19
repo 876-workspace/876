@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server'
 
 import { requireApiAccess } from '@/lib/auth/api-permission'
 import { updateLayoutInputSchema } from '@/types/layouts'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'

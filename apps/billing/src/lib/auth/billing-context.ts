@@ -4,7 +4,7 @@ import { cache } from 'react'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { BILLING_APP_SLUG } from '@/lib/billing-app'
 import { getFeatures } from '@/lib/features'
 import { service } from '@/lib/service'

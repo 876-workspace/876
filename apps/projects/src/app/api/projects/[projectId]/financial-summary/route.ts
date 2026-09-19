@@ -4,7 +4,7 @@ import { apiJson } from '@876/core/api'
 
 import { requireApiAccess } from '@/lib/auth/api-permission'
 import type { ApiContext } from '@/types/access'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export const runtime = 'nodejs'
 

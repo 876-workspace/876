@@ -3,7 +3,7 @@ import { AppError } from '@876/ui/app-error'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { BillingSalesReceiptRefundForm } from '../../_components/sales-receipt-refund-form'
 
 export const metadata = { title: 'Refund Sales Receipt' }

@@ -9,7 +9,7 @@ import {
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
 import { toUiWebhookEndpoint } from '@/lib/integration-mappers'
-import { integration } from '@/lib/services/integration'
+import { integration } from '@/lib/clients/integration'
 
 export const metadata = { title: 'Webhooks' }
 

@@ -4,8 +4,8 @@ import type { PackageCategory } from '@876/couriers/admin'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData } from '@/lib/couriers'
-import { billingIntegration } from '@/lib/services/billing'
-import { couriersOperator } from '@/lib/services/couriers'
+import { billingIntegration } from '@/lib/clients/billing'
+import { couriersOperator } from '@/lib/clients/couriers'
 
 const PAGE_SIZE = 100
 

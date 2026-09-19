@@ -2,8 +2,8 @@ import { cache } from 'react'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData, toTeamMemberView } from '@/lib/couriers'
-import { getCouriers } from '@/lib/services/couriers'
-import { getPlatformClient } from '@/lib/services/platform'
+import { getCouriers } from '@/lib/clients/couriers'
+import { getPlatformClient } from '@/lib/clients/platform'
 import type {
   PendingTeamInvite,
   TeamMemberRow,

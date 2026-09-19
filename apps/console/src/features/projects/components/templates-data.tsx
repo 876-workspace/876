@@ -1,7 +1,7 @@
 import { AppError } from '@876/ui/app-error'
 import { TemplateList } from '@876/projects-ui/templates/template-list'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Templates list, shared by every host. Rows render

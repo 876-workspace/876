@@ -15,13 +15,13 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/services/billing', () => ({
+vi.mock('@/lib/clients/billing', () => ({
   billingIntegration: { invoices: { retrieve: mocks.retrieveInvoice } },
   createBillingIntegration: () => ({
     documentTemplates: { resolve: mocks.resolveTemplate },
   }),
 }))
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: async () => ({
     organizations: { retrieveProfile: mocks.retrieveProfile },
   }),

@@ -9,7 +9,7 @@ vi.mock('@/lib/auth/route-guard', () => ({
   requireConsolePermission: mocks.requireConsolePermission,
 }))
 
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   workspace: { appMemberships: { update: mocks.update, delete: vi.fn() } },
 }))
 

@@ -5,8 +5,8 @@ import { cache } from 'react'
 
 import type { DirectoryMember } from '@/features/directory/types'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
-import { crm } from '@/lib/services/crm'
-import { getWorkspace } from '@/lib/services/workspace'
+import { crm } from '@/lib/clients/crm'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 export const loadCrmContext = cache(requireCrmContext)
 export type RequestTeam = { id: string; name: string; color: string | null }

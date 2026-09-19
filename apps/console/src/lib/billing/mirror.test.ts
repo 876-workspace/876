@@ -1,4 +1,4 @@
-import { billingOperator } from '@/lib/services/billing'
+import { billingOperator } from '@/lib/clients/billing'
 import type {
   AdminPrice,
   AdminProduct,
@@ -28,7 +28,7 @@ const mocks = vi.hoisted(() => ({
   productList: vi.fn(),
 }))
 
-vi.mock('@/lib/services/billing', () => ({
+vi.mock('@/lib/clients/billing', () => ({
   billingOperator: {
     products: { create: mocks.productCreate },
     plans: { create: mocks.planCreate },
@@ -38,7 +38,7 @@ vi.mock('@/lib/services/billing', () => ({
   },
 }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   platform: {
     products: {
       retrieve: mocks.productRetrieve,
@@ -57,7 +57,7 @@ vi.mock('@/lib/services/platform', () => ({
   },
 }))
 
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   workspace: {
     memberships: {
       list: mocks.membershipsList,

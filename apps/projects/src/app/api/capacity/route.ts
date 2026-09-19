@@ -7,7 +7,7 @@ import { searchParamsOf, serviceFailure } from '@/app/api/_lib/reporting-api'
 import { unixSecondsSchema } from '@/types/reporting'
 import { MAX_MINUTES_PER_WEEK } from '@/features/reports/capacity-input'
 import { requireApiAccess } from '@/lib/auth/api-permission'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'

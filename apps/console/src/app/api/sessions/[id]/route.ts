@@ -1,4 +1,4 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import { apiJson } from '@876/core/api'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'

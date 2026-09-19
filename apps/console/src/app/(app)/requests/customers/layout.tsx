@@ -11,7 +11,7 @@ import { CRM_CUSTOMERS_SKELETON_COLUMNS } from '@/features/crm/components/custom
 import { NoCrmWorkspace } from '@/features/crm/components/no-crm-workspace'
 import { toCustomerRow } from '@/features/crm/customer-rows'
 import { getPlatformOrganization } from '@/lib/platform-org'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 import { PLATFORM_CUSTOMERS_HREF } from './_lib/paths'
 

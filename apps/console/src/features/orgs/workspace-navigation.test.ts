@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({ evaluate: vi.fn() }))
 
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   workspace: { features: { evaluate: mocks.evaluate } },
 }))
 vi.mock('@sentry/nextjs', () => ({ captureMessage: vi.fn() }))

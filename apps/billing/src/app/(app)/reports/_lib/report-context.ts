@@ -1,7 +1,7 @@
 import { cache } from 'react'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 import { DEFAULT_REPORT_TIMEZONE } from './report-params'
 

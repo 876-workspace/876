@@ -33,7 +33,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn(), replace: vi.fn() }),
 }))
 
-vi.mock('@/lib/services/projects', () => ({
+vi.mock('@/lib/clients/projects', () => ({
   projects: {
     milestones: {
       retrieve: mocks.retrievePhase,

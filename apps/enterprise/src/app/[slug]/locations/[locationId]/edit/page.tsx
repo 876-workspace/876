@@ -4,7 +4,7 @@ import { isNotFoundError } from '@876/core/client/lookup'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { ErrorState } from '@/components/patterns/error-state'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 import { requireOrgPermission, requireSession } from '@/lib/auth/guards'
 
 import { LocationForm } from '../../_components/location-form'

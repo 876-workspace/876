@@ -1,7 +1,7 @@
 import { AppError } from '@876/ui/app-error'
 
 import { IssueLinksPanel } from '@/features/projects/components/issue-links-panel'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import type {
   DependencyLink,
   RelationLink,

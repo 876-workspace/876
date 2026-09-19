@@ -10,7 +10,7 @@ import {
   toUiImportPreview,
   toUiUnmappedFields,
 } from '../projects-integration-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Import job detail, shared by every host.

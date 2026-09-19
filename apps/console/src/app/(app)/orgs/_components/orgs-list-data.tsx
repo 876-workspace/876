@@ -1,8 +1,8 @@
 import { AppError } from '@876/ui/app-error'
 import type { AdminOrganization, AdminSubscription } from '@876/platform/compat'
 
-import { platform } from '@/lib/services/platform'
-import { workspace } from '@/lib/services/workspace'
+import { platform } from '@/lib/clients/platform'
+import { workspace } from '@/lib/clients/workspace'
 import { isOrgStatus } from '@/lib/org-status'
 import { OrgsList } from './orgs-list'
 

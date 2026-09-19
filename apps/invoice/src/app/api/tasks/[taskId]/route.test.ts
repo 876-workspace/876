@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/work-widget-access', () => ({
   requireWorkWidgetPermission: mocks.requireWorkWidgetPermission,
 }))
-vi.mock('@/lib/services/work', () => ({ getWork: mocks.getWork }))
+vi.mock('@/lib/clients/work', () => ({ getWork: mocks.getWork }))
 
 const TASK = {
   object: 'task' as const,

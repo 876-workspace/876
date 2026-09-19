@@ -15,7 +15,7 @@ vi.mock('next/navigation', () => ({
 }))
 
 vi.mock('@/lib/invoice', () => ({ getInvoice: mockGetInvoice }))
-vi.mock('@/lib/services/billing', () => ({
+vi.mock('@/lib/clients/billing', () => ({
   getBilling: vi.fn().mockResolvedValue({
     taxRates: {
       list: vi.fn().mockResolvedValue({ data: { data: [] }, error: null }),

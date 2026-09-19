@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import { TimesheetSummary } from '@876/projects-ui/timesheet-summary'
 import { notFound } from 'next/navigation'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { toOperatorTimeEntryRows } from './time-entries-data'
 import { ReadOnlyTimeEntries } from './read-only-time-entries'

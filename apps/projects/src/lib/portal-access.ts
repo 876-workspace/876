@@ -6,8 +6,8 @@ import type { ProjectsPortalClient } from '@876/projects/portal'
 import { redirect } from 'next/navigation'
 
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
-import { getPlatformClient } from '@/lib/services/platform'
-import { getPortalClient } from '@/lib/services/portal'
+import { getPlatformClient } from '@/lib/clients/platform'
+import { getPortalClient } from '@/lib/clients/portal'
 
 import type { PortalAccess } from '@/types/access'
 

@@ -2,7 +2,7 @@ import { apiError, apiJson } from '@876/core/api'
 import type { NoteColor } from '@876/widgets'
 
 import { requireNotepadMember } from '@/lib/widgets-auth'
-import { $876Member } from '@/lib/services/widgets-member'
+import { $876Member } from '@/lib/clients/widgets-member'
 
 export const runtime = 'nodejs'
 

@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/auth/context', () => ({ getInvoiceContextResult: mocks.context }))
 vi.mock('@/lib/auth/finance-access', () => ({ requireFinanceRoleManager: mocks.manager }))
-vi.mock('@/lib/services/billing', () => ({ getBilling: mocks.getBilling }))
+vi.mock('@/lib/clients/billing', () => ({ getBilling: mocks.getBilling }))
 
 import { DELETE, PATCH } from './route'
 

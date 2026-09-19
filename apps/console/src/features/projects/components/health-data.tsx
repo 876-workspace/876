@@ -2,7 +2,7 @@ import { MetricsSummaryPanel } from '@876/projects-ui/platform/metrics-summary-p
 import { AppError } from '@876/ui/app-error'
 
 import { toUiMetricsSummary } from '../projects-integration-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Health dashboard, shared by every host.

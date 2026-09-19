@@ -9,7 +9,7 @@ import { AttachmentsData } from '@/features/projects/components/attachments-data
 import { PhaseComments } from '@/features/projects/components/phase-comments'
 import { PhaseCustomFieldsForm } from '@/features/projects/components/phase-custom-fields-form'
 import { loadMemberLabels } from '@/features/projects/member-labels'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import {
   getPhaseVisibility,
   listPhaseCommentVisibility,

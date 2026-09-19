@@ -1,4 +1,4 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import type { ReactNode } from 'react'
 
 import { BrowserApiBoundary } from '@/components/providers/browser-api-boundary'

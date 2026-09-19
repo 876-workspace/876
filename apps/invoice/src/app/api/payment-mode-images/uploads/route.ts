@@ -5,8 +5,8 @@ import {
 import { apiJson } from '@876/core/api'
 
 import { getInvoiceContext } from '@/lib/auth/context'
-import { getBilling } from '@/lib/services/billing'
-import { createStorageService } from '@/lib/services/storage'
+import { getBilling } from '@/lib/clients/billing'
+import { createStorageService } from '@/lib/clients/storage'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

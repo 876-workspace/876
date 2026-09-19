@@ -4,7 +4,7 @@ import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { canAccess, resolveAccessContext } from '@/lib/auth/access-context'
 import { getInvoiceContext } from '@/lib/auth/context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { InvoiceSalesReceiptRefundForm } from '../../_components/sales-receipt-refund-form'
 
 export const metadata = { title: 'Refund Sales Receipt' }

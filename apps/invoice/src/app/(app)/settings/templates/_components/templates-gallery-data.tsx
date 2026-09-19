@@ -9,7 +9,7 @@ import type {
 import { DocumentTemplateGallery } from '@876/billing-ui/documents/document-template-gallery'
 import { AppError } from '@876/ui/app-error'
 
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 import { TemplateCardActions } from './template-card-actions'
 

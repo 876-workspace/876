@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server'
 
 import { createWorkStructureResource } from '@/lib/api/work-structure'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { workflowStateInputSchema } from '@/types/work-structure'
 
 export const runtime = 'nodejs'

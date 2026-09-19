@@ -8,7 +8,7 @@ import {
   toUiWebhookDelivery,
   toUiWebhookEndpoint,
 } from '../projects-integration-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Webhooks list, shared by every host.

@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({ listRequestsAcrossOrganizations: vi.fn() }))
 
-vi.mock('@/lib/services/crm', () => ({
+vi.mock('@/lib/clients/crm', () => ({
   listRequestsAcrossOrganizations: mocks.listRequestsAcrossOrganizations,
 }))
 vi.mock('@876/ui/app-error', () => ({

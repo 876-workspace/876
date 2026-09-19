@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { getAppError } from '@/lib/errors'
-import { couriersOperator } from '@/lib/services/couriers'
+import { couriersOperator } from '@/lib/clients/couriers'
 
 import { PackageCategoryForm } from '../../_components/package-category-form'
 

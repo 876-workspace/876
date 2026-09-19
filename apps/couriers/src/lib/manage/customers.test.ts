@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   getCouriers: vi.fn(),
 }))
 
-vi.mock('@/lib/services/couriers', () => ({
+vi.mock('@/lib/clients/couriers', () => ({
   getCouriers: mocks.getCouriers,
 }))
 vi.mock('@/lib/couriers', () => ({

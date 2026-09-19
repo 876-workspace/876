@@ -11,7 +11,7 @@ vi.mock('@/lib/auth/session', () => ({
   isSignedSession: mocks.isSignedSession,
 }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   platform: { auditEvents: { create: mocks.createAuditEvent } },
 }))
 

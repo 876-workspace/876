@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/services/couriers', () => ({
+vi.mock('@/lib/clients/couriers', () => ({
   couriersOperator: { packageCategories: { create: mocks.create } },
 }))
 

@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 import { getInvoiceContext } from '@/lib/auth/context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { CustomerForm } from '../../_components/customer-form'
 
 export const metadata = { title: 'Edit Customer' }

@@ -7,7 +7,7 @@ import { z } from 'zod'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
 import { toTeamMemberView } from '@/lib/couriers'
-import { getCouriers } from '@/lib/services/couriers'
+import { getCouriers } from '@/lib/clients/couriers'
 import { teamMemberUpdateParamsSchema } from '@/types/team'
 
 export const runtime = 'nodejs'

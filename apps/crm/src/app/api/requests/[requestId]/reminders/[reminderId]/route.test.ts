@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/api-context', () => ({
   getCrmApiContext: mocks.getCrmApiContext,
 }))
-vi.mock('@/lib/services/crm', () => ({
+vi.mock('@/lib/clients/crm', () => ({
   crm: { requestReminders: { update: mocks.update, delete: mocks.remove } },
 }))
 

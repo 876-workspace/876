@@ -1,4 +1,4 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { Skeleton } from '@876/ui/skeleton'

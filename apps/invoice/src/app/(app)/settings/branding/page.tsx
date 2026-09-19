@@ -8,8 +8,8 @@ import { Page, PageBreadcrumb } from '@876/ui/page'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { canAccess } from '@/lib/auth/access-context'
 import { requireAppPermission } from '@/lib/auth/guards'
-import { getBilling } from '@/lib/services/billing'
-import { getPlatformClient } from '@/lib/services/platform'
+import { getBilling } from '@/lib/clients/billing'
+import { getPlatformClient } from '@/lib/clients/platform'
 
 import { BrandingForm } from './_components/branding-form'
 

@@ -2,8 +2,8 @@ import { AppError } from '@876/ui/app-error'
 import { Page, PageBreadcrumb } from '@876/ui/page'
 
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
-import { crm } from '@/lib/services/crm'
-import { getWorkspace } from '@/lib/services/workspace'
+import { crm } from '@/lib/clients/crm'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 import { RequestForm } from '../_components/request-form'
 

@@ -1,6 +1,6 @@
 import { getInvoiceContextResult } from '@/lib/auth/context'
 import { resolveInvoiceFinanceAccess } from '@/lib/auth/finance-access'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 import { loadRoles } from '../../roles/_data'
 import { InvoiceMemberInvitePanel } from '../_components/member-invite-panel'

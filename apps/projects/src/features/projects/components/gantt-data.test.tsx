@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
   requireContext: vi.fn(),
 }))
 
-vi.mock('@/lib/services/projects', () => ({
+vi.mock('@/lib/clients/projects', () => ({
   projects: {
     gantt: { retrieve: mocks.retrieve },
     baselines: { list: mocks.listBaselines, comparison: mocks.comparison },

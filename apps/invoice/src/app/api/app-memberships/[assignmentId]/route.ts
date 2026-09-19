@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { getInvoiceApiContext } from '@/lib/auth/api-context'
 import { requireAppAccessManager } from '@/lib/auth/app-access'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 const updateSchema = z.object({ app_role_id: z.string().min(1).nullable().optional(), permission_grants: z.array(z.string()).optional(), permission_denies: z.array(z.string()).optional(), title: z.string().min(1).max(160).nullable().optional(), attributes: z.record(z.string(), z.unknown()).nullable().optional(), status: z.string().min(1).max(32).optional() })
 type RouteContext = { params: Promise<{ assignmentId: string }> }

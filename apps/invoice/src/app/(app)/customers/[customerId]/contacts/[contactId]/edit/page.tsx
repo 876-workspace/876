@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 import { getInvoiceContext } from '@/lib/auth/context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { CustomerContactFormAdapter } from '../../../_components/customer-contact-form'
 export const metadata = { title: 'Edit contact' }
 export default async function EditCustomerContactPage({

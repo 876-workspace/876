@@ -12,7 +12,7 @@ import {
   type AttachmentResourceRef,
 } from '@/types/attachments'
 import { PROJECTS_APP_SLUG } from '@/lib/projects-app'
-import { storage } from '@/lib/services/storage'
+import { storage } from '@/lib/clients/storage'
 
 /** How many existing files the re-attach picker offers. */
 const EXISTING_FILE_LIMIT = 25

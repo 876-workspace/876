@@ -9,7 +9,7 @@ import {
   requireCouriersData,
   toWarehouseView,
 } from '@/lib/couriers'
-import { getCouriers } from '@/lib/services/couriers'
+import { getCouriers } from '@/lib/clients/couriers'
 
 import { WarehouseForm } from '../../_components/warehouse-form'
 

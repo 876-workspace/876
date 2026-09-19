@@ -4,7 +4,7 @@ import { cache } from 'react'
 import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 import type { CrmCustomerRow } from '@/features/customers/types'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 type CustomerRowsResult = {
   rows: CrmCustomerRow[]

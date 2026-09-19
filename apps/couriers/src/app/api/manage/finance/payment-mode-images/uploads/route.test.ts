@@ -15,10 +15,10 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mocks.getManageContext,
 }))
-vi.mock('@/lib/services/billing', () => ({
+vi.mock('@/lib/clients/billing', () => ({
   createBillingIntegration: mocks.createBillingIntegration,
 }))
-vi.mock('@/lib/services/storage', () => ({
+vi.mock('@/lib/clients/storage', () => ({
   storage: {
     uploads: { create: mocks.uploadsCreate, complete: mocks.uploadsComplete },
     resourceLinks: { create: mocks.linksCreate, list: vi.fn() },

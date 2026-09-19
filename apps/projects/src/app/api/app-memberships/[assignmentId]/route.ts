@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { getProjectsApiContext } from '@/lib/auth/api-context'
 import { requireAppAccessManager } from '@/lib/auth/app-access'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 const updateSchema = z.object({
   app_role_id: z.string().min(1).nullable().optional(),

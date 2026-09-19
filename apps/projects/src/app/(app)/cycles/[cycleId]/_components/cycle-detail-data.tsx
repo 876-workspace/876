@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { CycleDetailClient } from '@/features/projects/components/cycle-detail-client'
 import { loadMemberLabels } from '@/features/projects/member-labels'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function CycleDetailData({
   orgId,

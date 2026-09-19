@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { BillingRecurringInvoiceCreateForm } from '../_components/recurring-invoice-create-form'
 
 export const metadata = { title: 'New Recurring Invoice' }

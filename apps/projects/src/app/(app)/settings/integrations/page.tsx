@@ -9,7 +9,7 @@ import {
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
 import { toUiIntegrationClient } from '@/lib/integration-mappers'
-import { integration } from '@/lib/services/integration'
+import { integration } from '@/lib/clients/integration'
 
 import { IntegrationClientsManager } from './_components/integration-clients-manager'
 

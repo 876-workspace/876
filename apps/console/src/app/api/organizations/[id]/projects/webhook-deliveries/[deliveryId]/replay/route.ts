@@ -2,8 +2,8 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { createProjects } from '@/lib/services/projects'
-import { platform } from '@/lib/services/platform'
+import { createProjects } from '@/lib/clients/projects'
+import { platform } from '@/lib/clients/platform'
 
 export const runtime = 'nodejs'
 

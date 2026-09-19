@@ -1385,7 +1385,7 @@ export const resolveUserAddresses = cache(async (userId: string) => {
 #### Pattern C: Service layer (mutations with orchestration)
 
 ```typescript
-// apps/console/src/lib/service/users/update.ts
+// apps/console/src/lib/records/users/update.ts
 export async function update(id: string, body: AdminUserUpdateParams, caller?: Access) {
   if (caller && typeof (body as { role?: unknown }).role === 'string') {
     const check = await assertRoleChangeAllowed(caller, id, ...)
@@ -1402,7 +1402,7 @@ export async function update(id: string, body: AdminUserUpdateParams, caller?: A
 | Track     | Module                             | Scope              | Used For                                       |
 | --------- | ---------------------------------- | ------------------ | ---------------------------------------------- |
 | `$876`    | `@876/admin` → talks to 876 API    | Platform data      | Users, orgs, apps, features, memberships, etc. |
-| `service` | `@/lib/service` → Console's own DB | Console-local data | Team members, roles, notes, permission grants  |
+| `service` | `@/lib/datastore` → Console's own DB | Console-local data | Team members, roles, notes, permission grants  |
 
 ### Complete Data Flow Diagram
 

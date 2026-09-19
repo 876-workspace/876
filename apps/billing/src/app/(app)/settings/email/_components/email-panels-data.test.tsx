@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   templatesList: vi.fn(),
 }))
 
-vi.mock('@/lib/services/communications', () => ({
+vi.mock('@/lib/clients/communications', () => ({
   communicationsService: () => ({
     senders: { list: mocks.sendersList },
     domains: { list: mocks.domainsList },

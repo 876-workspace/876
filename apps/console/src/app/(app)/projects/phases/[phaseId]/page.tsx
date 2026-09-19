@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 
 import { PhaseDetailData } from '@/features/projects/components/phase-detail-data'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { requirePlatformProjectsOrgId } from '../../_lib/base'
 

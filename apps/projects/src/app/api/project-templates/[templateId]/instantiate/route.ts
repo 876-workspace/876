@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { templateFailure } from '@/app/api/_lib/template-api'
 import { templateIncludeSchema } from '@/types/templates'
 import { requireApiAccess } from '@/lib/auth/api-permission'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'

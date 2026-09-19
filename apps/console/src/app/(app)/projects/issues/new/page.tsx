@@ -8,7 +8,7 @@ import { Suspense } from 'react'
 import { CreateFormSkeleton } from '@/features/projects/components/create-form-skeleton'
 import { IssueCreateForm } from '@/features/projects/components/issue-create-form'
 import { requireSession } from '@/lib/auth/guards'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { requirePlatformProjectsOrgId } from '../../_lib/base'
 import { projectsBase } from '@/features/orgs/app-workspaces'

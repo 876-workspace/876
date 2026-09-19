@@ -1,4 +1,4 @@
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'

@@ -3,7 +3,7 @@ import { supportRequestDraftSchema, supportResponseStatus } from '@876/crm'
 import type { NextRequest } from 'next/server'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { getCrmSupport } from '@/lib/services/crm-support'
+import { getCrmSupport } from '@/lib/clients/crm-support'
 
 function unauthorized() {
   return apiError(

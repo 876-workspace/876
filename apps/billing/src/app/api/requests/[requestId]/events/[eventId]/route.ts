@@ -2,7 +2,7 @@ import { apiJson } from '@876/core/api'
 import { supportResponseStatus } from '@876/crm'
 
 import { requireRequestApiAccess } from '@/lib/auth/request-api-access'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 export const runtime = 'nodejs'
 

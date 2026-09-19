@@ -59,7 +59,7 @@ describe('Console product API boundary', () => {
   it('keeps multi-service construction centralized in Console service modules', () => {
     const services = ['platform', 'workspace', 'crm', 'billing', 'storage', 'widgets', 'work', 'couriers']
     for (const svc of services) {
-      const path = join(APP_ROOT, `src/lib/services/${svc}.ts`)
+      const path = join(APP_ROOT, `src/lib/clients/${svc}.ts`)
       expect(existsSync(path), `missing service module ${svc}`).toBe(true)
     }
   })

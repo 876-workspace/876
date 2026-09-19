@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { RequestRecordClient } from '@/features/crm/request-record-client'
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 export default async function RequestLayout({
   children,

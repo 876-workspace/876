@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { AppWindow, ExternalLink, ShieldCheck } from '@876/ui/icons'
 
-import { getAccount } from '@/lib/services/account'
+import { getAccount } from '@/lib/clients/account'
 import { requireConsumerFeature } from '@/lib/auth/guards'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 

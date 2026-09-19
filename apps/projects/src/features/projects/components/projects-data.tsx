@@ -3,7 +3,7 @@ import type { ProjectFilterStatus } from '@876/projects-ui/status-options'
 import { AppError } from '@876/ui/app-error'
 
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function ProjectsData({
   status,

@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/nextjs'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 import { CRM_APP_SLUG } from '@/lib/crm-app'
 import { crmApi } from '@/lib/crm-api'

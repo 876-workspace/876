@@ -19,13 +19,13 @@ vi.mock('./session', async (importOriginal) => {
     isSignedSession: actual.isSignedSession as unknown,
   }
 })
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   getWorkspace: vi.fn(async () => ({
     memberships: { list: mocks.listRouting },
     features: { evaluate: mocks.featuresEvaluate },
   })),
 }))
-vi.mock('@/lib/services/account-server', () => ({
+vi.mock('@/lib/clients/account-server', () => ({
   getAccount: vi.fn(async () => ({
     users: { retrieve: mocks.usersRetrieve },
   })),

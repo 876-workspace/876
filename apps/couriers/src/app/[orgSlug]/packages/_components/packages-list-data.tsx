@@ -4,8 +4,8 @@ import { RectangleStackIcon } from '@876/ui/icons'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData } from '@/lib/couriers'
-import { billingIntegration } from '@/lib/services/billing'
-import { couriersOperator } from '@/lib/services/couriers'
+import { billingIntegration } from '@/lib/clients/billing'
+import { couriersOperator } from '@/lib/clients/couriers'
 
 import { packageStatusLabel } from '../_lib/packages-list-config'
 import { PackagesList } from './packages-list'

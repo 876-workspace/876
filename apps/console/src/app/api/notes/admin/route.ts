@@ -1,4 +1,4 @@
-import { widgets } from '@/lib/services/widgets'
+import { widgets } from '@/lib/clients/widgets'
 import { apiError, apiJson } from '@876/core/api'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'

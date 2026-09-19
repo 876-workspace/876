@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server'
 
 import { findAuthRoutingUser } from '@/lib/auth/guards'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import {
   organizationBootstrapInputSchema,
   type OrganizationBootstrapResult,

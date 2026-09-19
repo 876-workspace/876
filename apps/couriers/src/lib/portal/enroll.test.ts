@@ -15,7 +15,7 @@ vi.mock('./client', () => ({
   isPortalNotFound: (result: { error: { code: string } | null }) =>
     result.error?.code.endsWith('/not-found') ?? false,
 }))
-vi.mock('@/lib/services/billing', () => ({
+vi.mock('@/lib/clients/billing', () => ({
   getCouriers: mocks.getCouriers,
   billingIntegration: mocks.billingIntegration,
 }))

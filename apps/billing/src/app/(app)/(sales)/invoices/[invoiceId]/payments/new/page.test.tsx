@@ -20,7 +20,7 @@ vi.mock('@876/ui/detail-card', () => ({
 vi.mock('@/lib/auth/billing-context', () => ({
   requirePagePermission: mocks.requirePagePermission,
 }))
-vi.mock('@/lib/services/billing', () => ({ getBilling: mocks.getBilling }))
+vi.mock('@/lib/clients/billing', () => ({ getBilling: mocks.getBilling }))
 vi.mock('@/features/payments/payment-form-data', () => ({
   getPaymentFormData: mocks.getPaymentFormData,
 }))

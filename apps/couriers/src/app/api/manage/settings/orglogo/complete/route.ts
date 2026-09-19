@@ -3,11 +3,11 @@ import 'server-only'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { getManageContext } from '@/lib/auth/manage-context'
 import { errorResponse } from '@/lib/errors'
 import { getAppError, getError } from '@/lib/errors'
-import { storage } from '@/lib/services/storage'
+import { storage } from '@/lib/clients/storage'
 import { organizationLogoUploadCompleteSchema } from '@/types/storage'
 
 export const runtime = 'nodejs'

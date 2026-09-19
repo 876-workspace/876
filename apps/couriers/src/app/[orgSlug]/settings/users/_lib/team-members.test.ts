@@ -12,11 +12,11 @@ vi.mock('@/lib/auth/manage-context', () => ({
   getManageContext: mockGetManageContext,
 }))
 
-vi.mock('@/lib/services/couriers', () => ({
+vi.mock('@/lib/clients/couriers', () => ({
   getCouriers: mockGetCouriers,
 }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: mockGetPlatform,
 }))
 

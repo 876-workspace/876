@@ -4,7 +4,7 @@ import {
   deleteWorkStructureResource,
   updateWorkStructureResource,
 } from '@/lib/api/work-structure'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { updateMilestoneInputSchema } from '@/types/work-structure'
 
 export const runtime = 'nodejs'

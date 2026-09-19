@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { cache } from 'react'
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 import { collectCatalogPages } from './catalog-pages'
 
 // Primitive arguments let plans, modules and feature views share one read per

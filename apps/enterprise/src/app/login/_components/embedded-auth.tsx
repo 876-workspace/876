@@ -15,7 +15,7 @@ import {
   resolveRelativeReturnTo,
 } from '@876/core/auth/return-to'
 
-import { account } from '@/lib/services/account'
+import { account } from '@/lib/clients/account'
 
 const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'apple', 'microsoft']
 

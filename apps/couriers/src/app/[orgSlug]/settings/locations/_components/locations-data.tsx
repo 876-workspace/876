@@ -1,6 +1,6 @@
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData, toBranchView } from '@/lib/couriers'
-import { getCouriers } from '@/lib/services/couriers'
+import { getCouriers } from '@/lib/clients/couriers'
 
 import { LocationsCards } from './locations-cards'
 

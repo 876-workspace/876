@@ -7,7 +7,7 @@ import { IssueFilterBar } from '@/features/projects/components/issue-filter-bar'
 
 import { loadMemberLabels } from '@/features/projects/member-labels'
 import { requireProjectsContext } from '@/lib/auth/require-projects-context'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import type { IssueGroupBy, IssueSearchParams } from '@/types/issues'
 
 export async function IssuesData({

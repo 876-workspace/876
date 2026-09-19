@@ -8,7 +8,7 @@ import type {
 import { Page, PageHeader, PageTitle } from '@876/ui/page'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { createBillingIntegration } from '@/lib/services/billing'
+import { createBillingIntegration } from '@/lib/clients/billing'
 
 import { TemplateEditorForm } from '../_components/template-editor-form'
 

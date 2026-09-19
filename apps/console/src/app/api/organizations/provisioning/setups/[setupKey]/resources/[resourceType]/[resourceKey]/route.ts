@@ -2,7 +2,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireConsolePermission } from '@/lib/auth/route-guard'
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 import {
   isProvisioningSetupResourceType,
   type ProvisioningSetupResourceUpdateParams,

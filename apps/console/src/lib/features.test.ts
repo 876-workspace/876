@@ -10,12 +10,12 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@/lib/console-app', () => ({ CONSOLE_APP_SLUG: 'console' }))
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   platform: {
     apps: { list: mocks.appsList },
   },
 }))
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   workspace: {
     features: { evaluate: mocks.featuresEvaluate },
   },

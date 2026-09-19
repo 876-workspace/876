@@ -5,7 +5,7 @@ import { getError } from '@876/core'
 import { workResourceRefSchema, type WorkHostContext } from '@876/work'
 
 import { workErrorResponse } from '@/lib/api/work-response'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 import { requireApiPermission } from './api-permission'
 

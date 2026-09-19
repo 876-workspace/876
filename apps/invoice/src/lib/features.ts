@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/nextjs'
 import { resolveExperimentDecision } from '@876/core/platform'
 import { resolveEnabledWidgetIds } from '@876/widgets'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { INVOICE_APP_SLUG } from '@/lib/invoice-app'
 import type {
   InvoiceFeatureRequest,

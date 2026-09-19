@@ -9,7 +9,7 @@ import {
 import { BankDepositForm } from '@/features/banking/components/bank-deposit-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 export default async function NewBankDepositPage({
   params,

@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { cache } from 'react'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 
 import type { AppMembership, OrgMember } from '@/types/users'
 

@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 type BillingClient = Awaited<ReturnType<typeof getBilling>>
 

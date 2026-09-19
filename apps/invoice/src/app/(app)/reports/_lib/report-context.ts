@@ -1,7 +1,7 @@
 import { cache } from 'react'
 
 import { getInvoiceContext } from '@/lib/auth/context'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 import { DEFAULT_REPORT_TIMEZONE } from './report-params'
 

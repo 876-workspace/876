@@ -11,7 +11,7 @@ vi.mock('react', async (importOriginal) => {
     cache: <T extends (...args: never[]) => unknown>(fn: T) => fn,
   }
 })
-vi.mock('@/lib/services/account', () => ({
+vi.mock('@/lib/clients/account', () => ({
   getAccount: vi.fn(async () => ({
     appMemberships: { me: { retrieve: mocks.retrieve } },
   })),

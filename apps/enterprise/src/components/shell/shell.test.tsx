@@ -13,7 +13,7 @@ vi.mock('next/headers', () => ({
   cookies: mocks.cookies,
 }))
 
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   getWorkspace: mocks.getWorkspace,
 }))
 

@@ -29,7 +29,7 @@ function getServiceClient() {
  * owns the domain — not `session`: `apps/projects-api` exposes only
  * internal-key routes today, so the app resolves the organization from the
  * signed-in session itself and scopes every call by it. The same shape as
- * `apps/crm/src/lib/services/crm.ts`.
+ * `apps/crm/src/lib/clients/crm.ts`.
  *
  * Initialization is deferred to first use because the build imports route
  * modules before runtime secrets exist.

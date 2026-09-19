@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/api-permission', () => ({
   requireApiAccess: mocks.requireAccess,
 }))
-vi.mock('@/lib/services/projects', () => ({
+vi.mock('@/lib/clients/projects', () => ({
   projects: {
     discussions: { update: mocks.update, delete: mocks.remove },
   },

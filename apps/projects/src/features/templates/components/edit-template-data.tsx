@@ -1,7 +1,7 @@
 import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { EditTemplateForm } from './edit-template-form'
 

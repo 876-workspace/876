@@ -2,7 +2,7 @@ import type { TemplateIncludeFlags } from '@876/projects/contracts'
 import { TemplatePreviewTable } from '@876/projects-ui/templates/template-preview-table'
 import { AppError } from '@876/ui/app-error'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export async function TemplatePreviewData({
   orgId,

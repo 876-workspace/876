@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { billingIntegration } from '@/lib/services/billing'
+import { billingIntegration } from '@/lib/clients/billing'
 import { ensureSharedCoreUserCustomer } from '@/lib/finance/customers'
 import { getError, type CouriersErrorCode } from '@/lib/errors'
 import type {

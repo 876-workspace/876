@@ -4,7 +4,7 @@ import { getError, toAppError } from '@876/core'
 import { CustomerRequestsPanel } from '@876/crm-ui/customer-requests-panel'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 import { resolveCustomer } from '../../../_lib/customer-data'
 
 export async function CustomerRequestsData({

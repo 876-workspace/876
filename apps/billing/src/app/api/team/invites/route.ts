@@ -1,6 +1,6 @@
 import { apiError, apiSuccess } from '@876/core/api'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { getContext } from '@/lib/auth/billing-context'
 
 export const runtime = 'nodejs'

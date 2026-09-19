@@ -9,7 +9,7 @@ import {
   resolveEnabledWidgetIds,
 } from '@876/widgets'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import { BILLING_APP_SLUG } from '@/lib/billing-app'
 import type {
   BillingFeatures,

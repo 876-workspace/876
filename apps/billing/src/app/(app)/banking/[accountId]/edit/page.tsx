@@ -12,7 +12,7 @@ import {
 import { BankAccountForm } from '@/features/banking/components/bank-account-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
 import { service } from '@/lib/service'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 type Props = { params: Promise<{ accountId: string }> }
 

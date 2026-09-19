@@ -1,6 +1,6 @@
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import 'server-only'
-import { workspace } from '@/lib/services/workspace'
+import { workspace } from '@/lib/clients/workspace'
 
 import type { AdminEmployeeProfile } from '@876/platform/compat'
 

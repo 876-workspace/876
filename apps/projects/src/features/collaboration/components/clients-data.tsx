@@ -4,7 +4,7 @@ import { loadMemberLabels } from '@/features/projects/member-labels'
 import {
   listAttachmentLinks,
 } from '@/lib/attachment-links'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { mapClientGrant } from '../mappers'
 import { ClientGrantList } from './client-grant-list'

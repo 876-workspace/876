@@ -14,7 +14,7 @@ import {
   AuthProvider,
   type SocialProvider,
 } from '@876/ui/auth'
-import { account } from '@/lib/services/account-browser'
+import { account } from '@/lib/clients/account-browser'
 
 const SOCIAL_PROVIDERS: SocialProvider[] = ['google', 'apple', 'microsoft']
 const authClient = account

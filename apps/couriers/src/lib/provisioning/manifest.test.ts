@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   retrievePublished: vi.fn(),
 }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 

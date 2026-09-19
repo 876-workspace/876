@@ -4,7 +4,7 @@ import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 
 import { requireApiAccess } from '@/lib/auth/api-permission'
-import { integration } from '@/lib/services/integration'
+import { integration } from '@/lib/clients/integration'
 import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'

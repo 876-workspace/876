@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server'
 
 import { createWorkStructureResource } from '@/lib/api/work-structure'
 import { phaseCustomFieldInputSchema } from '@/types/work-structure'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 export const runtime = 'nodejs'
 

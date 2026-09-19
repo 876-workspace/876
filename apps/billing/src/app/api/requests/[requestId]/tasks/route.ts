@@ -4,7 +4,7 @@ import { supportResponseStatus, taskStatusSchema } from '@876/crm'
 import { z } from 'zod'
 
 import { requireRequestApiAccess } from '@/lib/auth/request-api-access'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 const createBodySchema = z.strictObject({
   title: z.string().trim().min(1).max(240),

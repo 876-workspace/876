@@ -3,7 +3,7 @@ import 'server-only'
 import { brandingUpdateSchema } from '@876/core/branding'
 import { z } from 'zod'
 
-import { createBillingIntegration } from '@/lib/services/billing'
+import { createBillingIntegration } from '@/lib/clients/billing'
 
 import {
   invalidRequest,

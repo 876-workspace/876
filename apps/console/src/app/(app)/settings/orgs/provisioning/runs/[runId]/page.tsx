@@ -1,5 +1,5 @@
-import { workspace } from '@/lib/services/workspace'
-import { platform } from '@/lib/services/platform'
+import { workspace } from '@/lib/clients/workspace'
+import { platform } from '@/lib/clients/platform'
 import { Suspense } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'

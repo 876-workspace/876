@@ -1,6 +1,6 @@
 import { AppError } from '@876/ui/app-error'
 
-import { storage } from '@/lib/services/storage'
+import { storage } from '@/lib/clients/storage'
 
 import { formatOperatorBytes } from './operator-format'
 

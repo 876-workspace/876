@@ -2,8 +2,8 @@ import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Page, PageBreadcrumb, PageHeader, PageTitle } from '@876/ui/page'
 import { Skeleton } from '@876/ui/skeleton'
-import { getCouriers } from '@/lib/services/couriers'
-import { billingIntegration } from '@/lib/services/billing'
+import { getCouriers } from '@/lib/clients/couriers'
+import { billingIntegration } from '@/lib/clients/billing'
 import { getManageContext } from '@/lib/auth/manage-context'
 import {
   isCouriersNotFound,

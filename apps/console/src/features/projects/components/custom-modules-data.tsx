@@ -2,7 +2,7 @@ import { CustomModuleList } from '@876/projects-ui/custom-modules/custom-module-
 import { AppError } from '@876/ui/app-error'
 
 import { toUiCustomModule } from '../custom-modules-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Custom modules list, shared by every host.

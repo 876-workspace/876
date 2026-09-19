@@ -1,4 +1,4 @@
-import { storage } from '@/lib/services/storage'
+import { storage } from '@/lib/clients/storage'
 import { apiJson } from '@876/core/api'
 import type { NextRequest } from 'next/server'
 

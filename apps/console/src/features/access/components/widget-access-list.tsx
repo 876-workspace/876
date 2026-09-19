@@ -1,5 +1,5 @@
-import { platform } from '@/lib/services/platform'
-import { workspace } from '@/lib/services/workspace'
+import { platform } from '@/lib/clients/platform'
+import { workspace } from '@/lib/clients/workspace'
 import type { AdminFeature } from '@876/platform/compat'
 import {
   getWidgetPlatformFeatureKeys,

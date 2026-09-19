@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   loadMembers: vi.fn(),
 }))
 
-vi.mock('@/lib/services/projects', () => ({
+vi.mock('@/lib/clients/projects', () => ({
   projects: {
     timeEntries: { list: mocks.listEntries, currentTimer: mocks.currentTimer },
     timesheets: { list: mocks.listTimesheets },

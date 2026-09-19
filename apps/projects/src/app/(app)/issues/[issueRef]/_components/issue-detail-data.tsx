@@ -10,7 +10,7 @@ import { IssueVisibilityData } from './issue-visibility-data'
 import { IssueLinksData } from '@/features/projects/components/issue-links-data'
 import { RemindersData } from '@/features/projects/components/reminders-data'
 import { loadMemberLabels } from '@/features/projects/member-labels'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { getIssueVisibility } from '@/lib/visibility'
 
 export async function IssueDetailData({

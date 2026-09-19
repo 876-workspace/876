@@ -2,7 +2,7 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { getPlatformClient } from '@/lib/services/platform'
+import { getPlatformClient } from '@/lib/clients/platform'
 import type { AddressErrorCode } from '@/lib/errors/address'
 
 export type ResolvedRegion = {

@@ -6,7 +6,7 @@ import { Skeleton } from '@876/ui/skeleton'
 
 import { RequestEventsClient } from '../../_components/request-events-client'
 import { getManageContext } from '@/lib/auth/manage-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 export const metadata = { title: 'Request activity' }
 

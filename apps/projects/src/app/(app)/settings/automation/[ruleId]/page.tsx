@@ -8,7 +8,7 @@ import {
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
 import { serviceRuleToUi } from '@/lib/automation-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { AutomationRuleForm } from '../_components/automation-rule-form'
 import { AutomationTestPanel } from './_components/automation-test-panel'

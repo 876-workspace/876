@@ -5,7 +5,7 @@ import { Page } from '@876/ui/page'
 import { RequestRecordShell } from '@/features/crm/components/request-record-shell'
 import { PLATFORM_REQUESTS_HREF } from '@/features/crm/request-paths'
 import { getPlatformOrganization } from '@/lib/platform-org'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 type Props = {
   children: React.ReactNode

@@ -2,7 +2,7 @@ import 'server-only'
 
 import { cache } from 'react'
 
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 
 /**
  * Request-cached list reads, shared by a section's list column and the record

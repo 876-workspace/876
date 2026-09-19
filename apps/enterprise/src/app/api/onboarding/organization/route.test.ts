@@ -16,7 +16,7 @@ vi.mock('@/lib/auth/session', () => ({
 vi.mock('@/lib/auth/guards', () => ({
   findAuthRoutingUser: mocks.findAuthRoutingUser,
 }))
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 

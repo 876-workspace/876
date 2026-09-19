@@ -7,7 +7,7 @@ import {
   requireProjectsContext,
 } from '@/lib/auth/require-projects-context'
 import { serviceBlueprintToUi } from '@/lib/automation-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { BlueprintForm } from './_components/blueprint-form'
 

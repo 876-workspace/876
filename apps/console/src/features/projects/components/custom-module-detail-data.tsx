@@ -19,7 +19,7 @@ import {
 } from '@876/ui/table'
 import { notFound } from 'next/navigation'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { formatOperatorDateOrDash } from './operator-format'
 

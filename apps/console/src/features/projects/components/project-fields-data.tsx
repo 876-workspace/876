@@ -17,7 +17,7 @@ import {
   MobileListEmpty,
 } from '@876/projects-ui/mobile-list'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 const EMPTY_TITLE = 'No project fields yet'
 

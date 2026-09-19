@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server'
 
 import { getCrmApiContext } from '@/lib/auth/api-context'
 import { canCreatePrivateRequestNote } from '@/lib/auth/roles'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 type Context = { params: Promise<{ requestId: string }> }
 function statusFor(code: string | undefined) {

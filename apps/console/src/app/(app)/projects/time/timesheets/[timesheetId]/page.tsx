@@ -6,7 +6,7 @@ import { Suspense } from 'react'
 import { TimesheetDetailData } from '@/features/projects/components/timesheet-detail-data'
 import { formatOperatorDate } from '@/features/projects/components/operator-format'
 import { projectsBase } from '@/features/orgs/app-workspaces'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { requirePlatformProjectsOrgId } from '../../../_lib/base'
 

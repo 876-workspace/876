@@ -4,7 +4,7 @@ import { getError, toAppError } from '@876/core'
 import { toRequestListRows } from '@876/crm-ui/request-list-rows'
 
 import { getManageContext } from '@/lib/auth/manage-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 import { RequestsList } from './requests-list'
 

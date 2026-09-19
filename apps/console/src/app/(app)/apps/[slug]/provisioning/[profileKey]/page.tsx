@@ -6,7 +6,7 @@ import {
   toFinanceCurrencyOptions,
   toFinanceLanguageOptions,
 } from '@/features/provisioning/finance-provisioning-utils'
-import { platform } from '@/lib/services/platform'
+import { platform } from '@/lib/clients/platform'
 import {
   getProvisioningCatalog,
   getProvisioningReferenceData,

@@ -8,7 +8,7 @@ import {
   createLayoutInputSchema,
   listLayoutsQuerySchema,
 } from '@/types/layouts'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import type { ApiContext } from '@/types/access'
 
 export const runtime = 'nodejs'

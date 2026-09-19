@@ -3,7 +3,7 @@ import { AppError } from '@876/ui/app-error'
 import { notFound } from 'next/navigation'
 
 import { toUiDiscussion, toUiDiscussionPost } from '../collaboration-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { ReadOnlyDiscussionThread } from './read-only-discussion-thread'
 

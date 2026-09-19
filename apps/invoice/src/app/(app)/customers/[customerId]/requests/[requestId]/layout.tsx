@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { RequestRecordClient } from '@/features/crm/request-record-client'
 import { getInvoiceContext } from '@/lib/auth/context'
 import { requireAppPermission } from '@/lib/auth/guards'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 export default async function CustomerRequestLayout({
   children,

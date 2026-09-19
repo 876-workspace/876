@@ -14,7 +14,7 @@ vi.mock('@/lib/api/resource-proxy', () => ({
   proxyBillingResourceRequest: mocks.proxy,
 }))
 
-vi.mock('@/lib/services/platform', () => ({
+vi.mock('@/lib/clients/platform', () => ({
   getPlatformClient: mocks.getPlatformClient,
 }))
 

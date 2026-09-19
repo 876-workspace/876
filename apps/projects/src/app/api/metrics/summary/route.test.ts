@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/api-permission', () => ({
   requireApiAccess: mocks.requireAccess,
 }))
-vi.mock('@/lib/services/integration', () => ({
+vi.mock('@/lib/clients/integration', () => ({
   integration: { getMetricsSummary: mocks.summary },
 }))
 

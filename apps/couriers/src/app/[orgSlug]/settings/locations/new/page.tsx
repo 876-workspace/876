@@ -5,7 +5,7 @@ import { Skeleton } from '@876/ui/skeleton'
 
 import { getManageContext } from '@/lib/auth/manage-context'
 import { requireCouriersData } from '@/lib/couriers'
-import { getCouriers } from '@/lib/services/couriers'
+import { getCouriers } from '@/lib/clients/couriers'
 
 import { BranchForm } from '../_components/branch-form'
 

@@ -13,7 +13,7 @@ import {
   requireAppPermission,
   requireCrmContext,
 } from '@/lib/auth/require-crm-context'
-import { crm } from '@/lib/services/crm'
+import { crm } from '@/lib/clients/crm'
 
 export const metadata = { title: 'Forms' }
 

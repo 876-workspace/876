@@ -16,7 +16,7 @@ vi.mock('@/lib/auth/api-context', () => ({
 vi.mock('@/lib/auth/app-access', () => ({
   requireAppAccessManager: mocks.requireManager,
 }))
-vi.mock('@/lib/services/workspace', () => ({
+vi.mock('@/lib/clients/workspace', () => ({
   getWorkspace: mocks.getWorkspace,
 }))
 const route = { params: Promise.resolve({ assignmentId: 'assign_1' }) }

@@ -75,7 +75,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   let notificationCount = 0
   try {
-    const { projects } = await import('@/lib/services/projects')
+    const { projects } = await import('@/lib/clients/projects')
     const notifications = await projects.notifications.list(orgId, userId)
     if (notifications.data)
       notificationCount = notifications.data.data.filter(

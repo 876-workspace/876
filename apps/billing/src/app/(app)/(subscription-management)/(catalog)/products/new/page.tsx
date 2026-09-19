@@ -4,7 +4,7 @@ import { Page, PageDescription, PageHeader, PageTitle } from '@876/ui/page'
 
 import { CreateForm } from '@/components/patterns/create-form'
 import { requirePagePermission } from '@/lib/auth/billing-context'
-import { getAccount } from '@/lib/services/account'
+import { getAccount } from '@/lib/clients/account'
 import type { FormField } from '@/types/form'
 
 export const metadata = { title: 'New Product' }

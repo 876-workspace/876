@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/auth/api-permission', () => ({
   requireApiAccess: mocks.requireAccess,
 }))
-vi.mock('@/lib/services/storage', () => ({
+vi.mock('@/lib/clients/storage', () => ({
   storage: {
     uploads: { create: mocks.uploadsCreate, complete: vi.fn() },
     files: {},

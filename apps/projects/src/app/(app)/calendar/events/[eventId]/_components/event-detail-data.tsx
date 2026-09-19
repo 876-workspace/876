@@ -11,7 +11,7 @@ import { EventAttendeesPanel } from '@/features/projects/components/event-attend
 import { RemindersData } from '@/features/projects/components/reminders-data'
 import { describeRecurrence } from '@/features/projects/event-input'
 import { loadMemberLabels } from '@/features/projects/member-labels'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 function eventWindow(event: ProjectEvent) {
   const start = event.allDay

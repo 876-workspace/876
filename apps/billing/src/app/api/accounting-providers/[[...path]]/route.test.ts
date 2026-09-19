@@ -16,7 +16,7 @@ vi.mock('@/lib/auth/billing-context', () => ({
   getContext: mocks.getContext,
   canManageBilling: (role: string) => role === 'owner' || role === 'admin',
 }))
-vi.mock('@/lib/services/accounting-providers', () => ({
+vi.mock('@/lib/clients/accounting-providers', () => ({
   getAccountingProviderClient: mocks.getAccountingProviderClient,
 }))
 

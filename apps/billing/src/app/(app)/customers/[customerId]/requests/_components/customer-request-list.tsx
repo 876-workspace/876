@@ -4,7 +4,7 @@ import { getError, toAppError } from '@876/core'
 import { DataTableSkeleton } from '@876/ui/data-table-skeleton'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 import { CustomerRequestRows } from './customer-request-rows'
 

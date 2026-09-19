@@ -1,6 +1,6 @@
-import { billing } from '@/lib/services/billing'
-import { workspace } from '@/lib/services/workspace'
-import { platform } from '@/lib/services/platform'
+import { billing } from '@/lib/clients/billing'
+import { workspace } from '@/lib/clients/workspace'
+import { platform } from '@/lib/clients/platform'
 import { Suspense } from 'react'
 import { CreditCard } from '@876/ui/icons'
 import {

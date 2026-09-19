@@ -9,8 +9,8 @@ import { Suspense } from 'react'
 
 import { resolveCustomerIdentity } from '@/features/customers/customer-identity'
 import { requireCrmContext } from '@/lib/auth/require-crm-context'
-import { crm } from '@/lib/services/crm'
-import { getWorkspace } from '@/lib/services/workspace'
+import { crm } from '@/lib/clients/crm'
+import { getWorkspace } from '@/lib/clients/workspace'
 import type { RequestStatus } from '@/types/crm'
 
 import {

@@ -13,7 +13,7 @@ import {
   toUiCustomModuleRecord,
   toUiCustomModuleStatus,
 } from '../custom-modules-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 import { formatOperatorDateOrDash } from './operator-format'
 

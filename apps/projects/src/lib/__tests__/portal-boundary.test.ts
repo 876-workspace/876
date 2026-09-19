@@ -22,7 +22,7 @@ function portalFiles(subtree: string): string[] {
 }
 
 const INTERNAL_CLIENT_PATTERNS = [
-  `@/lib/services/projects`,
+  `@/lib/clients/projects`,
   `@876/projects/service`,
   `from '@876/projects'`,
   `from "@876/projects"`,
@@ -42,7 +42,7 @@ describe('portal boundary', () => {
       (file) => {
         const text = readFileSync(file, 'utf-8')
         const usesInternal =
-          text.includes(`@/lib/services/projects`) ||
+          text.includes(`@/lib/clients/projects`) ||
           text.includes(`@876/projects/service`)
         if (!usesInternal) return false
         return !text.includes('resolvePortalApiAccess')
@@ -63,16 +63,16 @@ describe('portal boundary', () => {
     const text = readFileSync(join(SRC, 'lib', 'portal-access.ts'), 'utf-8')
     expect(text).toContain('listIssues')
     expect(text).not.toContain('projects.view')
-    expect(text).not.toContain('@/lib/services/projects')
+    expect(text).not.toContain('@/lib/clients/projects')
   })
 
   it('the portal service factory builds the portal client only', () => {
     const text = readFileSync(
-      join(SRC, 'lib', 'services', 'portal.ts'),
+      join(SRC, 'lib', 'clients', 'portal.ts'),
       'utf-8'
     )
     expect(text).toContain('@876/projects/portal')
-    expect(text).not.toContain('@/lib/services/projects')
+    expect(text).not.toContain('@/lib/clients/projects')
     expect(text).not.toContain('@876/projects/service')
   })
 })

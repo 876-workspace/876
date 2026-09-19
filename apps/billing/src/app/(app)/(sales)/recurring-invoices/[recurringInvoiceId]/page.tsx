@@ -26,7 +26,7 @@ import {
   hasPermission,
 } from '@/lib/auth/billing-context'
 import { formatDate, formatMoney } from '@/lib/format'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { BillingRecurringInvoiceLifecycleActions } from '../_components/recurring-invoice-lifecycle-actions'
 
 type Props = { params: Promise<{ recurringInvoiceId: string }> }

@@ -5,9 +5,9 @@ import { cache } from 'react'
 import { create876BillingServerClient } from '@876/billing/server'
 import type { Member, Role } from '@876/billing'
 
-import { getBilling } from '@/lib/services/billing'
-import { getInvoiceBillingConfig } from '@/lib/services/billing-config'
-import { resolveBillingTenantId } from '@/lib/services/billing-tenants'
+import { getBilling } from '@/lib/clients/billing'
+import { getInvoiceBillingConfig } from '@/lib/clients/billing-config'
+import { resolveBillingTenantId } from '@/lib/clients/billing-tenants'
 
 export const loadRoles = cache(async function loadRoles(organizationId: string) {
   const billing = await getBilling(organizationId)

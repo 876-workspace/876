@@ -2,7 +2,7 @@ import { AutomationRuleList } from '@876/projects-ui/automation/automation-rule-
 import { AppError } from '@876/ui/app-error'
 
 import { toUiAutomationRule } from '../automation-mappers'
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 
 /**
  * The data half of the Automation rules list, shared by every host.

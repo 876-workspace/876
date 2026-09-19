@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({ context: vi.fn(), manager: vi.fn(), getBilling: vi.fn(), update: vi.fn() }))
 vi.mock('@/lib/auth/context', () => ({ getInvoiceContextResult: mocks.context }))
 vi.mock('@/lib/auth/finance-access', () => ({ requireFinanceMemberManager: mocks.manager }))
-vi.mock('@/lib/services/billing', () => ({ getBilling: mocks.getBilling }))
+vi.mock('@/lib/clients/billing', () => ({ getBilling: mocks.getBilling }))
 
 import { PATCH } from './route'
 

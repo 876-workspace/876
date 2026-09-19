@@ -13,7 +13,7 @@ import {
   canManageBilling,
   requirePagePermission,
 } from '@/lib/auth/billing-context'
-import { getAccountingProviderClient } from '@/lib/services/accounting-providers'
+import { getAccountingProviderClient } from '@/lib/clients/accounting-providers'
 
 export const metadata = { title: 'Add Accounting Provider - Settings' }
 

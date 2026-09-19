@@ -13,7 +13,7 @@ import { workEventMatchesContext } from '@/lib/api/work-context-match'
 import { workErrorResponse } from '@/lib/api/work-response'
 import { requireWorkWidgetPermission } from '@/lib/auth/work-widget-access'
 import { requireAuthorizedInvoiceWorkContext } from '@/lib/auth/work-widget-context'
-import { getWork } from '@/lib/services/work'
+import { getWork } from '@/lib/clients/work'
 
 const participantFields = {
   name: z.string().trim().max(240).optional().nullable(),

@@ -8,7 +8,7 @@ import {
   getWorkspaceContext,
   requirePagePermission,
 } from '@/lib/auth/billing-context'
-import { getCrm } from '@/lib/services/crm'
+import { getCrm } from '@/lib/clients/crm'
 
 export const metadata = { title: 'Request tasks' }
 

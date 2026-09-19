@@ -22,7 +22,7 @@ vi.mock('@/modules/tenants', () => ({
 vi.mock('@/modules/currencies', () => ({
   enabledCurrencyDecimalPlaces: mocks.enabledCurrencyDecimalPlaces,
 }))
-vi.mock('@/lib/services/communications', () => ({
+vi.mock('@/lib/clients/communications', () => ({
   communicationsService: () => ({
     templates: {
       resolve: mocks.templateResolve,

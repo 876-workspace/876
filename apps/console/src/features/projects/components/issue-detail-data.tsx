@@ -4,7 +4,7 @@ import { Badge } from '@876/ui/badge'
 import { Markdown } from '@876/ui/markdown'
 import { notFound } from 'next/navigation'
 
-import { projects } from '@/lib/services/projects'
+import { projects } from '@/lib/clients/projects'
 import { IssueDetail } from '@876/projects-ui/issue-detail'
 
 import { AttachmentsData } from './attachments-data'

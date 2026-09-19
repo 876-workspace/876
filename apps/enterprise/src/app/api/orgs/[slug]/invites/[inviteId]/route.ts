@@ -1,5 +1,5 @@
 import { apiJson } from '@876/core/api'
-import { getWorkspace } from '@/lib/services/workspace'
+import { getWorkspace } from '@/lib/clients/workspace'
 import { authorizeOrgRequest } from '@/lib/auth/route-guard'
 
 export const runtime = 'nodejs'

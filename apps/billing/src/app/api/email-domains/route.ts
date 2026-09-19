@@ -3,7 +3,7 @@ import { createEmailDomainSchema } from '@876/communications/contracts'
 import type { NextRequest } from 'next/server'
 
 import { getWorkspaceContext } from '@/lib/auth/billing-context'
-import { communicationsService } from '@/lib/services/communications'
+import { communicationsService } from '@/lib/clients/communications'
 
 export async function POST(request: NextRequest) {
   const context = await getWorkspaceContext()

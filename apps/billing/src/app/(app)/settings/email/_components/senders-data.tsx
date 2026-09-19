@@ -1,6 +1,6 @@
 import { SenderListPanel } from '@876/communications-ui/panels/sender-list-panel'
 
-import { communicationsService } from '@/lib/services/communications'
+import { communicationsService } from '@/lib/clients/communications'
 
 interface SendersDataProps {
   organizationId: string

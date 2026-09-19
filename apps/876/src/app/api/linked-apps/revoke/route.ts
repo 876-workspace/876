@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
 
-import { getAccount } from '@/lib/services/account'
+import { getAccount } from '@/lib/clients/account'
 import { getAuthSession, isSignedSession } from '@/lib/auth/session'
 
 export const runtime = 'nodejs'

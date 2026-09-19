@@ -11,7 +11,7 @@ import {
 
 import { getInvoiceContext } from '@/lib/auth/context'
 import { redirectIfSignedOut } from '@/lib/auth/signed-out-error'
-import { getBilling } from '@/lib/services/billing'
+import { getBilling } from '@/lib/clients/billing'
 import { SalesReceiptsList } from './sales-receipts-list'
 
 function SalesReceiptsEmptyState() {
