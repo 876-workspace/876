@@ -140,7 +140,7 @@ describe('AttachmentsPanel', () => {
       data: null,
       error: {
         code: 'storage/provider-error',
-        message: 'The Storage service could not complete the request.',
+        message: 'Files are temporarily unavailable. Try again in a moment.',
       },
     })
 
@@ -149,7 +149,7 @@ describe('AttachmentsPanel', () => {
 
     expect(screen.getByText('Attachment not saved')).toBeInTheDocument()
     expect(
-      screen.getByText('The Storage service could not complete the request.')
+      screen.getByText('Files are temporarily unavailable. Try again in a moment.')
     ).toBeInTheDocument()
     expect(screen.getByText('plan.pdf')).toBeInTheDocument()
     expect(mocks.refresh).not.toHaveBeenCalled()

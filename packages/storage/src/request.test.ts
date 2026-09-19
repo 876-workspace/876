@@ -56,7 +56,7 @@ describe('storageRequest', () => {
       data: null,
       error: {
         code: 'storage/not-configured',
-        message: 'Configure the Storage service internal key.',
+        message: 'Files are not available right now.',
       },
     })
     expect(fetchMock).not.toHaveBeenCalled()
@@ -166,7 +166,7 @@ describe('storageRequest', () => {
       data: null,
       error: {
         code: 'storage/provider-error',
-        message: 'The Storage service could not complete the request.',
+        message: 'Files are temporarily unavailable. Try again in a moment.',
       },
     })
   })

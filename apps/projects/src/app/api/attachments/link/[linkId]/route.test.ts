@@ -173,7 +173,7 @@ describe('DELETE /api/attachments/link/[linkId]', () => {
       data: null,
       error: {
         code: 'storage/provider-error',
-        message: 'The Storage service could not complete the request.',
+        message: 'Files are temporarily unavailable. Try again in a moment.',
       },
     })
 

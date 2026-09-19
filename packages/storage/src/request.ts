@@ -21,14 +21,20 @@ interface StorageRequestInit {
   headers?: Record<string, string>
 }
 
+/*
+ * These two messages are read by end users, not by us: every app renders the
+ * value straight into an AppError banner. The stable `code` is what carries the
+ * diagnosis to logs and support, so the copy stays plain and the cause stays in
+ * the code — per error-handling.md, a public message names no service internal.
+ */
 const notConfiguredError = {
   code: 'storage/not-configured',
-  message: 'Configure the Storage service internal key.',
+  message: 'Files are not available right now.',
 } as const satisfies AppError
 
 const providerError = {
   code: 'storage/provider-error',
-  message: 'The Storage service could not complete the request.',
+  message: 'Files are temporarily unavailable. Try again in a moment.',
 } as const satisfies AppError
 
 /**

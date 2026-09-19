@@ -236,7 +236,7 @@ describe('AttachmentsData', () => {
       data: null,
       error: {
         code: 'storage/provider-error',
-        message: 'The Storage service could not complete the request.',
+        message: 'Files are temporarily unavailable. Try again in a moment.',
       },
     })
 
@@ -264,7 +264,7 @@ describe('AttachmentsData', () => {
       data: null,
       error: {
         code: 'storage/provider-error',
-        message: 'The Storage service could not complete the request.',
+        message: 'Files are temporarily unavailable. Try again in a moment.',
       },
     })
 
@@ -347,7 +347,7 @@ describe('AttachmentsData', () => {
               data: null,
               error: {
                 code: 'storage/provider-error',
-                message: 'The Storage service could not complete the request.',
+                message: 'Files are temporarily unavailable. Try again in a moment.',
               },
             }
           : { data: { object: 'list', data: [link, secondLink] }, error: null }

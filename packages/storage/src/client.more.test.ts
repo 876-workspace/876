@@ -116,7 +116,7 @@ describe('create876StorageClient additional contracts', () => {
       data: null,
       error: {
         code: 'storage/provider-error',
-        message: 'The Storage service could not complete the request.',
+        message: 'Files are temporarily unavailable. Try again in a moment.',
       },
     })
   })
