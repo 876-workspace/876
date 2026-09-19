@@ -2,7 +2,7 @@ import { AppError } from '@876/ui/app-error'
 import type { AdminUser, AdminUserApp } from '@876/platform/compat'
 
 import { platform } from '@/lib/clients/platform'
-import { isUserStatus } from '@/lib/user-status'
+import { isUserStatus } from '@/lib/status'
 import { UsersList } from './users-list'
 
 /**
