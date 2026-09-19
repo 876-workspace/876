@@ -4,8 +4,17 @@ import {
   CompactUserMenu,
   type SidebarUserMenuUser,
 } from '@876/ui/sidebar-user-menu'
+import { ArrowDownFromLine } from '@876/ui/icons'
 
 import { request } from '@/lib/client/request'
+
+const MENU_ITEMS = [
+  {
+    href: '/install',
+    icon: <ArrowDownFromLine aria-hidden="true" />,
+    label: 'Install app',
+  },
+]
 
 export function UserMenu({
   user,
@@ -23,6 +32,7 @@ export function UserMenu({
     <CompactUserMenu
       user={user}
       onSignOut={handleSignOut}
+      items={MENU_ITEMS}
       showSystemTheme={false}
       showThemeSwitcher={showThemeSwitcher}
     />
