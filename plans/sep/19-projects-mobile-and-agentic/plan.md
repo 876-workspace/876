@@ -304,15 +304,19 @@ Rules the format must hold to, because an agent will parse it:
 - The whole thing is deterministic: same issue in, same bytes out. It is
   snapshot-tested.
 
-## BLOCKED — R2 credentials (storage uploads, platform-wide)
+## PARKED — storage uploads (R2), and comment attachments with them
+
+User, 2026-09-19: **the Cloudflare account is down.** Storage is out of scope
+for this run and becomes a follow-up; log it in 876 Projects as a todo later.
+
+Kept here because the diagnosis is the expensive part and should not be redone:
 
 **Symptom:** "Attachment not saved — The storage provider could not complete the
-request" on every upload, in every app.
+request", on every upload, in every app.
 
-**Root cause, confirmed 2026-09-19:** `876-storage-api` is deployed and answers
-`/health` and `/ready` with `ok`, but **has no environment variables set in
-production at all**. `apps/storage-api/core/config.py` defaults every R2 field
-to `""`:
+**Root cause:** `876-storage-api` is deployed and answers `/health` and `/ready`
+with `ok`, but has **no environment variables set in production at all**.
+`apps/storage-api/core/config.py` defaults every R2 field to `""`:
 
 ```python
 r2_account_id: str = Field(default="", validation_alias="R2_ACCOUNT_ID")
@@ -320,47 +324,48 @@ r2_access_key_id: str = Field(default="", validation_alias="R2_ACCESS_KEY_ID")
 r2_secret_access_key: str = Field(default="", validation_alias="R2_SECRET_ACCESS_KEY")
 ```
 
-so the service boots clean and only fails when something tries to sign an upload
-URL. Health checks do not touch R2, which is why nothing reported it. This is
-exactly the degradation `env-configuration.md` was written about.
+so the service boots clean and fails only when something signs an upload URL.
+The health checks never touch R2, which is why nothing reported it. Exactly the
+degradation `env-configuration.md` exists to prevent.
 
-**Why I could not self-serve it**, having been told to do all of it:
-
-| Source | Result |
-| --- | --- |
-| `apps/storage-api/.env` | has `STORAGE_DATABASE_URL` and `STORAGE_INTERNAL_KEY` only — **no R2 values** |
-| root `.env` | no R2 values |
-| `npx wrangler whoami` | `Invalid access token [code: 9109]` |
-| `CLOUDFLARE_API_TOKEN` in root `.env` | present (53 chars) but `/user/tokens/verify` → `Invalid API Token` |
-
-There is no valid Cloudflare credential anywhere in this environment, so R2
-access keys cannot be minted. Dev and prod do share values here — but neither
-has them, so there is nothing to copy.
-
-**What unblocks it:** a Cloudflare R2 API token (R2 → Manage API tokens →
-*Object Read & Write*). That yields `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`
-and the S3 endpoint. With those plus `CLOUDFLARE_ACCOUNT_ID` (already in `.env`,
-32 chars) every remaining value is derivable:
+**What is needed when the account is back** (nothing else is missing):
 
 ```
-R2_ACCOUNT_ID        = CLOUDFLARE_ACCOUNT_ID
-R2_ENDPOINT          = https://<account-id>.r2.cloudflarestorage.com
-R2_FILES_BUCKET      = 876-files
-R2_ASSETS_BUCKET     = 876-assets
-R2_ASSETS_BASE_URL   = the assets bucket's public r2.dev or custom domain
-STORAGE_SCHEDULER_KEY= mintable here (random 32 bytes)
+R2_ACCESS_KEY_ID      from R2 → Manage API tokens → Object Read & Write
+R2_SECRET_ACCESS_KEY  same token
+R2_ACCOUNT_ID         = CLOUDFLARE_ACCOUNT_ID, already in root .env (32 chars)
+R2_ENDPOINT           = https://<account-id>.r2.cloudflarestorage.com
+R2_FILES_BUCKET       = 876-files
+R2_ASSETS_BUCKET      = 876-assets
+R2_ASSETS_BASE_URL    the assets bucket's public r2.dev or custom domain
+STORAGE_SCHEDULER_KEY mintable locally (random 32 bytes)
 ```
 
-Alternatively, refresh `CLOUDFLARE_API_TOKEN` with an *Account → R2 → Edit*
-scope and everything above can be created here without further input.
+`CLOUDFLARE_API_TOKEN` in root `.env` is present but expired — `/user/tokens/verify`
+returns `Invalid API Token`, and `wrangler whoami` returns `code: 9109`. It will
+need replacing too.
 
-Staying on R2 while hosting on Vercel is correct and not a leftover: R2 is
-object storage, not hosting, and it is S3-compatible with no egress fees.
-`deployment.md`'s "Cloudflare is retired" concerns *hosting*.
+Staying on R2 while hosting on Vercel remains correct: R2 is object storage, not
+hosting, S3-compatible, no egress fees. `deployment.md`'s "Cloudflare is
+retired" is about hosting.
 
-**Shipped regardless:** the user-facing copy. A storage outage must read as
-"The attachment could not be saved. Try again in a moment." with the provider
-detail kept for non-production and the log, per `error-handling.md`.
+### Comment attachments — parked with it, deliberately
+
+The user asked for comment-level attachments and that decision stands. But the
+capability is **entirely gated on the dependency above**: with no R2 credentials
+no upload can be exercised end to end, so building it now means shipping a
+feature that cannot be run even once before it is merged. That is speculative
+work against an unverifiable dependency, which `ai-code-quality.md` forbids.
+
+It moves to the storage follow-up as one unit: R2 credentials → issue
+attachments verified → comment attachments built on the working path.
+
+### Still shipped in this run
+
+The **user-facing copy**, which now matters more rather than less, because the
+failure is indefinite. A storage outage must read as *"The attachment could not
+be saved. Try again in a moment."* The provider detail stays in the log and in
+non-production, per `error-handling.md`.
 
 ## D7 — the issue is the record of what was done
 
